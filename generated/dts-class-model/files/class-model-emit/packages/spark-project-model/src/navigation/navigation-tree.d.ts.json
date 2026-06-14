@@ -99,7 +99,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-13T21:09:36.105Z",
+  "generatedAt": "2026-06-14T19:57:38.488Z",
   "models": {
     "NormalizeNavRootInput": {
       "name": "NormalizeNavRootInput",
@@ -214,7 +214,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    toNodeData(): ProjectNodeData;\n}",
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    /** 将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式 */\n    toNodeData(): ProjectNodeData;\n}",
         "members": {
           "attributes": [
             {
@@ -233,6 +233,7 @@
           "methods": [
             {
               "name": "toNodeData",
+              "jsdoc": "将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式",
               "parameters": [],
               "type": {
                 "type": "reference",

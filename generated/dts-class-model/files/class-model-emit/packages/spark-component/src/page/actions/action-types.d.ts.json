@@ -802,7 +802,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.979Z",
+  "generatedAt": "2026-06-14T19:56:58.378Z",
   "models": {
     "ActionUiDecorator": {
       "name": "ActionUiDecorator",
@@ -2285,11 +2285,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    push(to: string | {\n        path: string;\n        query?: Record<string, string>;\n    }): unknown;\n}",
+        "declarationTypeText": "{\n    /** 执行路由跳转；支持路径字符串或带 query 的路径对象，由注入的实现决定实际导航行为（如 vue-router push 或内存跳转） */\n    push(to: string | {\n        path: string;\n        query?: Record<string, string>;\n    }): unknown;\n}",
         "members": {
           "methods": [
             {
               "name": "push",
+              "jsdoc": "执行路由跳转；支持路径字符串或带 query 的路径对象，由注入的实现决定实际导航行为（如 vue-router push 或内存跳转）",
               "parameters": [
                 {
                   "name": "to",

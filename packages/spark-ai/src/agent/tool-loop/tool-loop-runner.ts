@@ -84,9 +84,13 @@ const MAX_CLASS_MODEL_SCRIPT_RETRY_NUDGES = 3
 
 /** 工具循环的输入参数 */
 type AiAgentToolLoopInput<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 业务注册信息：包含系统提示词、工具列表、生命周期回调等 Agent 运行时所需的全部业务契约。 */
   registration: AiAgentRegistration<TInput>
+  /** 业务作用域：标识当前 businessRegistrationId + businessInstanceId，用于会话寻址和诊断。 */
   scope: AiAgentScope
+  /** 本次聊天请求：包含用户消息、AbortSignal、流式回调（onDelta / onReasoning / onUsage）等。 */
   request: AiAgentChatRequest
+  /** 当前轮次元数据：turnId / seq，用于后端消息关联和诊断事件标注。 */
   turn: AiAgentTurnMeta
   /** 清除 session 选中缓存（业务切换时由 session 层传入） */
   clearSelected: () => void

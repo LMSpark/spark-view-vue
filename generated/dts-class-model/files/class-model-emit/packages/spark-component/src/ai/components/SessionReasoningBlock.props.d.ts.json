@@ -32,7 +32,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.371Z",
+  "generatedAt": "2026-06-14T20:01:01.257Z",
   "models": {
     "SessionReasoningBlockProps": {
       "name": "SessionReasoningBlockProps",
@@ -46,11 +46,11 @@
         "componentName": "SessionReasoningBlock"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** AI 推理过程的原始文本内容，在折叠区域中展示。 */\n    text: string;\n    /** 推理是否已完成并折叠；true 时显示\"推理过程（已完成）\"，默认 false。 */\n    collapsed?: boolean;\n    /** 推理是否正在进行中；true 时强制展开折叠面板并显示\"正在推理...\"，默认 false。 */\n    isActive?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** AI 推理过程的原始文本内容，在折叠区域中展示。 */\n    text: string;\n    /** 推理是否已完成并折叠；true 时显示\"推理过程（已完成）\"，默认 false。 */\n    collapsed?: boolean;\n    /** 推理是否正在进行中；true 时强制展开折叠面板并显示\"正在推理...\"，默认 false。 */\n    isActive?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -58,16 +58,19 @@
           "attributes": [
             {
               "name": "text",
+              "jsdoc": "AI 推理过程的原始文本内容，在折叠区域中展示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "collapsed",
+              "jsdoc": "推理是否已完成并折叠；true 时显示\"推理过程（已完成）\"，默认 false。",
               "readable": true,
               "writable": false
             },
             {
               "name": "isActive",
+              "jsdoc": "推理是否正在进行中；true 时强制展开折叠面板并显示\"正在推理...\"，默认 false。",
               "readable": true,
               "writable": false
             }

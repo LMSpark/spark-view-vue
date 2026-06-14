@@ -53,12 +53,19 @@ const PAGE_DATA_DESIGN_RUN_CONTEXT = {
 
 /** Page Data Design Host Input 的输入数据。 */
 export type PageDataDesignHostInput = Readonly<{
+  /** 目标页面 ID；用于定位 pageDesign 编辑器和落盘上下文。 */
   pageId: string
+  /** 页面设计需求描述；作为 LLM 策划的基础输入。 */
   description: string
+  /** 经合并增强后的有效描述（含 dataRequirement 补充说明）；传递给 pageDesign 运行时。 */
   effectiveDescription: string
+  /** 所属项目 ID；用于跨页面上下文和知识查询。 */
   projectId?: string
+  /** 策划任务标题；用于 AI 会话标识和回溯。 */
   planningTitle?: string
+  /** 策划任务导航路径；标识当前节点在项目导航树中的位置。 */
   planningPath?: string
+  /** 数据建模专项补充需求；会追加到 description 末尾作为 LLM 额外指引。 */
   dataRequirement?: string
 }>
 

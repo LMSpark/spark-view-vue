@@ -291,7 +291,9 @@ export function createActionNotifier(
  * `fallbackMessage` 为内置默认确认语（如"确认删除 XX 吗？"），由调用方构造。
  */
 export type ConfirmationInput = Readonly<{
+  /** 确认弹窗正文的内置兜底文案（如"确认删除 张三 吗？"），decorator.confirmMessage 未设置时使用 */
   fallbackMessage: string
+  /** 确认弹窗标题的内置兜底文案（如"操作确认"），decorator.confirmTitle 未设置时使用 */
   fallbackTitle: string
 }>
 

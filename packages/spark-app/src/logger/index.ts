@@ -20,10 +20,15 @@ import { sendBeacon } from '@spark-appworks/spark-utils'
  * - AppLoggerApi: 结构化参数，(message: string, meta?) => void
  */
 export type AppLoggerApi = {
+  /** 输出调试级别日志，仅开发环境可见；用于流程跟踪和变量检查 */
   debug(message: string, meta?: Record<string, unknown>): void
+  /** 输出信息级别日志，标记正常业务流程关键节点（启动、切换、完成） */
   info(message: string, meta?: Record<string, unknown>): void
+  /** 输出警告级别日志，标记可恢复的异常或需要关注的退化情况 */
   warn(message: string, meta?: Record<string, unknown>): void
+  /** 输出错误级别日志，自动捕获调用栈；用于不可恢复异常和需要排查的失败 */
   error(message: string, error?: Error | Record<string, unknown>): void
+  /** 输出成功标记日志（实际按 info 级别输出，带成功图标），用于关键操作完成确认 */
   success(message: string, meta?: Record<string, unknown>): void}
 
 /**

@@ -192,7 +192,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.409Z",
+  "generatedAt": "2026-06-14T20:03:36.344Z",
   "models": {
     "DataSourceLoggerLike": {
       "name": "DataSourceLoggerLike",
@@ -208,11 +208,12 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    warn(message: string): void;\n    error(message: string, error?: unknown): void;\n}",
+        "declarationTypeText": "{\n    /** 输出诊断警告（如 dataViewKey 解析失败），不中断数据源解析流程 */\n    warn(message: string): void;\n    /** 输出不可恢复的错误（如 requestData() 网络失败），不中断数据源解析流程 */\n    error(message: string, error?: unknown): void;\n}",
         "members": {
           "methods": [
             {
               "name": "warn",
+              "jsdoc": "输出诊断警告（如 dataViewKey 解析失败），不中断数据源解析流程",
               "parameters": [
                 {
                   "name": "message",
@@ -229,6 +230,7 @@
             },
             {
               "name": "error",
+              "jsdoc": "输出不可恢复的错误（如 requestData() 网络失败），不中断数据源解析流程",
               "parameters": [
                 {
                   "name": "message",
@@ -263,7 +265,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
-        "line": 11,
+        "line": 13,
         "className": "UseContainerDataSourceOptions",
         "declarationKind": "typeAlias",
         "componentLevel": "table-level",
@@ -388,7 +390,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
-        "line": 40,
+        "line": 42,
         "className": "UseContainerDataSourceEffectsOptions",
         "declarationKind": "typeAlias",
         "componentLevel": "table-level",
@@ -465,7 +467,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
-        "line": 57,
+        "line": 59,
         "className": "ContainerDataSourceState",
         "declarationKind": "typeAlias",
         "componentLevel": "table-level",

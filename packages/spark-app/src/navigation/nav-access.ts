@@ -18,7 +18,9 @@ import type { ProjectModelData } from '@spark-appworks/spark-project-model'
 
 /** DynamicRouter 公共 API 子集（仅导航相关） */
 type DynamicRouterAccess = {
+  /** 清除路由缓存并重新注册，返回刷新后的导航树；DynamicRouter 未注入时由调用方处理 */
   refreshRoutes(): Promise<ProjectModelData | null>
+  /** 同步读取当前已加载的导航树（不发 HTTP），未加载或未注入时返回 null */
   getNavTree(): ProjectModelData | null}
 
 /** 初始化选项 */

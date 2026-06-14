@@ -56,7 +56,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-12T08:05:49.327Z",
+  "generatedAt": "2026-06-14T20:17:26.449Z",
   "models": {
     "TurnEventCollectorInput": {
       "name": "TurnEventCollectorInput",
@@ -69,11 +69,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    input: AiAgentStreamTurnInput;\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** SSE 流轮次输入：sessionId / turn / signal / onDelta / onReasoning / onStreamEvent 等流式回调。 */\n    input: AiAgentStreamTurnInput;\n    /** APP SSE 事件源：提供 on(event, handler) 订阅 llm-frame 事件。 */\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    input: AiAgentStreamTurnInput;\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
+            "typeText": "Readonly<{\n    /** SSE 流轮次输入：sessionId / turn / signal / onDelta / onReasoning / onStreamEvent 等流式回调。 */\n    input: AiAgentStreamTurnInput;\n    /** APP SSE 事件源：提供 on(event, handler) 订阅 llm-frame 事件。 */\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -81,11 +81,13 @@
           "attributes": [
             {
               "name": "input",
+              "jsdoc": "SSE 流轮次输入：sessionId / turn / signal / onDelta / onReasoning / onStreamEvent 等流式回调。",
               "readable": true,
               "writable": false
             },
             {
               "name": "source",
+              "jsdoc": "APP SSE 事件源：提供 on(event, handler) 订阅 llm-frame 事件。",
               "readable": true,
               "writable": false
             },
@@ -111,16 +113,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
-        "line": 18,
+        "line": 20,
         "className": "TurnEventCollector",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    result: Promise<AiAgentStreamTurnResult>;\n    close(): void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 轮次结果 Promise：resolve 得到 text / reasoning / toolCalls，reject 表示超时/错误/abort。 */\n    result: Promise<AiAgentStreamTurnResult>;\n    /** 主动关闭收集器：停止监听 SSE 事件，释放定时器和监听器。 */\n    close(): void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    result: Promise<AiAgentStreamTurnResult>;\n    close(): void;\n}>",
+            "typeText": "Readonly<{\n    /** 轮次结果 Promise：resolve 得到 text / reasoning / toolCalls，reject 表示超时/错误/abort。 */\n    result: Promise<AiAgentStreamTurnResult>;\n    /** 主动关闭收集器：停止监听 SSE 事件，释放定时器和监听器。 */\n    close(): void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -128,6 +130,7 @@
           "attributes": [
             {
               "name": "result",
+              "jsdoc": "轮次结果 Promise：resolve 得到 text / reasoning / toolCalls，reject 表示超时/错误/abort。",
               "readable": true,
               "writable": false
             }
@@ -135,6 +138,7 @@
           "methods": [
             {
               "name": "close",
+              "jsdoc": "主动关闭收集器：停止监听 SSE 事件，释放定时器和监听器。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

@@ -71,7 +71,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.072Z",
+  "generatedAt": "2026-06-14T20:21:59.869Z",
   "models": {
     "PageScope": {
       "name": "PageScope",
@@ -113,11 +113,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 页面路由路径；必须以 / 开头，作为 URL 路由和注册表键。 */\n    path: string;\n    /** 页面标题；显示在导航树和浏览器标签页。 */\n    title: string;\n    /** 页面图标名；对应图标组件的标识，省略时导航树不显示图标。 */\n    icon?: string;\n    /** 页面描述；用于导航提示和 AI 理解页面功能。 */\n    description?: string;\n    /** 页面可见范围；public 表示无需登录即可访问，tenant/app 需登录后按权限显示。 */\n    scope: PageScope;\n    /** Vue 组件文件路径；必须位于 src/views/ 下且以 .vue 结尾，用于 Vite 动态 import。 */\n    source: string;\n    /** 是否在导航树中隐藏；隐藏页面仍可路由访问，但不显示在菜单中。 */\n    hidden?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 页面路由路径；必须以 / 开头，作为 URL 路由和注册表键。 */\n    path: string;\n    /** 页面标题；显示在导航树和浏览器标签页。 */\n    title: string;\n    /** 页面图标名；对应图标组件的标识，省略时导航树不显示图标。 */\n    icon?: string;\n    /** 页面描述；用于导航提示和 AI 理解页面功能。 */\n    description?: string;\n    /** 页面可见范围；public 表示无需登录即可访问，tenant/app 需登录后按权限显示。 */\n    scope: PageScope;\n    /** Vue 组件文件路径；必须位于 src/views/ 下且以 .vue 结尾，用于 Vite 动态 import。 */\n    source: string;\n    /** 是否在导航树中隐藏；隐藏页面仍可路由访问，但不显示在菜单中。 */\n    hidden?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -125,36 +125,43 @@
           "attributes": [
             {
               "name": "path",
+              "jsdoc": "页面路由路径；必须以 / 开头，作为 URL 路由和注册表键。",
               "readable": true,
               "writable": false
             },
             {
               "name": "title",
+              "jsdoc": "页面标题；显示在导航树和浏览器标签页。",
               "readable": true,
               "writable": false
             },
             {
               "name": "icon",
+              "jsdoc": "页面图标名；对应图标组件的标识，省略时导航树不显示图标。",
               "readable": true,
               "writable": false
             },
             {
               "name": "description",
+              "jsdoc": "页面描述；用于导航提示和 AI 理解页面功能。",
               "readable": true,
               "writable": false
             },
             {
               "name": "scope",
+              "jsdoc": "页面可见范围；public 表示无需登录即可访问，tenant/app 需登录后按权限显示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "source",
+              "jsdoc": "Vue 组件文件路径；必须位于 src/views/ 下且以 .vue 结尾，用于 Vite 动态 import。",
               "readable": true,
               "writable": false
             },
             {
               "name": "hidden",
+              "jsdoc": "是否在导航树中隐藏；隐藏页面仍可路由访问，但不显示在菜单中。",
               "readable": true,
               "writable": false
             }
@@ -168,16 +175,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/registries/vue-page-registry.d.ts",
-        "line": 28,
+        "line": 35,
         "className": "VuePageEntry",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
+        "declarationTypeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    /** 懒加载 Vue 组件；通过 Vite import.meta.glob 绑定，首次调用时按需加载。 */\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
+            "typeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    /** 懒加载 Vue 组件；通过 Vite import.meta.glob 绑定，首次调用时按需加载。 */\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -185,6 +192,7 @@
           "methods": [
             {
               "name": "load",
+              "jsdoc": "懒加载 Vue 组件；通过 Vite import.meta.glob 绑定，首次调用时按需加载。",
               "parameters": [],
               "type": {
                 "type": "reference",

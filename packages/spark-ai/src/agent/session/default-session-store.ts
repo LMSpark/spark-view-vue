@@ -20,6 +20,7 @@ import { isRecord } from '@spark-appworks/spark-utils'
 
 /** 存储选项：允许注入自定义时间源（便于测试） */
 export type DefaultAiAgentSessionStoreOptions = Readonly<{
+  /** 时间戳生成函数；默认 Date.now，注入后用于测试中固定时间或加速时间流动 */
   now?: () => number
 }>
 

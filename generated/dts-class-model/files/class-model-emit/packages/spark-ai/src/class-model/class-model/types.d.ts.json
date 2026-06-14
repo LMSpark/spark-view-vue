@@ -804,7 +804,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:04:58.995Z",
+  "generatedAt": "2026-06-14T19:19:30.582Z",
   "models": {
     "ClassModelDocument": {
       "name": "ClassModelDocument",
@@ -817,11 +817,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiRuntimeApiMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 投影格式版本，与 runtime API metadata 的 schemaVersion 独立演进；bundle loader 据此判断是否需要迁移。 */\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    /** 根节点语义标识；当前固定为 'module'，预留未来扩展为 'package' 等粒度。 */\n    rootKind: string;\n    /** 知识链路真源：所有 DtsTypeDeclarationModel 按 attribute 链从此 module 按需派生，不预存 models 索引。 */\n    module: AiRuntimeApiMetadataJson;\n    /** Draft 2020-12 共享定义；当 jsonSchema 使用 $ref 引用内部子 schema 时，被引用的片段存在此字典中以保证 bundle 自包含。 */\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiRuntimeApiMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
+            "typeText": "Readonly<{\n    /** 投影格式版本，与 runtime API metadata 的 schemaVersion 独立演进；bundle loader 据此判断是否需要迁移。 */\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    /** 根节点语义标识；当前固定为 'module'，预留未来扩展为 'package' 等粒度。 */\n    rootKind: string;\n    /** 知识链路真源：所有 DtsTypeDeclarationModel 按 attribute 链从此 module 按需派生，不预存 models 索引。 */\n    module: AiRuntimeApiMetadataJson;\n    /** Draft 2020-12 共享定义；当 jsonSchema 使用 $ref 引用内部子 schema 时，被引用的片段存在此字典中以保证 bundle 自包含。 */\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -829,21 +829,25 @@
           "attributes": [
             {
               "name": "schemaVersion",
+              "jsdoc": "投影格式版本，与 runtime API metadata 的 schemaVersion 独立演进；bundle loader 据此判断是否需要迁移。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootKind",
+              "jsdoc": "根节点语义标识；当前固定为 'module'，预留未来扩展为 'package' 等粒度。",
               "readable": true,
               "writable": false
             },
             {
               "name": "module",
+              "jsdoc": "知识链路真源：所有 DtsTypeDeclarationModel 按 attribute 链从此 module 按需派生，不预存 models 索引。",
               "readable": true,
               "writable": false
             },
             {
               "name": "$defs",
+              "jsdoc": "Draft 2020-12 共享定义；当 jsonSchema 使用 $ref 引用内部子 schema 时，被引用的片段存在此字典中以保证 bundle 自包含。",
               "readable": true,
               "writable": false
             }
@@ -857,16 +861,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 24,
+        "line": 28,
         "className": "SourceProvenanceMeta",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component';\n}>",
+        "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    /** 成员级溯源时为属性/方法名；类型级溯源（整个 class/interface）时为 undefined。 */\n    memberName?: string;\n    /** 类型声明入口文件路径，与 file 可能不同（如 re-export 场景 file 是消费方，typeEntryFile 是声明方）。 */\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component';\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component';\n}>",
+            "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    /** 成员级溯源时为属性/方法名；类型级溯源（整个 class/interface）时为 undefined。 */\n    memberName?: string;\n    /** 类型声明入口文件路径，与 file 可能不同（如 re-export 场景 file 是消费方，typeEntryFile 是声明方）。 */\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component';\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -889,11 +893,13 @@
             },
             {
               "name": "memberName",
+              "jsdoc": "成员级溯源时为属性/方法名；类型级溯源（整个 class/interface）时为 undefined。",
               "readable": true,
               "writable": false
             },
             {
               "name": "typeEntryFile",
+              "jsdoc": "类型声明入口文件路径，与 file 可能不同（如 re-export 场景 file 是消费方，typeEntryFile 是声明方）。",
               "readable": true,
               "writable": false
             },
@@ -937,7 +943,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 38,
+        "line": 44,
         "className": "ComponentClassModelLevel",
         "declarationKind": "typeAlias"
       },
@@ -974,7 +980,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 40,
+        "line": 46,
         "className": "ComponentClassModelLayer",
         "declarationKind": "typeAlias"
       },
@@ -1027,7 +1033,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 42,
+        "line": 48,
         "className": "ClassModelDeclarationRelationKind",
         "declarationKind": "typeAlias"
       },
@@ -1064,16 +1070,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 44,
+        "line": 50,
         "className": "ClassModelDeclarationRelation",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    /** 原始类型文本，保留 extends/implements 后的完整类型表达式，供 LLM 在无法解析 targetName 时回退阅读。 */\n    typeText: string;\n    /** 可解析的目标符号名；当 typeText 是复杂表达式（泛型、交叉）无法提取单一符号时为 undefined。 */\n    targetName?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
+            "typeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    /** 原始类型文本，保留 extends/implements 后的完整类型表达式，供 LLM 在无法解析 targetName 时回退阅读。 */\n    typeText: string;\n    /** 可解析的目标符号名；当 typeText 是复杂表达式（泛型、交叉）无法提取单一符号时为 undefined。 */\n    targetName?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1086,11 +1092,13 @@
             },
             {
               "name": "typeText",
+              "jsdoc": "原始类型文本，保留 extends/implements 后的完整类型表达式，供 LLM 在无法解析 targetName 时回退阅读。",
               "readable": true,
               "writable": false
             },
             {
               "name": "targetName",
+              "jsdoc": "可解析的目标符号名；当 typeText 是复杂表达式（泛型、交叉）无法提取单一符号时为 undefined。",
               "readable": true,
               "writable": false
             }
@@ -1104,7 +1112,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 50,
+        "line": 58,
         "className": "DtsTypeDeclarationKind",
         "declarationKind": "typeAlias"
       },
@@ -1137,7 +1145,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 52,
+        "line": 60,
         "className": "DtsTypeDeclarationBase",
         "declarationKind": "typeAlias"
       },
@@ -1189,7 +1197,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 62,
+        "line": 70,
         "className": "ClassDeclarationMembers",
         "declarationKind": "typeAlias"
       },
@@ -1224,7 +1232,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 67,
+        "line": 75,
         "className": "InterfaceDeclarationMembers",
         "declarationKind": "typeAlias"
       },
@@ -1259,7 +1267,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 72,
+        "line": 80,
         "className": "TypeAliasDeclarationMembers",
         "declarationKind": "typeAlias"
       },
@@ -1294,7 +1302,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 77,
+        "line": 85,
         "className": "ClassDeclarationPayload",
         "declarationKind": "typeAlias"
       },
@@ -1334,7 +1342,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 83,
+        "line": 91,
         "className": "InterfaceDeclarationPayload",
         "declarationKind": "typeAlias"
       },
@@ -1369,7 +1377,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 88,
+        "line": 96,
         "className": "TypeAliasDeclarationPayload",
         "declarationKind": "typeAlias"
       },
@@ -1409,7 +1417,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 94,
+        "line": 102,
         "className": "EnumDeclarationPayload",
         "declarationKind": "typeAlias"
       },
@@ -1439,7 +1447,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 98,
+        "line": 106,
         "className": "ClassDeclarationModel",
         "declarationKind": "typeAlias"
       },
@@ -1474,7 +1482,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 102,
+        "line": 110,
         "className": "InterfaceDeclarationModel",
         "declarationKind": "typeAlias"
       },
@@ -1509,7 +1517,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 106,
+        "line": 114,
         "className": "TypeAliasDeclarationModel",
         "declarationKind": "typeAlias"
       },
@@ -1544,7 +1552,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 110,
+        "line": 118,
         "className": "EnumDeclarationModel",
         "declarationKind": "typeAlias"
       },
@@ -1579,7 +1587,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 114,
+        "line": 122,
         "className": "DtsTypeDeclarationModel",
         "declarationKind": "typeAlias"
       },
@@ -1616,7 +1624,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 116,
+        "line": 124,
         "className": "JsDocMeta",
         "declarationKind": "typeAlias"
       },
@@ -1631,16 +1639,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 118,
+        "line": 126,
         "className": "ConstructorMeta",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationTypeText": "Readonly<{\n    signatureText?: string;\n    /** 调用约定：positional = 按位置传参，named = 对象解构传参（影响 paramsSchema 的结构：positional 是 tuple，named 是 object）。 */\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** 参数 JSON Schema；positional 风格为 tuple schema，named 风格为 object schema，用于 LLM 工具调用时的参数校验。 */\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "typeText": "Readonly<{\n    signatureText?: string;\n    /** 调用约定：positional = 按位置传参，named = 对象解构传参（影响 paramsSchema 的结构：positional 是 tuple，named 是 object）。 */\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** 参数 JSON Schema；positional 风格为 tuple schema，named 风格为 object schema，用于 LLM 工具调用时的参数校验。 */\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1653,6 +1661,7 @@
             },
             {
               "name": "parameterStyle",
+              "jsdoc": "调用约定：positional = 按位置传参，named = 对象解构传参（影响 paramsSchema 的结构：positional 是 tuple，named 是 object）。",
               "readable": true,
               "writable": false
             },
@@ -1663,6 +1672,7 @@
             },
             {
               "name": "paramsSchema",
+              "jsdoc": "参数 JSON Schema；positional 风格为 tuple schema，named 风格为 object schema，用于 LLM 工具调用时的参数校验。",
               "readable": true,
               "writable": false
             },
@@ -1686,16 +1696,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 127,
+        "line": 137,
         "className": "AttributeMeta",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    name: string;\n    schema?: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationTypeText": "Readonly<{\n    name: string;\n    schema?: AiJsonSchema;\n    /** 可读性标记；getter 或 public 属性为 true，write-only setter 为 false。 */\n    readable: boolean;\n    /** 可写性标记；setter 或 public mutable 属性为 true，readonly/getter-only 为 false。 */\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    name: string;\n    schema?: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "typeText": "Readonly<{\n    name: string;\n    schema?: AiJsonSchema;\n    /** 可读性标记；getter 或 public 属性为 true，write-only setter 为 false。 */\n    readable: boolean;\n    /** 可写性标记；setter 或 public mutable 属性为 true，readonly/getter-only 为 false。 */\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1713,11 +1723,13 @@
             },
             {
               "name": "readable",
+              "jsdoc": "可读性标记；getter 或 public 属性为 true，write-only setter 为 false。",
               "readable": true,
               "writable": false
             },
             {
               "name": "writable",
+              "jsdoc": "可写性标记；setter 或 public mutable 属性为 true，readonly/getter-only 为 false。",
               "readable": true,
               "writable": false
             },
@@ -1741,7 +1753,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 139,
+        "line": 151,
         "className": "MethodParameterStyle",
         "declarationKind": "typeAlias"
       },
@@ -1766,7 +1778,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 147,
+        "line": 159,
         "className": "DtsTypeMeta",
         "declarationKind": "typeAlias"
       },
@@ -1838,16 +1850,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 182,
+        "line": 194,
         "className": "DtsReflectionSignature",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
+        "declarationTypeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    /** 签名返回类型；与 MethodMeta.type 不同，此处是 reflection 内嵌的返回类型，用于回调/内联函数场景。 */\n    type: DtsTypeMeta;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
+            "typeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    /** 签名返回类型；与 MethodMeta.type 不同，此处是 reflection 内嵌的返回类型，用于回调/内联函数场景。 */\n    type: DtsTypeMeta;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1860,6 +1872,7 @@
             },
             {
               "name": "type",
+              "jsdoc": "签名返回类型；与 MethodMeta.type 不同，此处是 reflection 内嵌的返回类型，用于回调/内联函数场景。",
               "readable": true,
               "writable": false
             }
@@ -1873,16 +1886,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 187,
+        "line": 200,
         "className": "DtsReflectionTypeMeta",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
+        "declarationTypeText": "Readonly<{\n    type: 'reflection';\n    /** 反射声明容器；signatures 数组至少一个元素，空数组表示 TypeDoc 解析异常。 */\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
+            "typeText": "Readonly<{\n    type: 'reflection';\n    /** 反射声明容器；signatures 数组至少一个元素，空数组表示 TypeDoc 解析异常。 */\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1895,6 +1908,7 @@
             },
             {
               "name": "declaration",
+              "jsdoc": "反射声明容器；signatures 数组至少一个元素，空数组表示 TypeDoc 解析异常。",
               "readable": true,
               "writable": false
             }
@@ -1908,7 +1922,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 194,
+        "line": 208,
         "className": "MethodParameterMeta",
         "declarationKind": "typeAlias"
       },
@@ -1953,16 +1967,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 203,
+        "line": 217,
         "className": "MethodMeta",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    /** 返回值 JSON Schema；仅在返回类型可完整映射为 JSON Schema 时存在，复杂类型（泛型/回调）可能缺失。 */\n    returnSchema?: AiJsonSchema;\n    /** 方法首参是否为上下文对象（如 SparkScriptContext）；标记为 true 时 LLM 在工具调用中应跳过该参数。 */\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    /** 返回值 JSON Schema；仅在返回类型可完整映射为 JSON Schema 时存在，复杂类型（泛型/回调）可能缺失。 */\n    returnSchema?: AiJsonSchema;\n    /** 方法首参是否为上下文对象（如 SparkScriptContext）；标记为 true 时 LLM 在工具调用中应跳过该参数。 */\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -2001,11 +2015,13 @@
             },
             {
               "name": "returnSchema",
+              "jsdoc": "返回值 JSON Schema；仅在返回类型可完整映射为 JSON Schema 时存在，复杂类型（泛型/回调）可能缺失。",
               "readable": true,
               "writable": false
             },
             {
               "name": "takesContext",
+              "jsdoc": "方法首参是否为上下文对象（如 SparkScriptContext）；标记为 true 时 LLM 在工具调用中应跳过该参数。",
               "readable": true,
               "writable": false
             },

@@ -53,12 +53,20 @@ export type AiAgentAppSseEventName =
  *   event           — API 信封事件（可选）
  */
 export type AiAgentAppSseEvent<T = unknown> = Readonly<{
+  /** 事件名；标识事件类型，如 llm-frame、ai-host-run-result 等。 */
   name: AiAgentAppSseEventName
+  /** 事件是否成功；false 表示 error 事件，消费方需检查 data 中的错误信息。 */
   ok: boolean
+  /** 已解析的事件数据；泛型 T 由消费方按事件名约定提供具体类型。 */
   data: T
+  /** 原始 JSON 字符串；保留未解析的载荷，用于调试和日志回放。 */
   rawData: string
+  /** 原始解析荷载；JSON.parse 后的原始值，类型转换前的中间态。 */
   rawPayload: unknown
+  /** 协议版本号；用于向后兼容检测，缺失时按最新版处理。 */
   protocolVersion?: number
+  /** API 信封上下文；携带 requestId、tenantId 等跨层追踪信息。 */
   context?: ApiEnvelopeContext
+  /** API 信封事件；标识信封内部的事件类型，与 name 可能不同（如信封复用场景）。 */
   event?: ApiEnvelopeEvent
 }>

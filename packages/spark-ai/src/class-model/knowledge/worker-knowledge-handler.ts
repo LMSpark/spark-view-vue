@@ -18,8 +18,11 @@ import type {
 
 /** Create Class Model Knowledge Worker Api Options 的调用配置。 */
 export type CreateClassModelKnowledgeWorkerApiOptions = Readonly<{
+  /** 远程 JSON 获取函数，用于 Worker 内部拉取 manifest/shard；默认使用 fetch()。 */
   fetchJson?: (url: string) => Promise<unknown>
+  /** 外部编译/刷新钩子，Worker 在 refresh 时调用以触发宿主侧重新生成知识包。 */
   refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+  /** 知识包刷新策略：'never' 不自动刷新（默认），'before-first-load' 首次加载前刷新一次，'always' 每次查询前刷新。 */
   refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
 }>
 

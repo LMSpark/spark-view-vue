@@ -43,15 +43,21 @@ type AiAgentSendInput = Readonly<{
 
 /** Ai Agent Run Command 的命令参数。 */
 export type AiAgentRunCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** Host 配置（含 registry、turnCallbacks、maxToolRounds），用于创建 session 和 tool-loop。 */
   options: AiAgentOptions<TInput>
+  /** 业务注册 kindID，runAiAgent 据此从 registry 查找 AiAgentRegistration。 */
   kindID: string
+  /** 业务输入，经 inputContract.normalize 归一化后生成 task。 */
   input: TInput
+  /** 可选的额外对话选项（如额外 systemPrompt），与 task.toChatRequest 合并后传入 send。 */
   chat?: AiAgentTaskChatOptions
 }>
 
 /** Ai Agent Run Result 的返回结果。 */
 export type AiAgentRunResult<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 已构造的 task，含归一化输入、scope、编排计划和 toChatRequest 方法。 */
   task: AiAgentTask<TInput>
+  /** 已启动并完成首轮 send 的业务会话，可用于后续 send/stop/getSessionRecord。 */
   session: AiAgentSession
 }>
 

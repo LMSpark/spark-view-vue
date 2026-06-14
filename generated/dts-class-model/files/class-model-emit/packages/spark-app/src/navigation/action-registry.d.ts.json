@@ -123,7 +123,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.348Z",
+  "generatedAt": "2026-06-14T20:08:03.865Z",
   "models": {
     "NavigationActionContext": {
       "name": "NavigationActionContext",
@@ -187,11 +187,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    register(command: string, handler: NavigationActionHandler): () => void;\n    unregister(command: string): boolean;\n    has(command: string): boolean;\n    execute(command: string, context?: Omit<NavigationActionContext, 'command'>): Promise<boolean>;\n    getCommands(): string[];\n}",
+        "declarationTypeText": "{\n    /** 注册 command 到 handler 的映射；返回卸载函数，调用即反注册；重复注册会覆盖 */\n    register(command: string, handler: NavigationActionHandler): () => void;\n    /** 按 command 取消注册；返回是否实际移除（command 不存在时返回 false） */\n    unregister(command: string): boolean;\n    /** 检查 command 是否已注册 */\n    has(command: string): boolean;\n    /** 按 command 查找并执行 handler；context 会与 command 合并为完整 NavigationActionContext；未注册时返回 false */\n    execute(command: string, context?: Omit<NavigationActionContext, 'command'>): Promise<boolean>;\n    /** 返回当前所有已注册的 command 标识列表 */\n    getCommands(): string[];\n}",
         "members": {
           "methods": [
             {
               "name": "register",
+              "jsdoc": "注册 command 到 handler 的映射；返回卸载函数，调用即反注册；重复注册会覆盖",
               "parameters": [
                 {
                   "name": "command",
@@ -226,6 +227,7 @@
             },
             {
               "name": "unregister",
+              "jsdoc": "按 command 取消注册；返回是否实际移除（command 不存在时返回 false）",
               "parameters": [
                 {
                   "name": "command",
@@ -242,6 +244,7 @@
             },
             {
               "name": "has",
+              "jsdoc": "检查 command 是否已注册",
               "parameters": [
                 {
                   "name": "command",
@@ -258,6 +261,7 @@
             },
             {
               "name": "execute",
+              "jsdoc": "按 command 查找并执行 handler；context 会与 command 合并为完整 NavigationActionContext；未注册时返回 false",
               "parameters": [
                 {
                   "name": "command",
@@ -301,6 +305,7 @@
             },
             {
               "name": "getCommands",
+              "jsdoc": "返回当前所有已注册的 command 标识列表",
               "parameters": [],
               "type": {
                 "type": "array",

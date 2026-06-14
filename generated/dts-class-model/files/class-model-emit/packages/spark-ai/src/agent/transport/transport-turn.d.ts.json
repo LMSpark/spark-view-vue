@@ -32,7 +32,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.918Z",
+  "generatedAt": "2026-06-14T19:34:32.935Z",
   "models": {
     "AiAgentTransportTurn": {
       "name": "AiAgentTransportTurn",
@@ -45,11 +45,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** turn 唯一 ID（UUID），由 session 在创建 turn 时生成，跨 session 不重复。 */\n    turnId: string;\n    /** 业务复合键，格式 kind::instanceId::turnId，用于 SSE 事件路由和前端 turn 聚合。 */\n    turnKey: string;\n    /** 流式复合键，格式 turnKey::streamId，多流并发时区分同一 turn 内的不同输出流；单流场景为 undefined。 */\n    streamKey?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
+            "typeText": "Readonly<{\n    /** turn 唯一 ID（UUID），由 session 在创建 turn 时生成，跨 session 不重复。 */\n    turnId: string;\n    /** 业务复合键，格式 kind::instanceId::turnId，用于 SSE 事件路由和前端 turn 聚合。 */\n    turnKey: string;\n    /** 流式复合键，格式 turnKey::streamId，多流并发时区分同一 turn 内的不同输出流；单流场景为 undefined。 */\n    streamKey?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -57,16 +57,19 @@
           "attributes": [
             {
               "name": "turnId",
+              "jsdoc": "turn 唯一 ID（UUID），由 session 在创建 turn 时生成，跨 session 不重复。",
               "readable": true,
               "writable": false
             },
             {
               "name": "turnKey",
+              "jsdoc": "业务复合键，格式 kind::instanceId::turnId，用于 SSE 事件路由和前端 turn 聚合。",
               "readable": true,
               "writable": false
             },
             {
               "name": "streamKey",
+              "jsdoc": "流式复合键，格式 turnKey::streamId，多流并发时区分同一 turn 内的不同输出流；单流场景为 undefined。",
               "readable": true,
               "writable": false
             }

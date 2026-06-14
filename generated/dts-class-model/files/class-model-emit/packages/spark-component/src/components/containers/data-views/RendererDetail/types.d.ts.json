@@ -46,7 +46,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.381Z",
+  "generatedAt": "2026-06-14T20:02:59.322Z",
   "models": {
     "RendererDetailApi": {
       "name": "RendererDetailApi",
@@ -64,7 +64,7 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "BaseContainerApi & {\n    getDetailData(): Record<string, unknown>;\n    getFieldValue(field: string): unknown;\n}",
+        "declarationTypeText": "BaseContainerApi & {\n    /** 读取当前详情行完整数据对象；无当前行时返回空对象 */\n    getDetailData(): Record<string, unknown>;\n    /** 按字段名读取当前详情行单个字段值；字段不存在时返回 undefined */\n    getFieldValue(field: string): unknown;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -73,13 +73,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    getDetailData(): Record<string, unknown>;\n    getFieldValue(field: string): unknown;\n}"
+            "typeText": "{\n    /** 读取当前详情行完整数据对象；无当前行时返回空对象 */\n    getDetailData(): Record<string, unknown>;\n    /** 按字段名读取当前详情行单个字段值；字段不存在时返回 undefined */\n    getFieldValue(field: string): unknown;\n}"
           }
         ],
         "members": {
           "methods": [
             {
               "name": "getDetailData",
+              "jsdoc": "读取当前详情行完整数据对象；无当前行时返回空对象",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -98,6 +99,7 @@
             },
             {
               "name": "getFieldValue",
+              "jsdoc": "按字段名读取当前详情行单个字段值；字段不存在时返回 undefined",
               "parameters": [
                 {
                   "name": "field",

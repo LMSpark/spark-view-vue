@@ -177,11 +177,11 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-12T04:50:58.271Z",
+  "generatedAt": "2026-06-14T20:13:33.411Z",
   "models": {
     "PageDesignAllowedOperations": {
       "name": "PageDesignAllowedOperations",
-      "jsdoc": "Page Design Allowed Operations 的语义模型。",
+      "jsdoc": "页面设计允许的操作域：每项 true=放行 / false=硬拦截 / undefined=不限制",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
@@ -190,11 +190,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nodeTree?: boolean;\n    dataSet?: boolean;\n    script?: boolean;\n    style?: boolean;\n    navigation?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否允许读写节点树（editNodeTree / getNodeTree） */\n    nodeTree?: boolean;\n    /** 是否允许读写数据集（editDataSet / getDataSetTool） */\n    dataSet?: boolean;\n    /** 是否允许读写脚本（setFileText / getFileText / writePageFile） */\n    script?: boolean;\n    /** 是否允许读写样式（setFileText / getFileText / writePageFile） */\n    style?: boolean;\n    /** 是否允许读写导航（replaceNavigationChildren / readNavigationPlanningInputs） */\n    navigation?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nodeTree?: boolean;\n    dataSet?: boolean;\n    script?: boolean;\n    style?: boolean;\n    navigation?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 是否允许读写节点树（editNodeTree / getNodeTree） */\n    nodeTree?: boolean;\n    /** 是否允许读写数据集（editDataSet / getDataSetTool） */\n    dataSet?: boolean;\n    /** 是否允许读写脚本（setFileText / getFileText / writePageFile） */\n    script?: boolean;\n    /** 是否允许读写样式（setFileText / getFileText / writePageFile） */\n    style?: boolean;\n    /** 是否允许读写导航（replaceNavigationChildren / readNavigationPlanningInputs） */\n    navigation?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -202,26 +202,31 @@
           "attributes": [
             {
               "name": "nodeTree",
+              "jsdoc": "是否允许读写节点树（editNodeTree / getNodeTree）",
               "readable": true,
               "writable": false
             },
             {
               "name": "dataSet",
+              "jsdoc": "是否允许读写数据集（editDataSet / getDataSetTool）",
               "readable": true,
               "writable": false
             },
             {
               "name": "script",
+              "jsdoc": "是否允许读写脚本（setFileText / getFileText / writePageFile）",
               "readable": true,
               "writable": false
             },
             {
               "name": "style",
+              "jsdoc": "是否允许读写样式（setFileText / getFileText / writePageFile）",
               "readable": true,
               "writable": false
             },
             {
               "name": "navigation",
+              "jsdoc": "是否允许读写导航（replaceNavigationChildren / readNavigationPlanningInputs）",
               "readable": true,
               "writable": false
             }
@@ -231,20 +236,20 @@
     },
     "PageDesignRunContext": {
       "name": "PageDesignRunContext",
-      "jsdoc": "Page Design Run Context 的运行上下文。",
+      "jsdoc": "页面设计运行上下文：绑定到 pageId，控制本次 run 的操作域与输出约束",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 22,
+        "line": 27,
         "className": "PageDesignRunContext",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    allowedOperations?: PageDesignAllowedOperations;\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 操作域白名单，非空时 model_script 中的 API 调用受 marker 硬拦截 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** 交付阶段允许保存的文件名列表；为空时不限制输出文件范围 */\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    allowedOperations?: PageDesignAllowedOperations;\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
+            "typeText": "Readonly<{\n    /** 操作域白名单，非空时 model_script 中的 API 调用受 marker 硬拦截 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** 交付阶段允许保存的文件名列表；为空时不限制输出文件范围 */\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -252,11 +257,13 @@
           "attributes": [
             {
               "name": "allowedOperations",
+              "jsdoc": "操作域白名单，非空时 model_script 中的 API 调用受 marker 硬拦截",
               "readable": true,
               "writable": false
             },
             {
               "name": "deliverySaveFileNames",
+              "jsdoc": "交付阶段允许保存的文件名列表；为空时不限制输出文件范围",
               "readable": true,
               "writable": false
             }
@@ -270,7 +277,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 32,
+        "line": 39,
         "className": "PageDesignRunMode",
         "declarationKind": "typeAlias"
       },
@@ -299,7 +306,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 34,
+        "line": 41,
         "className": "PageDesignImplGate",
         "declarationKind": "typeAlias"
       },
@@ -320,20 +327,20 @@
     },
     "PageDesignGateState": {
       "name": "PageDesignGateState",
-      "jsdoc": "Page Design Gate State 的运行状态。",
+      "jsdoc": "页面设计闸门状态：三重校验（策划就绪 + 实现闸门 + 上游契约），全部通过才允许运行",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 36,
+        "line": 43,
         "className": "PageDesignGateState",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 页面 ID，对应 ProjectPageNodeSummary.pageId */\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    /** 实现闸门：closed=人工尚未放行 / open=已放行可执行；未声明时由 strictImplGate 决定默认值 */\n    implGate: PageDesignImplGate;\n    /** 上游数据契约（iPaaS / pagedata）是否已就绪；未声明时默认 true（过渡兼容） */\n    upstreamContractsSatisfied: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 页面 ID，对应 ProjectPageNodeSummary.pageId */\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    /** 实现闸门：closed=人工尚未放行 / open=已放行可执行；未声明时由 strictImplGate 决定默认值 */\n    implGate: PageDesignImplGate;\n    /** 上游数据契约（iPaaS / pagedata）是否已就绪；未声明时默认 true（过渡兼容） */\n    upstreamContractsSatisfied: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -341,6 +348,7 @@
           "attributes": [
             {
               "name": "pageId",
+              "jsdoc": "页面 ID，对应 ProjectPageNodeSummary.pageId",
               "readable": true,
               "writable": false
             },
@@ -352,11 +360,13 @@
             },
             {
               "name": "implGate",
+              "jsdoc": "实现闸门：closed=人工尚未放行 / open=已放行可执行；未声明时由 strictImplGate 决定默认值",
               "readable": true,
               "writable": false
             },
             {
               "name": "upstreamContractsSatisfied",
+              "jsdoc": "上游数据契约（iPaaS / pagedata）是否已就绪；未声明时默认 true（过渡兼容）",
               "readable": true,
               "writable": false
             }
@@ -370,7 +380,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 44,
+        "line": 54,
         "className": "ReadPageDesignGateStateOptions",
         "declarationKind": "typeAlias"
       },
@@ -397,20 +407,20 @@
     },
     "PageDesignGateValidationResult": {
       "name": "PageDesignGateValidationResult",
-      "jsdoc": "Page Design Gate Validation Result 的返回结果。",
+      "jsdoc": "闸门校验结果：ok=true 放行，ok=false 附带 code / reason / fix 供诊断",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 49,
+        "line": 59,
         "className": "PageDesignGateValidationResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否通过闸门校验 */\n    ok: boolean;\n    /** 闸门拒绝代码：PLANNING_DRAFT / IMPL_GATE_CLOSED / UPSTREAM_CONTRACTS_UNSATISFIED，通过时为空 */\n    code?: string;\n    /** 人类可读拒绝原因 */\n    reason?: string;\n    /** 人类可读修复建议 */\n    fix?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 是否通过闸门校验 */\n    ok: boolean;\n    /** 闸门拒绝代码：PLANNING_DRAFT / IMPL_GATE_CLOSED / UPSTREAM_CONTRACTS_UNSATISFIED，通过时为空 */\n    code?: string;\n    /** 人类可读拒绝原因 */\n    reason?: string;\n    /** 人类可读修复建议 */\n    fix?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -418,21 +428,25 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "是否通过闸门校验",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "闸门拒绝代码：PLANNING_DRAFT / IMPL_GATE_CLOSED / UPSTREAM_CONTRACTS_UNSATISFIED，通过时为空",
               "readable": true,
               "writable": false
             },
             {
               "name": "reason",
+              "jsdoc": "人类可读拒绝原因",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "人类可读修复建议",
               "readable": true,
               "writable": false
             }
@@ -442,20 +456,20 @@
     },
     "EvaluatePageDesignMutationToolGateOptions": {
       "name": "EvaluatePageDesignMutationToolGateOptions",
-      "jsdoc": "Evaluate Page Design Mutation Tool Gate Options 的调用配置。",
+      "jsdoc": "变更类工具闸门评估参数",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 59,
+        "line": 73,
         "className": "EvaluatePageDesignMutationToolGateOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n    allowedOperations?: PageDesignAllowedOperations;\n    toolArgs?: AiJsonParams;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 待评估的工具名（如 model_script / writepagefile / openpagedesign） */\n    toolName: string;\n    /** 页面摘要，用于读取闸门状态 */\n    summary: ProjectPageNodeSummary;\n    /** 运行模式：create=首次创建 / update=迭代更新 / fix=修复，当前仅影响语义标注 */\n    mode?: PageDesignRunMode;\n    /** 读取闸门状态时的配置项 */\n    gateOptions?: ReadPageDesignGateStateOptions;\n    /** 操作域白名单，非空时对 model_script 做 marker 硬拦截 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** 工具调用参数，用于提取 model_script 的 script 体做 marker 扫描 */\n    toolArgs?: AiJsonParams;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n    allowedOperations?: PageDesignAllowedOperations;\n    toolArgs?: AiJsonParams;\n}>",
+            "typeText": "Readonly<{\n    /** 待评估的工具名（如 model_script / writepagefile / openpagedesign） */\n    toolName: string;\n    /** 页面摘要，用于读取闸门状态 */\n    summary: ProjectPageNodeSummary;\n    /** 运行模式：create=首次创建 / update=迭代更新 / fix=修复，当前仅影响语义标注 */\n    mode?: PageDesignRunMode;\n    /** 读取闸门状态时的配置项 */\n    gateOptions?: ReadPageDesignGateStateOptions;\n    /** 操作域白名单，非空时对 model_script 做 marker 硬拦截 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** 工具调用参数，用于提取 model_script 的 script 体做 marker 扫描 */\n    toolArgs?: AiJsonParams;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -463,31 +477,37 @@
           "attributes": [
             {
               "name": "toolName",
+              "jsdoc": "待评估的工具名（如 model_script / writepagefile / openpagedesign）",
               "readable": true,
               "writable": false
             },
             {
               "name": "summary",
+              "jsdoc": "页面摘要，用于读取闸门状态",
               "readable": true,
               "writable": false
             },
             {
               "name": "mode",
+              "jsdoc": "运行模式：create=首次创建 / update=迭代更新 / fix=修复，当前仅影响语义标注",
               "readable": true,
               "writable": false
             },
             {
               "name": "gateOptions",
+              "jsdoc": "读取闸门状态时的配置项",
               "readable": true,
               "writable": false
             },
             {
               "name": "allowedOperations",
+              "jsdoc": "操作域白名单，非空时对 model_script 做 marker 硬拦截",
               "readable": true,
               "writable": false
             },
             {
               "name": "toolArgs",
+              "jsdoc": "工具调用参数，用于提取 model_script 的 script 体做 marker 扫描",
               "readable": true,
               "writable": false
             }
@@ -497,20 +517,20 @@
     },
     "EvaluatePageDesignScriptOperationGateOptions": {
       "name": "EvaluatePageDesignScriptOperationGateOptions",
-      "jsdoc": "Evaluate Page Design Script Operation Gate Options 的调用配置。",
+      "jsdoc": "model_script 操作域闸门评估参数（仅针对 model_script 工具的 script 体 marker 扫描）",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
-        "line": 69,
+        "line": 89,
         "className": "EvaluatePageDesignScriptOperationGateOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    toolName: string;\n    args?: AiJsonParams;\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具名，仅 normalize 后为 model_script 时才执行 marker 扫描 */\n    toolName: string;\n    /** 工具调用参数，用于提取 script 字段做 marker 扫描 */\n    args?: AiJsonParams;\n    /** 操作域白名单，非空时对 script 中的 API 调用做 marker 硬拦截 */\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    toolName: string;\n    args?: AiJsonParams;\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
+            "typeText": "Readonly<{\n    /** 工具名，仅 normalize 后为 model_script 时才执行 marker 扫描 */\n    toolName: string;\n    /** 工具调用参数，用于提取 script 字段做 marker 扫描 */\n    args?: AiJsonParams;\n    /** 操作域白名单，非空时对 script 中的 API 调用做 marker 硬拦截 */\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -518,16 +538,19 @@
           "attributes": [
             {
               "name": "toolName",
+              "jsdoc": "工具名，仅 normalize 后为 model_script 时才执行 marker 扫描",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "工具调用参数，用于提取 script 字段做 marker 扫描",
               "readable": true,
               "writable": false
             },
             {
               "name": "allowedOperations",
+              "jsdoc": "操作域白名单，非空时对 script 中的 API 调用做 marker 硬拦截",
               "readable": true,
               "writable": false
             }

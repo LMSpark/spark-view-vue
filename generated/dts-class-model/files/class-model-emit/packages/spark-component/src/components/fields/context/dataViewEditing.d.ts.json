@@ -188,7 +188,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.524Z",
+  "generatedAt": "2026-06-14T18:49:28.159Z",
   "models": {
     "DataViewEditingEventName": {
       "name": "DataViewEditingEventName",

@@ -8,6 +8,8 @@ import type { ToolApprovalDisplayItem } from '../types'
 
 /** Ai Tool Approval Panel Props 的属性契约。 */
 export type AiToolApprovalPanelProps = Readonly<{
+  /** 当前等待用户审批的工具调用列表；用户 allow/reject/abort 后由消费方从数组中移除对应项 */
   pending: readonly ToolApprovalDisplayItem[]
+  /** 无待审批项时的占位文案，未设置时使用组件默认文案 */
   emptyText?: string
 }>

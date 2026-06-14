@@ -47,7 +47,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.863Z",
+  "generatedAt": "2026-06-14T19:55:25.768Z",
   "models": {
     "ClassModelToolSpec": {
       "name": "ClassModelToolSpec",
@@ -60,11 +60,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具类型，固定为 'function'，对齐 OpenAI function calling 协议。 */\n    type: 'function';\n    /** 工具定义：name 为 ClassModelToolName 枚举值，description 面向 LLM，parameters 为 Draft 2020-12 JSON Schema。 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
+            "typeText": "Readonly<{\n    /** 工具类型，固定为 'function'，对齐 OpenAI function calling 协议。 */\n    type: 'function';\n    /** 工具定义：name 为 ClassModelToolName 枚举值，description 面向 LLM，parameters 为 Draft 2020-12 JSON Schema。 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -72,11 +72,13 @@
           "attributes": [
             {
               "name": "type",
+              "jsdoc": "工具类型，固定为 'function'，对齐 OpenAI function calling 协议。",
               "readable": true,
               "writable": false
             },
             {
               "name": "function",
+              "jsdoc": "工具定义：name 为 ClassModelToolName 枚举值，description 面向 LLM，parameters 为 Draft 2020-12 JSON Schema。",
               "readable": true,
               "writable": false
             }

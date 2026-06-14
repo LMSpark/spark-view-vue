@@ -380,7 +380,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.043Z",
+  "generatedAt": "2026-06-14T20:21:20.963Z",
   "models": {
     "JsonNodeType": {
       "name": "JsonNodeType",
@@ -611,11 +611,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    model: TreeModel;\n    uid: string;\n    nextKeyInput: string;\n    policy?: Partial<JsonTreePolicy>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 待操作的目标树模型；函数返回新的不可变模型，不修改原实例。 */\n    model: TreeModel;\n    /** 目标节点的 UUID。 */\n    uid: string;\n    /** 重命名后的新键名。 */\n    nextKeyInput: string;\n    /** 变更策略约束；可覆盖 canEditKey、isProtected 等默认行为。 */\n    policy?: Partial<JsonTreePolicy>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    model: TreeModel;\n    uid: string;\n    nextKeyInput: string;\n    policy?: Partial<JsonTreePolicy>;\n}>",
+            "typeText": "Readonly<{\n    /** 待操作的目标树模型；函数返回新的不可变模型，不修改原实例。 */\n    model: TreeModel;\n    /** 目标节点的 UUID。 */\n    uid: string;\n    /** 重命名后的新键名。 */\n    nextKeyInput: string;\n    /** 变更策略约束；可覆盖 canEditKey、isProtected 等默认行为。 */\n    policy?: Partial<JsonTreePolicy>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -623,21 +623,25 @@
           "attributes": [
             {
               "name": "model",
+              "jsdoc": "待操作的目标树模型；函数返回新的不可变模型，不修改原实例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "uid",
+              "jsdoc": "目标节点的 UUID。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nextKeyInput",
+              "jsdoc": "重命名后的新键名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "policy",
+              "jsdoc": "变更策略约束；可覆盖 canEditKey、isProtected 等默认行为。",
               "readable": true,
               "writable": false
             }
@@ -651,16 +655,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/tree/tree-types.d.ts",
-        "line": 64,
+        "line": 68,
         "className": "UpdateNodeTypeInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    model: TreeModel;\n    uid: string;\n    nextType: JsonNodeType;\n    policy?: Partial<JsonTreePolicy>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 待操作的目标树模型；函数返回新的不可变模型，不修改原实例。 */\n    model: TreeModel;\n    /** 目标节点的 UUID。 */\n    uid: string;\n    /** 要切换到的目标类型；类型转换会按规则重置 value。 */\n    nextType: JsonNodeType;\n    /** 变更策略约束；可覆盖 canEditType、isProtected 等默认行为。 */\n    policy?: Partial<JsonTreePolicy>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    model: TreeModel;\n    uid: string;\n    nextType: JsonNodeType;\n    policy?: Partial<JsonTreePolicy>;\n}>",
+            "typeText": "Readonly<{\n    /** 待操作的目标树模型；函数返回新的不可变模型，不修改原实例。 */\n    model: TreeModel;\n    /** 目标节点的 UUID。 */\n    uid: string;\n    /** 要切换到的目标类型；类型转换会按规则重置 value。 */\n    nextType: JsonNodeType;\n    /** 变更策略约束；可覆盖 canEditType、isProtected 等默认行为。 */\n    policy?: Partial<JsonTreePolicy>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -668,21 +672,25 @@
           "attributes": [
             {
               "name": "model",
+              "jsdoc": "待操作的目标树模型；函数返回新的不可变模型，不修改原实例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "uid",
+              "jsdoc": "目标节点的 UUID。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nextType",
+              "jsdoc": "要切换到的目标类型；类型转换会按规则重置 value。",
               "readable": true,
               "writable": false
             },
             {
               "name": "policy",
+              "jsdoc": "变更策略约束；可覆盖 canEditType、isProtected 等默认行为。",
               "readable": true,
               "writable": false
             }
@@ -696,7 +704,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/tree/tree-types.d.ts",
-        "line": 71,
+        "line": 79,
         "className": "JsonTreePolicy",
         "declarationKind": "typeAlias"
       },
@@ -928,7 +936,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/tree/tree-types.d.ts",
-        "line": 102,
+        "line": 110,
         "className": "AutoPopulateEntry",
         "declarationKind": "typeAlias"
       },
@@ -958,7 +966,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/tree/tree-types.d.ts",
-        "line": 109,
+        "line": 117,
         "className": "FlatJsonTreeDocument",
         "declarationKind": "typeAlias"
       },

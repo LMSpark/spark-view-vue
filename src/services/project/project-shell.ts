@@ -24,6 +24,7 @@ import { createAuthHeaders, http } from '@/services/http'
 
 /** Project Switch Service 的语义模型。 */
 export type ProjectSwitchService = {
+  /** 切换到指定项目并刷新壳层导航；projectId 为目标项目标识，切换后会重新加载路由和 ProjectWorkspace。 */
   switchAndReload(projectId: string): Promise<void>
 }
 
@@ -72,7 +73,9 @@ export function readAppProjectNavigationRoot(): ProjectModelData | null {
 
 /** Project Workspace Scope 的语义模型。 */
 export type ProjectWorkspaceScope = {
+  /** 租户 ID，用于多租户 API 隔离；作为 ProjectWorkspace 缓存键的一部分（tenantId:projectId）。 */
   tenantId: string
+  /** 项目 ID，标识 ProjectWorkspace 绑定的项目；未提供时回退到用户默认项目或 'homepage'。 */
   projectId: string
 }
 

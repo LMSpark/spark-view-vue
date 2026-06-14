@@ -23,6 +23,7 @@ type JsonSchemaObject = Readonly<Record<string, unknown>>
 
 /** Resolve Runtime API Metadata Json Options 的调用配置。 */
 export type ResolveRuntimeApiMetadataJsonOptions = Readonly<{
+  /** 可供 $ref 内联的外部 JSON Schema 定义集；键为 $ref 路径（如 "#/$defs/Foo"），值为对应 Schema 对象。仅在 inlineSchemaRefs=true 时消费 */
   schemaDefs?: Readonly<Record<string, JsonSchemaObject>>
   /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */
   inlineSchemaRefs?: boolean

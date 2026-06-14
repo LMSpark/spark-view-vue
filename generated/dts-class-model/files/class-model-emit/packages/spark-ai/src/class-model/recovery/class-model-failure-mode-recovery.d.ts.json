@@ -61,7 +61,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.849Z",
+  "generatedAt": "2026-06-14T20:06:51.010Z",
   "models": {
     "ClassModelFailureModeRecoveryCommand": {
       "name": "ClassModelFailureModeRecoveryCommand",
@@ -74,11 +74,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    moduleInstanceId?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 触发恢复的动作调用返回结果，code 用于匹配 failureMode.code，msg 用于 when 条件文本匹配 */\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    /** 模块实例 ID（如页面 ID），用于将 fix 模板中的 <pageId> 占位符替换为实际值 */\n    moduleInstanceId?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    moduleInstanceId?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 触发恢复的动作调用返回结果，code 用于匹配 failureMode.code，msg 用于 when 条件文本匹配 */\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    /** 模块实例 ID（如页面 ID），用于将 fix 模板中的 <pageId> 占位符替换为实际值 */\n    moduleInstanceId?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -86,11 +86,13 @@
           "attributes": [
             {
               "name": "callResult",
+              "jsdoc": "触发恢复的动作调用返回结果，code 用于匹配 failureMode.code，msg 用于 when 条件文本匹配",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
+              "jsdoc": "模块实例 ID（如页面 ID），用于将 fix 模板中的 <pageId> 占位符替换为实际值",
               "readable": true,
               "writable": false
             }
@@ -104,16 +106,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts",
-        "line": 23,
+        "line": 25,
         "className": "ClassModelFailureModeRecoveryContext",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    kind: string;\n    actionName: string;\n    mode: AiApiActionFailureMode;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** API 对象的 kind 标识，用于定位失败动作所属的 ClassModel API 类别 */\n    kind: string;\n    /** 失败动作名称，用于在 recovery hint 中反查 model_action_guide */\n    actionName: string;\n    /** 匹配到的失败模式定义，含 code/when/fix 等字段，驱动 hint 生成 */\n    mode: AiApiActionFailureMode;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    kind: string;\n    actionName: string;\n    mode: AiApiActionFailureMode;\n}>",
+            "typeText": "Readonly<{\n    /** API 对象的 kind 标识，用于定位失败动作所属的 ClassModel API 类别 */\n    kind: string;\n    /** 失败动作名称，用于在 recovery hint 中反查 model_action_guide */\n    actionName: string;\n    /** 匹配到的失败模式定义，含 code/when/fix 等字段，驱动 hint 生成 */\n    mode: AiApiActionFailureMode;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -121,16 +123,19 @@
           "attributes": [
             {
               "name": "kind",
+              "jsdoc": "API 对象的 kind 标识，用于定位失败动作所属的 ClassModel API 类别",
               "readable": true,
               "writable": false
             },
             {
               "name": "actionName",
+              "jsdoc": "失败动作名称，用于在 recovery hint 中反查 model_action_guide",
               "readable": true,
               "writable": false
             },
             {
               "name": "mode",
+              "jsdoc": "匹配到的失败模式定义，含 code/when/fix 等字段，驱动 hint 生成",
               "readable": true,
               "writable": false
             }

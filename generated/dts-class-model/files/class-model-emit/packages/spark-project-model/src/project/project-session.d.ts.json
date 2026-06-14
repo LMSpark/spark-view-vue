@@ -209,7 +209,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.629Z",
+  "generatedAt": "2026-06-14T20:06:39.869Z",
   "models": {
     "ProjectSessionState": {
       "name": "ProjectSessionState",
@@ -264,11 +264,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    findNodeById(nodeId: string): ProjectNode | null;\n    findConfigPageByPageId(pageId: string): ConfigPageNode | null;\n}",
+        "declarationTypeText": "{\n    /** 按 nodeId 在导航树中查找项目节点；未找到返回 null */\n    findNodeById(nodeId: string): ProjectNode | null;\n    /** 按 pageId 查找已加载的配置页节点；仅返回已 hydrate 的 ConfigPageNode，未找到返回 null */\n    findConfigPageByPageId(pageId: string): ConfigPageNode | null;\n}",
         "members": {
           "methods": [
             {
               "name": "findNodeById",
+              "jsdoc": "按 nodeId 在导航树中查找项目节点；未找到返回 null",
               "parameters": [
                 {
                   "name": "nodeId",
@@ -295,6 +296,7 @@
             },
             {
               "name": "findConfigPageByPageId",
+              "jsdoc": "按 pageId 查找已加载的配置页节点；仅返回已 hydrate 的 ConfigPageNode，未找到返回 null",
               "parameters": [
                 {
                   "name": "pageId",
@@ -329,7 +331,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/project/project-session.d.ts",
-        "line": 30,
+        "line": 32,
         "className": "ProjectSession",
         "declarationKind": "class"
       },

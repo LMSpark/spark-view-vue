@@ -55,7 +55,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T01:09:41.824Z",
+  "generatedAt": "2026-06-14T20:06:15.642Z",
   "models": {
     "DtsNativeScriptRunCommand": {
       "name": "DtsNativeScriptRunCommand",
@@ -68,11 +68,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 脚本执行时 this 绑定的业务根实例；DTS 模型中 rootClassName 对应的运行时对象 */\n    instance: TInstance;\n    /** DTS ClassModel bundle 分片的 manifest.json 远程地址，用于加载元数据 */\n    manifestUrl: string;\n    /** 业务根 className，与 manifest 中的模型声明对应，决定 API 元数据投影起点 */\n    rootClassName: string;\n    /** 可选宿主上下文；提供运行时路径段和宿主回调，为脚本提供 sandbox 外部桥接 */\n    host?: AiAgentRuntimeHostContext;\n    /** 自定义远程 JSON 资源获取函数；未提供时使用内置默认 fetch */\n    fetchJson?: (url: string) => Promise<unknown>;\n    /** 待执行的 JavaScript async function body 字符串；禁止含 TypeScript/JSX/import/export 或函数包裹 */\n    script: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
+            "typeText": "Readonly<{\n    /** 脚本执行时 this 绑定的业务根实例；DTS 模型中 rootClassName 对应的运行时对象 */\n    instance: TInstance;\n    /** DTS ClassModel bundle 分片的 manifest.json 远程地址，用于加载元数据 */\n    manifestUrl: string;\n    /** 业务根 className，与 manifest 中的模型声明对应，决定 API 元数据投影起点 */\n    rootClassName: string;\n    /** 可选宿主上下文；提供运行时路径段和宿主回调，为脚本提供 sandbox 外部桥接 */\n    host?: AiAgentRuntimeHostContext;\n    /** 自定义远程 JSON 资源获取函数；未提供时使用内置默认 fetch */\n    fetchJson?: (url: string) => Promise<unknown>;\n    /** 待执行的 JavaScript async function body 字符串；禁止含 TypeScript/JSX/import/export 或函数包裹 */\n    script: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -80,26 +80,31 @@
           "attributes": [
             {
               "name": "instance",
+              "jsdoc": "脚本执行时 this 绑定的业务根实例；DTS 模型中 rootClassName 对应的运行时对象",
               "readable": true,
               "writable": false
             },
             {
               "name": "manifestUrl",
+              "jsdoc": "DTS ClassModel bundle 分片的 manifest.json 远程地址，用于加载元数据",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootClassName",
+              "jsdoc": "业务根 className，与 manifest 中的模型声明对应，决定 API 元数据投影起点",
               "readable": true,
               "writable": false
             },
             {
               "name": "host",
+              "jsdoc": "可选宿主上下文；提供运行时路径段和宿主回调，为脚本提供 sandbox 外部桥接",
               "readable": true,
               "writable": false
             },
             {
               "name": "script",
+              "jsdoc": "待执行的 JavaScript async function body 字符串；禁止含 TypeScript/JSX/import/export 或函数包裹",
               "readable": true,
               "writable": false
             }
@@ -107,6 +112,7 @@
           "methods": [
             {
               "name": "fetchJson",
+              "jsdoc": "自定义远程 JSON 资源获取函数；未提供时使用内置默认 fetch",
               "parameters": [
                 {
                   "name": "url",

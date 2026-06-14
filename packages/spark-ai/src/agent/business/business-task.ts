@@ -25,23 +25,33 @@ type AiAgentTaskInput = Readonly<Record<string, AiJsonValue>>
 
 /** 编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤 */
 export type AiAgentOrchestrationPlan = Readonly<{
+  /** 发送给 LLM 的用户消息，作为对话首条 user role 内容；createAiAgentTask 校验非空。 */
   userMessage: string
+  /** 业务级系统提示，与注册 systemPrompt、额外 systemPrompt 拼接后作为 LLM system 消息；createAiAgentTask 校验非空。 */
   systemPrompt: string
+  /** 可选的 turn 标题，用于前端展示当前轮次的业务语义。 */
   title?: string
+  /** 只读步骤列表；前端可展示为进度指引，tool-loop 不依赖此字段执行。 */
   readonlySteps?: readonly string[]
 }>
 
 /** 输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成 */
 export type AiAgentInputContract<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 输入参数的 JSON Schema；createAiAgentTask 在 normalize 前后各校验一次，确保归一化结果仍合法。 */
   paramsSchema: AiJsonSchemaObject
+  /** 业务实体标识字段名；其值用于生成 scope.businessInstanceId，需为 TInput 中的非空字符串键。 */
   identityField: keyof TInput & string
+  /** 将原始输入归一化为 TInput；业务方可在此做类型转换、默认值填充、字段重命名。 */
   normalize(input: AiJsonParams): TInput
+  /** 从归一化输入生成业务 scope；返回的 businessRegistrationId 必须等于 kindID，否则 createAiAgentTask 抛错。 */
   toScope(normalizedInput: TInput): AiAgentScope
+  /** 从归一化输入生成编排计划；返回的 userMessage 和 systemPrompt 不允许为空串。 */
   toOrchestration(normalizedInput: TInput): AiAgentOrchestrationPlan
 }>
 
 /** Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成） */
 export type AiAgentTaskChatOptions = Omit<AiAgentChatRequest, 'historyMsgs' | 'systemPrompt'> & Readonly<{
+  /** 额外系统提示片段，与业务 systemPrompt 和编排 systemPrompt 拼接；不传则不拼接。 */
   systemPrompt?: string
 }>
 
@@ -51,6 +61,7 @@ export type AiAgentTaskChatOptions = Omit<AiAgentChatRequest, 'historyMsgs' | 's
 
 /** 任务注册表查找接口 */
 type AiAgentTaskRegistry<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 按 kindID 查找已注册业务；未找到时返回 undefined，调用方据此抛错。 */
   get(kindID: string): AiAgentRegistration<TInput> | undefined
 }>
 

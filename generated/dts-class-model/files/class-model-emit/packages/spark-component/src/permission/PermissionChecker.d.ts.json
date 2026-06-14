@@ -34,7 +34,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.996Z",
+  "generatedAt": "2026-06-14T20:19:40.339Z",
   "models": {
     "FieldMaskInput": {
       "name": "FieldMaskInput",
@@ -47,11 +47,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 待脱敏的字段名。 */\n    field: string;\n    /** 字段原始值；脱敏规则按字段名和值类型自动选择（手机号/身份证/邮箱/银行卡/通用）。 */\n    value: unknown;\n    /** 数据行（用于读取 _perm.hiddenFields / _perm.maskedFields 判断可见性）。 */\n    row: DataRow;\n    /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 待脱敏的字段名。 */\n    field: string;\n    /** 字段原始值；脱敏规则按字段名和值类型自动选择（手机号/身份证/邮箱/银行卡/通用）。 */\n    value: unknown;\n    /** 数据行（用于读取 _perm.hiddenFields / _perm.maskedFields 判断可见性）。 */\n    row: DataRow;\n    /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -59,21 +59,25 @@
           "attributes": [
             {
               "name": "field",
+              "jsdoc": "待脱敏的字段名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "value",
+              "jsdoc": "字段原始值；脱敏规则按字段名和值类型自动选择（手机号/身份证/邮箱/银行卡/通用）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "row",
+              "jsdoc": "数据行（用于读取 _perm.hiddenFields / _perm.maskedFields 判断可见性）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "permissionMode",
+              "jsdoc": "权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。",
               "readable": true,
               "writable": false
             }

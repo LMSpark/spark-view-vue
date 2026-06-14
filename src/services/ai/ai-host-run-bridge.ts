@@ -34,8 +34,11 @@ import { readAiDeliveryErrorExtras } from '@/services/ai/ai-delivery-port'
 
 /** Ai Host Run Target 的语义模型。 */
 export type AiHostRunTarget = Readonly<{
+  /** 检查指定 alias 是否已注册可执行的业务能力。 */
   has(alias: string): boolean
+  /** 预校验：验证参数 schema 和能力可执行性，不触发实际 LLM 调用。 */
   dryRun(alias: string, args: unknown): AiAgentHostDryRunResult
+  /** 执行完整的 Host Run：调用 LLM、执行 tool loop、返回会话结果。 */
   run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>
 }>
 
@@ -47,14 +50,19 @@ export type AiHostRunPrepare<THost extends AiHostRunTarget = AiHostRunTarget> = 
 
 /** Ai Host Run Bridge Options 的调用配置。 */
 export type AiHostRunBridgeOptions<THost extends AiHostRunTarget = AiHostRunTarget> = Readonly<{
+  /** 底层 Host 实例；提供 has/dryRun/run 的业务能力调用。 */
   host: THost
+  /** 运行前准备钩子；可拦截请求并替换/增强 host（如绑定编辑器上下文）。 */
   prepareRun?: AiHostRunPrepare<THost>
+  /** 单次 Host Run 默认超时时间（毫秒）；缺省 300000（5 分钟）。 */
   defaultTimeoutMs?: number
+  /** 最大并行执行数；超过时新请求直接返回 busy，缺省 4。 */
   maxParallelRuns?: number
 }>
 
 /** Ai Host Run Bridge 的语义模型。 */
 export type AiHostRunBridge = Readonly<{
+  /** 启动 SSE 请求监听；返回取消函数，调用即停止监听。 */
   start(): () => void
 }>
 

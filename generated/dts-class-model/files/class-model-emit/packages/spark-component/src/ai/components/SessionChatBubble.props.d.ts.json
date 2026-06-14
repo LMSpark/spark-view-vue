@@ -40,7 +40,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.367Z",
+  "generatedAt": "2026-06-14T20:18:20.288Z",
   "models": {
     "SessionChatBubbleProps": {
       "name": "SessionChatBubbleProps",
@@ -54,11 +54,11 @@
         "componentName": "SessionChatBubble"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 消息角色：user=用户输入，assistant=AI 回复，system=系统通知，error=错误展示。 */\n    role: 'user' | 'assistant' | 'system' | 'error';\n    /** 消息正文内容。 */\n    content: string;\n    /** 消息发送时间的 Unix 毫秒时间戳。 */\n    timestamp?: number;\n    /** 是否正在流式输出中（显示打字动画）。 */\n    isTyping?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 消息角色：user=用户输入，assistant=AI 回复，system=系统通知，error=错误展示。 */\n    role: 'user' | 'assistant' | 'system' | 'error';\n    /** 消息正文内容。 */\n    content: string;\n    /** 消息发送时间的 Unix 毫秒时间戳。 */\n    timestamp?: number;\n    /** 是否正在流式输出中（显示打字动画）。 */\n    isTyping?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -66,21 +66,25 @@
           "attributes": [
             {
               "name": "role",
+              "jsdoc": "消息角色：user=用户输入，assistant=AI 回复，system=系统通知，error=错误展示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "content",
+              "jsdoc": "消息正文内容。",
               "readable": true,
               "writable": false
             },
             {
               "name": "timestamp",
+              "jsdoc": "消息发送时间的 Unix 毫秒时间戳。",
               "readable": true,
               "writable": false
             },
             {
               "name": "isTyping",
+              "jsdoc": "是否正在流式输出中（显示打字动画）。",
               "readable": true,
               "writable": false
             }

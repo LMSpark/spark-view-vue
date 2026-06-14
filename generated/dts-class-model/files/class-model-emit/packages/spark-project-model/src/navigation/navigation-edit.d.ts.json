@@ -250,7 +250,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-12T04:50:58.318Z",
+  "generatedAt": "2026-06-14T19:57:18.357Z",
   "models": {
     "NavigationNodeDraftNode": {
       "name": "NavigationNodeDraftNode",
@@ -550,7 +550,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    applyNavigationPatch(patch: ProjectNodeNavigationPatch): void;\n}",
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** 将导航补丁应用到目标节点；修改节点的可编辑字段（title/icon/path/hidden 等），但不改变 id 和树结构 */\n    applyNavigationPatch(patch: ProjectNodeNavigationPatch): void;\n}",
         "members": {
           "attributes": [
             {
@@ -563,6 +563,7 @@
           "methods": [
             {
               "name": "applyNavigationPatch",
+              "jsdoc": "将导航补丁应用到目标节点；修改节点的可编辑字段（title/icon/path/hidden 等），但不改变 id 和树结构",
               "parameters": [
                 {
                   "name": "patch",

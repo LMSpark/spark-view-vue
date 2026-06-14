@@ -108,7 +108,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-12T00:59:06.578Z",
+  "generatedAt": "2026-06-14T20:22:47.950Z",
   "models": {
     "AiHostRunTarget": {
       "name": "AiHostRunTarget",
@@ -121,11 +121,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 检查指定 alias 是否已注册可执行的业务能力。 */\n    has(alias: string): boolean;\n    /** 预校验：验证参数 schema 和能力可执行性，不触发实际 LLM 调用。 */\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    /** 执行完整的 Host Run：调用 LLM、执行 tool loop、返回会话结果。 */\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+            "typeText": "Readonly<{\n    /** 检查指定 alias 是否已注册可执行的业务能力。 */\n    has(alias: string): boolean;\n    /** 预校验：验证参数 schema 和能力可执行性，不触发实际 LLM 调用。 */\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    /** 执行完整的 Host Run：调用 LLM、执行 tool loop、返回会话结果。 */\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -133,6 +133,7 @@
           "methods": [
             {
               "name": "has",
+              "jsdoc": "检查指定 alias 是否已注册可执行的业务能力。",
               "parameters": [
                 {
                   "name": "alias",
@@ -149,6 +150,7 @@
             },
             {
               "name": "dryRun",
+              "jsdoc": "预校验：验证参数 schema 和能力可执行性，不触发实际 LLM 调用。",
               "parameters": [
                 {
                   "name": "alias",
@@ -172,6 +174,7 @@
             },
             {
               "name": "run",
+              "jsdoc": "执行完整的 Host Run：调用 LLM、执行 tool loop、返回会话结果。",
               "parameters": [
                 {
                   "name": "alias",
@@ -219,7 +222,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
-        "line": 24,
+        "line": 27,
         "className": "AiHostRunPrepare",
         "declarationKind": "typeAlias"
       },
@@ -234,16 +237,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
-        "line": 26,
+        "line": 29,
         "className": "AiHostRunBridgeOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 底层 Host 实例；提供 has/dryRun/run 的业务能力调用。 */\n    host: THost;\n    /** 运行前准备钩子；可拦截请求并替换/增强 host（如绑定编辑器上下文）。 */\n    prepareRun?: AiHostRunPrepare<THost>;\n    /** 单次 Host Run 默认超时时间（毫秒）；缺省 300000（5 分钟）。 */\n    defaultTimeoutMs?: number;\n    /** 最大并行执行数；超过时新请求直接返回 busy，缺省 4。 */\n    maxParallelRuns?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
+            "typeText": "Readonly<{\n    /** 底层 Host 实例；提供 has/dryRun/run 的业务能力调用。 */\n    host: THost;\n    /** 运行前准备钩子；可拦截请求并替换/增强 host（如绑定编辑器上下文）。 */\n    prepareRun?: AiHostRunPrepare<THost>;\n    /** 单次 Host Run 默认超时时间（毫秒）；缺省 300000（5 分钟）。 */\n    defaultTimeoutMs?: number;\n    /** 最大并行执行数；超过时新请求直接返回 busy，缺省 4。 */\n    maxParallelRuns?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -251,21 +254,25 @@
           "attributes": [
             {
               "name": "host",
+              "jsdoc": "底层 Host 实例；提供 has/dryRun/run 的业务能力调用。",
               "readable": true,
               "writable": false
             },
             {
               "name": "prepareRun",
+              "jsdoc": "运行前准备钩子；可拦截请求并替换/增强 host（如绑定编辑器上下文）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "defaultTimeoutMs",
+              "jsdoc": "单次 Host Run 默认超时时间（毫秒）；缺省 300000（5 分钟）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "maxParallelRuns",
+              "jsdoc": "最大并行执行数；超过时新请求直接返回 busy，缺省 4。",
               "readable": true,
               "writable": false
             }
@@ -279,16 +286,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
-        "line": 33,
+        "line": 40,
         "className": "AiHostRunBridge",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    start(): () => void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 启动 SSE 请求监听；返回取消函数，调用即停止监听。 */\n    start(): () => void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    start(): () => void;\n}>",
+            "typeText": "Readonly<{\n    /** 启动 SSE 请求监听；返回取消函数，调用即停止监听。 */\n    start(): () => void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -296,6 +303,7 @@
           "methods": [
             {
               "name": "start",
+              "jsdoc": "启动 SSE 请求监听；返回取消函数，调用即停止监听。",
               "parameters": [],
               "type": {
                 "type": "reflection",

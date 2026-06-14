@@ -418,7 +418,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T13:57:55.658Z",
+  "generatedAt": "2026-06-14T20:11:55.085Z",
   "models": {
     "CreateAiAgentHostOptions": {
       "name": "CreateAiAgentHostOptions",
@@ -431,11 +431,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** APP 层 I/O 回调：spark-ai 通过此接口执行 turn、追加消息，不自行发起网络请求 */\n    turnCallbacks: AiAgentTurnCallbacks;\n    /** 单次 run 中工具循环最大轮数安全阀，超出后强制终止；省略则使用 spark-ai 内部默认值 */\n    maxToolRounds?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+            "typeText": "Readonly<{\n    /** APP 层 I/O 回调：spark-ai 通过此接口执行 turn、追加消息，不自行发起网络请求 */\n    turnCallbacks: AiAgentTurnCallbacks;\n    /** 单次 run 中工具循环最大轮数安全阀，超出后强制终止；省略则使用 spark-ai 内部默认值 */\n    maxToolRounds?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -443,11 +443,13 @@
           "attributes": [
             {
               "name": "turnCallbacks",
+              "jsdoc": "APP 层 I/O 回调：spark-ai 通过此接口执行 turn、追加消息，不自行发起网络请求",
               "readable": true,
               "writable": false
             },
             {
               "name": "maxToolRounds",
+              "jsdoc": "单次 run 中工具循环最大轮数安全阀，超出后强制终止；省略则使用 spark-ai 内部默认值",
               "readable": true,
               "writable": false
             }
@@ -461,16 +463,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 21,
+        "line": 23,
         "className": "AiAgentHostRunResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    task: AiAgentTask;\n    session: AiAgentSession;\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 本次 run 创建的任务描述（含 scope、orchestration、normalizedInput） */\n    task: AiAgentTask;\n    /** 本次 run 创建的会话（持有 turn 交互历史与 sessionStore） */\n    session: AiAgentSession;\n    /** 业务层扩展数据，由具体业务在 run 完成后注入额外结果（如生成文件路径等） */\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    task: AiAgentTask;\n    session: AiAgentSession;\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
+            "typeText": "Readonly<{\n    /** 本次 run 创建的任务描述（含 scope、orchestration、normalizedInput） */\n    task: AiAgentTask;\n    /** 本次 run 创建的会话（持有 turn 交互历史与 sessionStore） */\n    session: AiAgentSession;\n    /** 业务层扩展数据，由具体业务在 run 完成后注入额外结果（如生成文件路径等） */\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -478,16 +480,19 @@
           "attributes": [
             {
               "name": "task",
+              "jsdoc": "本次 run 创建的任务描述（含 scope、orchestration、normalizedInput）",
               "readable": true,
               "writable": false
             },
             {
               "name": "session",
+              "jsdoc": "本次 run 创建的会话（持有 turn 交互历史与 sessionStore）",
               "readable": true,
               "writable": false
             },
             {
               "name": "resultExtras",
+              "jsdoc": "业务层扩展数据，由具体业务在 run 完成后注入额外结果（如生成文件路径等）",
               "readable": true,
               "writable": false
             }
@@ -501,7 +506,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 27,
+        "line": 32,
         "className": "AiAgentHostEntryMap",
         "declarationKind": "typeAlias"
       },
@@ -523,7 +528,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 29,
+        "line": 34,
         "className": "AiAgentHostRegistrationInput",
         "declarationKind": "typeAlias"
       },
@@ -538,16 +543,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 31,
+        "line": 36,
         "className": "AiAgentHostEnsureCommand",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleId: string;\n    create: () => AiAgentRegistration<TInput>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 延迟创建的 registration 所属业务模块标识，必须与 create() 返回的 registration.moduleId 一致 */\n    moduleId: string;\n    /** 延迟工厂：仅在 alias 不存在时调用，返回的 registration.moduleId 必须与命令的 moduleId 匹配 */\n    create: () => AiAgentRegistration<TInput>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleId: string;\n    create: () => AiAgentRegistration<TInput>;\n}>",
+            "typeText": "Readonly<{\n    /** 延迟创建的 registration 所属业务模块标识，必须与 create() 返回的 registration.moduleId 一致 */\n    moduleId: string;\n    /** 延迟工厂：仅在 alias 不存在时调用，返回的 registration.moduleId 必须与命令的 moduleId 匹配 */\n    create: () => AiAgentRegistration<TInput>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -555,6 +560,7 @@
           "attributes": [
             {
               "name": "moduleId",
+              "jsdoc": "延迟创建的 registration 所属业务模块标识，必须与 create() 返回的 registration.moduleId 一致",
               "readable": true,
               "writable": false
             }
@@ -562,6 +568,7 @@
           "methods": [
             {
               "name": "create",
+              "jsdoc": "延迟工厂：仅在 alias 不存在时调用，返回的 registration.moduleId 必须与命令的 moduleId 匹配",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -582,20 +589,20 @@
     },
     "AiAgentHostRegistrationSummary": {
       "name": "AiAgentHostRegistrationSummary",
-      "jsdoc": "Ai Agent Host Registration Summary 的语义模型。",
+      "jsdoc": "已注册业务的摘要信息，用于 listRegistrations() 输出和启动日志",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 36,
+        "line": 43,
         "className": "AiAgentHostRegistrationSummary",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    alias: string;\n    moduleId: string;\n    name: string;\n    description: string;\n    rootKinds: readonly string[];\n    moduleCount: number;\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务注册别名，Host.run() 通过此别名查找并调度业务 */\n    alias: string;\n    /** 业务模块标识，对应 registry 中的唯一 key */\n    moduleId: string;\n    /** 业务人类可读名称 */\n    name: string;\n    /** 业务人类可读描述 */\n    description: string;\n    /** runtime inspect 检测到的根类型 kind 列表（如 class / interface / enum） */\n    rootKinds: readonly string[];\n    /** runtime inspect 检测到的模块数量（含子模块） */\n    moduleCount: number;\n    /** runtime inspect 状态：healthy / degraded / broken，反映 ClassModel 工具是否完整可用 */\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    alias: string;\n    moduleId: string;\n    name: string;\n    description: string;\n    rootKinds: readonly string[];\n    moduleCount: number;\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
+            "typeText": "Readonly<{\n    /** 业务注册别名，Host.run() 通过此别名查找并调度业务 */\n    alias: string;\n    /** 业务模块标识，对应 registry 中的唯一 key */\n    moduleId: string;\n    /** 业务人类可读名称 */\n    name: string;\n    /** 业务人类可读描述 */\n    description: string;\n    /** runtime inspect 检测到的根类型 kind 列表（如 class / interface / enum） */\n    rootKinds: readonly string[];\n    /** runtime inspect 检测到的模块数量（含子模块） */\n    moduleCount: number;\n    /** runtime inspect 状态：healthy / degraded / broken，反映 ClassModel 工具是否完整可用 */\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -603,36 +610,43 @@
           "attributes": [
             {
               "name": "alias",
+              "jsdoc": "业务注册别名，Host.run() 通过此别名查找并调度业务",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleId",
+              "jsdoc": "业务模块标识，对应 registry 中的唯一 key",
               "readable": true,
               "writable": false
             },
             {
               "name": "name",
+              "jsdoc": "业务人类可读名称",
               "readable": true,
               "writable": false
             },
             {
               "name": "description",
+              "jsdoc": "业务人类可读描述",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootKinds",
+              "jsdoc": "runtime inspect 检测到的根类型 kind 列表（如 class / interface / enum）",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleCount",
+              "jsdoc": "runtime inspect 检测到的模块数量（含子模块）",
               "readable": true,
               "writable": false
             },
             {
               "name": "status",
+              "jsdoc": "runtime inspect 状态：healthy / degraded / broken，反映 ClassModel 工具是否完整可用",
               "readable": true,
               "writable": false
             }
@@ -642,16 +656,16 @@
     },
     "AiAgentHostRegistrationDescription": {
       "name": "AiAgentHostRegistrationDescription",
-      "jsdoc": "Ai Agent Host Registration Description 的语义模型。",
+      "jsdoc": "已注册业务的详细信息，在 describe() 中返回，含完整 runtime inspect 报告",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 46,
+        "line": 60,
         "className": "AiAgentHostRegistrationDescription",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentHostRegistrationSummary & Readonly<{\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
+        "declarationTypeText": "AiAgentHostRegistrationSummary & Readonly<{\n    /** 完整的 runtime inspect 报告，包含 findings、moduleCount、rootKinds 等诊断数据 */\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -660,7 +674,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
+            "typeText": "Readonly<{\n    /** 完整的 runtime inspect 报告，包含 findings、moduleCount、rootKinds 等诊断数据 */\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -668,6 +682,7 @@
           "attributes": [
             {
               "name": "inspectReport",
+              "jsdoc": "完整的 runtime inspect 报告，包含 findings、moduleCount、rootKinds 等诊断数据",
               "readable": true,
               "writable": false
             }
@@ -677,20 +692,20 @@
     },
     "AiAgentHostDryRunDiagnostic": {
       "name": "AiAgentHostDryRunDiagnostic",
-      "jsdoc": "Ai Agent Host Dry Run Diagnostic 的诊断信息。",
+      "jsdoc": "dry-run 诊断条目：校验注册、输入契约、scope、orchestration 和工具清单时产出的单条诊断",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 50,
+        "line": 65,
         "className": "AiAgentHostDryRunDiagnostic",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 诊断级别：error 表示无法运行，warn 表示可运行但有风险，info 表示纯信息 */\n    level: 'error' | 'warn' | 'info';\n    /** 诊断代码标识，如 DRY_RUN_FAILED / RUNTIME_INSPECT_OK，用于程序化匹配 */\n    code: string;\n    /** 诊断人类可读消息 */\n    message: string;\n    /** 可选的修复建议，引导用户解决该诊断问题 */\n    fix?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 诊断级别：error 表示无法运行，warn 表示可运行但有风险，info 表示纯信息 */\n    level: 'error' | 'warn' | 'info';\n    /** 诊断代码标识，如 DRY_RUN_FAILED / RUNTIME_INSPECT_OK，用于程序化匹配 */\n    code: string;\n    /** 诊断人类可读消息 */\n    message: string;\n    /** 可选的修复建议，引导用户解决该诊断问题 */\n    fix?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -698,21 +713,25 @@
           "attributes": [
             {
               "name": "level",
+              "jsdoc": "诊断级别：error 表示无法运行，warn 表示可运行但有风险，info 表示纯信息",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "诊断代码标识，如 DRY_RUN_FAILED / RUNTIME_INSPECT_OK，用于程序化匹配",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "诊断人类可读消息",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "可选的修复建议，引导用户解决该诊断问题",
               "readable": true,
               "writable": false
             }
@@ -722,20 +741,20 @@
     },
     "AiAgentHostOrchestrationSummary": {
       "name": "AiAgentHostOrchestrationSummary",
-      "jsdoc": "Ai Agent Host Orchestration Summary 的语义模型。",
+      "jsdoc": "编排计划摘要，在 dryRun 结果中提供，用于快速了解本轮 run 的 prompt/step 规模",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 57,
+        "line": 76,
         "className": "AiAgentHostOrchestrationSummary",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    title?: string;\n    userMessageLength: number;\n    systemPromptLength: number;\n    readonlyStepCount: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 编排计划标题，可能为空 */\n    title?: string;\n    /** 用户消息字符长度，用于估算 token 消耗 */\n    userMessageLength: number;\n    /** 系统提示词字符长度，用于估算 token 消耗 */\n    systemPromptLength: number;\n    /** 只读步骤数量（不修改业务数据的预处理步骤） */\n    readonlyStepCount: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    title?: string;\n    userMessageLength: number;\n    systemPromptLength: number;\n    readonlyStepCount: number;\n}>",
+            "typeText": "Readonly<{\n    /** 编排计划标题，可能为空 */\n    title?: string;\n    /** 用户消息字符长度，用于估算 token 消耗 */\n    userMessageLength: number;\n    /** 系统提示词字符长度，用于估算 token 消耗 */\n    systemPromptLength: number;\n    /** 只读步骤数量（不修改业务数据的预处理步骤） */\n    readonlyStepCount: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -743,21 +762,25 @@
           "attributes": [
             {
               "name": "title",
+              "jsdoc": "编排计划标题，可能为空",
               "readable": true,
               "writable": false
             },
             {
               "name": "userMessageLength",
+              "jsdoc": "用户消息字符长度，用于估算 token 消耗",
               "readable": true,
               "writable": false
             },
             {
               "name": "systemPromptLength",
+              "jsdoc": "系统提示词字符长度，用于估算 token 消耗",
               "readable": true,
               "writable": false
             },
             {
               "name": "readonlyStepCount",
+              "jsdoc": "只读步骤数量（不修改业务数据的预处理步骤）",
               "readable": true,
               "writable": false
             }
@@ -771,7 +794,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 64,
+        "line": 87,
         "className": "AiAgentHostDryRunResult",
         "declarationKind": "typeAlias"
       },
@@ -793,7 +816,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-        "line": 94,
+        "line": 117,
         "className": "AiAgentHost",
         "declarationKind": "class"
       },

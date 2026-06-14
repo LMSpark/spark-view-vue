@@ -133,7 +133,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.897Z",
+  "generatedAt": "2026-06-14T19:59:38.783Z",
   "models": {
     "AiAgentRunCommand": {
       "name": "AiAgentRunCommand",
@@ -146,11 +146,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    options: AiAgentOptions<TInput>;\n    kindID: string;\n    input: TInput;\n    chat?: AiAgentTaskChatOptions;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** Host 配置（含 registry、turnCallbacks、maxToolRounds），用于创建 session 和 tool-loop。 */\n    options: AiAgentOptions<TInput>;\n    /** 业务注册 kindID，runAiAgent 据此从 registry 查找 AiAgentRegistration。 */\n    kindID: string;\n    /** 业务输入，经 inputContract.normalize 归一化后生成 task。 */\n    input: TInput;\n    /** 可选的额外对话选项（如额外 systemPrompt），与 task.toChatRequest 合并后传入 send。 */\n    chat?: AiAgentTaskChatOptions;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    options: AiAgentOptions<TInput>;\n    kindID: string;\n    input: TInput;\n    chat?: AiAgentTaskChatOptions;\n}>",
+            "typeText": "Readonly<{\n    /** Host 配置（含 registry、turnCallbacks、maxToolRounds），用于创建 session 和 tool-loop。 */\n    options: AiAgentOptions<TInput>;\n    /** 业务注册 kindID，runAiAgent 据此从 registry 查找 AiAgentRegistration。 */\n    kindID: string;\n    /** 业务输入，经 inputContract.normalize 归一化后生成 task。 */\n    input: TInput;\n    /** 可选的额外对话选项（如额外 systemPrompt），与 task.toChatRequest 合并后传入 send。 */\n    chat?: AiAgentTaskChatOptions;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -158,21 +158,25 @@
           "attributes": [
             {
               "name": "options",
+              "jsdoc": "Host 配置（含 registry、turnCallbacks、maxToolRounds），用于创建 session 和 tool-loop。",
               "readable": true,
               "writable": false
             },
             {
               "name": "kindID",
+              "jsdoc": "业务注册 kindID，runAiAgent 据此从 registry 查找 AiAgentRegistration。",
               "readable": true,
               "writable": false
             },
             {
               "name": "input",
+              "jsdoc": "业务输入，经 inputContract.normalize 归一化后生成 task。",
               "readable": true,
               "writable": false
             },
             {
               "name": "chat",
+              "jsdoc": "可选的额外对话选项（如额外 systemPrompt），与 task.toChatRequest 合并后传入 send。",
               "readable": true,
               "writable": false
             }
@@ -186,16 +190,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/business-session.d.ts",
-        "line": 22,
+        "line": 26,
         "className": "AiAgentRunResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    task: AiAgentTask<TInput>;\n    session: AiAgentSession;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 已构造的 task，含归一化输入、scope、编排计划和 toChatRequest 方法。 */\n    task: AiAgentTask<TInput>;\n    /** 已启动并完成首轮 send 的业务会话，可用于后续 send/stop/getSessionRecord。 */\n    session: AiAgentSession;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    task: AiAgentTask<TInput>;\n    session: AiAgentSession;\n}>",
+            "typeText": "Readonly<{\n    /** 已构造的 task，含归一化输入、scope、编排计划和 toChatRequest 方法。 */\n    task: AiAgentTask<TInput>;\n    /** 已启动并完成首轮 send 的业务会话，可用于后续 send/stop/getSessionRecord。 */\n    session: AiAgentSession;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -203,11 +207,13 @@
           "attributes": [
             {
               "name": "task",
+              "jsdoc": "已构造的 task，含归一化输入、scope、编排计划和 toChatRequest 方法。",
               "readable": true,
               "writable": false
             },
             {
               "name": "session",
+              "jsdoc": "已启动并完成首轮 send 的业务会话，可用于后续 send/stop/getSessionRecord。",
               "readable": true,
               "writable": false
             }
@@ -221,7 +227,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/business-session.d.ts",
-        "line": 36,
+        "line": 42,
         "className": "AiAgentSession",
         "declarationKind": "class"
       },

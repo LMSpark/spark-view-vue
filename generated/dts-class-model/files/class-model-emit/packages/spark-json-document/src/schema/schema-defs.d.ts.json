@@ -28,7 +28,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:04:18.406Z",
+  "generatedAt": "2026-06-14T20:04:16.037Z",
   "models": {
     "JsonSchemaLocalDefsExtraction": {
       "name": "JsonSchemaLocalDefsExtraction",
@@ -41,11 +41,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schema: unknown;\n    defs: Readonly<Record<string, JsonSchema>>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 移除 $defs 后的 schema 树（引用 #/$defs/* 的 $ref 仍保留原路径） */\n    schema: unknown;\n    /** 从 schema 树中抽出的所有本地 $defs 定义，按 key 字母序排列；供后续 attachJsonSchemaDefs 合并到文档根 */\n    defs: Readonly<Record<string, JsonSchema>>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schema: unknown;\n    defs: Readonly<Record<string, JsonSchema>>;\n}>",
+            "typeText": "Readonly<{\n    /** 移除 $defs 后的 schema 树（引用 #/$defs/* 的 $ref 仍保留原路径） */\n    schema: unknown;\n    /** 从 schema 树中抽出的所有本地 $defs 定义，按 key 字母序排列；供后续 attachJsonSchemaDefs 合并到文档根 */\n    defs: Readonly<Record<string, JsonSchema>>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -53,11 +53,13 @@
           "attributes": [
             {
               "name": "schema",
+              "jsdoc": "移除 $defs 后的 schema 树（引用 #/$defs/* 的 $ref 仍保留原路径）",
               "readable": true,
               "writable": false
             },
             {
               "name": "defs",
+              "jsdoc": "从 schema 树中抽出的所有本地 $defs 定义，按 key 字母序排列；供后续 attachJsonSchemaDefs 合并到文档根",
               "readable": true,
               "writable": false
             }

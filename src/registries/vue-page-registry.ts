@@ -22,12 +22,19 @@ export type PageScope = 'public' | 'tenant' | 'app'
 
 /** Vue Page Config Entry 的语义模型。 */
 type VuePageConfigEntry = Readonly<{
+  /** 页面路由路径；必须以 / 开头，作为 URL 路由和注册表键。 */
   path: string
+  /** 页面标题；显示在导航树和浏览器标签页。 */
   title: string
+  /** 页面图标名；对应图标组件的标识，省略时导航树不显示图标。 */
   icon?: string
+  /** 页面描述；用于导航提示和 AI 理解页面功能。 */
   description?: string
+  /** 页面可见范围；public 表示无需登录即可访问，tenant/app 需登录后按权限显示。 */
   scope: PageScope
+  /** Vue 组件文件路径；必须位于 src/views/ 下且以 .vue 结尾，用于 Vite 动态 import。 */
   source: string
+  /** 是否在导航树中隐藏；隐藏页面仍可路由访问，但不显示在菜单中。 */
   hidden?: boolean
 }>
 
@@ -40,6 +47,7 @@ type VuePagesConfig = Readonly<{
 
 /** Vue Page Entry 的语义模型。 */
 type VuePageEntry = Readonly<Omit<VuePageConfigEntry, 'path'> & {
+  /** 懒加载 Vue 组件；通过 Vite import.meta.glob 绑定，首次调用时按需加载。 */
   load: () => Promise<{ default: Component }>
 }>
 

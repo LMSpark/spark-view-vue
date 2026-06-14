@@ -16,6 +16,7 @@ readonly id: string
 readonly pid: string
     /** order 字段。 */
 readonly order: number
+  /** 将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式 */
   toNodeData(): ProjectNodeData
 }
 

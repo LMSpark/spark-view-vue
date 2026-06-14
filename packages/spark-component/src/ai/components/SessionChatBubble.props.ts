@@ -6,8 +6,12 @@
  */
 /** Session Chat Bubble Props 的属性契约。 */
 export type SessionChatBubbleProps = Readonly<{
+  /** 消息角色：user=用户输入，assistant=AI 回复，system=系统通知，error=错误展示。 */
   role: 'user' | 'assistant' | 'system' | 'error'
+  /** 消息正文内容。 */
   content: string
+  /** 消息发送时间的 Unix 毫秒时间戳。 */
   timestamp?: number
+  /** 是否正在流式输出中（显示打字动画）。 */
   isTyping?: boolean
 }>

@@ -150,7 +150,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.906Z",
+  "generatedAt": "2026-06-14T19:55:30.372Z",
   "models": {
     "DefaultAiAgentSessionStoreOptions": {
       "name": "DefaultAiAgentSessionStoreOptions",
@@ -163,11 +163,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    now?: () => number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 时间戳生成函数；默认 Date.now，注入后用于测试中固定时间或加速时间流动 */\n    now?: () => number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    now?: () => number;\n}>",
+            "typeText": "Readonly<{\n    /** 时间戳生成函数；默认 Date.now，注入后用于测试中固定时间或加速时间流动 */\n    now?: () => number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -175,6 +175,7 @@
           "methods": [
             {
               "name": "now",
+              "jsdoc": "时间戳生成函数；默认 Date.now，注入后用于测试中固定时间或加速时间流动",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -191,7 +192,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
-        "line": 14,
+        "line": 15,
         "className": "DefaultAiAgentSessionStore",
         "declarationKind": "class"
       },

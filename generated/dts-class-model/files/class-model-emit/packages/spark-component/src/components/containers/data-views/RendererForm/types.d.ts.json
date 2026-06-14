@@ -84,7 +84,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.386Z",
+  "generatedAt": "2026-06-14T20:19:51.900Z",
   "models": {
     "RendererFormApi": {
       "name": "RendererFormApi",
@@ -102,7 +102,7 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "BaseContainerApi & {\n    getFormData(): Record<string, unknown>;\n    getNativeForm(): unknown;\n    validate(): Promise<boolean>;\n    resetFields(): void;\n    clearValidate(): void;\n    getFieldValue(field: string): unknown;\n    setFieldValue(field: string, value: unknown): void;\n}",
+        "declarationTypeText": "BaseContainerApi & {\n    /** 获取表单可编辑数据模型（与 el-form :model 绑定的 shallowReactive 对象，同一引用）。 */\n    getFormData(): Record<string, unknown>;\n    /** 获取底层 Element Plus el-form 组件实例；未挂载时返回 null。 */\n    getNativeForm(): unknown;\n    /** 触发表单校验；委托 el-form.validate，校验通过返回 true，失败或表单不可用返回 false（不抛异常）。 */\n    validate(): Promise<boolean>;\n    /** 重置所有字段到初始值并清除校验状态；委托 el-form.resetFields。 */\n    resetFields(): void;\n    /** 清除所有字段的校验提示，不重置值；委托 el-form.clearValidate。 */\n    clearValidate(): void;\n    /** 读取表单模型中指定字段的当前值。 */\n    getFieldValue(field: string): unknown;\n    /** 设置表单模型中指定字段的值；立即触发 Vue 响应式更新。 */\n    setFieldValue(field: string, value: unknown): void;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -111,13 +111,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    getFormData(): Record<string, unknown>;\n    getNativeForm(): unknown;\n    validate(): Promise<boolean>;\n    resetFields(): void;\n    clearValidate(): void;\n    getFieldValue(field: string): unknown;\n    setFieldValue(field: string, value: unknown): void;\n}"
+            "typeText": "{\n    /** 获取表单可编辑数据模型（与 el-form :model 绑定的 shallowReactive 对象，同一引用）。 */\n    getFormData(): Record<string, unknown>;\n    /** 获取底层 Element Plus el-form 组件实例；未挂载时返回 null。 */\n    getNativeForm(): unknown;\n    /** 触发表单校验；委托 el-form.validate，校验通过返回 true，失败或表单不可用返回 false（不抛异常）。 */\n    validate(): Promise<boolean>;\n    /** 重置所有字段到初始值并清除校验状态；委托 el-form.resetFields。 */\n    resetFields(): void;\n    /** 清除所有字段的校验提示，不重置值；委托 el-form.clearValidate。 */\n    clearValidate(): void;\n    /** 读取表单模型中指定字段的当前值。 */\n    getFieldValue(field: string): unknown;\n    /** 设置表单模型中指定字段的值；立即触发 Vue 响应式更新。 */\n    setFieldValue(field: string, value: unknown): void;\n}"
           }
         ],
         "members": {
           "methods": [
             {
               "name": "getFormData",
+              "jsdoc": "获取表单可编辑数据模型（与 el-form :model 绑定的 shallowReactive 对象，同一引用）。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -136,6 +137,7 @@
             },
             {
               "name": "getNativeForm",
+              "jsdoc": "获取底层 Element Plus el-form 组件实例；未挂载时返回 null。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -144,6 +146,7 @@
             },
             {
               "name": "validate",
+              "jsdoc": "触发表单校验；委托 el-form.validate，校验通过返回 true，失败或表单不可用返回 false（不抛异常）。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -158,6 +161,7 @@
             },
             {
               "name": "resetFields",
+              "jsdoc": "重置所有字段到初始值并清除校验状态；委托 el-form.resetFields。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -166,6 +170,7 @@
             },
             {
               "name": "clearValidate",
+              "jsdoc": "清除所有字段的校验提示，不重置值；委托 el-form.clearValidate。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -174,6 +179,7 @@
             },
             {
               "name": "getFieldValue",
+              "jsdoc": "读取表单模型中指定字段的当前值。",
               "parameters": [
                 {
                   "name": "field",
@@ -190,6 +196,7 @@
             },
             {
               "name": "setFieldValue",
+              "jsdoc": "设置表单模型中指定字段的值；立即触发 Vue 响应式更新。",
               "parameters": [
                 {
                   "name": "field",

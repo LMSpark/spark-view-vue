@@ -46,7 +46,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.390Z",
+  "generatedAt": "2026-06-14T20:03:09.049Z",
   "models": {
     "RendererListApi": {
       "name": "RendererListApi",
@@ -64,7 +64,7 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "BaseContainerApi & {\n    getRows(): DataRow[];\n    getItemCount(): number;\n}",
+        "declarationTypeText": "BaseContainerApi & {\n    /** 读取列表当前所有行数据（快照副本） */\n    getRows(): DataRow[];\n    /** 返回列表当前行数，等效 getRows().length 但避免数组拷贝 */\n    getItemCount(): number;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -73,13 +73,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    getRows(): DataRow[];\n    getItemCount(): number;\n}"
+            "typeText": "{\n    /** 读取列表当前所有行数据（快照副本） */\n    getRows(): DataRow[];\n    /** 返回列表当前行数，等效 getRows().length 但避免数组拷贝 */\n    getItemCount(): number;\n}"
           }
         ],
         "members": {
           "methods": [
             {
               "name": "getRows",
+              "jsdoc": "读取列表当前所有行数据（快照副本）",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -91,6 +92,7 @@
             },
             {
               "name": "getItemCount",
+              "jsdoc": "返回列表当前行数，等效 getRows().length 但避免数组拷贝",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

@@ -8,5 +8,6 @@ import type { ToolCallDisplayItem } from '../types'
 
 /** Session Tool Call Card Props 的属性契约。 */
 export type SessionToolCallCardProps = Readonly<{
+  /** 当前要展示的工具调用条目，包含工具名、参数预览、调用状态、耗时等渲染所需的投影数据 */
   toolCall: ToolCallDisplayItem
 }>

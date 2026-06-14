@@ -29,7 +29,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T03:35:14.840Z",
+  "generatedAt": "2026-06-14T20:06:55.866Z",
   "models": {
     "ProjectPlanningDeliveryContext": {
       "name": "ProjectPlanningDeliveryContext",
@@ -42,11 +42,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** headless ProjectWorkspace 实例，持有当前项目的导航树和配置页模型 */\n    editor: ProjectWorkspace;\n    /** Host Run 成功结束后是否自动保存导航树变更；false 时仅标记 dirty 不落盘 */\n    saveNavigationAfterRun: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** headless ProjectWorkspace 实例，持有当前项目的导航树和配置页模型 */\n    editor: ProjectWorkspace;\n    /** Host Run 成功结束后是否自动保存导航树变更；false 时仅标记 dirty 不落盘 */\n    saveNavigationAfterRun: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -54,11 +54,13 @@
           "attributes": [
             {
               "name": "editor",
+              "jsdoc": "headless ProjectWorkspace 实例，持有当前项目的导航树和配置页模型",
               "readable": true,
               "writable": false
             },
             {
               "name": "saveNavigationAfterRun",
+              "jsdoc": "Host Run 成功结束后是否自动保存导航树变更；false 时仅标记 dirty 不落盘",
               "readable": true,
               "writable": false
             }

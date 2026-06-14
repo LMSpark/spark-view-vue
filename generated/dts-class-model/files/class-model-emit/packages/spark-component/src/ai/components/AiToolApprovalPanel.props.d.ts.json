@@ -32,7 +32,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.365Z",
+  "generatedAt": "2026-06-14T20:02:20.206Z",
   "models": {
     "AiToolApprovalPanelProps": {
       "name": "AiToolApprovalPanelProps",
@@ -46,11 +46,11 @@
         "componentName": "AiToolApprovalPanel"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 当前等待用户审批的工具调用列表；用户 allow/reject/abort 后由消费方从数组中移除对应项 */\n    pending: readonly ToolApprovalDisplayItem[];\n    /** 无待审批项时的占位文案，未设置时使用组件默认文案 */\n    emptyText?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 当前等待用户审批的工具调用列表；用户 allow/reject/abort 后由消费方从数组中移除对应项 */\n    pending: readonly ToolApprovalDisplayItem[];\n    /** 无待审批项时的占位文案，未设置时使用组件默认文案 */\n    emptyText?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -58,11 +58,13 @@
           "attributes": [
             {
               "name": "pending",
+              "jsdoc": "当前等待用户审批的工具调用列表；用户 allow/reject/abort 后由消费方从数组中移除对应项",
               "readable": true,
               "writable": false
             },
             {
               "name": "emptyText",
+              "jsdoc": "无待审批项时的占位文案，未设置时使用组件默认文案",
               "readable": true,
               "writable": false
             }

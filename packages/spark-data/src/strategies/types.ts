@@ -23,9 +23,9 @@ export type CrudOperation =
  * - `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）
  */
 export type CrudLifecycleEvent = {
-    /** operation 字段。 */
+    /** CRUD 操作类型。 */
 readonly operation: CrudOperation
-    /** phase 字段。 */
+    /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */
 readonly phase: 'before' | 'after'
   /** 提交的数据（before 阶段为原始入参，after 阶段同前） */
   readonly data: unknown
@@ -38,9 +38,13 @@ readonly phase: 'before' | 'after'
 
 /** Crud Lifecycle Event Input 的输入数据。 */
 export type CrudLifecycleEventInput = Readonly<{
+  /** CRUD 操作类型：retrieve / create / update / delete / batchCreate / batchUpdate / batchDelete / import。 */
   operation: CrudOperation
+  /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */
   phase: 'before' | 'after'
+  /** 提交的数据载荷（before 阶段为原始入参，after 阶段同前）。 */
   data: unknown
+  /** 操作结果（仅 after 阶段有效）。 */
   result?: CrudResult | undefined
 }>
 

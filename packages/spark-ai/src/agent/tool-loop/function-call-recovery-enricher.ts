@@ -97,8 +97,11 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
 
 /** Enrich Function Call Failure Command 的命令参数。 */
 export type EnrichFunctionCallFailureCommand = Readonly<{
+  /** ClassModel 协议工具名（如 model_query / model_action_guide / model_script），用于匹配协议级恢复策略。 */
   protocolToolName: string
+  /** 本次工具调用发送的参数对象，供旧字段名检测和模板插值。 */
   args: AiJsonParams
+  /** 工具调用执行后返回的失败结果，包含 code / fix / checks。 */
   callResult: AiAgentFunctionCallFailure
   /** 当前业务实例 ID；app 层 recovery hook 可用来插值实例级提示。 */
   moduleInstanceId?: string
@@ -106,6 +109,7 @@ export type EnrichFunctionCallFailureCommand = Readonly<{
 
 /** Enrich Function Call Result Options 的调用配置。 */
 export type EnrichFunctionCallResultOptions = Readonly<{
+  /** 业务方注入的自定义恢复提示回调；接收失败命令，返回追加到 checks 的提示文本数组。 */
   enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 

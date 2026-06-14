@@ -367,6 +367,7 @@ type TreeNodeLike = {
 readonly id: string
     /** pid 字段。 */
 readonly pid: string
+  /** 将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式 */
   toNodeData(): ProjectNodeData
 }
 

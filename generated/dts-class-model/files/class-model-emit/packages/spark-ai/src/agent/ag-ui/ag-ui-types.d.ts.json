@@ -71,7 +71,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T11:58:36.711Z",
+  "generatedAt": "2026-06-14T19:24:22.410Z",
   "models": {
     "SparkAgUiRunInput": {
       "name": "SparkAgUiRunInput",
@@ -194,11 +194,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    threadId: string;\n    runId: string;\n    parentRunId?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** AG-UI thread 唯一标识，对应 RunAgentInput.threadId，跨 run 保持不变。 */\n    threadId: string;\n    /** 单次 run 的唯一标识，每次调用 RunAgentInput 生成新 runId。 */\n    runId: string;\n    /** 父 run 标识；用于嵌套 run 场景（如子 agent 调用），顶层 run 时为 undefined。 */\n    parentRunId?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    threadId: string;\n    runId: string;\n    parentRunId?: string;\n}>",
+            "typeText": "Readonly<{\n    /** AG-UI thread 唯一标识，对应 RunAgentInput.threadId，跨 run 保持不变。 */\n    threadId: string;\n    /** 单次 run 的唯一标识，每次调用 RunAgentInput 生成新 runId。 */\n    runId: string;\n    /** 父 run 标识；用于嵌套 run 场景（如子 agent 调用），顶层 run 时为 undefined。 */\n    parentRunId?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -206,16 +206,19 @@
           "attributes": [
             {
               "name": "threadId",
+              "jsdoc": "AG-UI thread 唯一标识，对应 RunAgentInput.threadId，跨 run 保持不变。",
               "readable": true,
               "writable": false
             },
             {
               "name": "runId",
+              "jsdoc": "单次 run 的唯一标识，每次调用 RunAgentInput 生成新 runId。",
               "readable": true,
               "writable": false
             },
             {
               "name": "parentRunId",
+              "jsdoc": "父 run 标识；用于嵌套 run 场景（如子 agent 调用），顶层 run 时为 undefined。",
               "readable": true,
               "writable": false
             }
@@ -229,16 +232,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-types.d.ts",
-        "line": 25,
+        "line": 28,
         "className": "SparkAgUiEventMetadata",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    timestamp?: number;\n    rawEvent?: unknown;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 事件产生的 Unix 毫秒时间戳；未采集时为 undefined（非 0）。 */\n    timestamp?: number;\n    /** 原始 AG-UI 事件引用，仅供调试；生产代码不应依赖此字段的内容结构。 */\n    rawEvent?: unknown;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    timestamp?: number;\n    rawEvent?: unknown;\n}>",
+            "typeText": "Readonly<{\n    /** 事件产生的 Unix 毫秒时间戳；未采集时为 undefined（非 0）。 */\n    timestamp?: number;\n    /** 原始 AG-UI 事件引用，仅供调试；生产代码不应依赖此字段的内容结构。 */\n    rawEvent?: unknown;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -246,11 +249,13 @@
           "attributes": [
             {
               "name": "timestamp",
+              "jsdoc": "事件产生的 Unix 毫秒时间戳；未采集时为 undefined（非 0）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rawEvent",
+              "jsdoc": "原始 AG-UI 事件引用，仅供调试；生产代码不应依赖此字段的内容结构。",
               "readable": true,
               "writable": false
             }
@@ -264,7 +269,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-types.d.ts",
-        "line": 30,
+        "line": 35,
         "className": "SparkAgUiTextMessageRole",
         "declarationKind": "typeAlias"
       },
@@ -297,7 +302,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-types.d.ts",
-        "line": 32,
+        "line": 37,
         "className": "SparkAgUiCustomEventName",
         "declarationKind": "typeAlias"
       },

@@ -198,7 +198,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.959Z",
+  "generatedAt": "2026-06-14T20:19:28.571Z",
   "models": {
     "ErrorLoggerLike": {
       "name": "ErrorLoggerLike",
@@ -211,11 +211,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    error(message: string, error?: unknown): void;\n}",
+        "declarationTypeText": "{\n    /** 记录错误消息及可选异常对象，用于过滤同步/应用失败时的非侵入式日志。 */\n    error(message: string, error?: unknown): void;\n}",
         "members": {
           "methods": [
             {
               "name": "error",
+              "jsdoc": "记录错误消息及可选异常对象，用于过滤同步/应用失败时的非侵入式日志。",
               "parameters": [
                 {
                   "name": "message",
@@ -250,12 +251,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
-        "line": 15,
+        "line": 16,
         "className": "FilterPanelDataView",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 行数据集合。 */\n    readonly rows: ReadonlyArray<Record<string, unknown>>;\n    /** 列定义集合。 */\n    readonly columns?: readonly unknown[];\n    /** filter Expression 字段。 */\n    readonly filterExpression?: FilterExpression | undefined;\n    /** data Table 字段。 */\n    readonly dataTable?: {\n        readonly api?: {\n            readonly list?: unknown;\n        } | undefined;\n        readonly resourceType?: string | undefined;\n    } | null | undefined;\n    /** get Column 回调。 */\n    getColumn?: (field: string) => unknown;\n    setFilter(expr: FilterExpression | undefined): Promise<void>;\n    executeFilter(expr: FilterExpression | undefined): Promise<void>;\n    refresh(): Promise<void>;\n}",
+        "declarationTypeText": "{\n    /** 行数据集合。 */\n    readonly rows: ReadonlyArray<Record<string, unknown>>;\n    /** 列定义集合。 */\n    readonly columns?: readonly unknown[];\n    /** filter Expression 字段。 */\n    readonly filterExpression?: FilterExpression | undefined;\n    /** data Table 字段。 */\n    readonly dataTable?: {\n        readonly api?: {\n            readonly list?: unknown;\n        } | undefined;\n        readonly resourceType?: string | undefined;\n    } | null | undefined;\n    /** get Column 回调。 */\n    getColumn?: (field: string) => unknown;\n    /** 同步过滤表达式到 DataView（不触发远端查询，后续 watch 自动 refresh）。 */\n    setFilter(expr: FilterExpression | undefined): Promise<void>;\n    /** 立即执行过滤查询（用于\"搜索\"按钮主动触发远端查询）。 */\n    executeFilter(expr: FilterExpression | undefined): Promise<void>;\n    /** 重新拉取远端数据并刷新当前视图行。 */\n    refresh(): Promise<void>;\n}",
         "members": {
           "attributes": [
             {
@@ -303,6 +304,7 @@
             },
             {
               "name": "setFilter",
+              "jsdoc": "同步过滤表达式到 DataView（不触发远端查询，后续 watch 自动 refresh）。",
               "parameters": [
                 {
                   "name": "expr",
@@ -328,6 +330,7 @@
             },
             {
               "name": "executeFilter",
+              "jsdoc": "立即执行过滤查询（用于\"搜索\"按钮主动触发远端查询）。",
               "parameters": [
                 {
                   "name": "expr",
@@ -353,6 +356,7 @@
             },
             {
               "name": "refresh",
+              "jsdoc": "重新拉取远端数据并刷新当前视图行。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -375,7 +379,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
-        "line": 36,
+        "line": 40,
         "className": "UseFilterPanelOptions",
         "declarationKind": "typeAlias"
       },
@@ -411,7 +415,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
-        "line": 45,
+        "line": 49,
         "className": "FilterPanelState",
         "declarationKind": "typeAlias"
       },

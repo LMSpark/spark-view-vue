@@ -14,8 +14,11 @@ import {
 
 /** Class Model Reflection Connectivity Issue 的语义模型。 */
 export type ClassModelReflectionConnectivityIssue = Readonly<{
+  /** 问题编码：REFLECTION_MODEL_PROJECTION_FAILED = 投影失败，REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES = 不可达，REFLECTION_ATTRIBUTE_API_DISCONNECTED = 属性链断路。 */
   code: string
+  /** 不一致位置：kind 名或 '{owner}.attributes.{name}' 形式的点分路径。 */
   path: string
+  /** 人类可读的差异描述，包含具体 className 和失败原因。 */
   message: string
 }>
 

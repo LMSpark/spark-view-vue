@@ -26,7 +26,9 @@ import { toDataRecord } from './data-row-utils.js'
 
 /** 极简日志接口，仅供 useContainerDataSource 内部使用。 */
 type DataSourceLoggerLike = {
+  /** 输出诊断警告（如 dataViewKey 解析失败），不中断数据源解析流程 */
   warn(message: string): void
+  /** 输出不可恢复的错误（如 requestData() 网络失败），不中断数据源解析流程 */
   error(message: string, error?: unknown): void}
 
 const DEFAULT_DATA_SOURCE_LOGGER: DataSourceLoggerLike = {

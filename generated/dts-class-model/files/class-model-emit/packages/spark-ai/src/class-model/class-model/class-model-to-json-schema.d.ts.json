@@ -55,7 +55,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:47:29.379Z",
+  "generatedAt": "2026-06-14T20:08:00.066Z",
   "models": {
     "ProjectDtsRootFilesToJsonSchemasOptions": {
       "name": "ProjectDtsRootFilesToJsonSchemasOptions",
@@ -68,11 +68,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    exportedOnly?: boolean;\n    compilerHost?: ts.CompilerHost;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 仓库根目录绝对路径，用于将 rootFiles 相对路径解析为绝对路径 */\n    repoRoot: string;\n    /** 入口 .d.ts 文件路径列表（相对或绝对），TypeScript 编译器以此创建 Program */\n    rootFiles: readonly string[];\n    /** 是否只导出带 export 修饰的声明；默认 true，忽略未导出的内部类型 */\n    exportedOnly?: boolean;\n    /** 自定义 TypeScript CompilerHost；未提供时使用默认文件系统 Host */\n    compilerHost?: ts.CompilerHost;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    exportedOnly?: boolean;\n    compilerHost?: ts.CompilerHost;\n}>",
+            "typeText": "Readonly<{\n    /** 仓库根目录绝对路径，用于将 rootFiles 相对路径解析为绝对路径 */\n    repoRoot: string;\n    /** 入口 .d.ts 文件路径列表（相对或绝对），TypeScript 编译器以此创建 Program */\n    rootFiles: readonly string[];\n    /** 是否只导出带 export 修饰的声明；默认 true，忽略未导出的内部类型 */\n    exportedOnly?: boolean;\n    /** 自定义 TypeScript CompilerHost；未提供时使用默认文件系统 Host */\n    compilerHost?: ts.CompilerHost;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -80,21 +80,25 @@
           "attributes": [
             {
               "name": "repoRoot",
+              "jsdoc": "仓库根目录绝对路径，用于将 rootFiles 相对路径解析为绝对路径",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootFiles",
+              "jsdoc": "入口 .d.ts 文件路径列表（相对或绝对），TypeScript 编译器以此创建 Program",
               "readable": true,
               "writable": false
             },
             {
               "name": "exportedOnly",
+              "jsdoc": "是否只导出带 export 修饰的声明；默认 true，忽略未导出的内部类型",
               "readable": true,
               "writable": false
             },
             {
               "name": "compilerHost",
+              "jsdoc": "自定义 TypeScript CompilerHost；未提供时使用默认文件系统 Host",
               "readable": true,
               "writable": false
             }
@@ -108,16 +112,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.d.ts",
-        "line": 19,
+        "line": 23,
         "className": "DtsFileJsonSchemasResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    schemas: Readonly<Record<string, StandardJsonSchemaObject>>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 源 .d.ts 文件的绝对路径，与 rootFiles 中的对应项一致 */\n    sourcePath: string;\n    /** className → 标准 Draft 2020-12 JSON Schema 的映射，key 为模型类名 */\n    schemas: Readonly<Record<string, StandardJsonSchemaObject>>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    sourcePath: string;\n    schemas: Readonly<Record<string, StandardJsonSchemaObject>>;\n}>",
+            "typeText": "Readonly<{\n    /** 源 .d.ts 文件的绝对路径，与 rootFiles 中的对应项一致 */\n    sourcePath: string;\n    /** className → 标准 Draft 2020-12 JSON Schema 的映射，key 为模型类名 */\n    schemas: Readonly<Record<string, StandardJsonSchemaObject>>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -125,11 +129,13 @@
           "attributes": [
             {
               "name": "sourcePath",
+              "jsdoc": "源 .d.ts 文件的绝对路径，与 rootFiles 中的对应项一致",
               "readable": true,
               "writable": false
             },
             {
               "name": "schemas",
+              "jsdoc": "className → 标准 Draft 2020-12 JSON Schema 的映射，key 为模型类名",
               "readable": true,
               "writable": false
             }

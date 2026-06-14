@@ -147,7 +147,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.082Z",
+  "generatedAt": "2026-06-14T20:23:06.803Z",
   "models": {
     "PageDataEditorMode": {
       "name": "PageDataEditorMode",
@@ -189,7 +189,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "DataColumn & {\n    /** 唯一标识。 */\n    id: string;\n}",
+        "declarationTypeText": "DataColumn & {\n    /** 列在画布中的唯一标识（跨对账保持稳定）。 */\n    id: string;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -198,14 +198,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** 唯一标识。 */\n    id: string;\n}"
+            "typeText": "{\n    /** 列在画布中的唯一标识（跨对账保持稳定）。 */\n    id: string;\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "id",
-              "jsdoc": "唯一标识。",
+              "jsdoc": "列在画布中的唯一标识（跨对账保持稳定）。",
               "readable": true,
               "writable": true
             }
@@ -224,7 +224,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Omit<TableMetadata, 'columns'> & {\n    /** 唯一标识。 */\n    id: string;\n    /** x 字段。 */\n    x: number;\n    /** y 字段。 */\n    y: number;\n    /** 列定义集合。 */\n    columns: DesignerColumnProjection[];\n}",
+        "declarationTypeText": "Omit<TableMetadata, 'columns'> & {\n    /** 表在画布中的唯一标识（跨对账保持稳定）。 */\n    id: string;\n    /** 画布 X 坐标（像素）。 */\n    x: number;\n    /** 画布 Y 坐标（像素）。 */\n    y: number;\n    /** 列定义集合（带画布 ID）。 */\n    columns: DesignerColumnProjection[];\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -233,32 +233,32 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** x 字段。 */\n    x: number;\n    /** y 字段。 */\n    y: number;\n    /** 列定义集合。 */\n    columns: DesignerColumnProjection[];\n}"
+            "typeText": "{\n    /** 表在画布中的唯一标识（跨对账保持稳定）。 */\n    id: string;\n    /** 画布 X 坐标（像素）。 */\n    x: number;\n    /** 画布 Y 坐标（像素）。 */\n    y: number;\n    /** 列定义集合（带画布 ID）。 */\n    columns: DesignerColumnProjection[];\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "id",
-              "jsdoc": "唯一标识。",
+              "jsdoc": "表在画布中的唯一标识（跨对账保持稳定）。",
               "readable": true,
               "writable": true
             },
             {
               "name": "x",
-              "jsdoc": "x 字段。",
+              "jsdoc": "画布 X 坐标（像素）。",
               "readable": true,
               "writable": true
             },
             {
               "name": "y",
-              "jsdoc": "y 字段。",
+              "jsdoc": "画布 Y 坐标（像素）。",
               "readable": true,
               "writable": true
             },
             {
               "name": "columns",
-              "jsdoc": "列定义集合。",
+              "jsdoc": "列定义集合（带画布 ID）。",
               "readable": true,
               "writable": true
             }
@@ -277,7 +277,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "TableRelation & {\n    /** relation Type 字段。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}",
+        "declarationTypeText": "TableRelation & {\n    /** 关系类型：one-to-many（默认）/ one-to-one / many-to-many。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -286,14 +286,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** relation Type 字段。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}"
+            "typeText": "{\n    /** 关系类型：one-to-many（默认）/ one-to-one / many-to-many。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "relationType",
-              "jsdoc": "relation Type 字段。",
+              "jsdoc": "关系类型：one-to-many（默认）/ one-to-one / many-to-many。",
               "readable": true,
               "writable": false
             }
@@ -312,30 +312,30 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** x 字段。 */\n    x: number;\n    /** y 字段。 */\n    y: number;\n    /** column Ids 字段。 */\n    columnIds: Record<string, string>;\n}",
+        "declarationTypeText": "{\n    /** 表在画布中的唯一标识。 */\n    id: string;\n    /** 画布 X 坐标（像素）。 */\n    x: number;\n    /** 画布 Y 坐标（像素）。 */\n    y: number;\n    /** 列名到列 ID 的映射（跨对账保持列标识稳定）。 */\n    columnIds: Record<string, string>;\n}",
         "members": {
           "attributes": [
             {
               "name": "id",
-              "jsdoc": "唯一标识。",
+              "jsdoc": "表在画布中的唯一标识。",
               "readable": true,
               "writable": true
             },
             {
               "name": "x",
-              "jsdoc": "x 字段。",
+              "jsdoc": "画布 X 坐标（像素）。",
               "readable": true,
               "writable": true
             },
             {
               "name": "y",
-              "jsdoc": "y 字段。",
+              "jsdoc": "画布 Y 坐标（像素）。",
               "readable": true,
               "writable": true
             },
             {
               "name": "columnIds",
-              "jsdoc": "column Ids 字段。",
+              "jsdoc": "列名到列 ID 的映射（跨对账保持列标识稳定）。",
               "readable": true,
               "writable": true
             }
@@ -369,11 +369,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    metadata: DataSetMetadata;\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    createId: () => string;\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 目标 DataSet 元数据，包含 tables / tableRelations / layout 等完整定义。 */\n    metadata: DataSetMetadata;\n    /** 当前画布中已有的表投影快照，用于保留已有 ID 和坐标。 */\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    /** 生成唯一 ID 的工厂函数（通常为 nanoid 或 uuid）。 */\n    createId: () => string;\n    /** 新增表的布局策略回调；缺省使用 3 列网格自动定位。 */\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    metadata: DataSetMetadata;\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    createId: () => string;\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 目标 DataSet 元数据，包含 tables / tableRelations / layout 等完整定义。 */\n    metadata: DataSetMetadata;\n    /** 当前画布中已有的表投影快照，用于保留已有 ID 和坐标。 */\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    /** 生成唯一 ID 的工厂函数（通常为 nanoid 或 uuid）。 */\n    createId: () => string;\n    /** 新增表的布局策略回调；缺省使用 3 列网格自动定位。 */\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -381,16 +381,19 @@
           "attributes": [
             {
               "name": "metadata",
+              "jsdoc": "目标 DataSet 元数据，包含 tables / tableRelations / layout 等完整定义。",
               "readable": true,
               "writable": false
             },
             {
               "name": "currentTables",
+              "jsdoc": "当前画布中已有的表投影快照，用于保留已有 ID 和坐标。",
               "readable": true,
               "writable": false
             },
             {
               "name": "layoutForNewTable",
+              "jsdoc": "新增表的布局策略回调；缺省使用 3 列网格自动定位。",
               "readable": true,
               "writable": false
             }
@@ -398,6 +401,7 @@
           "methods": [
             {
               "name": "createId",
+              "jsdoc": "生成唯一 ID 的工厂函数（通常为 nanoid 或 uuid）。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

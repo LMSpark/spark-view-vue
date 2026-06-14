@@ -87,7 +87,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.615Z",
+  "generatedAt": "2026-06-14T20:21:04.432Z",
   "models": {
     "CrudOperation": {
       "name": "CrudOperation",
@@ -149,18 +149,18 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** operation 字段。 */\n    readonly operation: CrudOperation;\n    /** phase 字段。 */\n    readonly phase: 'before' | 'after';\n    /** 提交的数据（before 阶段为原始入参，after 阶段同前） */\n    readonly data: unknown;\n    /** 操作结果（仅 after 阶段） */\n    result?: CrudResult | undefined;\n    /** 是否已取消（仅 before 阶段有效） */\n    cancelled: boolean;\n    /** 取消操作（仅 before 阶段调用） */\n    cancel(): void;\n}",
+        "declarationTypeText": "{\n    /** CRUD 操作类型。 */\n    readonly operation: CrudOperation;\n    /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */\n    readonly phase: 'before' | 'after';\n    /** 提交的数据（before 阶段为原始入参，after 阶段同前） */\n    readonly data: unknown;\n    /** 操作结果（仅 after 阶段） */\n    result?: CrudResult | undefined;\n    /** 是否已取消（仅 before 阶段有效） */\n    cancelled: boolean;\n    /** 取消操作（仅 before 阶段调用） */\n    cancel(): void;\n}",
         "members": {
           "attributes": [
             {
               "name": "operation",
-              "jsdoc": "operation 字段。",
+              "jsdoc": "CRUD 操作类型。",
               "readable": true,
               "writable": false
             },
             {
               "name": "phase",
-              "jsdoc": "phase 字段。",
+              "jsdoc": "生命周期阶段：before=可取消，after=可读取结果执行联动。",
               "readable": true,
               "writable": false
             },
@@ -208,11 +208,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** CRUD 操作类型：retrieve / create / update / delete / batchCreate / batchUpdate / batchDelete / import。 */\n    operation: CrudOperation;\n    /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */\n    phase: 'before' | 'after';\n    /** 提交的数据载荷（before 阶段为原始入参，after 阶段同前）。 */\n    data: unknown;\n    /** 操作结果（仅 after 阶段有效）。 */\n    result?: CrudResult | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** CRUD 操作类型：retrieve / create / update / delete / batchCreate / batchUpdate / batchDelete / import。 */\n    operation: CrudOperation;\n    /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */\n    phase: 'before' | 'after';\n    /** 提交的数据载荷（before 阶段为原始入参，after 阶段同前）。 */\n    data: unknown;\n    /** 操作结果（仅 after 阶段有效）。 */\n    result?: CrudResult | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -220,21 +220,25 @@
           "attributes": [
             {
               "name": "operation",
+              "jsdoc": "CRUD 操作类型：retrieve / create / update / delete / batchCreate / batchUpdate / batchDelete / import。",
               "readable": true,
               "writable": false
             },
             {
               "name": "phase",
+              "jsdoc": "生命周期阶段：before=可取消，after=可读取结果执行联动。",
               "readable": true,
               "writable": false
             },
             {
               "name": "data",
+              "jsdoc": "提交的数据载荷（before 阶段为原始入参，after 阶段同前）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "result",
+              "jsdoc": "操作结果（仅 after 阶段有效）。",
               "readable": true,
               "writable": false
             }

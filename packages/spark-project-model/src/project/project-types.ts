@@ -117,16 +117,21 @@ export type ProjectPlanningInput = Readonly<{
 
 /** 单个导航节点策划输入：节点 description + 可选附件引用。 */
 export type NavigationPlanningInput = Readonly<{
+  /** 目标导航节点 ID；对应 navigation tree 中的唯一标识。 */
   nodeId: string
+  /** 节点标题；用于 LLM 策划上下文中标识节点语义。 */
   title: string
+  /** 节点类型标识（如 page/group/link）；影响策划策略分支。 */
   nodeKind: string
   /** 节点短需求，即 navigation description。 */
   requirement: string
+  /** 策划详细说明附件引用；省略时仅使用 requirement。 */
   planningAttachmentRef?: string
 }>
 
 /** 项目策划完成动作输入；由 agent_complete 转发到领域模型。 */
 export type ProjectPlanningCompletionInput = Readonly<{
+  /** 策划完成摘要；由 LLM 生成，归纳整个策划过程的结论。 */
   summary?: string
 }>
 

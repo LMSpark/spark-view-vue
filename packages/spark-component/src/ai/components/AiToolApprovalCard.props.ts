@@ -8,12 +8,16 @@ import type { ToolApprovalDisplayItem } from '../types'
 
 /** Ai Tool Approval Card Props 的属性契约。 */
 export type AiToolApprovalCardProps = Readonly<{
+  /** 待审批的工具调用请求，包含工具名、参数摘要和风险描述。 */
   request: ToolApprovalDisplayItem
 }>
 
 /** Ai Tool Approval Card Emits 的语义模型。 */
 export type AiToolApprovalCardEmits = Readonly<{
+  /** 用户批准执行该工具调用；参数为工具调用的唯一标识。 */
   allow: [id: string]
+  /** 用户拒绝执行该工具调用；参数为工具调用 ID 和拒绝原因。 */
   reject: [id: string, reason: string]
+  /** 用户中止该工具调用（如超时自动中止）；参数为工具调用 ID 和中止原因。 */
   abort: [id: string, reason: string]
 }>

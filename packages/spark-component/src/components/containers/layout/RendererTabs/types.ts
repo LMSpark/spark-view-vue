@@ -6,7 +6,11 @@
  */
 /** Renderer Tabs Api 的语义模型。 */
 export type RendererTabsApi = {
+  /** 获取当前激活标签页的 name；无激活时返回 undefined。 */
   getActiveTab(): string | number | undefined
+  /** 切换到指定 name 的标签页。 */
   setActiveTab(name: string | number): void
+  /** 获取所有标签页面板的 name 列表。 */
   getPaneNames(): Array<string | number>
+  /** 获取标签页面板数量。 */
   getPaneCount(): number}

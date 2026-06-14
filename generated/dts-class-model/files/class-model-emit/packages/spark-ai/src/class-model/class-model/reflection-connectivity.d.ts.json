@@ -32,7 +32,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.939Z",
+  "generatedAt": "2026-06-14T19:54:08.933Z",
   "models": {
     "ClassModelReflectionConnectivityIssue": {
       "name": "ClassModelReflectionConnectivityIssue",
@@ -45,11 +45,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    code: string;\n    path: string;\n    message: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 问题编码：REFLECTION_MODEL_PROJECTION_FAILED = 投影失败，REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES = 不可达，REFLECTION_ATTRIBUTE_API_DISCONNECTED = 属性链断路。 */\n    code: string;\n    /** 不一致位置：kind 名或 '{owner}.attributes.{name}' 形式的点分路径。 */\n    path: string;\n    /** 人类可读的差异描述，包含具体 className 和失败原因。 */\n    message: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    code: string;\n    path: string;\n    message: string;\n}>",
+            "typeText": "Readonly<{\n    /** 问题编码：REFLECTION_MODEL_PROJECTION_FAILED = 投影失败，REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES = 不可达，REFLECTION_ATTRIBUTE_API_DISCONNECTED = 属性链断路。 */\n    code: string;\n    /** 不一致位置：kind 名或 '{owner}.attributes.{name}' 形式的点分路径。 */\n    path: string;\n    /** 人类可读的差异描述，包含具体 className 和失败原因。 */\n    message: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -57,16 +57,19 @@
           "attributes": [
             {
               "name": "code",
+              "jsdoc": "问题编码：REFLECTION_MODEL_PROJECTION_FAILED = 投影失败，REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES = 不可达，REFLECTION_ATTRIBUTE_API_DISCONNECTED = 属性链断路。",
               "readable": true,
               "writable": false
             },
             {
               "name": "path",
+              "jsdoc": "不一致位置：kind 名或 '{owner}.attributes.{name}' 形式的点分路径。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "人类可读的差异描述，包含具体 className 和失败原因。",
               "readable": true,
               "writable": false
             }

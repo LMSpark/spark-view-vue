@@ -16,17 +16,25 @@ import type {
 
 /** Ai Business Id Options 的调用配置。 */
 export type AiBusinessIdOptions = Readonly<{
+  /** 业务模块唯一标识，对应 scope.businessRegistrationId，与 registration.moduleId 一致。 */
   businessId: string
 }>
 
 /** Ai Business Input Options 的调用配置。 */
 export type AiBusinessInputOptions<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 输入参数的 JSON Schema，用于 normalize 前后双次校验。 */
   paramsSchema: AiJsonSchemaObject
+  /** 实体标识字段名，其值用于生成 scope.businessInstanceId。 */
   identityField: keyof TInput & string
+  /** 用户消息字段名，其值作为 LLM 首轮 user message 内容。 */
   messageField: keyof TInput & string
+  /** 自定义归一化函数；不传则默认 require 输入已通过 paramsSchema 校验。 */
   normalize?: (input: AiJsonParams) => TInput
+  /** 系统提示，支持静态文本或从输入动态生成；空串会 throw。 */
   systemPrompt: string | ((input: TInput) => string)
+  /** 可选 turn 标题，支持静态文本或从输入动态生成。 */
   title?: string | ((input: TInput) => string | undefined)
+  /** 可选只读步骤列表，支持静态数组或从输入动态生成。 */
   readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined)
 }>
 

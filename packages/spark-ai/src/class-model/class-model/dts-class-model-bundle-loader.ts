@@ -23,7 +23,9 @@ import type { AiRuntimeApiMetadataJson } from '../metadata'
 
 /** Dts Class Model Bundle Loader Options 的调用配置。 */
 export type DtsClassModelBundleLoaderOptions = Readonly<{
+  /** bundle manifest.json 的 URL，loader 从此文件发现所有 shard 路径。 */
   manifestUrl: string
+  /** 自定义 JSON 获取函数；默认使用 fetch + JSON.parse，Node 环境需注入 fs-based 实现。 */
   fetchJson?: (url: string) => Promise<unknown>
 }>
 

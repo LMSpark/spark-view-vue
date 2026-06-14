@@ -9,14 +9,20 @@
  */
 
 type PageCacheSource = {
+  /** 清除指定页面的内存缓存，同时由 handle 清除 localStorage 中对应的四文件条目 */
   clearPageCache(pageId: string): void
+  /** 清除所有页面的内存与 localStorage 缓存，返回清除前统计（size + keys） */
   clearAllCache(): { size: number; keys: string[] }
+  /** 返回当前缓存条目统计，不含 localStorage 条目 */
   getCacheStats(): { size: number; keys: string[] }}
 
 /** Page Cache Handle 的语义模型。 */
 export type PageCacheHandle = {
+  /** 清除指定页面的内存缓存及 localStorage 中 spark_page_ 前缀的四文件条目 */
   clearPageCache(pageId: string): void
+  /** 清除所有页面的内存与 localStorage 缓存，返回清除前统计 */
   clearAllCache(): { size: number; keys: string[] }
+  /** 返回当前缓存条目统计（条目数 + key 列表） */
   getCacheStats(): { size: number; keys: string[] }}
 
 export function createPageCache(source: PageCacheSource): PageCacheHandle {

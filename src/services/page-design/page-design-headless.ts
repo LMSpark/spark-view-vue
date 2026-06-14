@@ -11,6 +11,7 @@ import { createAuthHeaders, http } from '@/services/http'
 
 /** Page Design Editor Resolve Context 的运行上下文。 */
 export type PageDesignEditorResolveContext = {
+  /** 需要解析的 headless 编辑器所对应的模块实例标识；用于从 headlessRegistry 中定位已创建的 ProjectWorkspace */
   moduleInstanceId: string
 }
 

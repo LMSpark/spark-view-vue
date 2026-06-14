@@ -172,15 +172,21 @@ export function shardToJsonSchemas(
 
 /** Project Dts Root Files To Json Schemas Options 的调用配置。 */
 export type ProjectDtsRootFilesToJsonSchemasOptions = Readonly<{
+  /** 仓库根目录绝对路径，用于将 rootFiles 相对路径解析为绝对路径 */
   repoRoot: string
+  /** 入口 .d.ts 文件路径列表（相对或绝对），TypeScript 编译器以此创建 Program */
   rootFiles: readonly string[]
+  /** 是否只导出带 export 修饰的声明；默认 true，忽略未导出的内部类型 */
   exportedOnly?: boolean
+  /** 自定义 TypeScript CompilerHost；未提供时使用默认文件系统 Host */
   compilerHost?: ts.CompilerHost
 }>
 
 /** 单个 .d.ts 文件的 JSON Schema 映射结果。 */
 export type DtsFileJsonSchemasResult = Readonly<{
+  /** 源 .d.ts 文件的绝对路径，与 rootFiles 中的对应项一致 */
   sourcePath: string
+  /** className → 标准 Draft 2020-12 JSON Schema 的映射，key 为模型类名 */
   schemas: Readonly<Record<string, StandardJsonSchemaObject>>
 }>
 

@@ -8,5 +8,7 @@ import type { BaseContainerApi } from '../../support/base-container-api.js'
 
 /** Renderer Detail Api 的语义模型。 */
 export type RendererDetailApi = BaseContainerApi & {
+  /** 读取当前详情行完整数据对象；无当前行时返回空对象 */
   getDetailData(): Record<string, unknown>
-    getFieldValue(field: string): unknown}
+  /** 按字段名读取当前详情行单个字段值；字段不存在时返回 undefined */
+  getFieldValue(field: string): unknown}

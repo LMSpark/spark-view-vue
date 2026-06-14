@@ -14,11 +14,17 @@ import { createAiApiScriptContext } from './native-script-context'
 
 /** Dts Native Script Run Command 的命令参数。 */
 export type DtsNativeScriptRunCommand<TInstance = unknown> = Readonly<{
+  /** 脚本执行时 this 绑定的业务根实例；DTS 模型中 rootClassName 对应的运行时对象 */
   instance: TInstance
+  /** DTS ClassModel bundle 分片的 manifest.json 远程地址，用于加载元数据 */
   manifestUrl: string
+  /** 业务根 className，与 manifest 中的模型声明对应，决定 API 元数据投影起点 */
   rootClassName: string
+  /** 可选宿主上下文；提供运行时路径段和宿主回调，为脚本提供 sandbox 外部桥接 */
   host?: AiAgentRuntimeHostContext
+  /** 自定义远程 JSON 资源获取函数；未提供时使用内置默认 fetch */
   fetchJson?: (url: string) => Promise<unknown>
+  /** 待执行的 JavaScript async function body 字符串；禁止含 TypeScript/JSX/import/export 或函数包裹 */
   script: string
 }>
 

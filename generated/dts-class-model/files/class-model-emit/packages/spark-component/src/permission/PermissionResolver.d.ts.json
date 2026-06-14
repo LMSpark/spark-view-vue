@@ -92,7 +92,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.997Z",
+  "generatedAt": "2026-06-14T20:21:14.092Z",
   "models": {
     "PermissionActionContext": {
       "name": "PermissionActionContext",
@@ -105,7 +105,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "ScriptPermissionActionContext & {\n    /** permission Mode 字段。 */\n    permissionMode?: NavPermissionMode | undefined;\n}",
+        "declarationTypeText": "ScriptPermissionActionContext & {\n    /** 导航权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -114,14 +114,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** permission Mode 字段。 */\n    permissionMode?: NavPermissionMode | undefined;\n}"
+            "typeText": "{\n    /** 导航权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "permissionMode",
-              "jsdoc": "permission Mode 字段。",
+              "jsdoc": "导航权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。",
               "readable": true,
               "writable": false
             }
@@ -207,11 +207,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    field: string | undefined;\n    row: DataRow | null | undefined;\n    config?: Omit<FieldRenderConfig, 'field'> | undefined;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 待判断权限状态的字段名。 */\n    field: string | undefined;\n    /** 数据行（需包含 _perm.editableFields / hiddenFields / maskedFields）。 */\n    row: DataRow | null | undefined;\n    /** 字段渲染配置（如 editable / visible），与 FieldRenderConfig 合并判断。 */\n    config?: Omit<FieldRenderConfig, 'field'> | undefined;\n    /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    field: string | undefined;\n    row: DataRow | null | undefined;\n    config?: Omit<FieldRenderConfig, 'field'> | undefined;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 待判断权限状态的字段名。 */\n    field: string | undefined;\n    /** 数据行（需包含 _perm.editableFields / hiddenFields / maskedFields）。 */\n    row: DataRow | null | undefined;\n    /** 字段渲染配置（如 editable / visible），与 FieldRenderConfig 合并判断。 */\n    config?: Omit<FieldRenderConfig, 'field'> | undefined;\n    /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -219,21 +219,25 @@
           "attributes": [
             {
               "name": "field",
+              "jsdoc": "待判断权限状态的字段名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "row",
+              "jsdoc": "数据行（需包含 _perm.editableFields / hiddenFields / maskedFields）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "config",
+              "jsdoc": "字段渲染配置（如 editable / visible），与 FieldRenderConfig 合并判断。",
               "readable": true,
               "writable": false
             },
             {
               "name": "permissionMode",
+              "jsdoc": "权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。",
               "readable": true,
               "writable": false
             }

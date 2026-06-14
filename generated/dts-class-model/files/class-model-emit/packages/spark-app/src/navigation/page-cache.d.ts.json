@@ -146,7 +146,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.350Z",
+  "generatedAt": "2026-06-14T20:08:48.406Z",
   "models": {
     "PageCacheSource": {
       "name": "PageCacheSource",
@@ -159,11 +159,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
+        "declarationTypeText": "{\n    /** 清除指定页面的内存缓存，同时由 handle 清除 localStorage 中对应的四文件条目 */\n    clearPageCache(pageId: string): void;\n    /** 清除所有页面的内存与 localStorage 缓存，返回清除前统计（size + keys） */\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    /** 返回当前缓存条目统计，不含 localStorage 条目 */\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
         "members": {
           "methods": [
             {
               "name": "clearPageCache",
+              "jsdoc": "清除指定页面的内存缓存，同时由 handle 清除 localStorage 中对应的四文件条目",
               "parameters": [
                 {
                   "name": "pageId",
@@ -180,6 +181,7 @@
             },
             {
               "name": "clearAllCache",
+              "jsdoc": "清除所有页面的内存与 localStorage 缓存，返回清除前统计（size + keys）",
               "parameters": [],
               "type": {
                 "type": "unknown",
@@ -188,6 +190,7 @@
             },
             {
               "name": "getCacheStats",
+              "jsdoc": "返回当前缓存条目统计，不含 localStorage 条目",
               "parameters": [],
               "type": {
                 "type": "unknown",
@@ -204,16 +207,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/page-cache.d.ts",
-        "line": 22,
+        "line": 25,
         "className": "PageCacheHandle",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
+        "declarationTypeText": "{\n    /** 清除指定页面的内存缓存及 localStorage 中 spark_page_ 前缀的四文件条目 */\n    clearPageCache(pageId: string): void;\n    /** 清除所有页面的内存与 localStorage 缓存，返回清除前统计 */\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    /** 返回当前缓存条目统计（条目数 + key 列表） */\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
         "members": {
           "methods": [
             {
               "name": "clearPageCache",
+              "jsdoc": "清除指定页面的内存缓存及 localStorage 中 spark_page_ 前缀的四文件条目",
               "parameters": [
                 {
                   "name": "pageId",
@@ -230,6 +234,7 @@
             },
             {
               "name": "clearAllCache",
+              "jsdoc": "清除所有页面的内存与 localStorage 缓存，返回清除前统计",
               "parameters": [],
               "type": {
                 "type": "unknown",
@@ -238,6 +243,7 @@
             },
             {
               "name": "getCacheStats",
+              "jsdoc": "返回当前缓存条目统计（条目数 + key 列表）",
               "parameters": [],
               "type": {
                 "type": "unknown",

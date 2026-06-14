@@ -26,7 +26,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.374Z",
+  "generatedAt": "2026-06-14T19:56:25.739Z",
   "models": {
     "SessionToolCallCardProps": {
       "name": "SessionToolCallCardProps",
@@ -40,11 +40,11 @@
         "componentName": "SessionToolCallCard"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 当前要展示的工具调用条目，包含工具名、参数预览、调用状态、耗时等渲染所需的投影数据 */\n    toolCall: ToolCallDisplayItem;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+            "typeText": "Readonly<{\n    /** 当前要展示的工具调用条目，包含工具名、参数预览、调用状态、耗时等渲染所需的投影数据 */\n    toolCall: ToolCallDisplayItem;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -52,6 +52,7 @@
           "attributes": [
             {
               "name": "toolCall",
+              "jsdoc": "当前要展示的工具调用条目，包含工具名、参数预览、调用状态、耗时等渲染所需的投影数据",
               "readable": true,
               "writable": false
             }

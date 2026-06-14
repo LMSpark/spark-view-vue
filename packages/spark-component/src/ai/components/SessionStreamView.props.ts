@@ -8,8 +8,12 @@ import type { StreamDisplayEntry } from '../types'
 
 /** Session Stream View Props 的属性契约。 */
 export type SessionStreamViewProps = Readonly<{
+  /** 流式显示条目数组：每条包含文本增量、推理过程或工具调用结果。 */
   entries: readonly StreamDisplayEntry[]
+  /** AI 是否正在流式输出文本增量。 */
   isStreaming: boolean
+  /** AI 是否正在输出推理过程（如 chain-of-thought）。 */
   isReasoning: boolean
+  /** 无条目时的占位提示文本。 */
   emptyText?: string
 }>

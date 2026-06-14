@@ -18,33 +18,53 @@ import type {
 
 /** Ai Agent Session Summary 的语义模型。 */
 export type AiAgentSessionSummary = Readonly<{
+  /** 会话状态，如 'running' / 'stopped' / 'completed'；sessionRecord 为空时为 null。 */
   status: string | null
+  /** 历史 entry 总数（消息 + 工具调用 + 未知条目）。 */
   historyCount: number
+  /** 消息类 entry 数量（仅 kind='message'）。 */
   messageCount: number
+  /** 工具调用 entry 数量（仅 kind='functionCall'）。 */
   toolCallCount: number
+  /** 失败的工具调用数量（status='failed'），用于判断 Agent 工具能力是否闭环。 */
   failedToolCallCount: number
+  /** 所有工具调用使用过的函数名去重列表，用于快速了解本会话涉及哪些能力。 */
   functionNames: readonly string[]
+  /** 最后一条 assistant 消息的文本内容；无 assistant 消息时为空串。 */
   lastAssistantText: string
 }>
 
 /** Ai Agent Session Transcript Entry 的语义模型。 */
 export type AiAgentSessionTranscriptEntry = Readonly<{
+  /** 历史条目的序号，与 session history 中的 seq 对应；解析失败时为 null。 */
   seq: number | null
+  /** 历史条目的唯一 ID；解析失败时为空串。 */
   id: string
+  /** ISO 时间戳字符串；原始 timestamp 为非数字时为 null。 */
   timestamp: string | null
+  /** 条目种类：message = 消息，functionCall = 工具调用，unknown = 无法识别。 */
   kind: 'message' | 'functionCall' | 'unknown'
+  /** 方向标识，如 'USER => AGENT' / 'LLM => AGENT' / 'AGENT TOOL => LLM'。 */
   direction: string
+  /** 消息角色（仅 kind='message' 时有值）：user / assistant / system / developer。 */
   role?: string
+  /** 消息来源（仅 kind='message' 时可能有值）。 */
   source?: string
+  /** 工具名称（仅 kind='functionCall' 时有值）。 */
   toolName?: string
+  /** 工具调用状态（仅 kind='functionCall' 时可能有值），如 'completed' / 'failed'。 */
   status?: string
+  /** 消息内容或未知条目的序列化文本，按 contentLimit 裁剪。 */
   content?: string
+  /** 工具调用参数的序列化文本，按 contentLimit 裁剪。 */
   args?: string
+  /** 工具调用结果的序列化文本（优先取 result，fallback 取 error），按 contentLimit 裁剪。 */
   result?: string
 }>
 
 /** Ai Agent Session Transcript Options 的调用配置。 */
 export type AiAgentSessionTranscriptOptions = Readonly<{
+  /** 单个字段最大字符数，超出部分截断并追加 truncation 标记；默认 12000。 */
   contentLimit?: number
 }>
 

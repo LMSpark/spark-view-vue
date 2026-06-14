@@ -42,15 +42,21 @@ type AiAgentToolNameResolver = (toolName: string) => string | null
 
 /** 工具调用执行的输入参数 */
 type AiAgentToolCallExecutionInput<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 当前工具的业务注册信息，含 runtime 执行器、生命周期钩子和恢复提示配置 */
   registration: AiAgentRegistration<TInput>
+  /** Agent 运行时作用域，提供 moduleId / moduleInstanceId / instanceId 等定位信息 */
   scope: AiAgentScope
+  /** 当前 turn 的元数据（turnId 等），用于诊断事件和工具调用记录关联 */
   turn: AiAgentTurnMeta
+  /** 当前 tool loop 中的轮次序号，从 0 开始；用于工具调用记录和诊断定位 */
   round: number
   /** transport toolName → runtime toolName 的解析函数 */
   resolveToolName: AiAgentToolNameResolver
   /** LLM 返回的原始 transport tool_call */
   call: AiAgentTransportToolCall
+  /** 当前 chat 请求，携带 beforeFunctionCall 钩子、onDelta / onToolCall 等回调 */
   request: AiAgentChatRequest
+  /** 会话存储，用于追加工具调用历史记录（appendFunctionCall） */
   sessionStore: AiAgentSessionStore
 }>
 

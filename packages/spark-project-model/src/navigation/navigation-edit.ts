@@ -106,6 +106,7 @@ warnings: string[]
 type NavigationNodePatchTarget = {
     /** 唯一标识。 */
 readonly id: string
+  /** 将导航补丁应用到目标节点；修改节点的可编辑字段（title/icon/path/hidden 等），但不改变 id 和树结构 */
   applyNavigationPatch(patch: ProjectNodeNavigationPatch): void
 }
 

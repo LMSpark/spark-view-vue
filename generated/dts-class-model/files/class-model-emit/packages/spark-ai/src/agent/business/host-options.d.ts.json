@@ -33,7 +33,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.306Z",
+  "generatedAt": "2026-06-14T19:26:37.289Z",
   "models": {
     "AiAgentOptions": {
       "name": "AiAgentOptions",
@@ -46,11 +46,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务注册查找表；host.run() 通过 moduleId 查找对应 AiAgentRegistration，找不到则 throw。 */\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    /** APP 层 I/O 回调；tool-loop 通过它分发流式 delta / reasoning / toolCall 事件到 transport。 */\n    turnCallbacks: AiAgentTurnCallbacks;\n    /** 单次 run 内工具调用最大轮次安全阀；达到上限时 tool-loop 通知前端并终止，生产默认 16。 */\n    maxToolRounds?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+            "typeText": "Readonly<{\n    /** 业务注册查找表；host.run() 通过 moduleId 查找对应 AiAgentRegistration，找不到则 throw。 */\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    /** APP 层 I/O 回调；tool-loop 通过它分发流式 delta / reasoning / toolCall 事件到 transport。 */\n    turnCallbacks: AiAgentTurnCallbacks;\n    /** 单次 run 内工具调用最大轮次安全阀；达到上限时 tool-loop 通知前端并终止，生产默认 16。 */\n    maxToolRounds?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -58,16 +58,19 @@
           "attributes": [
             {
               "name": "registry",
+              "jsdoc": "业务注册查找表；host.run() 通过 moduleId 查找对应 AiAgentRegistration，找不到则 throw。",
               "readable": true,
               "writable": false
             },
             {
               "name": "turnCallbacks",
+              "jsdoc": "APP 层 I/O 回调；tool-loop 通过它分发流式 delta / reasoning / toolCall 事件到 transport。",
               "readable": true,
               "writable": false
             },
             {
               "name": "maxToolRounds",
+              "jsdoc": "单次 run 内工具调用最大轮次安全阀；达到上限时 tool-loop 通知前端并终止，生产默认 16。",
               "readable": true,
               "writable": false
             }

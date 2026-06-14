@@ -17,37 +17,55 @@ import { getProjectDetailApi, getProjectNavigationApi } from '@/services/api-pat
 /** Project Layout Placement 的语义模型。 */
 export type ProjectLayoutPlacement = 'header' | 'sidebar'
 
-/** Project Detail 的语义模型。 */
+/** 项目详情：从后端 API 读取的项目元数据投影 */
 export type ProjectDetail = {
+  /** 租户 ID，多租户隔离标识 */
   tenantId: string
+  /** 项目 ID，项目唯一标识 */
   projectId: string
+  /** 项目名称 */
   name: string
+  /** 项目类型（如 lowcode / procode 等） */
   projectType: string
+  /** 项目图标资源标识 */
   icon: string
+  /** 项目描述 */
   description: string
+  /** 首页节点 ID，null 表示未配置首页 */
   homeNodeId: string | null
+  /** 项目排序权重，数值越小越靠前 */
   order: number
 }
 
-/** Project Home Node Option 的语义模型。 */
+/** 首页节点候选项，从导航树中筛选可配置为首页的节点 */
 export type ProjectHomeNodeOption = {
+  /** 节点 ID */
   id: string
+  /** 节点标题 */
   title: string
+  /** 节点路由路径 */
   path: string
+  /** 组合标签："{title} — {path}"，用于下拉选择器展示 */
   label: string
 }
 
-/** Project Runtime Settings 的语义模型。 */
+/** 项目运行时设置：聚合项目详情、导航布局与首页候选列表，供 Shell 初始化使用 */
 export type ProjectRuntimeSettings = {
+  /** 项目详情元数据 */
   project: ProjectDetail
+  /** 子页面放置位置：header=顶部标签栏 / sidebar=侧边栏 */
   childPlacement: ProjectLayoutPlacement
+  /** 导航根模块 ID，null 表示导航未加载；用于保存布局时定位后端节点 */
   rootModuleId: string | null
+  /** 可配置为首页的节点候选列表 */
   homeNodeOptions: ProjectHomeNodeOption[]
 }
 
-/** Project Runtime Settings Input 的输入数据。 */
+/** 保存项目运行时设置的输入参数，只包含用户可修改的字段 */
 export type ProjectRuntimeSettingsInput = {
+  /** 子页面放置位置 */
   childPlacement: ProjectLayoutPlacement
+  /** 首页节点 ID，null 表示清除首页配置 */
   homeNodeId: string | null
 }
 
@@ -118,11 +136,15 @@ export async function loadProjectRuntimeSettings(
   }
 }
 
-/** Save Project Runtime Settings Command 的命令参数。 */
+/** 保存项目运行时设置的命令参数 */
 export type SaveProjectRuntimeSettingsCommand = Readonly<{
+  /** 租户 ID */
   tenantId: string
+  /** 项目 ID */
   projectId: string
+  /** 当前生效的运行时设置（用于 diff 判断哪些字段需要保存） */
   current: ProjectRuntimeSettings
+  /** 用户修改后的输入参数 */
   input: ProjectRuntimeSettingsInput
 }>
 
@@ -147,11 +169,15 @@ export async function saveProjectRuntimeSettings(command: SaveProjectRuntimeSett
   }
 }
 
-/** Project Ui Settings 的语义模型。 */
+/** 项目 UI 偏好设置：持久化到 localStorage，不涉及后端 API */
 export type ProjectUiSettings = {
+  /** 是否优先展示顶部头部（header-first 布局） */
   headerFirst: boolean
+  /** 侧边栏是否折叠 */
   sidebarCollapsed: boolean
+  /** 是否显示页脚 */
   showFooter: boolean
+  /** 页面模式：single=单页 / multi=多页标签 */
   pageMode: PageMode
 }
 

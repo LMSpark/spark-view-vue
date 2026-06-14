@@ -28,14 +28,19 @@ import type { AiAgentToolRuntimeInspectReport } from '../tool-runtime'
 
 /** Host 构造选项：必须提供 turnCallbacks（APP 层 I/O 回调），可选 maxToolRounds 安全阀 */
 export type CreateAiAgentHostOptions = Readonly<{
+  /** APP 层 I/O 回调：spark-ai 通过此接口执行 turn、追加消息，不自行发起网络请求 */
   turnCallbacks: AiAgentTurnCallbacks
+  /** 单次 run 中工具循环最大轮数安全阀，超出后强制终止；省略则使用 spark-ai 内部默认值 */
   maxToolRounds?: number
 }>
 
 /** Host.run() 的返回值：包含创建的 task 和 session */
 export type AiAgentHostRunResult = Readonly<{
+  /** 本次 run 创建的任务描述（含 scope、orchestration、normalizedInput） */
   task: AiAgentTask
+  /** 本次 run 创建的会话（持有 turn 交互历史与 sessionStore） */
   session: AiAgentSession
+  /** 业务层扩展数据，由具体业务在 run 完成后注入额外结果（如生成文件路径等） */
   resultExtras?: Readonly<Record<string, unknown>>
 }>
 
@@ -48,39 +53,57 @@ export type AiAgentHostRegistrationInput<TRegistration> =
 
 /** ensure 命令：延迟创建 registration 的工厂指令 */
 export type AiAgentHostEnsureCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 延迟创建的 registration 所属业务模块标识，必须与 create() 返回的 registration.moduleId 一致 */
   moduleId: string
+  /** 延迟工厂：仅在 alias 不存在时调用，返回的 registration.moduleId 必须与命令的 moduleId 匹配 */
   create: () => AiAgentRegistration<TInput>
 }>
 
-/** Ai Agent Host Registration Summary 的语义模型。 */
+/** 已注册业务的摘要信息，用于 listRegistrations() 输出和启动日志 */
 export type AiAgentHostRegistrationSummary = Readonly<{
+  /** 业务注册别名，Host.run() 通过此别名查找并调度业务 */
   alias: string
+  /** 业务模块标识，对应 registry 中的唯一 key */
   moduleId: string
+  /** 业务人类可读名称 */
   name: string
+  /** 业务人类可读描述 */
   description: string
+  /** runtime inspect 检测到的根类型 kind 列表（如 class / interface / enum） */
   rootKinds: readonly string[]
+  /** runtime inspect 检测到的模块数量（含子模块） */
   moduleCount: number
+  /** runtime inspect 状态：healthy / degraded / broken，反映 ClassModel 工具是否完整可用 */
   status: AiAgentToolRuntimeInspectReport['status']
 }>
 
-/** Ai Agent Host Registration Description 的语义模型。 */
+/** 已注册业务的详细信息，在 describe() 中返回，含完整 runtime inspect 报告 */
 export type AiAgentHostRegistrationDescription = AiAgentHostRegistrationSummary & Readonly<{
+  /** 完整的 runtime inspect 报告，包含 findings、moduleCount、rootKinds 等诊断数据 */
   inspectReport: AiAgentToolRuntimeInspectReport
 }>
 
-/** Ai Agent Host Dry Run Diagnostic 的诊断信息。 */
+/** dry-run 诊断条目：校验注册、输入契约、scope、orchestration 和工具清单时产出的单条诊断 */
 export type AiAgentHostDryRunDiagnostic = Readonly<{
+  /** 诊断级别：error 表示无法运行，warn 表示可运行但有风险，info 表示纯信息 */
   level: 'error' | 'warn' | 'info'
+  /** 诊断代码标识，如 DRY_RUN_FAILED / RUNTIME_INSPECT_OK，用于程序化匹配 */
   code: string
+  /** 诊断人类可读消息 */
   message: string
+  /** 可选的修复建议，引导用户解决该诊断问题 */
   fix?: string
 }>
 
-/** Ai Agent Host Orchestration Summary 的语义模型。 */
+/** 编排计划摘要，在 dryRun 结果中提供，用于快速了解本轮 run 的 prompt/step 规模 */
 export type AiAgentHostOrchestrationSummary = Readonly<{
+  /** 编排计划标题，可能为空 */
   title?: string
+  /** 用户消息字符长度，用于估算 token 消耗 */
   userMessageLength: number
+  /** 系统提示词字符长度，用于估算 token 消耗 */
   systemPromptLength: number
+  /** 只读步骤数量（不修改业务数据的预处理步骤） */
   readonlyStepCount: number
 }>
 

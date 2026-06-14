@@ -2874,7 +2874,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.026Z",
+  "generatedAt": "2026-06-14T20:08:36.344Z",
   "models": {
     "SparkEventEmitter": {
       "name": "SparkEventEmitter",
@@ -2887,11 +2887,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void;\n    off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void;\n    emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void;\n    removeAllListeners<K extends string & keyof TEventMap>(event?: K): void;\n    listenerCount<K extends string & keyof TEventMap>(event?: K): number;\n}",
+        "declarationTypeText": "{\n    /** 订阅指定事件；同一 handler 可重复注册，每次 emit 都会调用 */\n    on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void;\n    /** 取消订阅指定事件的指定 handler；必须与 on 传入的是同一函数引用 */\n    off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void;\n    /** 同步触发指定事件，按注册顺序调用所有 handler */\n    emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void;\n    /** 移除指定事件的所有 handler；省略 event 时移除全部事件的所有 handler */\n    removeAllListeners<K extends string & keyof TEventMap>(event?: K): void;\n    /** 返回指定事件当前注册的 handler 数量；省略 event 时返回所有事件 handler 总数 */\n    listenerCount<K extends string & keyof TEventMap>(event?: K): number;\n}",
         "members": {
           "methods": [
             {
               "name": "on",
+              "jsdoc": "订阅指定事件；同一 handler 可重复注册，每次 emit 都会调用",
               "parameters": [
                 {
                   "name": "event",
@@ -2937,6 +2938,7 @@
             },
             {
               "name": "off",
+              "jsdoc": "取消订阅指定事件的指定 handler；必须与 on 传入的是同一函数引用",
               "parameters": [
                 {
                   "name": "event",
@@ -2982,6 +2984,7 @@
             },
             {
               "name": "emit",
+              "jsdoc": "同步触发指定事件，按注册顺序调用所有 handler",
               "parameters": [
                 {
                   "name": "event",
@@ -3009,6 +3012,7 @@
             },
             {
               "name": "removeAllListeners",
+              "jsdoc": "移除指定事件的所有 handler；省略 event 时移除全部事件的所有 handler",
               "parameters": [
                 {
                   "name": "event",
@@ -3029,6 +3033,7 @@
             },
             {
               "name": "listenerCount",
+              "jsdoc": "返回指定事件当前注册的 handler 数量；省略 event 时返回所有事件 handler 总数",
               "parameters": [
                 {
                   "name": "event",
@@ -3057,7 +3062,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 43,
+        "line": 48,
         "className": "DataRow",
         "declarationKind": "typeAlias"
       },
@@ -3092,7 +3097,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 52,
+        "line": 57,
         "className": "ColumnType",
         "declarationKind": "typeAlias"
       },
@@ -3181,7 +3186,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 54,
+        "line": 59,
         "className": "ColumnTypeMap",
         "declarationKind": "typeAlias"
       },
@@ -3301,7 +3306,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 100,
+        "line": 105,
         "className": "InferColumnValue",
         "declarationKind": "typeAlias"
       },
@@ -3316,7 +3321,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 102,
+        "line": 107,
         "className": "ComputedColumnFn",
         "declarationKind": "typeAlias"
       },
@@ -3331,7 +3336,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 115,
+        "line": 120,
         "className": "DataColumn",
         "declarationKind": "typeAlias"
       },
@@ -3445,7 +3450,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 195,
+        "line": 200,
         "className": "TableResourceType",
         "declarationKind": "typeAlias"
       },
@@ -3490,7 +3495,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 206,
+        "line": 211,
         "className": "TableBusinessCategory",
         "declarationKind": "typeAlias"
       },
@@ -3523,7 +3528,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 210,
+        "line": 215,
         "className": "TableSemanticMetadata",
         "declarationKind": "typeAlias"
       },
@@ -3559,7 +3564,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 223,
+        "line": 228,
         "className": "InstancePermission",
         "declarationKind": "typeAlias"
       },
@@ -3613,7 +3618,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 243,
+        "line": 248,
         "className": "ModelPermission",
         "declarationKind": "typeAlias"
       },
@@ -3655,7 +3660,7 @@
       "declarationKind": "enum",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 256,
+        "line": 261,
         "className": "FieldVisibility",
         "declarationKind": "enum"
       },
@@ -3688,7 +3693,7 @@
       "declarationKind": "enum",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 265,
+        "line": 270,
         "className": "ComponentLevel",
         "declarationKind": "enum"
       },
@@ -3721,7 +3726,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 274,
+        "line": 279,
         "className": "HttpEndpoint",
         "declarationKind": "typeAlias"
       },
@@ -3775,7 +3780,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 294,
+        "line": 299,
         "className": "TreeApi",
         "declarationKind": "typeAlias"
       },
@@ -3841,7 +3846,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 335,
+        "line": 340,
         "className": "CrudApi",
         "declarationKind": "typeAlias"
       },
@@ -3924,7 +3929,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 376,
+        "line": 381,
         "className": "RetrieveRecordOptions",
         "declarationKind": "typeAlias"
       },
@@ -3954,7 +3959,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 390,
+        "line": 395,
         "className": "TableMetadata",
         "declarationKind": "typeAlias"
       },
@@ -4013,7 +4018,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 423,
+        "line": 428,
         "className": "FilterOperator",
         "declarationKind": "typeAlias"
       },
@@ -4098,7 +4103,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 431,
+        "line": 436,
         "className": "FilterValueExpression",
         "declarationKind": "typeAlias"
       },
@@ -4140,7 +4145,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 433,
+        "line": 438,
         "className": "FilterFieldValueReference",
         "declarationKind": "typeAlias"
       },
@@ -4170,7 +4175,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 440,
+        "line": 445,
         "className": "FilterLeafExpression",
         "declarationKind": "typeAlias"
       },
@@ -4206,7 +4211,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 449,
+        "line": 454,
         "className": "FilterLogicExpression",
         "declarationKind": "typeAlias"
       },
@@ -4236,7 +4241,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 456,
+        "line": 461,
         "className": "FilterNegatedConditionExpression",
         "declarationKind": "typeAlias"
       },
@@ -4278,7 +4283,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 467,
+        "line": 472,
         "className": "FilterNegatedLogicExpression",
         "declarationKind": "typeAlias"
       },
@@ -4308,7 +4313,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 484,
+        "line": 489,
         "className": "FilterExpression",
         "declarationKind": "typeAlias"
       },
@@ -4345,7 +4350,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 486,
+        "line": 491,
         "className": "SortDirection",
         "declarationKind": "typeAlias"
       },
@@ -4370,7 +4375,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 488,
+        "line": 493,
         "className": "SortField",
         "declarationKind": "typeAlias"
       },
@@ -4400,7 +4405,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 505,
+        "line": 510,
         "className": "SortExpression",
         "declarationKind": "typeAlias"
       },
@@ -4415,7 +4420,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 520,
+        "line": 525,
         "className": "AggregateType",
         "declarationKind": "typeAlias"
       },
@@ -4456,7 +4461,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 522,
+        "line": 527,
         "className": "AggregateResultRow",
         "declarationKind": "typeAlias"
       },
@@ -4471,7 +4476,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 540,
+        "line": 545,
         "className": "AggregateColumnConfig",
         "declarationKind": "typeAlias"
       },
@@ -4507,7 +4512,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 559,
+        "line": 564,
         "className": "ViewMetadata",
         "declarationKind": "typeAlias"
       },
@@ -4621,7 +4626,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 639,
+        "line": 644,
         "className": "TreeConfig",
         "declarationKind": "typeAlias"
       },
@@ -4687,7 +4692,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 662,
+        "line": 667,
         "className": "FlatTreeNode",
         "declarationKind": "typeAlias"
       },
@@ -4741,7 +4746,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 679,
+        "line": 684,
         "className": "NestedTreeNode",
         "declarationKind": "typeAlias"
       },
@@ -4776,7 +4781,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 684,
+        "line": 689,
         "className": "TreePath",
         "declarationKind": "typeAlias"
       },
@@ -4806,7 +4811,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 694,
+        "line": 699,
         "className": "NestedTreeSearchResult",
         "declarationKind": "typeAlias"
       },
@@ -4836,7 +4841,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 717,
+        "line": 722,
         "className": "TableRelation",
         "declarationKind": "typeAlias"
       },
@@ -4902,7 +4907,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 751,
+        "line": 756,
         "className": "DependencyType",
         "declarationKind": "typeAlias"
       },
@@ -4939,7 +4944,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 766,
+        "line": 771,
         "className": "ViewDependency",
         "declarationKind": "typeAlias"
       },
@@ -4981,7 +4986,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 782,
+        "line": 787,
         "className": "DataRelation",
         "declarationKind": "typeAlias"
       },
@@ -5065,7 +5070,7 @@
       "declarationKind": "enum",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 816,
+        "line": 821,
         "className": "RequestState",
         "declarationKind": "enum"
       },
@@ -5110,7 +5115,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 834,
+        "line": 839,
         "className": "CommitMode",
         "declarationKind": "typeAlias"
       },
@@ -5135,7 +5140,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 840,
+        "line": 845,
         "className": "DataSetLayoutMetadata",
         "declarationKind": "typeAlias"
       },
@@ -5159,7 +5164,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 852,
+        "line": 857,
         "className": "DataSetMetadata",
         "declarationKind": "typeAlias"
       },
@@ -5231,7 +5236,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 878,
+        "line": 883,
         "className": "DataSetAppServices",
         "declarationKind": "typeAlias"
       },
@@ -5267,7 +5272,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 914,
+        "line": 919,
         "className": "DataSource",
         "declarationKind": "typeAlias"
       },
@@ -5375,7 +5380,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 961,
+        "line": 966,
         "className": "DataViewEditingFieldChangeEvent",
         "declarationKind": "typeAlias"
       },
@@ -5441,7 +5446,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 980,
+        "line": 985,
         "className": "DataViewApplyEditingRowsResult",
         "declarationKind": "typeAlias"
       },
@@ -5483,7 +5488,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1008,
+        "line": 1013,
         "className": "ViewChangeHandlers",
         "declarationKind": "typeAlias"
       },
@@ -5836,7 +5841,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1038,
+        "line": 1043,
         "className": "DataSetContract",
         "declarationKind": "typeAlias"
       },
@@ -6485,7 +6490,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1141,
+        "line": 1146,
         "className": "DataSetSaveChangesViewSelector",
         "declarationKind": "typeAlias"
       },
@@ -6521,7 +6526,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1150,
+        "line": 1155,
         "className": "DataSetSaveChangesMode",
         "declarationKind": "typeAlias"
       },
@@ -6546,7 +6551,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1152,
+        "line": 1157,
         "className": "DataSetTransactionOperation",
         "declarationKind": "typeAlias"
       },
@@ -6594,7 +6599,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1165,
+        "line": 1170,
         "className": "DataSetTransactionRequest",
         "declarationKind": "typeAlias"
       },
@@ -6624,7 +6629,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1172,
+        "line": 1177,
         "className": "DataSetTransactionOperationResult",
         "declarationKind": "typeAlias"
       },
@@ -6666,7 +6671,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1183,
+        "line": 1188,
         "className": "DataSetTransactionResponse",
         "declarationKind": "typeAlias"
       },
@@ -6720,7 +6725,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1198,
+        "line": 1203,
         "className": "DataSetSaveChangesTransactionConfig",
         "declarationKind": "typeAlias"
       },
@@ -6750,7 +6755,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1205,
+        "line": 1210,
         "className": "DataSetSaveChangesTransactionOptions",
         "declarationKind": "typeAlias"
       },
@@ -6780,7 +6785,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1212,
+        "line": 1217,
         "className": "DataSetSaveChangesConfig",
         "declarationKind": "typeAlias"
       },
@@ -6810,7 +6815,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1219,
+        "line": 1224,
         "className": "DataSetSaveChangesOptions",
         "declarationKind": "typeAlias"
       },
@@ -6852,7 +6857,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1230,
+        "line": 1235,
         "className": "DataSetSaveChangesViewResult",
         "declarationKind": "typeAlias"
       },
@@ -6930,7 +6935,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1253,
+        "line": 1258,
         "className": "DataSetSaveChangesResult",
         "declarationKind": "typeAlias"
       },
@@ -7008,7 +7013,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1279,
+        "line": 1284,
         "className": "CrudResult",
         "declarationKind": "typeAlias"
       },
@@ -7062,7 +7067,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1296,
+        "line": 1301,
         "className": "QueryParams",
         "declarationKind": "typeAlias"
       },
@@ -7176,7 +7181,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1333,
+        "line": 1338,
         "className": "BatchResult",
         "declarationKind": "typeAlias"
       },
@@ -7224,7 +7229,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/types.d.ts",
-        "line": 1351,
+        "line": 1356,
         "className": "CrudOperationConfig",
         "declarationKind": "typeAlias"
       },

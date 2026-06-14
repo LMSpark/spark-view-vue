@@ -43,7 +43,9 @@ type AiAgentFrame = Readonly<{
 
 /** 收集器的构造输入 */
 type TurnEventCollectorInput = Readonly<{
+  /** SSE 流轮次输入：sessionId / turn / signal / onDelta / onReasoning / onStreamEvent 等流式回调。 */
   input: AiAgentStreamTurnInput
+  /** APP SSE 事件源：提供 on(event, handler) 订阅 llm-frame 事件。 */
   source: AiAgentAppSseEventSource
   /** 绝对上限：整轮 turn 最长等待时间。 */
   timeoutMs?: number
@@ -57,7 +59,9 @@ type TurnEventCollectorInput = Readonly<{
 
 /** AI turn 事件收集器接口 */
 export type TurnEventCollector = Readonly<{
+  /** 轮次结果 Promise：resolve 得到 text / reasoning / toolCalls，reject 表示超时/错误/abort。 */
   result: Promise<AiAgentStreamTurnResult>
+  /** 主动关闭收集器：停止监听 SSE 事件，释放定时器和监听器。 */
   close(): void
 }>
 

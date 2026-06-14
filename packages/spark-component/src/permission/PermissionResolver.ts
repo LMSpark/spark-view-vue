@@ -27,7 +27,7 @@ import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 /** Permission Action Context 的运行上下文。 */
 export type PermissionActionContext = ScriptPermissionActionContext & {
-    /** permission Mode 字段。 */
+    /** 导航权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */
 permissionMode?: NavPermissionMode | undefined
 }
 
@@ -119,9 +119,13 @@ export function isPermittedAction(
 
 /** Resolve Field Permission State Input 的输入数据。 */
 export type ResolveFieldPermissionStateInput = Readonly<{
+  /** 待判断权限状态的字段名。 */
   field: string | undefined
+  /** 数据行（需包含 _perm.editableFields / hiddenFields / maskedFields）。 */
   row: DataRow | null | undefined
+  /** 字段渲染配置（如 editable / visible），与 FieldRenderConfig 合并判断。 */
   config?: Omit<FieldRenderConfig, 'field'> | undefined
+  /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */
   permissionMode?: NavPermissionMode | undefined
 }>
 

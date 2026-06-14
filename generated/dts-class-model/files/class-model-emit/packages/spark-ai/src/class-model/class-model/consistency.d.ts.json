@@ -32,7 +32,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:02:05.213Z",
+  "generatedAt": "2026-06-14T19:53:49.985Z",
   "models": {
     "ClassModelBuildConsistencyIssue": {
       "name": "ClassModelBuildConsistencyIssue",
@@ -45,11 +45,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    code: string;\n    path: string;\n    message: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 问题编码，当前固定为 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH'，预留未来区分不同不一致类型。 */\n    code: string;\n    /** 不一致字段的点分路径，如 'module.kinds'、'{kind}.attributes.{name}.jsdoc'，用于定位差异位置。 */\n    path: string;\n    /** 人类可读的差异描述，格式：'源码反射与构建入口不一致: source=... buildEntry=...'。 */\n    message: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    code: string;\n    path: string;\n    message: string;\n}>",
+            "typeText": "Readonly<{\n    /** 问题编码，当前固定为 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH'，预留未来区分不同不一致类型。 */\n    code: string;\n    /** 不一致字段的点分路径，如 'module.kinds'、'{kind}.attributes.{name}.jsdoc'，用于定位差异位置。 */\n    path: string;\n    /** 人类可读的差异描述，格式：'源码反射与构建入口不一致: source=... buildEntry=...'。 */\n    message: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -57,16 +57,19 @@
           "attributes": [
             {
               "name": "code",
+              "jsdoc": "问题编码，当前固定为 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH'，预留未来区分不同不一致类型。",
               "readable": true,
               "writable": false
             },
             {
               "name": "path",
+              "jsdoc": "不一致字段的点分路径，如 'module.kinds'、'{kind}.attributes.{name}.jsdoc'，用于定位差异位置。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "人类可读的差异描述，格式：'源码反射与构建入口不一致: source=... buildEntry=...'。",
               "readable": true,
               "writable": false
             }

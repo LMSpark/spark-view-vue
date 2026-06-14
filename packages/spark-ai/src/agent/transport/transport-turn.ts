@@ -14,8 +14,11 @@ import type { AiAgentStreamTurnInput } from './transport-types'
 
 /** Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键） */
 export type AiAgentTransportTurn = Readonly<{
+  /** turn 唯一 ID（UUID），由 session 在创建 turn 时生成，跨 session 不重复。 */
   turnId: string
+  /** 业务复合键，格式 kind::instanceId::turnId，用于 SSE 事件路由和前端 turn 聚合。 */
   turnKey: string
+  /** 流式复合键，格式 turnKey::streamId，多流并发时区分同一 turn 内的不同输出流；单流场景为 undefined。 */
   streamKey?: string
 }>
 

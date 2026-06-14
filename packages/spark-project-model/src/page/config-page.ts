@@ -48,11 +48,13 @@ css: string | undefined
 
 /** Page Node Like 的语义模型。 */
 export type PageNodeLike = {
-    /** page Id 标识。 */
+    /** 页面唯一标识，与配置页存储目录名一致 */
 readonly pageId: string
-    /** 是否 is Loaded。 */
+    /** 页面四文件（rule/pagedata/script/style）是否已从远端加载到内存 */
 readonly isLoaded: boolean
+  /** 从远端加载页面四文件到内存；重复加载会覆盖内存中未保存的变更 */
   load(options?: PageNodeLoadOptions): Promise<void>
+  /** 将已加载的页面内容组装为渲染配置；未加载时调用会抛异常 */
   toRenderConfig(): PageNodeRenderConfig
 }
 

@@ -6,7 +6,10 @@
  */
 /** Session Reasoning Block Props 的属性契约。 */
 export type SessionReasoningBlockProps = Readonly<{
+  /** AI 推理过程的原始文本内容，在折叠区域中展示。 */
   text: string
+  /** 推理是否已完成并折叠；true 时显示"推理过程（已完成）"，默认 false。 */
   collapsed?: boolean
+  /** 推理是否正在进行中；true 时强制展开折叠面板并显示"正在推理..."，默认 false。 */
   isActive?: boolean
 }>

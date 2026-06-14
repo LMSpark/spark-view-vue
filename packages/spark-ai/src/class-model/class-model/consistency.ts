@@ -18,8 +18,11 @@ import {
 
 /** Class Model Build Consistency Issue 的语义模型。 */
 export type ClassModelBuildConsistencyIssue = Readonly<{
+  /** 问题编码，当前固定为 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH'，预留未来区分不同不一致类型。 */
   code: string
+  /** 不一致字段的点分路径，如 'module.kinds'、'{kind}.attributes.{name}.jsdoc'，用于定位差异位置。 */
   path: string
+  /** 人类可读的差异描述，格式：'源码反射与构建入口不一致: source=... buildEntry=...'。 */
   message: string
 }>
 

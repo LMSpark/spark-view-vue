@@ -73,7 +73,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.829Z",
+  "generatedAt": "2026-06-14T20:17:53.783Z",
   "models": {
     "ApiObjectValidationFinding": {
       "name": "ApiObjectValidationFinding",
@@ -86,11 +86,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn';\n    rule: string;\n    message: string;\n    fix?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 严重程度：error 阻断注册，warn 仅告警。 */\n    level: 'error' | 'warn';\n    /** 校验规则标识，如 kind-required / action-name-duplicate / params-schema-invalid。 */\n    rule: string;\n    /** 面向开发者的可读错误描述。 */\n    message: string;\n    /** 建议修复方式；缺省表示无自动修复建议。 */\n    fix?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    level: 'error' | 'warn';\n    rule: string;\n    message: string;\n    fix?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 严重程度：error 阻断注册，warn 仅告警。 */\n    level: 'error' | 'warn';\n    /** 校验规则标识，如 kind-required / action-name-duplicate / params-schema-invalid。 */\n    rule: string;\n    /** 面向开发者的可读错误描述。 */\n    message: string;\n    /** 建议修复方式；缺省表示无自动修复建议。 */\n    fix?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -98,21 +98,25 @@
           "attributes": [
             {
               "name": "level",
+              "jsdoc": "严重程度：error 阻断注册，warn 仅告警。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rule",
+              "jsdoc": "校验规则标识，如 kind-required / action-name-duplicate / params-schema-invalid。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "面向开发者的可读错误描述。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "建议修复方式；缺省表示无自动修复建议。",
               "readable": true,
               "writable": false
             }
@@ -126,7 +130,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
-        "line": 21,
+        "line": 25,
         "className": "AiApiObjectMetadataValidationError",
         "declarationKind": "class"
       },

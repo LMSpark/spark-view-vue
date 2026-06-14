@@ -8,6 +8,8 @@ import type { SessionDiagnosticsData } from '../types'
 
 /** Session Diagnostics Panel Props 的属性契约。 */
 export type SessionDiagnosticsPanelProps = Readonly<{
+  /** 诊断数据投影（永远非 null，由外部 runtime 生成）；loading 期间内容可能不完整 */
   data: SessionDiagnosticsData
+  /** 诊断数据仍在加载或刷新中；true 时 UI 应显示加载指示器，data 仍可用但不完整 */
   loading?: boolean
 }>

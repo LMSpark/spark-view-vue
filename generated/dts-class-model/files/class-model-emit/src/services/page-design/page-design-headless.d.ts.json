@@ -29,7 +29,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T03:35:14.497Z",
+  "generatedAt": "2026-06-14T19:57:46.560Z",
   "models": {
     "PageDesignEditorResolveContext": {
       "name": "PageDesignEditorResolveContext",
@@ -42,11 +42,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    moduleInstanceId: string;\n}",
+        "declarationTypeText": "{\n    /** 需要解析的 headless 编辑器所对应的模块实例标识；用于从 headlessRegistry 中定位已创建的 ProjectWorkspace */\n    moduleInstanceId: string;\n}",
         "members": {
           "attributes": [
             {
               "name": "moduleInstanceId",
+              "jsdoc": "需要解析的 headless 编辑器所对应的模块实例标识；用于从 headlessRegistry 中定位已创建的 ProjectWorkspace",
               "readable": true,
               "writable": true
             }

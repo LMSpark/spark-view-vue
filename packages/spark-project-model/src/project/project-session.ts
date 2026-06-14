@@ -23,7 +23,9 @@ navigationDirtyScope: ProjectNavigationDirtyScope | null
 
 /** Project Session Owner 的语义模型。 */
 type ProjectSessionOwner = {
+  /** 按 nodeId 在导航树中查找项目节点；未找到返回 null */
   findNodeById(nodeId: string): ProjectNode | null
+  /** 按 pageId 查找已加载的配置页节点；仅返回已 hydrate 的 ConfigPageNode，未找到返回 null */
   findConfigPageByPageId(pageId: string): ConfigPageNode | null
 }
 

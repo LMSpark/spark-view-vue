@@ -29,8 +29,11 @@ const REF_ANNOTATION_SIBLINGS = new Set([
 
 /** Draft2020 Audit Issue 的语义模型。 */
 export type Draft2020AuditIssue = Readonly<{
+  /** 审计问题在 JSON Schema 中的路径，格式为 $.properties.fieldName 等。 */
   path: string
+  /** 违反的审计规则标识，如 INVALID_TYPE、REF_TARGET、REDUNDANT_CONST_TYPE 等。 */
   rule: string
+  /** 规则违反的详细说明，包含具体的违规内容（如非法类型名、多余字段列表等）。 */
   detail: string
 }>
 

@@ -29,6 +29,7 @@ export type SparkSystem = {
 registry: ComponentRegistry
     /** root Context 字段。 */
 rootContext: CapabilityContext
+  /** 在测试系统中创建新的能力上下文；可指定 type 与 id（不指定则自动生成），可选挂载到 parent 上下文（默认 rootContext） */
   createContext(config: Partial<CapabilityContext> & { type: string }, parent?: CapabilityContext): CapabilityContext}
 
 /* -------------------------------------------------------------------------- */

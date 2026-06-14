@@ -38,7 +38,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.373Z",
+  "generatedAt": "2026-06-14T20:18:32.138Z",
   "models": {
     "SessionStreamViewProps": {
       "name": "SessionStreamViewProps",
@@ -52,11 +52,11 @@
         "componentName": "SessionStreamView"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 流式显示条目数组：每条包含文本增量、推理过程或工具调用结果。 */\n    entries: readonly StreamDisplayEntry[];\n    /** AI 是否正在流式输出文本增量。 */\n    isStreaming: boolean;\n    /** AI 是否正在输出推理过程（如 chain-of-thought）。 */\n    isReasoning: boolean;\n    /** 无条目时的占位提示文本。 */\n    emptyText?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 流式显示条目数组：每条包含文本增量、推理过程或工具调用结果。 */\n    entries: readonly StreamDisplayEntry[];\n    /** AI 是否正在流式输出文本增量。 */\n    isStreaming: boolean;\n    /** AI 是否正在输出推理过程（如 chain-of-thought）。 */\n    isReasoning: boolean;\n    /** 无条目时的占位提示文本。 */\n    emptyText?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -64,21 +64,25 @@
           "attributes": [
             {
               "name": "entries",
+              "jsdoc": "流式显示条目数组：每条包含文本增量、推理过程或工具调用结果。",
               "readable": true,
               "writable": false
             },
             {
               "name": "isStreaming",
+              "jsdoc": "AI 是否正在流式输出文本增量。",
               "readable": true,
               "writable": false
             },
             {
               "name": "isReasoning",
+              "jsdoc": "AI 是否正在输出推理过程（如 chain-of-thought）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "emptyText",
+              "jsdoc": "无条目时的占位提示文本。",
               "readable": true,
               "writable": false
             }

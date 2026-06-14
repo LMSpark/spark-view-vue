@@ -146,7 +146,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.049Z",
+  "generatedAt": "2026-06-14T19:57:28.515Z",
   "models": {
     "NavigationTreeNodeLike": {
       "name": "NavigationTreeNodeLike",
@@ -159,7 +159,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    /** order 字段。 */\n    readonly order: number;\n    toNodeData(): ProjectNodeData;\n}",
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    /** order 字段。 */\n    readonly order: number;\n    /** 将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式 */\n    toNodeData(): ProjectNodeData;\n}",
         "members": {
           "attributes": [
             {
@@ -184,6 +184,7 @@
           "methods": [
             {
               "name": "toNodeData",
+              "jsdoc": "将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -201,7 +202,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-        "line": 23,
+        "line": 24,
         "className": "NavigationIndex",
         "declarationKind": "class"
       },

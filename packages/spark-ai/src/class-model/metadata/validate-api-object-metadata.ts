@@ -14,9 +14,13 @@ import type { AiApiObjectMetadata } from './ai-api-object-metadata-schema'
 
 /** Api Object Validation Finding 的语义模型。 */
 export type ApiObjectValidationFinding = Readonly<{
+  /** 严重程度：error 阻断注册，warn 仅告警。 */
   level: 'error' | 'warn'
+  /** 校验规则标识，如 kind-required / action-name-duplicate / params-schema-invalid。 */
   rule: string
+  /** 面向开发者的可读错误描述。 */
   message: string
+  /** 建议修复方式；缺省表示无自动修复建议。 */
   fix?: string
 }>
 

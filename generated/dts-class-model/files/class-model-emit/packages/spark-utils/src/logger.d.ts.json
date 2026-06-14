@@ -105,7 +105,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.633Z",
+  "generatedAt": "2026-06-14T20:18:43.821Z",
   "models": {
     "LogLevel": {
       "name": "LogLevel",
@@ -151,11 +151,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    debug(...args: unknown[]): void;\n    info(...args: unknown[]): void;\n    warn(...args: unknown[]): void;\n    error(...args: unknown[]): void;\n}",
+        "declarationTypeText": "{\n    /** 输出调试级别日志；仅开发环境可见，用于排查内部状态流转。 */\n    debug(...args: unknown[]): void;\n    /** 输出信息级别日志；记录正常业务流程关键节点。 */\n    info(...args: unknown[]): void;\n    /** 输出警告级别日志；非致命异常或降级路径，需要关注但不阻断流程。 */\n    warn(...args: unknown[]): void;\n    /** 输出错误级别日志；业务失败或运行时异常，自动捕获调用栈并附带传输器诊断。 */\n    error(...args: unknown[]): void;\n}",
         "members": {
           "methods": [
             {
               "name": "debug",
+              "jsdoc": "输出调试级别日志；仅开发环境可见，用于排查内部状态流转。",
               "parameters": [
                 {
                   "name": "args",
@@ -178,6 +179,7 @@
             },
             {
               "name": "info",
+              "jsdoc": "输出信息级别日志；记录正常业务流程关键节点。",
               "parameters": [
                 {
                   "name": "args",
@@ -200,6 +202,7 @@
             },
             {
               "name": "warn",
+              "jsdoc": "输出警告级别日志；非致命异常或降级路径，需要关注但不阻断流程。",
               "parameters": [
                 {
                   "name": "args",
@@ -222,6 +225,7 @@
             },
             {
               "name": "error",
+              "jsdoc": "输出错误级别日志；业务失败或运行时异常，自动捕获调用栈并附带传输器诊断。",
               "parameters": [
                 {
                   "name": "args",
@@ -252,16 +256,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/logger.d.ts",
-        "line": 23,
+        "line": 27,
         "className": "LogTransport",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>;\n}",
+        "declarationTypeText": "{\n    /** 将结构化日志发送到传输目标；实现同步或异步均可，异常不会影响日志主流程。 */\n    send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>;\n}",
         "members": {
           "methods": [
             {
               "name": "send",
+              "jsdoc": "将结构化日志发送到传输目标；实现同步或异步均可，异常不会影响日志主流程。",
               "parameters": [
                 {
                   "name": "level",

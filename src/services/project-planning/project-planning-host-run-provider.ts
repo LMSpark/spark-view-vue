@@ -52,7 +52,9 @@ export {
 
 /** projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。 */
 export type ProjectPlanningDeliveryContext = Readonly<{
+  /** headless ProjectWorkspace 实例，持有当前项目的导航树和配置页模型 */
   editor: ProjectWorkspace
+  /** Host Run 成功结束后是否自动保存导航树变更；false 时仅标记 dirty 不落盘 */
   saveNavigationAfterRun: boolean
 }>
 

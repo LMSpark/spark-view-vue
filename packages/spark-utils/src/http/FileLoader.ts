@@ -79,9 +79,13 @@ type LoadOptionBase = {
 
 /** File Loader Store Input 的输入数据。 */
 export type FileLoaderStoreInput = Readonly<{
+  /** 缓存键（通常为文件路径）。 */
   key: string
+  /** 要缓存的数据（任意可 JSON 序列化的值）。 */
   data: unknown
+  /** 后端源文件版本戳，用于条件读取和缓存失效判定。 */
   sourceTimestamp: string
+  /** 过期级别，对应 expirationTiers 中的 level；缺省使用全局默认值。 */
   expirationLevel?: number | undefined
 }>
 
@@ -102,12 +106,12 @@ type StorageScopedBudgetCommand = Readonly<{
 
 /** Json Load Options 的调用配置。 */
 export type JsonLoadOptions = LoadOptionBase & {
-    /** parse JSON 字段。 */
+    /** 是否将响应体按 JSON 解析（默认 true）。 */
 parseJSON?: true}
 
 /** Text Load Options 的调用配置。 */
 export type TextLoadOptions = LoadOptionBase & {
-    /** parse JSON 字段。 */
+    /** 是否将响应体按 JSON 解析（false=返回原始字符串）。 */
 parseJSON: false}
 
 /** Transform Load Options 的调用配置。 */

@@ -70,7 +70,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.001Z",
+  "generatedAt": "2026-06-14T19:57:08.346Z",
   "models": {
     "SparkSystem": {
       "name": "SparkSystem",
@@ -83,7 +83,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
+        "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    /** 在测试系统中创建新的能力上下文；可指定 type 与 id（不指定则自动生成），可选挂载到 parent 上下文（默认 rootContext） */\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
         "members": {
           "attributes": [
             {
@@ -102,6 +102,7 @@
           "methods": [
             {
               "name": "createContext",
+              "jsdoc": "在测试系统中创建新的能力上下文；可指定 type 与 id（不指定则自动生成），可选挂载到 parent 上下文（默认 rootContext）",
               "parameters": [
                 {
                   "name": "config",

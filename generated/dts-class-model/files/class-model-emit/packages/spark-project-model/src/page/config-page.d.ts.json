@@ -341,7 +341,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-13T21:09:36.121Z",
+  "generatedAt": "2026-06-14T20:06:13.022Z",
   "models": {
     "PageNodeRenderConfig": {
       "name": "PageNodeRenderConfig",
@@ -408,18 +408,18 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** page Id 标识。 */\n    readonly pageId: string;\n    /** 是否 is Loaded。 */\n    readonly isLoaded: boolean;\n    load(options?: PageNodeLoadOptions): Promise<void>;\n    toRenderConfig(): PageNodeRenderConfig;\n}",
+        "declarationTypeText": "{\n    /** 页面唯一标识，与配置页存储目录名一致 */\n    readonly pageId: string;\n    /** 页面四文件（rule/pagedata/script/style）是否已从远端加载到内存 */\n    readonly isLoaded: boolean;\n    /** 从远端加载页面四文件到内存；重复加载会覆盖内存中未保存的变更 */\n    load(options?: PageNodeLoadOptions): Promise<void>;\n    /** 将已加载的页面内容组装为渲染配置；未加载时调用会抛异常 */\n    toRenderConfig(): PageNodeRenderConfig;\n}",
         "members": {
           "attributes": [
             {
               "name": "pageId",
-              "jsdoc": "page Id 标识。",
+              "jsdoc": "页面唯一标识，与配置页存储目录名一致",
               "readable": true,
               "writable": false
             },
             {
               "name": "isLoaded",
-              "jsdoc": "是否 is Loaded。",
+              "jsdoc": "页面四文件（rule/pagedata/script/style）是否已从远端加载到内存",
               "readable": true,
               "writable": false
             }
@@ -427,6 +427,7 @@
           "methods": [
             {
               "name": "load",
+              "jsdoc": "从远端加载页面四文件到内存；重复加载会覆盖内存中未保存的变更",
               "parameters": [
                 {
                   "name": "options",
@@ -453,6 +454,7 @@
             },
             {
               "name": "toRenderConfig",
+              "jsdoc": "将已加载的页面内容组装为渲染配置；未加载时调用会抛异常",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -470,7 +472,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/page/config-page.d.ts",
-        "line": 40,
+        "line": 42,
         "className": "ProjectConfigPageNodeModelOptions",
         "declarationKind": "typeAlias"
       },
@@ -505,7 +507,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/page/config-page.d.ts",
-        "line": 51,
+        "line": 53,
         "className": "ConfigPageNode",
         "declarationKind": "class"
       },

@@ -18,17 +18,22 @@ import type {
 
 /** Class Model Failure Mode Recovery Command 的命令参数。 */
 export type ClassModelFailureModeRecoveryCommand = Readonly<{
+  /** 触发恢复的动作调用返回结果，code 用于匹配 failureMode.code，msg 用于 when 条件文本匹配 */
   callResult: Readonly<{
     code: string
     msg: string
   }>
+  /** 模块实例 ID（如页面 ID），用于将 fix 模板中的 <pageId> 占位符替换为实际值 */
   moduleInstanceId?: string
 }>
 
 /** Class Model Failure Mode Recovery Context 的运行上下文。 */
 export type ClassModelFailureModeRecoveryContext = Readonly<{
+  /** API 对象的 kind 标识，用于定位失败动作所属的 ClassModel API 类别 */
   kind: string
+  /** 失败动作名称，用于在 recovery hint 中反查 model_action_guide */
   actionName: string
+  /** 匹配到的失败模式定义，含 code/when/fix 等字段，驱动 hint 生成 */
   mode: AiApiActionFailureMode
 }>
 

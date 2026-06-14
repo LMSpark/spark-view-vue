@@ -146,7 +146,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T13:02:05.234Z",
+  "generatedAt": "2026-06-14T19:54:44.932Z",
   "models": {
     "DtsClassModelBundleLoaderOptions": {
       "name": "DtsClassModelBundleLoaderOptions",
@@ -159,11 +159,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    manifestUrl: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** bundle manifest.json 的 URL，loader 从此文件发现所有 shard 路径。 */\n    manifestUrl: string;\n    /** 自定义 JSON 获取函数；默认使用 fetch + JSON.parse，Node 环境需注入 fs-based 实现。 */\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    manifestUrl: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** bundle manifest.json 的 URL，loader 从此文件发现所有 shard 路径。 */\n    manifestUrl: string;\n    /** 自定义 JSON 获取函数；默认使用 fetch + JSON.parse，Node 环境需注入 fs-based 实现。 */\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -171,6 +171,7 @@
           "attributes": [
             {
               "name": "manifestUrl",
+              "jsdoc": "bundle manifest.json 的 URL，loader 从此文件发现所有 shard 路径。",
               "readable": true,
               "writable": false
             }
@@ -178,6 +179,7 @@
           "methods": [
             {
               "name": "fetchJson",
+              "jsdoc": "自定义 JSON 获取函数；默认使用 fetch + JSON.parse，Node 环境需注入 fs-based 实现。",
               "parameters": [
                 {
                   "name": "url",
@@ -208,7 +210,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
-        "line": 11,
+        "line": 13,
         "className": "DtsClassModelBundleLoader",
         "declarationKind": "class"
       },

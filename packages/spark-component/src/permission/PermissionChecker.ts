@@ -86,9 +86,13 @@ export function getFieldVisibility(field: string, row: DataRow, permissionMode?:
 
 /** Field Mask Input 的输入数据。 */
 export type FieldMaskInput = Readonly<{
+  /** 待脱敏的字段名。 */
   field: string,
+  /** 字段原始值；脱敏规则按字段名和值类型自动选择（手机号/身份证/邮箱/银行卡/通用）。 */
   value: unknown,
+  /** 数据行（用于读取 _perm.hiddenFields / _perm.maskedFields 判断可见性）。 */
   row: DataRow,
+  /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */
   permissionMode?: NavPermissionMode | undefined
 }>
 

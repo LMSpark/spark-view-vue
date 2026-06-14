@@ -81,22 +81,26 @@ function parseFlatTreeNodesInput(
 
 /** Tree Manager Options 的调用配置。 */
 export type TreeManagerOptions = {
-    /** 配置对象。 */
+    /** 树结构配置：idField / parentIdField / textField / treeMode / lazy 等。 */
 config: TreeConfig
-    /** api 字段。 */
+    /** 树 HTTP 接口族配置（children / path / subtree / move / nested / nestedSearch）。 */
 api?: TreeApi
-    /** initial Nodes 字段。 */
+    /** 初始扁平节点数组（直接写入缓存，跳过 HTTP 拉取）。 */
 initialNodes?: FlatTreeNode[]
-    /** http Client 字段。 */
+    /** HTTP 客户端（优先使用外部注入实例共享拦截器/认证；否则懒初始化独立实例）。 */
 httpClient?: HttpClientBase
-    /** endpoint Context Provider 回调。 */
+    /** 端点上下文提供者（tenantId / projectId 等），用于 scoped URL 归一化。 */
 endpointContextProvider?: () => Record<string, unknown>}
 
 /** Fetch Nested Input 的输入数据。 */
 export type FetchNestedInput = Readonly<{
+  /** 子树根节点 ID；缺省则从全局根节点开始拉取。 */
   rootId?: string | number | null | undefined
+  /** 返回节点数量上限；缺省使用端点默认值。 */
   limit?: number | undefined
+  /** 拉取深度上限；缺省使用端点或 TreeConfig 中的 depthLimit。 */
   depthLimit?: number | undefined
+  /** 树模式：flat=扁平 parentId 索引，nested=服务端嵌套 JSON；缺省使用 TreeConfig.treeMode。 */
   treeMode?: 'flat' | 'nested' | undefined
 }>
 

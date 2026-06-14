@@ -338,7 +338,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.919Z",
+  "generatedAt": "2026-06-14T20:21:27.490Z",
   "models": {
     "AiAgentTransportToolSpec": {
       "name": "AiAgentTransportToolSpec",
@@ -351,11 +351,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具类型，当前固定为 'function'（对齐 OpenAI） */\n    type: 'function';\n    /** 函数定义：名称、描述、参数 JSON Schema、可选 strict 模式 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
+            "typeText": "Readonly<{\n    /** 工具类型，当前固定为 'function'（对齐 OpenAI） */\n    type: 'function';\n    /** 函数定义：名称、描述、参数 JSON Schema、可选 strict 模式 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -363,11 +363,13 @@
           "attributes": [
             {
               "name": "type",
+              "jsdoc": "工具类型，当前固定为 'function'（对齐 OpenAI）",
               "readable": true,
               "writable": false
             },
             {
               "name": "function",
+              "jsdoc": "函数定义：名称、描述、参数 JSON Schema、可选 strict 模式",
               "readable": true,
               "writable": false
             }
@@ -381,16 +383,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 23,
+        "line": 25,
         "className": "AiAgentTransportMessage",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    /** 消息文本内容 */\n    content: string;\n    /** role='tool' 时的工具调用 ID，与 AiAgentTransportToolCall.id 对应 */\n    tool_call_id?: string;\n    /** role='assistant' 时的工具调用列表（一次 assistant 消息可发起多个并行 tool call） */\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
+            "typeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    /** 消息文本内容 */\n    content: string;\n    /** role='tool' 时的工具调用 ID，与 AiAgentTransportToolCall.id 对应 */\n    tool_call_id?: string;\n    /** role='assistant' 时的工具调用列表（一次 assistant 消息可发起多个并行 tool call） */\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -404,16 +406,19 @@
             },
             {
               "name": "content",
+              "jsdoc": "消息文本内容",
               "readable": true,
               "writable": false
             },
             {
               "name": "tool_call_id",
+              "jsdoc": "role='tool' 时的工具调用 ID，与 AiAgentTransportToolCall.id 对应",
               "readable": true,
               "writable": false
             },
             {
               "name": "tool_calls",
+              "jsdoc": "role='assistant' 时的工具调用列表（一次 assistant 消息可发起多个并行 tool call）",
               "readable": true,
               "writable": false
             }
@@ -423,20 +428,20 @@
     },
     "AiAgentTransportToolCall": {
       "name": "AiAgentTransportToolCall",
-      "jsdoc": "传输层工具调用",
+      "jsdoc": "传输层工具调用（对齐 OpenAI function tool call）",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 31,
+        "line": 36,
         "className": "AiAgentTransportToolCall",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具调用 ID，用于关联 tool 角色消息的 tool_call_id */\n    id: string;\n    /** 调用类型，当前固定为 'function' */\n    type: 'function';\n    /** 函数调用详情：名称和 JSON 字符串形式的参数 */\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
+            "typeText": "Readonly<{\n    /** 工具调用 ID，用于关联 tool 角色消息的 tool_call_id */\n    id: string;\n    /** 调用类型，当前固定为 'function' */\n    type: 'function';\n    /** 函数调用详情：名称和 JSON 字符串形式的参数 */\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -444,16 +449,19 @@
           "attributes": [
             {
               "name": "id",
+              "jsdoc": "工具调用 ID，用于关联 tool 角色消息的 tool_call_id",
               "readable": true,
               "writable": false
             },
             {
               "name": "type",
+              "jsdoc": "调用类型，当前固定为 'function'",
               "readable": true,
               "writable": false
             },
             {
               "name": "function",
+              "jsdoc": "函数调用详情：名称和 JSON 字符串形式的参数",
               "readable": true,
               "writable": false
             }
@@ -467,16 +475,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 40,
+        "line": 48,
         "className": "AiAgentStreamTurnInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 会话 ID，标识后端持久化的对话上下文 */\n    sessionId: string;\n    /** 本次 turn 的业务作用域（含 kind / instanceId / eventModuleId） */\n    scope: AiAgentScope;\n    /** 轮次元数据 */\n    turn: AiAgentTurnMeta;\n    /** 系统提示词，追加到消息列表之前 */\n    systemPrompt: string;\n    /** 本次 turn 可调用的工具列表 */\n    tools: readonly AiAgentTransportToolSpec[];\n    /** 历史消息列表（含当前用户输入） */\n    messages: readonly AiAgentTransportMessage[];\n    /** 中断信号，触发后取消正在进行的 LLM 请求 */\n    signal?: AbortSignal;\n    /** 原始 AI turn 事件回调 */\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    /** 文本增量回调 */\n    onDelta?: (delta: string) => void;\n    /** 推理过程增量回调 */\n    onReasoning?: (reasoning: string) => void;\n    /** token 用量回调 */\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
+            "typeText": "Readonly<{\n    /** 会话 ID，标识后端持久化的对话上下文 */\n    sessionId: string;\n    /** 本次 turn 的业务作用域（含 kind / instanceId / eventModuleId） */\n    scope: AiAgentScope;\n    /** 轮次元数据 */\n    turn: AiAgentTurnMeta;\n    /** 系统提示词，追加到消息列表之前 */\n    systemPrompt: string;\n    /** 本次 turn 可调用的工具列表 */\n    tools: readonly AiAgentTransportToolSpec[];\n    /** 历史消息列表（含当前用户输入） */\n    messages: readonly AiAgentTransportMessage[];\n    /** 中断信号，触发后取消正在进行的 LLM 请求 */\n    signal?: AbortSignal;\n    /** 原始 AI turn 事件回调 */\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    /** 文本增量回调 */\n    onDelta?: (delta: string) => void;\n    /** 推理过程增量回调 */\n    onReasoning?: (reasoning: string) => void;\n    /** token 用量回调 */\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -484,36 +492,43 @@
           "attributes": [
             {
               "name": "sessionId",
+              "jsdoc": "会话 ID，标识后端持久化的对话上下文",
               "readable": true,
               "writable": false
             },
             {
               "name": "scope",
+              "jsdoc": "本次 turn 的业务作用域（含 kind / instanceId / eventModuleId）",
               "readable": true,
               "writable": false
             },
             {
               "name": "turn",
+              "jsdoc": "轮次元数据",
               "readable": true,
               "writable": false
             },
             {
               "name": "systemPrompt",
+              "jsdoc": "系统提示词，追加到消息列表之前",
               "readable": true,
               "writable": false
             },
             {
               "name": "tools",
+              "jsdoc": "本次 turn 可调用的工具列表",
               "readable": true,
               "writable": false
             },
             {
               "name": "messages",
+              "jsdoc": "历史消息列表（含当前用户输入）",
               "readable": true,
               "writable": false
             },
             {
               "name": "signal",
+              "jsdoc": "中断信号，触发后取消正在进行的 LLM 请求",
               "readable": true,
               "writable": false
             }
@@ -521,6 +536,7 @@
           "methods": [
             {
               "name": "onStreamEvent",
+              "jsdoc": "原始 AI turn 事件回调",
               "parameters": [
                 {
                   "name": "event",
@@ -538,6 +554,7 @@
             },
             {
               "name": "onDelta",
+              "jsdoc": "文本增量回调",
               "parameters": [
                 {
                   "name": "delta",
@@ -554,6 +571,7 @@
             },
             {
               "name": "onReasoning",
+              "jsdoc": "推理过程增量回调",
               "parameters": [
                 {
                   "name": "reasoning",
@@ -570,6 +588,7 @@
             },
             {
               "name": "onUsage",
+              "jsdoc": "token 用量回调",
               "parameters": [
                 {
                   "name": "usage",
@@ -604,16 +623,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 54,
+        "line": 73,
         "className": "AiAgentPrepareSessionInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 会话 ID */\n    sessionId: string;\n    /** 业务作用域 */\n    scope: AiAgentScope;\n    /** 系统提示词 */\n    systemPrompt: string;\n    /** 工具列表 */\n    tools: readonly AiAgentTransportToolSpec[];\n    /** 中断信号 */\n    signal?: AbortSignal;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
+            "typeText": "Readonly<{\n    /** 会话 ID */\n    sessionId: string;\n    /** 业务作用域 */\n    scope: AiAgentScope;\n    /** 系统提示词 */\n    systemPrompt: string;\n    /** 工具列表 */\n    tools: readonly AiAgentTransportToolSpec[];\n    /** 中断信号 */\n    signal?: AbortSignal;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -621,26 +640,31 @@
           "attributes": [
             {
               "name": "sessionId",
+              "jsdoc": "会话 ID",
               "readable": true,
               "writable": false
             },
             {
               "name": "scope",
+              "jsdoc": "业务作用域",
               "readable": true,
               "writable": false
             },
             {
               "name": "systemPrompt",
+              "jsdoc": "系统提示词",
               "readable": true,
               "writable": false
             },
             {
               "name": "tools",
+              "jsdoc": "工具列表",
               "readable": true,
               "writable": false
             },
             {
               "name": "signal",
+              "jsdoc": "中断信号",
               "readable": true,
               "writable": false
             }
@@ -654,16 +678,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 62,
+        "line": 86,
         "className": "AiAgentStreamTurnResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 模型输出的完整文本内容 */\n    text: string;\n    /** 模型推理过程文本（如有） */\n    reasoning?: string;\n    /** 模型发起的工具调用列表 */\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 模型输出的完整文本内容 */\n    text: string;\n    /** 模型推理过程文本（如有） */\n    reasoning?: string;\n    /** 模型发起的工具调用列表 */\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -671,16 +695,19 @@
           "attributes": [
             {
               "name": "text",
+              "jsdoc": "模型输出的完整文本内容",
               "readable": true,
               "writable": false
             },
             {
               "name": "reasoning",
+              "jsdoc": "模型推理过程文本（如有）",
               "readable": true,
               "writable": false
             },
             {
               "name": "toolCalls",
+              "jsdoc": "模型发起的工具调用列表",
               "readable": true,
               "writable": false
             },
@@ -696,20 +723,20 @@
     },
     "AiAgentAppendMessagesInput": {
       "name": "AiAgentAppendMessagesInput",
-      "jsdoc": "追加消息请求输入",
+      "jsdoc": "追加消息请求输入：将工具调用结果同步到后端会话",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 70,
+        "line": 97,
         "className": "AiAgentAppendMessagesInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 会话 ID */\n    sessionId: string;\n    /** 业务作用域 */\n    scope: AiAgentScope;\n    /** 轮次元数据 */\n    turn: AiAgentTurnMeta;\n    /** 待追加的消息列表（通常为 tool 角色的工具调用结果） */\n    messages: readonly AiAgentTransportMessage[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
+            "typeText": "Readonly<{\n    /** 会话 ID */\n    sessionId: string;\n    /** 业务作用域 */\n    scope: AiAgentScope;\n    /** 轮次元数据 */\n    turn: AiAgentTurnMeta;\n    /** 待追加的消息列表（通常为 tool 角色的工具调用结果） */\n    messages: readonly AiAgentTransportMessage[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -717,21 +744,25 @@
           "attributes": [
             {
               "name": "sessionId",
+              "jsdoc": "会话 ID",
               "readable": true,
               "writable": false
             },
             {
               "name": "scope",
+              "jsdoc": "业务作用域",
               "readable": true,
               "writable": false
             },
             {
               "name": "turn",
+              "jsdoc": "轮次元数据",
               "readable": true,
               "writable": false
             },
             {
               "name": "messages",
+              "jsdoc": "待追加的消息列表（通常为 tool 角色的工具调用结果）",
               "readable": true,
               "writable": false
             }
@@ -741,20 +772,20 @@
     },
     "AiAgentAppSseEventSource": {
       "name": "AiAgentAppSseEventSource",
-      "jsdoc": "Ai Agent App Sse Event Source 的语义模型。",
+      "jsdoc": "APP SSE 事件源接口：按事件名订阅 APP 层推送的 SSE 事件",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 77,
+        "line": 108,
         "className": "AiAgentAppSseEventSource",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 订阅指定事件名；返回取消订阅函数 */\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
+            "typeText": "Readonly<{\n    /** 订阅指定事件名；返回取消订阅函数 */\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -762,6 +793,7 @@
           "methods": [
             {
               "name": "on",
+              "jsdoc": "订阅指定事件名；返回取消订阅函数",
               "parameters": [
                 {
                   "name": "name",
@@ -823,7 +855,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 81,
+        "line": 113,
         "className": "AiAgentTurnCallbacks",
         "declarationKind": "typeAlias"
       },

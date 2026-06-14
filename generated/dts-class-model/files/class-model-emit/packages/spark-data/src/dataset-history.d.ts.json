@@ -199,7 +199,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.613Z",
+  "generatedAt": "2026-06-14T20:01:24.714Z",
   "models": {
     "DataSetHistoryStorageAdapter": {
       "name": "DataSetHistoryStorageAdapter",
@@ -212,11 +212,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    getItem(key: string): string | null;\n    setItem(key: string, value: string): void;\n    removeItem(key: string): void;\n}",
+        "declarationTypeText": "{\n    /** 按存储键读取持久化内容；键不存在时返回 null。 */\n    getItem(key: string): string | null;\n    /** 将键值对写入持久化存储；覆盖同名键的已有值。 */\n    setItem(key: string, value: string): void;\n    /** 按存储键删除持久化内容；键不存在时静默忽略。 */\n    removeItem(key: string): void;\n}",
         "members": {
           "methods": [
             {
               "name": "getItem",
+              "jsdoc": "按存储键读取持久化内容；键不存在时返回 null。",
               "parameters": [
                 {
                   "name": "key",
@@ -242,6 +243,7 @@
             },
             {
               "name": "setItem",
+              "jsdoc": "将键值对写入持久化存储；覆盖同名键的已有值。",
               "parameters": [
                 {
                   "name": "key",
@@ -265,6 +267,7 @@
             },
             {
               "name": "removeItem",
+              "jsdoc": "按存储键删除持久化内容；键不存在时静默忽略。",
               "parameters": [
                 {
                   "name": "key",
@@ -289,7 +292,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/dataset-history.d.ts",
-        "line": 9,
+        "line": 12,
         "className": "DataSetHistoryScope",
         "declarationKind": "typeAlias"
       },
@@ -331,7 +334,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/dataset-history.d.ts",
-        "line": 20,
+        "line": 23,
         "className": "DataSetSnapshotSelector",
         "declarationKind": "typeAlias"
       },
@@ -361,7 +364,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/dataset-history.d.ts",
-        "line": 27,
+        "line": 30,
         "className": "DataSetHistorySnapshot",
         "declarationKind": "typeAlias"
       },
@@ -433,7 +436,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/dataset-history.d.ts",
-        "line": 48,
+        "line": 51,
         "className": "DataSetHistoryListOptions",
         "declarationKind": "typeAlias"
       },
@@ -468,7 +471,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/dataset-history.d.ts",
-        "line": 53,
+        "line": 56,
         "className": "DataSetSnapshotCommitOptions",
         "declarationKind": "typeAlias"
       },
@@ -533,7 +536,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/dataset-history.d.ts",
-        "line": 68,
+        "line": 71,
         "className": "DataSetCommitSnapshotOptions",
         "declarationKind": "typeAlias"
       },

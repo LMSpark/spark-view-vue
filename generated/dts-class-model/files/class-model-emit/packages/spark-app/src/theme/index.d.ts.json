@@ -73,7 +73,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.951Z",
+  "generatedAt": "2026-06-14T19:56:01.174Z",
   "models": {
     "ThemeCapability": {
       "name": "ThemeCapability",
@@ -86,7 +86,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "ComponentThemeCapability & {\n    setStorageScope(scopeKey: string | null): void;\n}",
+        "declarationTypeText": "ComponentThemeCapability & {\n    /** 切换 localStorage 作用域键；传入 null 重置为默认（无作用域）键。切换后自动从新作用域重新加载已存储的主题模式并持久化 */\n    setStorageScope(scopeKey: string | null): void;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -95,13 +95,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    setStorageScope(scopeKey: string | null): void;\n}"
+            "typeText": "{\n    /** 切换 localStorage 作用域键；传入 null 重置为默认（无作用域）键。切换后自动从新作用域重新加载已存储的主题模式并持久化 */\n    setStorageScope(scopeKey: string | null): void;\n}"
           }
         ],
         "members": {
           "methods": [
             {
               "name": "setStorageScope",
+              "jsdoc": "切换 localStorage 作用域键；传入 null 重置为默认（无作用域）键。切换后自动从新作用域重新加载已存储的主题模式并持久化",
               "parameters": [
                 {
                   "name": "scopeKey",
@@ -135,7 +136,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
-        "line": 35,
+        "line": 36,
         "className": "ThemeServiceOptions",
         "declarationKind": "typeAlias"
       },
@@ -171,7 +172,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
-        "line": 44,
+        "line": 45,
         "className": "ThemeServiceReactive",
         "declarationKind": "typeAlias"
       },

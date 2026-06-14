@@ -14,22 +14,33 @@
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '../chat/chat-types'
 import { previewAiAgentDiagnosticValue } from './session-diagnostics'
 
-/** Ai Agent Run Trace Tool Call 的语义模型。 */
+/** 工具调用轨迹条目：单次 function tool 调用的 headless 投影 */
 export type AiAgentRunTraceToolCall = Readonly<{
+  /** 工具名称（如 model_script / editNodeTree） */
   toolName: string
+  /** 调用参数的截断预览文本 */
   argsPreview: string
+  /** 所属轮次 ID */
   turnId: string
+  /** 工具循环轮次序号（从 1 开始） */
   round: number
+  /** OpenAI function call ID，可能为 null（非 function calling 场景） */
   callId: string | null
+  /** 调用结果状态：success=成功 / error=失败 */
   status: 'success' | 'error'
+  /** 调用结果的截断摘要文本，可能为 null */
   resultSummary: string | null
+  /** 调用耗时（毫秒） */
   durationMs: number
 }>
 
-/** Ai Agent Run Trace Reasoning 的语义模型。 */
+/** 推理过程轨迹条目：模型 reasoning 输出的 headless 投影 */
 export type AiAgentRunTraceReasoning = Readonly<{
+  /** 推理文本内容 */
   text: string
+  /** 所属轮次 ID */
   turnId: string
+  /** UI 是否默认折叠；轮次结束后自动折叠 */
   collapsed: boolean
 }>
 
@@ -43,38 +54,58 @@ export type AiAgentRunTraceEntry =
   | Readonly<{ kind: 'error'; message: string; timestamp: number }>
   | Readonly<{ kind: 'system-message'; content: string; timestamp: number }>
 
-/** Ai Agent Run Trace Snapshot 的语义模型。 */
+/** run trace 快照：headless 消费者订阅获得的完整只读投影 */
 export type AiAgentRunTraceSnapshot = Readonly<{
+  /** 当前正在流式输出的文本（尚未完成一个完整 assistant 消息） */
   streamText: string
+  /** 当前正在流式输出的推理文本 */
   reasoningText: string
+  /** 是否正在流式输出 assistant 文本 */
   isStreaming: boolean
+  /** 是否正在流式输出推理文本 */
   isReasoning: boolean
+  /** 有序的展示条目列表（含 user-message / assistant-delta / reasoning / tool-call / error / system-message） */
   entries: readonly AiAgentRunTraceEntry[]
+  /** 已完成的所有工具调用记录列表 */
   toolCalls: readonly AiAgentRunTraceToolCall[]
 }>
 
-/** Ai Agent Run Trace Options 的调用配置。 */
+/** run trace 创建配置 */
 export type AiAgentRunTraceOptions = Readonly<{
+  /** 自定义时间戳函数，默认 Date.now；测试中可注入确定性时钟 */
   now?: () => number
+  /** 工具调用参数预览截断长度，默认 200 字符 */
   argsPreviewLimit?: number
+  /** 工具调用结果预览截断长度，默认 300 字符 */
   resultPreviewLimit?: number
 }>
 
 /** Ai Agent Run Trace Listener 的语义模型。 */
 export type AiAgentRunTraceListener = (snapshot: AiAgentRunTraceSnapshot) => void
 
-/** Ai Agent Run Trace 的语义模型。 */
+/** headless run trace 接口：UI 无关的活跃 run 状态投影，不持有持久化历史 */
 export type AiAgentRunTrace = Readonly<{
+  /** 获取当前只读快照 */
   snapshot(): AiAgentRunTraceSnapshot
+  /** 订阅快照变化；返回取消订阅函数 */
   subscribe(listener: AiAgentRunTraceListener): () => void
+  /** 追加用户消息条目 */
   appendUserMessage(content: string): void
+  /** 追加模型文本增量（流式输出 token） */
   appendDelta(delta: string): void
+  /** 追加推理文本增量（流式输出 reasoning token） */
   appendReasoning(text: string): void
+  /** 从原始 SSE 事件派发内部状态变更（自动路由 delta/reasoning/result/error） */
   appendEvent(event: AiAgentStreamEvent): void
+  /** 追加工具调用完成记录 */
   appendToolCall(record: AiAgentToolCallRecord): void
+  /** 追加错误条目并清除流式状态 */
   appendError(message: string): void
+  /** 标记为用户主动中断，追加系统消息并结束当前 turn */
   markAborted(message?: string): void
+  /** 结束当前活跃 turn（如有），将 assistant-delta 转为 assistant-complete */
   finish(): void
+  /** 重置全部状态到空快照 */
   reset(): void
 }>
 

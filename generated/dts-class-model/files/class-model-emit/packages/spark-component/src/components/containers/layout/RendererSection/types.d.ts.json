@@ -51,7 +51,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.444Z",
+  "generatedAt": "2026-06-14T20:01:11.862Z",
   "models": {
     "RendererSectionApi": {
       "name": "RendererSectionApi",
@@ -69,11 +69,12 @@
         "componentDirectory": "containers/layout"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    isCollapsed(): boolean;\n    setCollapsed(value: boolean): void;\n    toggle(): void;\n}",
+        "declarationTypeText": "{\n    /** 查询当前折叠状态；返回 true 表示 section 内容已收起。 */\n    isCollapsed(): boolean;\n    /** 设置折叠状态；true 收起内容，false 展开内容。 */\n    setCollapsed(value: boolean): void;\n    /** 切换折叠状态：展开则收起，收起则展开。 */\n    toggle(): void;\n}",
         "members": {
           "methods": [
             {
               "name": "isCollapsed",
+              "jsdoc": "查询当前折叠状态；返回 true 表示 section 内容已收起。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -82,6 +83,7 @@
             },
             {
               "name": "setCollapsed",
+              "jsdoc": "设置折叠状态；true 收起内容，false 展开内容。",
               "parameters": [
                 {
                   "name": "value",
@@ -98,6 +100,7 @@
             },
             {
               "name": "toggle",
+              "jsdoc": "切换折叠状态：展开则收起，收起则展开。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

@@ -80,9 +80,13 @@ type ProjectionSite = Readonly<{
 
 /** Project Dts Source File Projection Options 的调用配置。 */
 type ProjectDtsSourceFileProjectionOptions = Readonly<{
+  /** 仓库根目录的绝对路径，用于归一化 .d.ts 文件路径为 repo 相对路径。 */
   repoRoot: string
+  /** 待投影 .d.ts 文件的绝对路径。 */
   absolutePath: string
+  /** TypeScript SourceFile AST 实例（已解析完成）。 */
   sourceFile: ts.SourceFile
+  /** 是否仅投影 export 声明；默认 false 时投影全部顶层声明。 */
   exportedOnly?: boolean
 }>
 

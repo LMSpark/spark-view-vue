@@ -22,16 +22,19 @@ import {
 
 /** 树形视图态（RendererTree 专用扩展）。 */
 export type RendererTreeViewState = DataViewState & {
-    /** tree Data 字段。 */
-treeData: ComputedRef<TreeNode[]>
-        /** tree Id Field 字段。 */
-treeIdField: ComputedRef<string>}
+    /** 树形节点数组（已嵌套 children），供 RendererTree 组件直接渲染。 */
+    treeData: ComputedRef<TreeNode[]>
+    /** 树 ID 字段名（默认 'id'），用于节点寻址和选中态标识。 */
+    treeIdField: ComputedRef<string>}
 
 /** SparkData.createTreeManager 消费的种子节点形状。 */
 type TreeManagerSeedNode = Record<string, unknown> & {
+  /** 节点唯一标识（字符串或数字）。 */
   id: string | number
-    name: string
-    parentId?: string | number | null}
+  /** 节点显示文本。 */
+  name: string
+  /** 父节点 ID；null/undefined 表示根节点。 */
+  parentId?: string | number | null}
 
 type TreeFieldNames = {
   idField: string
@@ -139,9 +142,13 @@ function buildNestedTreeRows(fields: TreeFieldNames, seedNodes: TreeManagerSeedN
 
 /** Tree Table Rows Input 的输入数据。 */
 export type TreeTableRowsInput = Readonly<{
+  /** 目标 DataView 实例；若已持有 treeManager 则直接用其 buildNestedTree，否则从 rows + treeConfig 重建。 */
   view: DataView | null | undefined,
+  /** 扁平行数据数组（可能已嵌套 children，也可能需要从 parentId 重建树）。 */
   rows: readonly DataRow[],
+  /** 树形配置：idField / parentIdField / textField / treeMode，缺省则不构建树。 */
   treeConfig: TreeConfig | undefined,
+  /** 主键字段名；当 treeConfig.idField 未指定时作为回退。 */
   primaryKey: string | undefined
 }>
 
@@ -166,7 +173,7 @@ export function buildTreeTableRows(input: TreeTableRowsInput): DataRow[] {
 
 /** Renderer Tree View State Options 的调用配置。 */
 type RendererTreeViewStateOptions = {
-    /** data State 状态。 */
+    /** 已有的 DataView 状态（rows / treeConfig / resolvedView 等）。 */
 dataState: DataViewState}
 
 export function useRendererTreeViewState(options: RendererTreeViewStateOptions): RendererTreeViewState {

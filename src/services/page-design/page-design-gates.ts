@@ -11,18 +11,25 @@
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import type { PageNodeFileName, ProjectPageNodeSummary } from '@spark-appworks/spark-project-model'
 
-/** Page Design Allowed Operations 的语义模型。 */
+/** 页面设计允许的操作域：每项 true=放行 / false=硬拦截 / undefined=不限制 */
 export type PageDesignAllowedOperations = Readonly<{
+  /** 是否允许读写节点树（editNodeTree / getNodeTree） */
   nodeTree?: boolean
+  /** 是否允许读写数据集（editDataSet / getDataSetTool） */
   dataSet?: boolean
+  /** 是否允许读写脚本（setFileText / getFileText / writePageFile） */
   script?: boolean
+  /** 是否允许读写样式（setFileText / getFileText / writePageFile） */
   style?: boolean
+  /** 是否允许读写导航（replaceNavigationChildren / readNavigationPlanningInputs） */
   navigation?: boolean
 }>
 
-/** Page Design Run Context 的运行上下文。 */
+/** 页面设计运行上下文：绑定到 pageId，控制本次 run 的操作域与输出约束 */
 export type PageDesignRunContext = Readonly<{
+  /** 操作域白名单，非空时 model_script 中的 API 调用受 marker 硬拦截 */
   allowedOperations?: PageDesignAllowedOperations
+  /** 交付阶段允许保存的文件名列表；为空时不限制输出文件范围 */
   deliverySaveFileNames?: readonly PageNodeFileName[]
 }>
 
@@ -114,12 +121,15 @@ export type PageDesignRunMode = 'create' | 'update' | 'fix'
 /** Page Design Impl Gate 的语义模型。 */
 export type PageDesignImplGate = 'closed' | 'open'
 
-/** Page Design Gate State 的运行状态。 */
+/** 页面设计闸门状态：三重校验（策划就绪 + 实现闸门 + 上游契约），全部通过才允许运行 */
 export type PageDesignGateState = Readonly<{
+  /** 页面 ID，对应 ProjectPageNodeSummary.pageId */
   pageId: string
   /** effectiveDescription 非空即视为策划就绪。 */
   planningReady: boolean
+  /** 实现闸门：closed=人工尚未放行 / open=已放行可执行；未声明时由 strictImplGate 决定默认值 */
   implGate: PageDesignImplGate
+  /** 上游数据契约（iPaaS / pagedata）是否已就绪；未声明时默认 true（过渡兼容） */
   upstreamContractsSatisfied: boolean
 }>
 
@@ -129,11 +139,15 @@ export type ReadPageDesignGateStateOptions = Readonly<{
   strictImplGate?: boolean
 }>
 
-/** Page Design Gate Validation Result 的返回结果。 */
+/** 闸门校验结果：ok=true 放行，ok=false 附带 code / reason / fix 供诊断 */
 export type PageDesignGateValidationResult = Readonly<{
+  /** 是否通过闸门校验 */
   ok: boolean
+  /** 闸门拒绝代码：PLANNING_DRAFT / IMPL_GATE_CLOSED / UPSTREAM_CONTRACTS_UNSATISFIED，通过时为空 */
   code?: string
+  /** 人类可读拒绝原因 */
   reason?: string
+  /** 人类可读修复建议 */
   fix?: string
 }>
 
@@ -216,13 +230,19 @@ const OPERATION_FALSE_SCRIPT_MARKERS = {
   ],
 } as const satisfies Record<keyof PageDesignAllowedOperations, readonly string[]>
 
-/** Evaluate Page Design Mutation Tool Gate Options 的调用配置。 */
+/** 变更类工具闸门评估参数 */
 export type EvaluatePageDesignMutationToolGateOptions = Readonly<{
+  /** 待评估的工具名（如 model_script / writepagefile / openpagedesign） */
   toolName: string
+  /** 页面摘要，用于读取闸门状态 */
   summary: ProjectPageNodeSummary
+  /** 运行模式：create=首次创建 / update=迭代更新 / fix=修复，当前仅影响语义标注 */
   mode?: PageDesignRunMode
+  /** 读取闸门状态时的配置项 */
   gateOptions?: ReadPageDesignGateStateOptions
+  /** 操作域白名单，非空时对 model_script 做 marker 硬拦截 */
   allowedOperations?: PageDesignAllowedOperations
+  /** 工具调用参数，用于提取 model_script 的 script 体做 marker 扫描 */
   toolArgs?: AiJsonParams
 }>
 
@@ -242,10 +262,13 @@ export function evaluatePageDesignMutationToolGate(
   })
 }
 
-/** Evaluate Page Design Script Operation Gate Options 的调用配置。 */
+/** model_script 操作域闸门评估参数（仅针对 model_script 工具的 script 体 marker 扫描） */
 export type EvaluatePageDesignScriptOperationGateOptions = Readonly<{
+  /** 工具名，仅 normalize 后为 model_script 时才执行 marker 扫描 */
   toolName: string
+  /** 工具调用参数，用于提取 script 字段做 marker 扫描 */
   args?: AiJsonParams
+  /** 操作域白名单，非空时对 script 中的 API 调用做 marker 硬拦截 */
   allowedOperations?: PageDesignAllowedOperations
 }>
 

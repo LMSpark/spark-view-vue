@@ -13,8 +13,11 @@ const DEFAULT_HISTORY_LIMIT = 20
 
 /** Data Set History Storage Adapter 的语义模型。 */
 export type DataSetHistoryStorageAdapter = {
+  /** 按存储键读取持久化内容；键不存在时返回 null。 */
   getItem(key: string): string | null
+  /** 将键值对写入持久化存储；覆盖同名键的已有值。 */
   setItem(key: string, value: string): void
+  /** 按存储键删除持久化内容；键不存在时静默忽略。 */
   removeItem(key: string): void}
 
 /** Data Set History Scope 的语义模型。 */

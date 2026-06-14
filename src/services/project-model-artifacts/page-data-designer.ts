@@ -294,37 +294,37 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
 
 /** Designer Column Projection 的语义模型。 */
 export type DesignerColumnProjection = DataColumn & {
-    /** 唯一标识。 */
+    /** 列在画布中的唯一标识（跨对账保持稳定）。 */
 id: string
 }
 
 /** Designer Table Projection 的语义模型。 */
 export type DesignerTableProjection = Omit<TableMetadata, 'columns'> & {
-    /** 唯一标识。 */
+    /** 表在画布中的唯一标识（跨对账保持稳定）。 */
 id: string
-    /** x 字段。 */
+    /** 画布 X 坐标（像素）。 */
 x: number
-    /** y 字段。 */
+    /** 画布 Y 坐标（像素）。 */
 y: number
-    /** 列定义集合。 */
+    /** 列定义集合（带画布 ID）。 */
 columns: DesignerColumnProjection[]
 }
 
 /** Designer Relation Projection 的语义模型。 */
 export type DesignerRelationProjection = TableRelation & {
-    /** relation Type 字段。 */
+    /** 关系类型：one-to-many（默认）/ one-to-one / many-to-many。 */
 relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many'
 }
 
 /** Designer Table Ui State 的运行状态。 */
 export type DesignerTableUiState = {
-    /** 唯一标识。 */
+    /** 表在画布中的唯一标识。 */
 id: string
-    /** x 字段。 */
+    /** 画布 X 坐标（像素）。 */
 x: number
-    /** y 字段。 */
+    /** 画布 Y 坐标（像素）。 */
 y: number
-    /** column Ids 字段。 */
+    /** 列名到列 ID 的映射（跨对账保持列标识稳定）。 */
 columnIds: Record<string, string>
 }
 
@@ -333,9 +333,13 @@ type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y
 
 /** Designer Table Ui State Reconcile Input 的输入数据。 */
 export type DesignerTableUiStateReconcileInput = Readonly<{
+  /** 目标 DataSet 元数据，包含 tables / tableRelations / layout 等完整定义。 */
   metadata: DataSetMetadata
+  /** 当前画布中已有的表投影快照，用于保留已有 ID 和坐标。 */
   currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>
+  /** 生成唯一 ID 的工厂函数（通常为 nanoid 或 uuid）。 */
   createId: () => string
+  /** 新增表的布局策略回调；缺省使用 3 列网格自动定位。 */
   layoutForNewTable?: LayoutForNewTable | undefined
 }>
 

@@ -29,6 +29,7 @@ export type { ThemeMode }
 
 /** Theme Capability 的语义模型。 */
 export type ThemeCapability = ComponentThemeCapability & {
+  /** 切换 localStorage 作用域键；传入 null 重置为默认（无作用域）键。切换后自动从新作用域重新加载已存储的主题模式并持久化 */
   setStorageScope(scopeKey: string | null): void
 }
 

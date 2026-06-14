@@ -84,7 +84,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.410Z",
+  "generatedAt": "2026-06-14T20:21:45.724Z",
   "models": {
     "RendererTreeViewState": {
       "name": "RendererTreeViewState",
@@ -100,7 +100,7 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "DataViewState & {\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}",
+        "declarationTypeText": "DataViewState & {\n    /** 树形节点数组（已嵌套 children），供 RendererTree 组件直接渲染。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** 树 ID 字段名（默认 'id'），用于节点寻址和选中态标识。 */\n    treeIdField: ComputedRef<string>;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -109,20 +109,20 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}"
+            "typeText": "{\n    /** 树形节点数组（已嵌套 children），供 RendererTree 组件直接渲染。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** 树 ID 字段名（默认 'id'），用于节点寻址和选中态标识。 */\n    treeIdField: ComputedRef<string>;\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "treeData",
-              "jsdoc": "tree Data 字段。",
+              "jsdoc": "树形节点数组（已嵌套 children），供 RendererTree 组件直接渲染。",
               "readable": true,
               "writable": true
             },
             {
               "name": "treeIdField",
-              "jsdoc": "tree Id Field 字段。",
+              "jsdoc": "树 ID 字段名（默认 'id'），用于节点寻址和选中态标识。",
               "readable": true,
               "writable": true
             }
@@ -144,11 +144,11 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 目标 DataView 实例；若已持有 treeManager 则直接用其 buildNestedTree，否则从 rows + treeConfig 重建。 */\n    view: DataView | null | undefined;\n    /** 扁平行数据数组（可能已嵌套 children，也可能需要从 parentId 重建树）。 */\n    rows: readonly DataRow[];\n    /** 树形配置：idField / parentIdField / textField / treeMode，缺省则不构建树。 */\n    treeConfig: TreeConfig | undefined;\n    /** 主键字段名；当 treeConfig.idField 未指定时作为回退。 */\n    primaryKey: string | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 目标 DataView 实例；若已持有 treeManager 则直接用其 buildNestedTree，否则从 rows + treeConfig 重建。 */\n    view: DataView | null | undefined;\n    /** 扁平行数据数组（可能已嵌套 children，也可能需要从 parentId 重建树）。 */\n    rows: readonly DataRow[];\n    /** 树形配置：idField / parentIdField / textField / treeMode，缺省则不构建树。 */\n    treeConfig: TreeConfig | undefined;\n    /** 主键字段名；当 treeConfig.idField 未指定时作为回退。 */\n    primaryKey: string | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -156,21 +156,25 @@
           "attributes": [
             {
               "name": "view",
+              "jsdoc": "目标 DataView 实例；若已持有 treeManager 则直接用其 buildNestedTree，否则从 rows + treeConfig 重建。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rows",
+              "jsdoc": "扁平行数据数组（可能已嵌套 children，也可能需要从 parentId 重建树）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "treeConfig",
+              "jsdoc": "树形配置：idField / parentIdField / textField / treeMode，缺省则不构建树。",
               "readable": true,
               "writable": false
             },
             {
               "name": "primaryKey",
+              "jsdoc": "主键字段名；当 treeConfig.idField 未指定时作为回退。",
               "readable": true,
               "writable": false
             }
@@ -184,7 +188,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
-        "line": 21,
+        "line": 25,
         "className": "RendererTreeViewStateOptions",
         "declarationKind": "typeAlias",
         "componentLevel": "table-level",
@@ -192,12 +196,12 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** data State 状态。 */\n    dataState: DataViewState;\n}",
+        "declarationTypeText": "{\n    /** 已有的 DataView 状态（rows / treeConfig / resolvedView 等）。 */\n    dataState: DataViewState;\n}",
         "members": {
           "attributes": [
             {
               "name": "dataState",
-              "jsdoc": "data State 状态。",
+              "jsdoc": "已有的 DataView 状态（rows / treeConfig / resolvedView 等）。",
               "readable": true,
               "writable": true
             }

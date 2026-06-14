@@ -20,7 +20,9 @@ import type { JsonSchema } from './schema-types'
 
 /** Json Schema Local Defs Extraction 的语义模型。 */
 export type JsonSchemaLocalDefsExtraction = Readonly<{
+  /** 移除 $defs 后的 schema 树（引用 #/$defs/* 的 $ref 仍保留原路径） */
   schema: unknown
+  /** 从 schema 树中抽出的所有本地 $defs 定义，按 key 字母序排列；供后续 attachJsonSchemaDefs 合并到文档根 */
   defs: Readonly<Record<string, JsonSchema>>
 }>
 

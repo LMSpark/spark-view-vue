@@ -55,7 +55,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.362Z",
+  "generatedAt": "2026-06-14T20:18:08.583Z",
   "models": {
     "AiToolApprovalCardProps": {
       "name": "AiToolApprovalCardProps",
@@ -69,11 +69,11 @@
         "componentName": "AiToolApprovalCard"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 待审批的工具调用请求，包含工具名、参数摘要和风险描述。 */\n    request: ToolApprovalDisplayItem;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
+            "typeText": "Readonly<{\n    /** 待审批的工具调用请求，包含工具名、参数摘要和风险描述。 */\n    request: ToolApprovalDisplayItem;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -81,6 +81,7 @@
           "attributes": [
             {
               "name": "request",
+              "jsdoc": "待审批的工具调用请求，包含工具名、参数摘要和风险描述。",
               "readable": true,
               "writable": false
             }
@@ -94,17 +95,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
-        "line": 13,
+        "line": 14,
         "className": "AiToolApprovalCardEmits",
         "declarationKind": "typeAlias",
         "componentName": "AiToolApprovalCard"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 用户批准执行该工具调用；参数为工具调用的唯一标识。 */\n    allow: [id: string];\n    /** 用户拒绝执行该工具调用；参数为工具调用 ID 和拒绝原因。 */\n    reject: [id: string, reason: string];\n    /** 用户中止该工具调用（如超时自动中止）；参数为工具调用 ID 和中止原因。 */\n    abort: [id: string, reason: string];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
+            "typeText": "Readonly<{\n    /** 用户批准执行该工具调用；参数为工具调用的唯一标识。 */\n    allow: [id: string];\n    /** 用户拒绝执行该工具调用；参数为工具调用 ID 和拒绝原因。 */\n    reject: [id: string, reason: string];\n    /** 用户中止该工具调用（如超时自动中止）；参数为工具调用 ID 和中止原因。 */\n    abort: [id: string, reason: string];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -112,16 +113,19 @@
           "attributes": [
             {
               "name": "allow",
+              "jsdoc": "用户批准执行该工具调用；参数为工具调用的唯一标识。",
               "readable": true,
               "writable": false
             },
             {
               "name": "reject",
+              "jsdoc": "用户拒绝执行该工具调用；参数为工具调用 ID 和拒绝原因。",
               "readable": true,
               "writable": false
             },
             {
               "name": "abort",
+              "jsdoc": "用户中止该工具调用（如超时自动中止）；参数为工具调用 ID 和中止原因。",
               "readable": true,
               "writable": false
             }

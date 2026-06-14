@@ -143,7 +143,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T13:57:55.666Z",
+  "generatedAt": "2026-06-14T20:01:58.513Z",
   "models": {
     "JsonValidationIssue": {
       "name": "JsonValidationIssue",
@@ -186,11 +186,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: boolean;\n    issues: readonly JsonValidationIssue[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 校验是否通过；true 表示无问题，false 表示 issues 中至少有一条校验问题。 */\n    ok: boolean;\n    /** 校验问题列表；ok 为 true 时为空数组，ok 为 false 时包含所有不满足 schema 的诊断条目。 */\n    issues: readonly JsonValidationIssue[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: boolean;\n    issues: readonly JsonValidationIssue[];\n}>",
+            "typeText": "Readonly<{\n    /** 校验是否通过；true 表示无问题，false 表示 issues 中至少有一条校验问题。 */\n    ok: boolean;\n    /** 校验问题列表；ok 为 true 时为空数组，ok 为 false 时包含所有不满足 schema 的诊断条目。 */\n    issues: readonly JsonValidationIssue[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -198,11 +198,13 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "校验是否通过；true 表示无问题，false 表示 issues 中至少有一条校验问题。",
               "readable": true,
               "writable": false
             },
             {
               "name": "issues",
+              "jsdoc": "校验问题列表；ok 为 true 时为空数组，ok 为 false 时包含所有不满足 schema 的诊断条目。",
               "readable": true,
               "writable": false
             }
@@ -216,16 +218,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
-        "line": 21,
+        "line": 23,
         "className": "JsonSchemaValidateOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 附加到 schema 根的 $defs 映射表，键为定义名，值为对应 JSON Schema；用于解析 schema 内部的 #/$defs/* 引用。 */\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
+            "typeText": "Readonly<{\n    /** 附加到 schema 根的 $defs 映射表，键为定义名，值为对应 JSON Schema；用于解析 schema 内部的 #/$defs/* 引用。 */\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -233,6 +235,7 @@
           "attributes": [
             {
               "name": "schemaDefs",
+              "jsdoc": "附加到 schema 根的 $defs 映射表，键为定义名，值为对应 JSON Schema；用于解析 schema 内部的 #/$defs/* 引用。",
               "readable": true,
               "writable": false
             }
@@ -246,7 +249,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
-        "line": 25,
+        "line": 28,
         "className": "JsonSchemaValidator",
         "declarationKind": "class"
       },

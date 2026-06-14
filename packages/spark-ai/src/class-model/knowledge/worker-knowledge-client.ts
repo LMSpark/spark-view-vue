@@ -21,8 +21,11 @@ import type {
 /** Create Worker Dts Class Model Knowledge Provider Options 的调用配置。 */
 export type CreateWorkerDtsClassModelKnowledgeProviderOptions =
   ClassModelKnowledgeWorkerInitInput & Readonly<{
+    /** Worker 脚本的 URL，用于在主线程创建 Web Worker 实例；必须指向知识链路的 worker 入口文件。 */
     workerUrl: string | URL
+    /** 传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。 */
     workerOptions?: WorkerOptions
+    /** 自定义 Worker 创建函数，用于替代默认的 new Worker()；在非浏览器环境或需要拦截 Worker 生命周期时注入。 */
     createWorker?: (url: string | URL, options?: WorkerOptions) => Worker
   }>
 

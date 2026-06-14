@@ -366,7 +366,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.063Z",
+  "generatedAt": "2026-06-14T20:22:12.299Z",
   "models": {
     "LoadOptionBase": {
       "name": "LoadOptionBase",
@@ -409,11 +409,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    key: string;\n    data: unknown;\n    sourceTimestamp: string;\n    expirationLevel?: number | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 缓存键（通常为文件路径）。 */\n    key: string;\n    /** 要缓存的数据（任意可 JSON 序列化的值）。 */\n    data: unknown;\n    /** 后端源文件版本戳，用于条件读取和缓存失效判定。 */\n    sourceTimestamp: string;\n    /** 过期级别，对应 expirationTiers 中的 level；缺省使用全局默认值。 */\n    expirationLevel?: number | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    key: string;\n    data: unknown;\n    sourceTimestamp: string;\n    expirationLevel?: number | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 缓存键（通常为文件路径）。 */\n    key: string;\n    /** 要缓存的数据（任意可 JSON 序列化的值）。 */\n    data: unknown;\n    /** 后端源文件版本戳，用于条件读取和缓存失效判定。 */\n    sourceTimestamp: string;\n    /** 过期级别，对应 expirationTiers 中的 level；缺省使用全局默认值。 */\n    expirationLevel?: number | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -421,21 +421,25 @@
           "attributes": [
             {
               "name": "key",
+              "jsdoc": "缓存键（通常为文件路径）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "data",
+              "jsdoc": "要缓存的数据（任意可 JSON 序列化的值）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sourceTimestamp",
+              "jsdoc": "后端源文件版本戳，用于条件读取和缓存失效判定。",
               "readable": true,
               "writable": false
             },
             {
               "name": "expirationLevel",
+              "jsdoc": "过期级别，对应 expirationTiers 中的 level；缺省使用全局默认值。",
               "readable": true,
               "writable": false
             }
@@ -449,12 +453,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 51,
+        "line": 55,
         "className": "JsonLoadOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "LoadOptionBase & {\n    /** parse JSON 字段。 */\n    parseJSON?: true;\n}",
+        "declarationTypeText": "LoadOptionBase & {\n    /** 是否将响应体按 JSON 解析（默认 true）。 */\n    parseJSON?: true;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -463,14 +467,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** parse JSON 字段。 */\n    parseJSON?: true;\n}"
+            "typeText": "{\n    /** 是否将响应体按 JSON 解析（默认 true）。 */\n    parseJSON?: true;\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "parseJSON",
-              "jsdoc": "parse JSON 字段。",
+              "jsdoc": "是否将响应体按 JSON 解析（默认 true）。",
               "readable": true,
               "writable": false
             }
@@ -484,12 +488,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 56,
+        "line": 60,
         "className": "TextLoadOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "LoadOptionBase & {\n    /** parse JSON 字段。 */\n    parseJSON: false;\n}",
+        "declarationTypeText": "LoadOptionBase & {\n    /** 是否将响应体按 JSON 解析（false=返回原始字符串）。 */\n    parseJSON: false;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -498,14 +502,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    /** parse JSON 字段。 */\n    parseJSON: false;\n}"
+            "typeText": "{\n    /** 是否将响应体按 JSON 解析（false=返回原始字符串）。 */\n    parseJSON: false;\n}"
           }
         ],
         "members": {
           "attributes": [
             {
               "name": "parseJSON",
-              "jsdoc": "parse JSON 字段。",
+              "jsdoc": "是否将响应体按 JSON 解析（false=返回原始字符串）。",
               "readable": true,
               "writable": true
             }
@@ -519,7 +523,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 61,
+        "line": 65,
         "className": "TransformLoadOptions",
         "declarationKind": "typeAlias"
       },
@@ -582,7 +586,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 69,
+        "line": 73,
         "className": "LoadOptions",
         "declarationKind": "typeAlias"
       },
@@ -614,7 +618,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 71,
+        "line": 75,
         "className": "TransformedFileLoadOptions",
         "declarationKind": "typeAlias"
       },
@@ -636,7 +640,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 73,
+        "line": 77,
         "className": "TransformedFileLoader",
         "declarationKind": "class"
       },
@@ -806,7 +810,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 88,
+        "line": 92,
         "className": "FileLoader",
         "declarationKind": "class"
       },

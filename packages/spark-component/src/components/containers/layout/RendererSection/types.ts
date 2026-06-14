@@ -6,6 +6,9 @@
  */
 /** Renderer Section Api 的语义模型。 */
 export type RendererSectionApi = {
+  /** 查询当前折叠状态；返回 true 表示 section 内容已收起。 */
   isCollapsed(): boolean
+  /** 设置折叠状态；true 收起内容，false 展开内容。 */
   setCollapsed(value: boolean): void
+  /** 切换折叠状态：展开则收起，收起则展开。 */
   toggle(): void}

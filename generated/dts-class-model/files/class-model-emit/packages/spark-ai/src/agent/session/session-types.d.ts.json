@@ -450,7 +450,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.910Z",
+  "generatedAt": "2026-06-14T19:03:35.059Z",
   "models": {
     "AiAgentFunctionCallCheck": {
       "name": "AiAgentFunctionCallCheck",

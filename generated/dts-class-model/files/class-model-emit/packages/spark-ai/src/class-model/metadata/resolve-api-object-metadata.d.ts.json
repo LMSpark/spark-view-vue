@@ -31,7 +31,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.815Z",
+  "generatedAt": "2026-06-14T19:55:51.957Z",
   "models": {
     "JsonSchemaObject": {
       "name": "JsonSchemaObject",
@@ -66,11 +66,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchemaObject>>;\n    /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */\n    inlineSchemaRefs?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 可供 $ref 内联的外部 JSON Schema 定义集；键为 $ref 路径（如 \"#/$defs/Foo\"），值为对应 Schema 对象。仅在 inlineSchemaRefs=true 时消费 */\n    schemaDefs?: Readonly<Record<string, JsonSchemaObject>>;\n    /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */\n    inlineSchemaRefs?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchemaObject>>;\n    /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */\n    inlineSchemaRefs?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 可供 $ref 内联的外部 JSON Schema 定义集；键为 $ref 路径（如 \"#/$defs/Foo\"），值为对应 Schema 对象。仅在 inlineSchemaRefs=true 时消费 */\n    schemaDefs?: Readonly<Record<string, JsonSchemaObject>>;\n    /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */\n    inlineSchemaRefs?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -78,6 +78,7 @@
           "attributes": [
             {
               "name": "schemaDefs",
+              "jsdoc": "可供 $ref 内联的外部 JSON Schema 定义集；键为 $ref 路径（如 \"#/$defs/Foo\"），值为对应 Schema 对象。仅在 inlineSchemaRefs=true 时消费",
               "readable": true,
               "writable": false
             },

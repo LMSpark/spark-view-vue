@@ -11,12 +11,15 @@ import { createAuthHeaders, http } from '@/services/http'
 
 /** Project Planning Editor Resolve Context 的运行上下文。 */
 export type ProjectPlanningEditorResolveContext = Readonly<{
+  /** 模块实例 ID，用于在 headlessRegistry 中查找对应的 ProjectWorkspace 实例；必须事先由 createHeadlessProjectPlanningEditor 注册。 */
   moduleInstanceId: string
 }>
 
 /** Headless Project Planning Editor Scope 的语义模型。 */
 export type HeadlessProjectPlanningEditorScope = Readonly<{
+  /** 租户 ID，用于多租户场景下隔离 API 请求的作用域；未提供时从用户会话推断。 */
   tenantId?: string
+  /** 项目 ID，决定 ProjectWorkspace 绑定的项目；未提供时回退到用户默认项目或 'homepage'。 */
   projectId?: string
 }>
 

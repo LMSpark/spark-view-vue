@@ -509,7 +509,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T01:03:51.211Z",
+  "generatedAt": "2026-06-14T20:18:07.663Z",
   "models": {
     "ProjectNavigationDirtyScope": {
       "name": "ProjectNavigationDirtyScope",
@@ -830,11 +830,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    planningAttachmentRef?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 目标导航节点 ID；对应 navigation tree 中的唯一标识。 */\n    nodeId: string;\n    /** 节点标题；用于 LLM 策划上下文中标识节点语义。 */\n    title: string;\n    /** 节点类型标识（如 page/group/link）；影响策划策略分支。 */\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    /** 策划详细说明附件引用；省略时仅使用 requirement。 */\n    planningAttachmentRef?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    planningAttachmentRef?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 目标导航节点 ID；对应 navigation tree 中的唯一标识。 */\n    nodeId: string;\n    /** 节点标题；用于 LLM 策划上下文中标识节点语义。 */\n    title: string;\n    /** 节点类型标识（如 page/group/link）；影响策划策略分支。 */\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    /** 策划详细说明附件引用；省略时仅使用 requirement。 */\n    planningAttachmentRef?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -842,16 +842,19 @@
           "attributes": [
             {
               "name": "nodeId",
+              "jsdoc": "目标导航节点 ID；对应 navigation tree 中的唯一标识。",
               "readable": true,
               "writable": false
             },
             {
               "name": "title",
+              "jsdoc": "节点标题；用于 LLM 策划上下文中标识节点语义。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nodeKind",
+              "jsdoc": "节点类型标识（如 page/group/link）；影响策划策略分支。",
               "readable": true,
               "writable": false
             },
@@ -863,6 +866,7 @@
             },
             {
               "name": "planningAttachmentRef",
+              "jsdoc": "策划详细说明附件引用；省略时仅使用 requirement。",
               "readable": true,
               "writable": false
             }
@@ -876,16 +880,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 110,
+        "line": 114,
         "className": "ProjectPlanningCompletionInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    summary?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 策划完成摘要；由 LLM 生成，归纳整个策划过程的结论。 */\n    summary?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    summary?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 策划完成摘要；由 LLM 生成，归纳整个策划过程的结论。 */\n    summary?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -893,6 +897,7 @@
           "attributes": [
             {
               "name": "summary",
+              "jsdoc": "策划完成摘要；由 LLM 生成，归纳整个策划过程的结论。",
               "readable": true,
               "writable": false
             }
@@ -906,7 +911,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 114,
+        "line": 119,
         "className": "ProjectPlanningCompletionResult",
         "declarationKind": "typeAlias"
       },
@@ -933,7 +938,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 131,
+        "line": 136,
         "className": "ProjectInfo",
         "declarationKind": "typeAlias"
       },
@@ -1017,7 +1022,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 156,
+        "line": 161,
         "className": "ProjectInfoInput",
         "declarationKind": "typeAlias"
       },
@@ -1052,7 +1057,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 161,
+        "line": 166,
         "className": "ProjectModelInitOptions",
         "declarationKind": "typeAlias"
       },

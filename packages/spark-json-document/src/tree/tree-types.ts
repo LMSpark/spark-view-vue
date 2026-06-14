@@ -74,17 +74,25 @@ export type MutationResult = {
 
 /** Rename Node Key Input 的输入数据。 */
 export type RenameNodeKeyInput = Readonly<{
+  /** 待操作的目标树模型；函数返回新的不可变模型，不修改原实例。 */
   model: TreeModel
+  /** 目标节点的 UUID。 */
   uid: string
+  /** 重命名后的新键名。 */
   nextKeyInput: string
+  /** 变更策略约束；可覆盖 canEditKey、isProtected 等默认行为。 */
   policy?: Partial<JsonTreePolicy>
 }>
 
 /** Update Node Type Input 的输入数据。 */
 export type UpdateNodeTypeInput = Readonly<{
+  /** 待操作的目标树模型；函数返回新的不可变模型，不修改原实例。 */
   model: TreeModel
+  /** 目标节点的 UUID。 */
   uid: string
+  /** 要切换到的目标类型；类型转换会按规则重置 value。 */
   nextType: JsonNodeType
+  /** 变更策略约束；可覆盖 canEditType、isProtected 等默认行为。 */
   policy?: Partial<JsonTreePolicy>
 }>
 

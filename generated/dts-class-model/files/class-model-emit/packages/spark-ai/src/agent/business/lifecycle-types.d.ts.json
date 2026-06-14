@@ -114,7 +114,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-13T12:31:45.739Z",
+  "generatedAt": "2026-06-14T19:32:33.501Z",
   "models": {
     "AiAgentBeforeFunctionCallStatus": {
       "name": "AiAgentBeforeFunctionCallStatus",
@@ -156,11 +156,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 裁决结果：allow 允许执行，reject 回灌失败 tool result 后继续 turn，abort 中止 turn 并进入停止流程。 */\n    status: AiAgentBeforeFunctionCallStatus;\n    /** 拒绝或中止的原因，写入 tool result 的 msg 字段供 LLM 阅读。 */\n    reason?: string;\n    /** 给 LLM 的修正建议；reject/abort 时写入 tool result 的 fix 字段，引导 LLM 修正行为。 */\n    fix?: string;\n    /** abort 时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */\n    finalAssistantMessage?: string;\n    /** abort 时是否同时释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。 */\n    releaseInstance?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 裁决结果：allow 允许执行，reject 回灌失败 tool result 后继续 turn，abort 中止 turn 并进入停止流程。 */\n    status: AiAgentBeforeFunctionCallStatus;\n    /** 拒绝或中止的原因，写入 tool result 的 msg 字段供 LLM 阅读。 */\n    reason?: string;\n    /** 给 LLM 的修正建议；reject/abort 时写入 tool result 的 fix 字段，引导 LLM 修正行为。 */\n    fix?: string;\n    /** abort 时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */\n    finalAssistantMessage?: string;\n    /** abort 时是否同时释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。 */\n    releaseInstance?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -168,26 +168,31 @@
           "attributes": [
             {
               "name": "status",
+              "jsdoc": "裁决结果：allow 允许执行，reject 回灌失败 tool result 后继续 turn，abort 中止 turn 并进入停止流程。",
               "readable": true,
               "writable": false
             },
             {
               "name": "reason",
+              "jsdoc": "拒绝或中止的原因，写入 tool result 的 msg 字段供 LLM 阅读。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "给 LLM 的修正建议；reject/abort 时写入 tool result 的 fix 字段，引导 LLM 修正行为。",
               "readable": true,
               "writable": false
             },
             {
               "name": "finalAssistantMessage",
+              "jsdoc": "abort 时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。",
               "readable": true,
               "writable": false
             },
             {
               "name": "releaseInstance",
+              "jsdoc": "abort 时是否同时释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。",
               "readable": true,
               "writable": false
             }
@@ -201,12 +206,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
-        "line": 40,
+        "line": 45,
         "className": "AiAgentBeforeFunctionCallOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** 即将被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，已通过 JSON Schema 校验的键值对。 */\n    args: AiJsonParams;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -215,7 +220,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
+            "typeText": "Readonly<{\n    /** 即将被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，已通过 JSON Schema 校验的键值对。 */\n    args: AiJsonParams;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -223,11 +228,13 @@
           "attributes": [
             {
               "name": "toolName",
+              "jsdoc": "即将被调用的工具名称，来自 LLM tool_calls 中的 function.name。",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "工具调用参数，已通过 JSON Schema 校验的键值对。",
               "readable": true,
               "writable": false
             }
@@ -241,7 +248,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
-        "line": 50,
+        "line": 57,
         "className": "AiAgentLifecycleStatus",
         "declarationKind": "typeAlias"
       },
@@ -270,16 +277,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
-        "line": 60,
+        "line": 67,
         "className": "AiAgentLifecycleDirective",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 生命周期状态：continue 继续工具循环，complete 正常结束 turn，abort 异常中止 turn。 */\n    status: AiAgentLifecycleStatus;\n    /** 结束原因；complete/abort 时建议提供，写入诊断日志。 */\n    reason?: string;\n    /** 结束时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */\n    finalAssistantMessage?: string;\n    /** 结束时是否释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。 */\n    releaseInstance?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 生命周期状态：continue 继续工具循环，complete 正常结束 turn，abort 异常中止 turn。 */\n    status: AiAgentLifecycleStatus;\n    /** 结束原因；complete/abort 时建议提供，写入诊断日志。 */\n    reason?: string;\n    /** 结束时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */\n    finalAssistantMessage?: string;\n    /** 结束时是否释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。 */\n    releaseInstance?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -287,21 +294,25 @@
           "attributes": [
             {
               "name": "status",
+              "jsdoc": "生命周期状态：continue 继续工具循环，complete 正常结束 turn，abort 异常中止 turn。",
               "readable": true,
               "writable": false
             },
             {
               "name": "reason",
+              "jsdoc": "结束原因；complete/abort 时建议提供，写入诊断日志。",
               "readable": true,
               "writable": false
             },
             {
               "name": "finalAssistantMessage",
+              "jsdoc": "结束时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。",
               "readable": true,
               "writable": false
             },
             {
               "name": "releaseInstance",
+              "jsdoc": "结束时是否释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。",
               "readable": true,
               "writable": false
             }
@@ -315,12 +326,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
-        "line": 75,
+        "line": 86,
         "className": "AiAgentAfterFunctionCallOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** 已执行完毕的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，已通过 JSON Schema 校验的键值对。 */\n    args: AiJsonParams;\n    /** 工具执行结果；ok 时带 data，失败时带 code/msg/fix 供业务方判断后续策略。 */\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -329,7 +340,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** 已执行完毕的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，已通过 JSON Schema 校验的键值对。 */\n    args: AiJsonParams;\n    /** 工具执行结果；ok 时带 data，失败时带 code/msg/fix 供业务方判断后续策略。 */\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -337,16 +348,19 @@
           "attributes": [
             {
               "name": "toolName",
+              "jsdoc": "已执行完毕的工具名称，来自 LLM tool_calls 中的 function.name。",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "工具调用参数，已通过 JSON Schema 校验的键值对。",
               "readable": true,
               "writable": false
             },
             {
               "name": "result",
+              "jsdoc": "工具执行结果；ok 时带 data，失败时带 code/msg/fix 供业务方判断后续策略。",
               "readable": true,
               "writable": false
             }

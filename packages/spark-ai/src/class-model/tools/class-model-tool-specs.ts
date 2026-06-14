@@ -9,7 +9,9 @@ import { CLASS_MODEL_TOOL_NAMES, type ClassModelToolName } from './tool-names'
 
 /** Class Model Tool Spec 的语义模型。 */
 export type ClassModelToolSpec = Readonly<{
+  /** 工具类型，固定为 'function'，对齐 OpenAI function calling 协议。 */
   type: 'function'
+  /** 工具定义：name 为 ClassModelToolName 枚举值，description 面向 LLM，parameters 为 Draft 2020-12 JSON Schema。 */
   function: {
     readonly name: string
     readonly description: string

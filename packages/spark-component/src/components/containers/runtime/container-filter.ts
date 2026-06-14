@@ -56,6 +56,7 @@ const FILTER_OPERATORS: ReadonlySet<string> = new Set([
 
 /** 极简日志接口（最小化依赖）。 */
 type ErrorLoggerLike = {
+  /** 记录错误消息及可选异常对象，用于过滤同步/应用失败时的非侵入式日志。 */
   error(message: string, error?: unknown): void}
 
 /** Filter Panel Data View 的语义模型。 */
@@ -73,8 +74,11 @@ readonly dataTable?: {
   } | null | undefined
     /** get Column 回调。 */
 getColumn?: (field: string) => unknown
+  /** 同步过滤表达式到 DataView（不触发远端查询，后续 watch 自动 refresh）。 */
   setFilter(expr: FilterExpression | undefined): Promise<void>
+  /** 立即执行过滤查询（用于"搜索"按钮主动触发远端查询）。 */
   executeFilter(expr: FilterExpression | undefined): Promise<void>
+  /** 重新拉取远端数据并刷新当前视图行。 */
   refresh(): Promise<void>}
 
 type ApplyFilterSafelyOptions = {

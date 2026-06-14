@@ -58,7 +58,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.946Z",
+  "generatedAt": "2026-06-14T20:00:48.144Z",
   "models": {
     "DynamicRouterAccess": {
       "name": "DynamicRouterAccess",
@@ -71,11 +71,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    refreshRoutes(): Promise<ProjectModelData | null>;\n    getNavTree(): ProjectModelData | null;\n}",
+        "declarationTypeText": "{\n    /** 清除路由缓存并重新注册，返回刷新后的导航树；DynamicRouter 未注入时由调用方处理 */\n    refreshRoutes(): Promise<ProjectModelData | null>;\n    /** 同步读取当前已加载的导航树（不发 HTTP），未加载或未注入时返回 null */\n    getNavTree(): ProjectModelData | null;\n}",
         "members": {
           "methods": [
             {
               "name": "refreshRoutes",
+              "jsdoc": "清除路由缓存并重新注册，返回刷新后的导航树；DynamicRouter 未注入时由调用方处理",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -99,6 +100,7 @@
             },
             {
               "name": "getNavTree",
+              "jsdoc": "同步读取当前已加载的导航树（不发 HTTP），未加载或未注入时返回 null",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -124,7 +126,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/nav-access.d.ts",
-        "line": 24,
+        "line": 26,
         "className": "NavAccessOptions",
         "declarationKind": "typeAlias"
       },

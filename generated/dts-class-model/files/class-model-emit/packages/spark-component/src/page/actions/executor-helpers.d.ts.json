@@ -139,7 +139,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.981Z",
+  "generatedAt": "2026-06-14T20:03:46.547Z",
   "models": {
     "PickActionTextInput": {
       "name": "PickActionTextInput",
@@ -260,11 +260,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    fallbackMessage: string;\n    fallbackTitle: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 确认弹窗正文的内置兜底文案（如\"确认删除 张三 吗？\"），decorator.confirmMessage 未设置时使用 */\n    fallbackMessage: string;\n    /** 确认弹窗标题的内置兜底文案（如\"操作确认\"），decorator.confirmTitle 未设置时使用 */\n    fallbackTitle: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    fallbackMessage: string;\n    fallbackTitle: string;\n}>",
+            "typeText": "Readonly<{\n    /** 确认弹窗正文的内置兜底文案（如\"确认删除 张三 吗？\"），decorator.confirmMessage 未设置时使用 */\n    fallbackMessage: string;\n    /** 确认弹窗标题的内置兜底文案（如\"操作确认\"），decorator.confirmTitle 未设置时使用 */\n    fallbackTitle: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -272,11 +272,13 @@
           "attributes": [
             {
               "name": "fallbackMessage",
+              "jsdoc": "确认弹窗正文的内置兜底文案（如\"确认删除 张三 吗？\"），decorator.confirmMessage 未设置时使用",
               "readable": true,
               "writable": false
             },
             {
               "name": "fallbackTitle",
+              "jsdoc": "确认弹窗标题的内置兜底文案（如\"操作确认\"），decorator.confirmTitle 未设置时使用",
               "readable": true,
               "writable": false
             }
@@ -290,7 +292,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
-        "line": 144,
+        "line": 146,
         "className": "ResolvedActionDataCapabilities",
         "declarationKind": "typeAlias"
       },
@@ -326,7 +328,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
-        "line": 216,
+        "line": 218,
         "className": "BuiltinActionName",
         "declarationKind": "typeAlias"
       },

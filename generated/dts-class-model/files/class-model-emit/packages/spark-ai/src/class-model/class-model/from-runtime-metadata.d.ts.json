@@ -34,7 +34,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.907Z",
+  "generatedAt": "2026-06-14T19:55:06.349Z",
   "models": {
     "RuntimeDocumentInput": {
       "name": "RuntimeDocumentInput",
@@ -47,11 +47,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 共享 JSON Schema 定义，映射为 ClassModelDocument.$defs。 */\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** 运行时 API 元数据数组；首元素作为 ClassModelDocument.module（真源），缺失时 throw。 */\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
+            "typeText": "Readonly<{\n    /** 共享 JSON Schema 定义，映射为 ClassModelDocument.$defs。 */\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** 运行时 API 元数据数组；首元素作为 ClassModelDocument.module（真源），缺失时 throw。 */\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -59,11 +59,13 @@
           "attributes": [
             {
               "name": "$defs",
+              "jsdoc": "共享 JSON Schema 定义，映射为 ClassModelDocument.$defs。",
               "readable": true,
               "writable": false
             },
             {
               "name": "modules",
+              "jsdoc": "运行时 API 元数据数组；首元素作为 ClassModelDocument.module（真源），缺失时 throw。",
               "readable": true,
               "writable": false
             }

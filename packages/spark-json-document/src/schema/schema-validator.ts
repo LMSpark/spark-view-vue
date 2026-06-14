@@ -25,12 +25,15 @@ message: string
 
 /** 校验结果：ok + issues 列表 */
 export type JsonValidationResult = Readonly<{
+  /** 校验是否通过；true 表示无问题，false 表示 issues 中至少有一条校验问题。 */
   ok: boolean
+  /** 校验问题列表；ok 为 true 时为空数组，ok 为 false 时包含所有不满足 schema 的诊断条目。 */
   issues: readonly JsonValidationIssue[]
 }>
 
 /** 校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。 */
 export type JsonSchemaValidateOptions = Readonly<{
+  /** 附加到 schema 根的 $defs 映射表，键为定义名，值为对应 JSON Schema；用于解析 schema 内部的 #/$defs/* 引用。 */
   schemaDefs?: Readonly<Record<string, JsonSchema>>
 }>
 

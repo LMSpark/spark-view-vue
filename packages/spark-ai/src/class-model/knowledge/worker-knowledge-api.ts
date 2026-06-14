@@ -22,15 +22,22 @@ export type ClassModelKnowledgeWorkerInitInput = Readonly<{
 
 /** Class Model Knowledge Worker Refresh Input 的输入数据。 */
 export type ClassModelKnowledgeWorkerRefreshInput = Readonly<{
+  /** 需要增量刷新的类名；省略时从 rootClassName 全量重建。 */
   requestedClassName?: string
 }>
 
 /** Class Model Knowledge Worker Api 的语义模型。 */
 export type ClassModelKnowledgeWorkerApi = Readonly<{
+  /** 一次性初始化：加载 manifest、创建知识提供者；必须先于其他方法调用。 */
   init(input: ClassModelKnowledgeWorkerInitInput): Promise<{ initialized: true }>
+  /** 重新加载知识分片；可指定 className 做增量刷新，否则全量重建。 */
   refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{ refreshed: true }>
+  /** 结构化查询：返回类模型摘要、成员列表等 JSON 数据，供程序消费。 */
   query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>
+  /** 渲染完整类声明的 .d.ts 风格文本，供 LLM 作为上下文知识。 */
   modelGuide(input: ClassModelModelGuideInput): Promise<string>
+  /** 渲染单个属性的聚焦声明文本（含所属类头部），供 LLM 精确理解属性语义。 */
   attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>
+  /** 渲染单个方法的聚焦声明文本（含所属类头部和完整签名），供 LLM 精确理解方法语义。 */
   methodGuide(input: ClassModelMethodGuideInput): Promise<string>
 }>

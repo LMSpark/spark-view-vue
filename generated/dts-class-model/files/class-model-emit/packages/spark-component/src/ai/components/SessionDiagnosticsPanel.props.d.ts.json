@@ -29,7 +29,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.369Z",
+  "generatedAt": "2026-06-14T20:02:48.182Z",
   "models": {
     "SessionDiagnosticsPanelProps": {
       "name": "SessionDiagnosticsPanelProps",
@@ -43,11 +43,11 @@
         "componentName": "SessionDiagnosticsPanel"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 诊断数据投影（永远非 null，由外部 runtime 生成）；loading 期间内容可能不完整 */\n    data: SessionDiagnosticsData;\n    /** 诊断数据仍在加载或刷新中；true 时 UI 应显示加载指示器，data 仍可用但不完整 */\n    loading?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 诊断数据投影（永远非 null，由外部 runtime 生成）；loading 期间内容可能不完整 */\n    data: SessionDiagnosticsData;\n    /** 诊断数据仍在加载或刷新中；true 时 UI 应显示加载指示器，data 仍可用但不完整 */\n    loading?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -55,11 +55,13 @@
           "attributes": [
             {
               "name": "data",
+              "jsdoc": "诊断数据投影（永远非 null，由外部 runtime 生成）；loading 期间内容可能不完整",
               "readable": true,
               "writable": false
             },
             {
               "name": "loading",
+              "jsdoc": "诊断数据仍在加载或刷新中；true 时 UI 应显示加载指示器，data 仍可用但不完整",
               "readable": true,
               "writable": false
             }

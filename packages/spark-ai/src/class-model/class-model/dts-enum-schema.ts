@@ -11,7 +11,9 @@ import { readMemberName } from './dts-ast-utils'
 
 /** Enum Member Const Schema 的提取结果。 */
 export type EnumMemberConstSchemaResult = Readonly<{
+  /** 成员的 JSON Schema：有 initializer 时为 { const: value }，无 initializer 时数字 enum 自增为 { const: autoIndex }，名称无法解析时降级为 { type: 'string' }。 */
   schema: AiJsonSchema
+  /** 下一个成员的自增起始值；数字 enum 每次递增 1，字符串/布尔/null enum 保持不变。 */
   nextAutoIndex: number
 }>
 

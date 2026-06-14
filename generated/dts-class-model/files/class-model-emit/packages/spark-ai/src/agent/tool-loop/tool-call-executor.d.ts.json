@@ -90,7 +90,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T01:03:51.208Z",
+  "generatedAt": "2026-06-14T20:06:54.210Z",
   "models": {
     "AiAgentToolNameResolver": {
       "name": "AiAgentToolNameResolver",
@@ -118,11 +118,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    round: number;\n    /** transport toolName → runtime toolName 的解析函数 */\n    resolveToolName: AiAgentToolNameResolver;\n    /** LLM 返回的原始 transport tool_call */\n    call: AiAgentTransportToolCall;\n    request: AiAgentChatRequest;\n    sessionStore: AiAgentSessionStore;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 当前工具的业务注册信息，含 runtime 执行器、生命周期钩子和恢复提示配置 */\n    registration: AiAgentRegistration<TInput>;\n    /** Agent 运行时作用域，提供 moduleId / moduleInstanceId / instanceId 等定位信息 */\n    scope: AiAgentScope;\n    /** 当前 turn 的元数据（turnId 等），用于诊断事件和工具调用记录关联 */\n    turn: AiAgentTurnMeta;\n    /** 当前 tool loop 中的轮次序号，从 0 开始；用于工具调用记录和诊断定位 */\n    round: number;\n    /** transport toolName → runtime toolName 的解析函数 */\n    resolveToolName: AiAgentToolNameResolver;\n    /** LLM 返回的原始 transport tool_call */\n    call: AiAgentTransportToolCall;\n    /** 当前 chat 请求，携带 beforeFunctionCall 钩子、onDelta / onToolCall 等回调 */\n    request: AiAgentChatRequest;\n    /** 会话存储，用于追加工具调用历史记录（appendFunctionCall） */\n    sessionStore: AiAgentSessionStore;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    round: number;\n    /** transport toolName → runtime toolName 的解析函数 */\n    resolveToolName: AiAgentToolNameResolver;\n    /** LLM 返回的原始 transport tool_call */\n    call: AiAgentTransportToolCall;\n    request: AiAgentChatRequest;\n    sessionStore: AiAgentSessionStore;\n}>",
+            "typeText": "Readonly<{\n    /** 当前工具的业务注册信息，含 runtime 执行器、生命周期钩子和恢复提示配置 */\n    registration: AiAgentRegistration<TInput>;\n    /** Agent 运行时作用域，提供 moduleId / moduleInstanceId / instanceId 等定位信息 */\n    scope: AiAgentScope;\n    /** 当前 turn 的元数据（turnId 等），用于诊断事件和工具调用记录关联 */\n    turn: AiAgentTurnMeta;\n    /** 当前 tool loop 中的轮次序号，从 0 开始；用于工具调用记录和诊断定位 */\n    round: number;\n    /** transport toolName → runtime toolName 的解析函数 */\n    resolveToolName: AiAgentToolNameResolver;\n    /** LLM 返回的原始 transport tool_call */\n    call: AiAgentTransportToolCall;\n    /** 当前 chat 请求，携带 beforeFunctionCall 钩子、onDelta / onToolCall 等回调 */\n    request: AiAgentChatRequest;\n    /** 会话存储，用于追加工具调用历史记录（appendFunctionCall） */\n    sessionStore: AiAgentSessionStore;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -130,21 +130,25 @@
           "attributes": [
             {
               "name": "registration",
+              "jsdoc": "当前工具的业务注册信息，含 runtime 执行器、生命周期钩子和恢复提示配置",
               "readable": true,
               "writable": false
             },
             {
               "name": "scope",
+              "jsdoc": "Agent 运行时作用域，提供 moduleId / moduleInstanceId / instanceId 等定位信息",
               "readable": true,
               "writable": false
             },
             {
               "name": "turn",
+              "jsdoc": "当前 turn 的元数据（turnId 等），用于诊断事件和工具调用记录关联",
               "readable": true,
               "writable": false
             },
             {
               "name": "round",
+              "jsdoc": "当前 tool loop 中的轮次序号，从 0 开始；用于工具调用记录和诊断定位",
               "readable": true,
               "writable": false
             },
@@ -162,11 +166,13 @@
             },
             {
               "name": "request",
+              "jsdoc": "当前 chat 请求，携带 beforeFunctionCall 钩子、onDelta / onToolCall 等回调",
               "readable": true,
               "writable": false
             },
             {
               "name": "sessionStore",
+              "jsdoc": "会话存储，用于追加工具调用历史记录（appendFunctionCall）",
               "readable": true,
               "writable": false
             }
@@ -180,7 +186,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
-        "line": 30,
+        "line": 36,
         "className": "AiAgentToolCallExecutionOutput",
         "declarationKind": "typeAlias"
       },
@@ -217,7 +223,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
-        "line": 37,
+        "line": 43,
         "className": "AiAgentToolCallExecutor",
         "declarationKind": "class"
       },

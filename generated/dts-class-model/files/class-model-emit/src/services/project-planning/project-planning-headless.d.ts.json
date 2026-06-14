@@ -41,7 +41,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T03:35:14.694Z",
+  "generatedAt": "2026-06-14T20:02:17.792Z",
   "models": {
     "ProjectPlanningEditorResolveContext": {
       "name": "ProjectPlanningEditorResolveContext",
@@ -54,11 +54,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 模块实例 ID，用于在 headlessRegistry 中查找对应的 ProjectWorkspace 实例；必须事先由 createHeadlessProjectPlanningEditor 注册。 */\n    moduleInstanceId: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
+            "typeText": "Readonly<{\n    /** 模块实例 ID，用于在 headlessRegistry 中查找对应的 ProjectWorkspace 实例；必须事先由 createHeadlessProjectPlanningEditor 注册。 */\n    moduleInstanceId: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -66,6 +66,7 @@
           "attributes": [
             {
               "name": "moduleInstanceId",
+              "jsdoc": "模块实例 ID，用于在 headlessRegistry 中查找对应的 ProjectWorkspace 实例；必须事先由 createHeadlessProjectPlanningEditor 注册。",
               "readable": true,
               "writable": false
             }
@@ -79,16 +80,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-headless.d.ts",
-        "line": 13,
+        "line": 14,
         "className": "HeadlessProjectPlanningEditorScope",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 租户 ID，用于多租户场景下隔离 API 请求的作用域；未提供时从用户会话推断。 */\n    tenantId?: string;\n    /** 项目 ID，决定 ProjectWorkspace 绑定的项目；未提供时回退到用户默认项目或 'homepage'。 */\n    projectId?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 租户 ID，用于多租户场景下隔离 API 请求的作用域；未提供时从用户会话推断。 */\n    tenantId?: string;\n    /** 项目 ID，决定 ProjectWorkspace 绑定的项目；未提供时回退到用户默认项目或 'homepage'。 */\n    projectId?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -96,11 +97,13 @@
           "attributes": [
             {
               "name": "tenantId",
+              "jsdoc": "租户 ID，用于多租户场景下隔离 API 请求的作用域；未提供时从用户会话推断。",
               "readable": true,
               "writable": false
             },
             {
               "name": "projectId",
+              "jsdoc": "项目 ID，决定 ProjectWorkspace 绑定的项目；未提供时回退到用户默认项目或 'homepage'。",
               "readable": true,
               "writable": false
             }

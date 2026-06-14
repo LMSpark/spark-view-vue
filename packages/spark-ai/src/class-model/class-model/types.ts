@@ -17,9 +17,13 @@ export const CLASS_MODEL_DOCUMENT_VERSION = 1 as const
  * 连通性由 auditClassModelReflectionConnectivity 验证。
  */
 export type ClassModelDocument = Readonly<{
+  /** 投影格式版本，与 runtime API metadata 的 schemaVersion 独立演进；bundle loader 据此判断是否需要迁移。 */
   schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION
+  /** 根节点语义标识；当前固定为 'module'，预留未来扩展为 'package' 等粒度。 */
   rootKind: string
+  /** 知识链路真源：所有 DtsTypeDeclarationModel 按 attribute 链从此 module 按需派生，不预存 models 索引。 */
   module: AiRuntimeApiMetadataJson
+  /** Draft 2020-12 共享定义；当 jsonSchema 使用 $ref 引用内部子 schema 时，被引用的片段存在此字典中以保证 bundle 自包含。 */
   $defs?: Readonly<Record<string, AiJsonSchemaObject>>
 }>
 
@@ -28,7 +32,9 @@ export type SourceProvenanceMeta = Readonly<{
   file: string
   line: number
   className: string
+  /** 成员级溯源时为属性/方法名；类型级溯源（整个 class/interface）时为 undefined。 */
   memberName?: string
+  /** 类型声明入口文件路径，与 file 可能不同（如 re-export 场景 file 是消费方，typeEntryFile 是声明方）。 */
   typeEntryFile?: string
   componentName?: string
   componentType?: string
@@ -69,7 +75,9 @@ export type ClassModelDeclarationRelationKind =
 /** Class Model Declaration Relation 的语义模型。 */
 export type ClassModelDeclarationRelation = Readonly<{
   kind: ClassModelDeclarationRelationKind
+  /** 原始类型文本，保留 extends/implements 后的完整类型表达式，供 LLM 在无法解析 targetName 时回退阅读。 */
   typeText: string
+  /** 可解析的目标符号名；当 typeText 是复杂表达式（泛型、交叉）无法提取单一符号时为 undefined。 */
   targetName?: string
 }>
 
@@ -175,8 +183,10 @@ export type JsDocMeta = string
 /** Constructor Meta 的语义模型。 */
 export type ConstructorMeta = Readonly<{
   signatureText?: string
+  /** 调用约定：positional = 按位置传参，named = 对象解构传参（影响 paramsSchema 的结构：positional 是 tuple，named 是 object）。 */
   parameterStyle?: MethodParameterStyle
   parameters?: readonly MethodParameterMeta[]
+  /** 参数 JSON Schema；positional 风格为 tuple schema，named 风格为 object schema，用于 LLM 工具调用时的参数校验。 */
   paramsSchema?: AiJsonSchemaObject
   jsdoc: JsDocMeta
   provenance?: SourceProvenanceMeta
@@ -186,7 +196,9 @@ export type ConstructorMeta = Readonly<{
 export type AttributeMeta = Readonly<{
   name: string
   schema?: AiJsonSchema
+  /** 可读性标记；getter 或 public 属性为 true，write-only setter 为 false。 */
   readable: boolean
+  /** 可写性标记；setter 或 public mutable 属性为 true，readonly/getter-only 为 false。 */
   writable: boolean
   jsdoc: JsDocMeta
   provenance?: SourceProvenanceMeta
@@ -221,12 +233,14 @@ export type DtsTypeMeta =
 /** TypeDoc `ReflectionType` 精简：函数/构造签名。 */
 export type DtsReflectionSignature = Readonly<{
   parameters: readonly MethodParameterMeta[]
+  /** 签名返回类型；与 MethodMeta.type 不同，此处是 reflection 内嵌的返回类型，用于回调/内联函数场景。 */
   type: DtsTypeMeta
 }>
 
 /** DTS reflection 类型：承载函数或对象字面量中的签名树，用于回调参数和内联函数类型的递归寻址。 */
 export type DtsReflectionTypeMeta = Readonly<{
   type: 'reflection'
+  /** 反射声明容器；signatures 数组至少一个元素，空数组表示 TypeDoc 解析异常。 */
   declaration: Readonly<{
     signatures: readonly DtsReflectionSignature[]
   }>
@@ -249,7 +263,9 @@ export type MethodMeta = Readonly<{
   /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */
   type?: DtsTypeMeta
   paramsSchema?: AiJsonSchemaObject
+  /** 返回值 JSON Schema；仅在返回类型可完整映射为 JSON Schema 时存在，复杂类型（泛型/回调）可能缺失。 */
   returnSchema?: AiJsonSchema
+  /** 方法首参是否为上下文对象（如 SparkScriptContext）；标记为 true 时 LLM 在工具调用中应跳过该参数。 */
   takesContext?: boolean
   jsdoc: JsDocMeta
   provenance?: SourceProvenanceMeta

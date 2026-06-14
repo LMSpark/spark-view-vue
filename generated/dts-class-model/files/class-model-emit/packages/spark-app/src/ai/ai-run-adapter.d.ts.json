@@ -321,11 +321,11 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T13:58:22.052Z",
+  "generatedAt": "2026-06-14T20:23:14.619Z",
   "models": {
     "AiRunTraceSink": {
       "name": "AiRunTraceSink",
-      "jsdoc": "Ai Run Trace Sink 的语义模型。",
+      "jsdoc": "外部 trace sink 接口：宿主方可实现此接口在 run 生命周期中接收观测数据",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
@@ -334,11 +334,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    appendUserMessage(content: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    appendUserMessage(content: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
+            "typeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -346,6 +346,7 @@
           "methods": [
             {
               "name": "appendUserMessage",
+              "jsdoc": "追加用户消息",
               "parameters": [
                 {
                   "name": "content",
@@ -362,6 +363,7 @@
             },
             {
               "name": "appendEvent",
+              "jsdoc": "从原始 SSE 事件派发内部状态变更",
               "parameters": [
                 {
                   "name": "event",
@@ -378,6 +380,7 @@
             },
             {
               "name": "appendDelta",
+              "jsdoc": "追加模型文本增量",
               "parameters": [
                 {
                   "name": "delta",
@@ -394,6 +397,7 @@
             },
             {
               "name": "appendReasoning",
+              "jsdoc": "追加推理文本增量",
               "parameters": [
                 {
                   "name": "text",
@@ -410,6 +414,7 @@
             },
             {
               "name": "appendToolCall",
+              "jsdoc": "追加工具调用完成记录",
               "parameters": [
                 {
                   "name": "record",
@@ -426,6 +431,7 @@
             },
             {
               "name": "appendError",
+              "jsdoc": "追加错误条目",
               "parameters": [
                 {
                   "name": "message",
@@ -442,6 +448,7 @@
             },
             {
               "name": "markAborted",
+              "jsdoc": "标记为用户主动中断",
               "parameters": [
                 {
                   "name": "message",
@@ -461,6 +468,7 @@
             },
             {
               "name": "finish",
+              "jsdoc": "结束当前活跃 turn",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -469,6 +477,7 @@
             },
             {
               "name": "reset",
+              "jsdoc": "重置全部状态",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -485,7 +494,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 27,
+        "line": 36,
         "className": "AiRunErrorFormatter",
         "declarationKind": "typeAlias"
       },
@@ -500,7 +509,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 29,
+        "line": 38,
         "className": "AiRunBeforeFunctionCall",
         "declarationKind": "typeAlias"
       },
@@ -515,7 +524,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 31,
+        "line": 40,
         "className": "AiRunAbortHandler",
         "declarationKind": "typeAlias"
       },
@@ -530,7 +539,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 33,
+        "line": 42,
         "className": "AiRunAdapterRunStatus",
         "declarationKind": "typeAlias"
       },
@@ -551,20 +560,20 @@
     },
     "AiRunHost": {
       "name": "AiRunHost",
-      "jsdoc": "Ai Run Host 的语义模型。",
+      "jsdoc": "AI 运行宿主接口：封装 AiAgentHost.run() 调用，便于 adapter 在不依赖具体 Host 实现的情况下发起 run",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 35,
+        "line": 44,
         "className": "AiRunHost",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+            "typeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -572,6 +581,7 @@
           "methods": [
             {
               "name": "run",
+              "jsdoc": "按 alias 运行已注册业务，委托给 AiAgentHost.run()",
               "parameters": [
                 {
                   "name": "alias",
@@ -616,20 +626,20 @@
     },
     "AiRunAdapterOptions": {
       "name": "AiRunAdapterOptions",
-      "jsdoc": "Ai Run Adapter Options 的调用配置。",
+      "jsdoc": "adapter 全局配置",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 39,
+        "line": 49,
         "className": "AiRunAdapterOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    formatError?: AiRunErrorFormatter;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 自定义错误格式化函数，将 run 抛出的 error 转为展示文本；默认使用 error.message */\n    formatError?: AiRunErrorFormatter;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    formatError?: AiRunErrorFormatter;\n}>",
+            "typeText": "Readonly<{\n    /** 自定义错误格式化函数，将 run 抛出的 error 转为展示文本；默认使用 error.message */\n    formatError?: AiRunErrorFormatter;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -637,6 +647,7 @@
           "attributes": [
             {
               "name": "formatError",
+              "jsdoc": "自定义错误格式化函数，将 run 抛出的 error 转为展示文本；默认使用 error.message",
               "readable": true,
               "writable": false
             }
@@ -646,20 +657,20 @@
     },
     "AiRunAdapterCommand": {
       "name": "AiRunAdapterCommand",
-      "jsdoc": "Ai Run Adapter Command 的命令参数。",
+      "jsdoc": "单次 AI run 的启动命令参数",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 43,
+        "line": 54,
         "className": "AiRunAdapterCommand",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    host: AiRunHost;\n    alias: string;\n    input: TInput;\n    runInput?: SparkAgUiRunInput;\n    threadId?: string;\n    runId?: string;\n    trace?: AiRunTraceSink;\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    onAbort?: AiRunAbortHandler;\n    onEvent?: (event: SparkAgUiEvent) => void;\n    userMessage?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgUiRunInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgUiEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    host: AiRunHost;\n    alias: string;\n    input: TInput;\n    runInput?: SparkAgUiRunInput;\n    threadId?: string;\n    runId?: string;\n    trace?: AiRunTraceSink;\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    onAbort?: AiRunAbortHandler;\n    onEvent?: (event: SparkAgUiEvent) => void;\n    userMessage?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgUiRunInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgUiEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -667,51 +678,61 @@
           "attributes": [
             {
               "name": "host",
+              "jsdoc": "运行宿主，封装了 AiAgentHost.run() 调用",
               "readable": true,
               "writable": false
             },
             {
               "name": "alias",
+              "jsdoc": "业务注册别名，对应 Host 中已注册的业务",
               "readable": true,
               "writable": false
             },
             {
               "name": "input",
+              "jsdoc": "业务输入参数，类型由 alias 推断",
               "readable": true,
               "writable": false
             },
             {
               "name": "runInput",
+              "jsdoc": "AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件",
               "readable": true,
               "writable": false
             },
             {
               "name": "threadId",
+              "jsdoc": "AG-UI 线程 ID；省略时自动生成 spark-thread:{alias}",
               "readable": true,
               "writable": false
             },
             {
               "name": "runId",
+              "jsdoc": "AG-UI 运行 ID；省略时自动生成 spark-run:{sequence}",
               "readable": true,
               "writable": false
             },
             {
               "name": "trace",
+              "jsdoc": "外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink",
               "readable": true,
               "writable": false
             },
             {
               "name": "beforeFunctionCall",
+              "jsdoc": "本次请求级工具执行前置裁决",
               "readable": true,
               "writable": false
             },
             {
               "name": "onAbort",
+              "jsdoc": "用户中断回调：abort 触发后调用，参数为中断原因",
               "readable": true,
               "writable": false
             },
             {
               "name": "userMessage",
+              "jsdoc": "用户消息文本，run 开始前追加到 trace；省略则不追加",
               "readable": true,
               "writable": false
             }
@@ -719,6 +740,7 @@
           "methods": [
             {
               "name": "onEvent",
+              "jsdoc": "AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费",
               "parameters": [
                 {
                   "name": "event",
@@ -743,16 +765,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 57,
+        "line": 79,
         "className": "AiRunTimelineEvent",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sequence: number;\n    type: string;\n    timestamp: number;\n    payloadPreview: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 事件序号，从 1 开始递增 */\n    sequence: number;\n    /** AG-UI 事件类型标识 */\n    type: string;\n    /** 事件时间戳（Unix 毫秒） */\n    timestamp: number;\n    /** 事件 payload 的截断预览文本，超出 360 字符自动截断 */\n    payloadPreview: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    sequence: number;\n    type: string;\n    timestamp: number;\n    payloadPreview: string;\n}>",
+            "typeText": "Readonly<{\n    /** 事件序号，从 1 开始递增 */\n    sequence: number;\n    /** AG-UI 事件类型标识 */\n    type: string;\n    /** 事件时间戳（Unix 毫秒） */\n    timestamp: number;\n    /** 事件 payload 的截断预览文本，超出 360 字符自动截断 */\n    payloadPreview: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -760,21 +782,25 @@
           "attributes": [
             {
               "name": "sequence",
+              "jsdoc": "事件序号，从 1 开始递增",
               "readable": true,
               "writable": false
             },
             {
               "name": "type",
+              "jsdoc": "AG-UI 事件类型标识",
               "readable": true,
               "writable": false
             },
             {
               "name": "timestamp",
+              "jsdoc": "事件时间戳（Unix 毫秒）",
               "readable": true,
               "writable": false
             },
             {
               "name": "payloadPreview",
+              "jsdoc": "事件 payload 的截断预览文本，超出 360 字符自动截断",
               "readable": true,
               "writable": false
             }
@@ -788,16 +814,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 64,
+        "line": 90,
         "className": "AiRunSnapshot",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    trace: AiAgentRunTraceSnapshot;\n    agUiEvents: readonly SparkAgUiEvent[];\n    timeline: readonly AiRunTimelineEvent[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgUiEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    trace: AiAgentRunTraceSnapshot;\n    agUiEvents: readonly SparkAgUiEvent[];\n    timeline: readonly AiRunTimelineEvent[];\n}>",
+            "typeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgUiEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -805,16 +831,19 @@
           "attributes": [
             {
               "name": "trace",
+              "jsdoc": "内置 run trace 快照（含流式文本、条目列表、工具调用记录）",
               "readable": true,
               "writable": false
             },
             {
               "name": "agUiEvents",
+              "jsdoc": "已产出的 AG-UI 事件列表，按时间顺序排列",
               "readable": true,
               "writable": false
             },
             {
               "name": "timeline",
+              "jsdoc": "AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流",
               "readable": true,
               "writable": false
             }
@@ -828,7 +857,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 70,
+        "line": 99,
         "className": "AiRunListener",
         "declarationKind": "typeAlias"
       },
@@ -839,20 +868,20 @@
     },
     "AiRunAdapterState": {
       "name": "AiRunAdapterState",
-      "jsdoc": "Ai Run Adapter State 的运行状态。",
+      "jsdoc": "headless AI run adapter 状态接口：UI 通过此接口发起/中断 run、读取快照、订阅变化",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 72,
+        "line": 101,
         "className": "AiRunAdapterState",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    isRunning(): boolean;\n    abort(reason?: string): void;\n    snapshot(): AiRunSnapshot;\n    subscribe(listener: AiRunListener): () => void;\n    run<TInput extends AiJsonParams>(command: AiRunAdapterCommand<TInput>): Promise<AiRunAdapterRunStatus>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否有活跃的 run 正在执行 */\n    isRunning(): boolean;\n    /** 中断当前 run（仅在有活跃 run 时生效） */\n    abort(reason?: string): void;\n    /** 获取当前只读快照 */\n    snapshot(): AiRunSnapshot;\n    /** 订阅快照变化；返回取消订阅函数 */\n    subscribe(listener: AiRunListener): () => void;\n    /** 发起一次 AI run；同一时刻只允许一个活跃 run，重复调用会抛错 */\n    run<TInput extends AiJsonParams>(command: AiRunAdapterCommand<TInput>): Promise<AiRunAdapterRunStatus>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    isRunning(): boolean;\n    abort(reason?: string): void;\n    snapshot(): AiRunSnapshot;\n    subscribe(listener: AiRunListener): () => void;\n    run<TInput extends AiJsonParams>(command: AiRunAdapterCommand<TInput>): Promise<AiRunAdapterRunStatus>;\n}>",
+            "typeText": "Readonly<{\n    /** 是否有活跃的 run 正在执行 */\n    isRunning(): boolean;\n    /** 中断当前 run（仅在有活跃 run 时生效） */\n    abort(reason?: string): void;\n    /** 获取当前只读快照 */\n    snapshot(): AiRunSnapshot;\n    /** 订阅快照变化；返回取消订阅函数 */\n    subscribe(listener: AiRunListener): () => void;\n    /** 发起一次 AI run；同一时刻只允许一个活跃 run，重复调用会抛错 */\n    run<TInput extends AiJsonParams>(command: AiRunAdapterCommand<TInput>): Promise<AiRunAdapterRunStatus>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -860,6 +889,7 @@
           "methods": [
             {
               "name": "isRunning",
+              "jsdoc": "是否有活跃的 run 正在执行",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -868,6 +898,7 @@
             },
             {
               "name": "abort",
+              "jsdoc": "中断当前 run（仅在有活跃 run 时生效）",
               "parameters": [
                 {
                   "name": "reason",
@@ -887,6 +918,7 @@
             },
             {
               "name": "snapshot",
+              "jsdoc": "获取当前只读快照",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -896,6 +928,7 @@
             },
             {
               "name": "subscribe",
+              "jsdoc": "订阅快照变化；返回取消订阅函数",
               "parameters": [
                 {
                   "name": "listener",
@@ -923,6 +956,7 @@
             },
             {
               "name": "run",
+              "jsdoc": "发起一次 AI run；同一时刻只允许一个活跃 run，重复调用会抛错",
               "parameters": [
                 {
                   "name": "command",

@@ -475,7 +475,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.024Z",
+  "generatedAt": "2026-06-14T20:22:00.941Z",
   "models": {
     "TreeManagerOptions": {
       "name": "TreeManagerOptions",
@@ -488,30 +488,30 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 配置对象。 */\n    config: TreeConfig;\n    /** api 字段。 */\n    api?: TreeApi;\n    /** initial Nodes 字段。 */\n    initialNodes?: FlatTreeNode[];\n    /** http Client 字段。 */\n    httpClient?: HttpClientBase;\n    /** endpoint Context Provider 回调。 */\n    endpointContextProvider?: () => Record<string, unknown>;\n}",
+        "declarationTypeText": "{\n    /** 树结构配置：idField / parentIdField / textField / treeMode / lazy 等。 */\n    config: TreeConfig;\n    /** 树 HTTP 接口族配置（children / path / subtree / move / nested / nestedSearch）。 */\n    api?: TreeApi;\n    /** 初始扁平节点数组（直接写入缓存，跳过 HTTP 拉取）。 */\n    initialNodes?: FlatTreeNode[];\n    /** HTTP 客户端（优先使用外部注入实例共享拦截器/认证；否则懒初始化独立实例）。 */\n    httpClient?: HttpClientBase;\n    /** 端点上下文提供者（tenantId / projectId 等），用于 scoped URL 归一化。 */\n    endpointContextProvider?: () => Record<string, unknown>;\n}",
         "members": {
           "attributes": [
             {
               "name": "config",
-              "jsdoc": "配置对象。",
+              "jsdoc": "树结构配置：idField / parentIdField / textField / treeMode / lazy 等。",
               "readable": true,
               "writable": true
             },
             {
               "name": "api",
-              "jsdoc": "api 字段。",
+              "jsdoc": "树 HTTP 接口族配置（children / path / subtree / move / nested / nestedSearch）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "initialNodes",
-              "jsdoc": "initial Nodes 字段。",
+              "jsdoc": "初始扁平节点数组（直接写入缓存，跳过 HTTP 拉取）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "httpClient",
-              "jsdoc": "http Client 字段。",
+              "jsdoc": "HTTP 客户端（优先使用外部注入实例共享拦截器/认证；否则懒初始化独立实例）。",
               "readable": true,
               "writable": false
             }
@@ -519,7 +519,7 @@
           "methods": [
             {
               "name": "endpointContextProvider",
-              "jsdoc": "endpoint Context Provider 回调。",
+              "jsdoc": "端点上下文提供者（tenantId / projectId 等），用于 scoped URL 归一化。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -551,11 +551,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    rootId?: string | number | null | undefined;\n    limit?: number | undefined;\n    depthLimit?: number | undefined;\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 子树根节点 ID；缺省则从全局根节点开始拉取。 */\n    rootId?: string | number | null | undefined;\n    /** 返回节点数量上限；缺省使用端点默认值。 */\n    limit?: number | undefined;\n    /** 拉取深度上限；缺省使用端点或 TreeConfig 中的 depthLimit。 */\n    depthLimit?: number | undefined;\n    /** 树模式：flat=扁平 parentId 索引，nested=服务端嵌套 JSON；缺省使用 TreeConfig.treeMode。 */\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    rootId?: string | number | null | undefined;\n    limit?: number | undefined;\n    depthLimit?: number | undefined;\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 子树根节点 ID；缺省则从全局根节点开始拉取。 */\n    rootId?: string | number | null | undefined;\n    /** 返回节点数量上限；缺省使用端点默认值。 */\n    limit?: number | undefined;\n    /** 拉取深度上限；缺省使用端点或 TreeConfig 中的 depthLimit。 */\n    depthLimit?: number | undefined;\n    /** 树模式：flat=扁平 parentId 索引，nested=服务端嵌套 JSON；缺省使用 TreeConfig.treeMode。 */\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -563,21 +563,25 @@
           "attributes": [
             {
               "name": "rootId",
+              "jsdoc": "子树根节点 ID；缺省则从全局根节点开始拉取。",
               "readable": true,
               "writable": false
             },
             {
               "name": "limit",
+              "jsdoc": "返回节点数量上限；缺省使用端点默认值。",
               "readable": true,
               "writable": false
             },
             {
               "name": "depthLimit",
+              "jsdoc": "拉取深度上限；缺省使用端点或 TreeConfig 中的 depthLimit。",
               "readable": true,
               "writable": false
             },
             {
               "name": "treeMode",
+              "jsdoc": "树模式：flat=扁平 parentId 索引，nested=服务端嵌套 JSON；缺省使用 TreeConfig.treeMode。",
               "readable": true,
               "writable": false
             }
@@ -591,7 +595,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/tree-manager.d.ts",
-        "line": 38,
+        "line": 42,
         "className": "TreeManager",
         "declarationKind": "class"
       },

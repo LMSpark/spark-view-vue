@@ -85,7 +85,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.454Z",
+  "generatedAt": "2026-06-14T20:18:59.361Z",
   "models": {
     "RendererTabsApi": {
       "name": "RendererTabsApi",
@@ -103,11 +103,12 @@
         "componentDirectory": "containers/layout"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    getActiveTab(): string | number | undefined;\n    setActiveTab(name: string | number): void;\n    getPaneNames(): Array<string | number>;\n    getPaneCount(): number;\n}",
+        "declarationTypeText": "{\n    /** 获取当前激活标签页的 name；无激活时返回 undefined。 */\n    getActiveTab(): string | number | undefined;\n    /** 切换到指定 name 的标签页。 */\n    setActiveTab(name: string | number): void;\n    /** 获取所有标签页面板的 name 列表。 */\n    getPaneNames(): Array<string | number>;\n    /** 获取标签页面板数量。 */\n    getPaneCount(): number;\n}",
         "members": {
           "methods": [
             {
               "name": "getActiveTab",
+              "jsdoc": "获取当前激活标签页的 name；无激活时返回 undefined。",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -129,6 +130,7 @@
             },
             {
               "name": "setActiveTab",
+              "jsdoc": "切换到指定 name 的标签页。",
               "parameters": [
                 {
                   "name": "name",
@@ -154,6 +156,7 @@
             },
             {
               "name": "getPaneNames",
+              "jsdoc": "获取所有标签页面板的 name 列表。",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -174,6 +177,7 @@
             },
             {
               "name": "getPaneCount",
+              "jsdoc": "获取标签页面板数量。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

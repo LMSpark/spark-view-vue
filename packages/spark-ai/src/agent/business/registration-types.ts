@@ -26,8 +26,11 @@ export type AiAgentToolLoopNudgeReason =
 
 /** Ai Agent Tool Loop Nudge Context 的运行上下文。 */
 export type AiAgentToolLoopNudgeContext = Readonly<{
+  /** 触发 nudge 的原因：plan_without_tool = LLM 未调用工具即产出计划，execution_phase = 已进入执行阶段，model_script_retry = model_script 失败重试。 */
   reason: AiAgentToolLoopNudgeReason
+  /** 业务模块实例 ID，用于定位 nudge 上下文所属的具体实例。 */
   moduleInstanceId: string
+  /** 运行时上下文，含业务 ID、实例 ID、session ID 等定位信息。 */
   runtimeContext: AiAgentRuntimeContext
 }>
 

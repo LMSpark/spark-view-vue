@@ -32,10 +32,15 @@ export type AiAgentBeforeFunctionCallStatus = 'allow' | 'reject' | 'abort'
  *   releaseInstance       — 可选，abort 时是否释放模块实例资源
  */
 export type AiAgentBeforeFunctionCallDirective = Readonly<{
+  /** 裁决结果：allow 允许执行，reject 回灌失败 tool result 后继续 turn，abort 中止 turn 并进入停止流程。 */
   status: AiAgentBeforeFunctionCallStatus
+  /** 拒绝或中止的原因，写入 tool result 的 msg 字段供 LLM 阅读。 */
   reason?: string
+  /** 给 LLM 的修正建议；reject/abort 时写入 tool result 的 fix 字段，引导 LLM 修正行为。 */
   fix?: string
+  /** abort 时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */
   finalAssistantMessage?: string
+  /** abort 时是否同时释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。 */
   releaseInstance?: boolean
 }>
 
@@ -46,7 +51,9 @@ export type AiAgentBeforeFunctionCallDirective = Readonly<{
  * 追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。
  */
 export type AiAgentBeforeFunctionCallOptions = AiAgentRuntimeContext & Readonly<{
+  /** 即将被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */
   toolName: string
+  /** 工具调用参数，已通过 JSON Schema 校验的键值对。 */
   args: AiJsonParams
 }>
 
@@ -76,9 +83,13 @@ export type AiAgentLifecycleStatus = 'continue' | 'complete' | 'abort'
  *   releaseInstance      — 可选，是否在结束时释放模块实例资源
  */
 export type AiAgentLifecycleDirective = Readonly<{
+  /** 生命周期状态：continue 继续工具循环，complete 正常结束 turn，abort 异常中止 turn。 */
   status: AiAgentLifecycleStatus
+  /** 结束原因；complete/abort 时建议提供，写入诊断日志。 */
   reason?: string
+  /** 结束时发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */
   finalAssistantMessage?: string
+  /** 结束时是否释放模块实例资源（触发 onEndBusinessInstance + releaseModuleInstance）。 */
   releaseInstance?: boolean
 }>
 
@@ -96,7 +107,10 @@ export type AiAgentLifecycleDirective = Readonly<{
  *   result   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）
  */
 export type AiAgentAfterFunctionCallOptions = AiAgentRuntimeContext & Readonly<{
+  /** 已执行完毕的工具名称，来自 LLM tool_calls 中的 function.name。 */
   toolName: string
+  /** 工具调用参数，已通过 JSON Schema 校验的键值对。 */
   args: AiJsonParams
+  /** 工具执行结果；ok 时带 data，失败时带 code/msg/fix 供业务方判断后续策略。 */
   result: AiAgentFunctionCallResult<unknown>
 }>

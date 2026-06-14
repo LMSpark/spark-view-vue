@@ -76,7 +76,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-13T12:34:19.646Z",
+  "generatedAt": "2026-06-14T20:17:01.327Z",
   "models": {
     "AiAgentToolLoopInput": {
       "name": "AiAgentToolLoopInput",
@@ -89,11 +89,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    request: AiAgentChatRequest;\n    turn: AiAgentTurnMeta;\n    /** 清除 session 选中缓存（业务切换时由 session 层传入） */\n    clearSelected: () => void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务注册信息：包含系统提示词、工具列表、生命周期回调等 Agent 运行时所需的全部业务契约。 */\n    registration: AiAgentRegistration<TInput>;\n    /** 业务作用域：标识当前 businessRegistrationId + businessInstanceId，用于会话寻址和诊断。 */\n    scope: AiAgentScope;\n    /** 本次聊天请求：包含用户消息、AbortSignal、流式回调（onDelta / onReasoning / onUsage）等。 */\n    request: AiAgentChatRequest;\n    /** 当前轮次元数据：turnId / seq，用于后端消息关联和诊断事件标注。 */\n    turn: AiAgentTurnMeta;\n    /** 清除 session 选中缓存（业务切换时由 session 层传入） */\n    clearSelected: () => void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    request: AiAgentChatRequest;\n    turn: AiAgentTurnMeta;\n    /** 清除 session 选中缓存（业务切换时由 session 层传入） */\n    clearSelected: () => void;\n}>",
+            "typeText": "Readonly<{\n    /** 业务注册信息：包含系统提示词、工具列表、生命周期回调等 Agent 运行时所需的全部业务契约。 */\n    registration: AiAgentRegistration<TInput>;\n    /** 业务作用域：标识当前 businessRegistrationId + businessInstanceId，用于会话寻址和诊断。 */\n    scope: AiAgentScope;\n    /** 本次聊天请求：包含用户消息、AbortSignal、流式回调（onDelta / onReasoning / onUsage）等。 */\n    request: AiAgentChatRequest;\n    /** 当前轮次元数据：turnId / seq，用于后端消息关联和诊断事件标注。 */\n    turn: AiAgentTurnMeta;\n    /** 清除 session 选中缓存（业务切换时由 session 层传入） */\n    clearSelected: () => void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -101,21 +101,25 @@
           "attributes": [
             {
               "name": "registration",
+              "jsdoc": "业务注册信息：包含系统提示词、工具列表、生命周期回调等 Agent 运行时所需的全部业务契约。",
               "readable": true,
               "writable": false
             },
             {
               "name": "scope",
+              "jsdoc": "业务作用域：标识当前 businessRegistrationId + businessInstanceId，用于会话寻址和诊断。",
               "readable": true,
               "writable": false
             },
             {
               "name": "request",
+              "jsdoc": "本次聊天请求：包含用户消息、AbortSignal、流式回调（onDelta / onReasoning / onUsage）等。",
               "readable": true,
               "writable": false
             },
             {
               "name": "turn",
+              "jsdoc": "当前轮次元数据：turnId / seq，用于后端消息关联和诊断事件标注。",
               "readable": true,
               "writable": false
             }
@@ -140,7 +144,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
-        "line": 23,
+        "line": 27,
         "className": "AiAgentToolLoopRunner",
         "declarationKind": "class"
       },

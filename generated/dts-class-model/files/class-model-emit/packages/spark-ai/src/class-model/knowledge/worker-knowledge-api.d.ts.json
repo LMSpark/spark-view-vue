@@ -127,7 +127,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T13:01:40.803Z",
+  "generatedAt": "2026-06-14T20:19:23.525Z",
   "models": {
     "ClassModelKnowledgeWorkerInitInput": {
       "name": "ClassModelKnowledgeWorkerInitInput",
@@ -177,11 +177,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    requestedClassName?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 需要增量刷新的类名；省略时从 rootClassName 全量重建。 */\n    requestedClassName?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    requestedClassName?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 需要增量刷新的类名；省略时从 rootClassName 全量重建。 */\n    requestedClassName?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -189,6 +189,7 @@
           "attributes": [
             {
               "name": "requestedClassName",
+              "jsdoc": "需要增量刷新的类名；省略时从 rootClassName 全量重建。",
               "readable": true,
               "writable": false
             }
@@ -202,16 +203,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
-        "line": 21,
+        "line": 22,
         "className": "ClassModelKnowledgeWorkerApi",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 一次性初始化：加载 manifest、创建知识提供者；必须先于其他方法调用。 */\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    /** 重新加载知识分片；可指定 className 做增量刷新，否则全量重建。 */\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    /** 结构化查询：返回类模型摘要、成员列表等 JSON 数据，供程序消费。 */\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    /** 渲染完整类声明的 .d.ts 风格文本，供 LLM 作为上下文知识。 */\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    /** 渲染单个属性的聚焦声明文本（含所属类头部），供 LLM 精确理解属性语义。 */\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    /** 渲染单个方法的聚焦声明文本（含所属类头部和完整签名），供 LLM 精确理解方法语义。 */\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
+            "typeText": "Readonly<{\n    /** 一次性初始化：加载 manifest、创建知识提供者；必须先于其他方法调用。 */\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    /** 重新加载知识分片；可指定 className 做增量刷新，否则全量重建。 */\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    /** 结构化查询：返回类模型摘要、成员列表等 JSON 数据，供程序消费。 */\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    /** 渲染完整类声明的 .d.ts 风格文本，供 LLM 作为上下文知识。 */\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    /** 渲染单个属性的聚焦声明文本（含所属类头部），供 LLM 精确理解属性语义。 */\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    /** 渲染单个方法的聚焦声明文本（含所属类头部和完整签名），供 LLM 精确理解方法语义。 */\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -219,6 +220,7 @@
           "methods": [
             {
               "name": "init",
+              "jsdoc": "一次性初始化：加载 manifest、创建知识提供者；必须先于其他方法调用。",
               "parameters": [
                 {
                   "name": "input",
@@ -242,6 +244,7 @@
             },
             {
               "name": "refresh",
+              "jsdoc": "重新加载知识分片；可指定 className 做增量刷新，否则全量重建。",
               "parameters": [
                 {
                   "name": "input",
@@ -268,6 +271,7 @@
             },
             {
               "name": "query",
+              "jsdoc": "结构化查询：返回类模型摘要、成员列表等 JSON 数据，供程序消费。",
               "parameters": [
                 {
                   "name": "input",
@@ -292,6 +296,7 @@
             },
             {
               "name": "modelGuide",
+              "jsdoc": "渲染完整类声明的 .d.ts 风格文本，供 LLM 作为上下文知识。",
               "parameters": [
                 {
                   "name": "input",
@@ -315,6 +320,7 @@
             },
             {
               "name": "attributeGuide",
+              "jsdoc": "渲染单个属性的聚焦声明文本（含所属类头部），供 LLM 精确理解属性语义。",
               "parameters": [
                 {
                   "name": "input",
@@ -338,6 +344,7 @@
             },
             {
               "name": "methodGuide",
+              "jsdoc": "渲染单个方法的聚焦声明文本（含所属类头部和完整签名），供 LLM 精确理解方法语义。",
               "parameters": [
                 {
                   "name": "input",

@@ -32,7 +32,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:30:49.407Z",
+  "generatedAt": "2026-06-14T20:01:36.839Z",
   "models": {
     "Draft2020AuditIssue": {
       "name": "Draft2020AuditIssue",
@@ -45,11 +45,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    path: string;\n    rule: string;\n    detail: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 审计问题在 JSON Schema 中的路径，格式为 $.properties.fieldName 等。 */\n    path: string;\n    /** 违反的审计规则标识，如 INVALID_TYPE、REF_TARGET、REDUNDANT_CONST_TYPE 等。 */\n    rule: string;\n    /** 规则违反的详细说明，包含具体的违规内容（如非法类型名、多余字段列表等）。 */\n    detail: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    path: string;\n    rule: string;\n    detail: string;\n}>",
+            "typeText": "Readonly<{\n    /** 审计问题在 JSON Schema 中的路径，格式为 $.properties.fieldName 等。 */\n    path: string;\n    /** 违反的审计规则标识，如 INVALID_TYPE、REF_TARGET、REDUNDANT_CONST_TYPE 等。 */\n    rule: string;\n    /** 规则违反的详细说明，包含具体的违规内容（如非法类型名、多余字段列表等）。 */\n    detail: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -57,16 +57,19 @@
           "attributes": [
             {
               "name": "path",
+              "jsdoc": "审计问题在 JSON Schema 中的路径，格式为 $.properties.fieldName 等。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rule",
+              "jsdoc": "违反的审计规则标识，如 INVALID_TYPE、REF_TARGET、REDUNDANT_CONST_TYPE 等。",
               "readable": true,
               "writable": false
             },
             {
               "name": "detail",
+              "jsdoc": "规则违反的详细说明，包含具体的违规内容（如非法类型名、多余字段列表等）。",
               "readable": true,
               "writable": false
             }

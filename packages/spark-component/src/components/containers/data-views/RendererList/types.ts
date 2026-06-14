@@ -9,5 +9,7 @@ import type { BaseContainerApi } from '../../support/base-container-api.js'
 
 /** Renderer List Api 的语义模型。 */
 export type RendererListApi = BaseContainerApi & {
+  /** 读取列表当前所有行数据（快照副本） */
   getRows(): DataRow[]
-    getItemCount(): number}
+  /** 返回列表当前行数，等效 getRows().length 但避免数组拷贝 */
+  getItemCount(): number}

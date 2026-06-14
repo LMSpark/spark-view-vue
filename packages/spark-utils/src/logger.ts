@@ -23,9 +23,13 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 /** Logger API */
 export type LoggerApi = {
+  /** 输出调试级别日志；仅开发环境可见，用于排查内部状态流转。 */
   debug(...args: unknown[]): void
+  /** 输出信息级别日志；记录正常业务流程关键节点。 */
   info(...args: unknown[]): void
+  /** 输出警告级别日志；非致命异常或降级路径，需要关注但不阻断流程。 */
   warn(...args: unknown[]): void
+  /** 输出错误级别日志；业务失败或运行时异常，自动捕获调用栈并附带传输器诊断。 */
   error(...args: unknown[]): void}
 
 // ─── 全局传输器（结构化，APP 层贯穿） ────────────────────────────────────────
@@ -38,6 +42,7 @@ export type LoggerApi = {
  * 因此同一个 transport 实例可同时注册到两个系统。
  */
 export type LogTransport = {
+  /** 将结构化日志发送到传输目标；实现同步或异步均可，异常不会影响日志主流程。 */
   send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>}
 
 /** 全局传输器列表 */

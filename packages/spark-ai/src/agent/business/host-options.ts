@@ -10,9 +10,12 @@ import type { AiAgentRegistration } from './registration-types'
 
 /** Ai Agent Options 的调用配置。 */
 export type AiAgentOptions<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 业务注册查找表；host.run() 通过 moduleId 查找对应 AiAgentRegistration，找不到则 throw。 */
   registry: {
     get(moduleId: string): AiAgentRegistration<TInput> | undefined
   }
+  /** APP 层 I/O 回调；tool-loop 通过它分发流式 delta / reasoning / toolCall 事件到 transport。 */
   turnCallbacks: AiAgentTurnCallbacks
+  /** 单次 run 内工具调用最大轮次安全阀；达到上限时 tool-loop 通知前端并终止，生产默认 16。 */
   maxToolRounds?: number
 }>

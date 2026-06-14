@@ -42,16 +42,25 @@ import {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 
-/** Ai Run Trace Sink 的语义模型。 */
+/** 外部 trace sink 接口：宿主方可实现此接口在 run 生命周期中接收观测数据 */
 export type AiRunTraceSink = Readonly<{
+  /** 追加用户消息 */
   appendUserMessage(content: string): void
+  /** 从原始 SSE 事件派发内部状态变更 */
   appendEvent(event: AiAgentStreamEvent): void
+  /** 追加模型文本增量 */
   appendDelta(delta: string): void
+  /** 追加推理文本增量 */
   appendReasoning(text: string): void
+  /** 追加工具调用完成记录 */
   appendToolCall(record: AiAgentToolCallRecord): void
+  /** 追加错误条目 */
   appendError(message: string): void
+  /** 标记为用户主动中断 */
   markAborted(message?: string): void
+  /** 结束当前活跃 turn */
   finish(): void
+  /** 重置全部状态 */
   reset(): void
 }>
 
@@ -78,8 +87,9 @@ export type AiRunAbortHandler = (reason: string) => void
 /** Ai Run Adapter Run Status 的语义模型。 */
 export type AiRunAdapterRunStatus = 'completed' | 'aborted'
 
-/** Ai Run Host 的语义模型。 */
+/** AI 运行宿主接口：封装 AiAgentHost.run() 调用，便于 adapter 在不依赖具体 Host 实现的情况下发起 run */
 export type AiRunHost = Readonly<{
+  /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */
   run<TInput extends AiJsonParams>(
     alias: string,
     input: TInput,
@@ -87,50 +97,74 @@ export type AiRunHost = Readonly<{
   ): Promise<AiAgentHostRunResult>
 }>
 
-/** Ai Run Adapter Options 的调用配置。 */
+/** adapter 全局配置 */
 export type AiRunAdapterOptions = Readonly<{
+  /** 自定义错误格式化函数，将 run 抛出的 error 转为展示文本；默认使用 error.message */
   formatError?: AiRunErrorFormatter
 }>
 
-/** Ai Run Adapter Command 的命令参数。 */
+/** 单次 AI run 的启动命令参数 */
 export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  /** 运行宿主，封装了 AiAgentHost.run() 调用 */
   host: AiRunHost
+  /** 业务注册别名，对应 Host 中已注册的业务 */
   alias: string
+  /** 业务输入参数，类型由 alias 推断 */
   input: TInput
+  /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */
   runInput?: SparkAgUiRunInput
+  /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */
   threadId?: string
+  /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */
   runId?: string
+  /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */
   trace?: AiRunTraceSink
+  /** 本次请求级工具执行前置裁决 */
   beforeFunctionCall?: AiRunBeforeFunctionCall
+  /** 用户中断回调：abort 触发后调用，参数为中断原因 */
   onAbort?: AiRunAbortHandler
+  /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */
   onEvent?: (event: SparkAgUiEvent) => void
+  /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */
   userMessage?: string
 }>
 
 /** AG-UI timeline 中给组件展示的单条事件摘要。 */
 export type AiRunTimelineEvent = Readonly<{
+  /** 事件序号，从 1 开始递增 */
   sequence: number
+  /** AG-UI 事件类型标识 */
   type: string
+  /** 事件时间戳（Unix 毫秒） */
   timestamp: number
+  /** 事件 payload 的截断预览文本，超出 360 字符自动截断 */
   payloadPreview: string
 }>
 
 /** headless AI run adapter 暴露给 UI 的完整只读快照。 */
 export type AiRunSnapshot = Readonly<{
+  /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */
   trace: AiAgentRunTraceSnapshot
+  /** 已产出的 AG-UI 事件列表，按时间顺序排列 */
   agUiEvents: readonly SparkAgUiEvent[]
+  /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */
   timeline: readonly AiRunTimelineEvent[]
 }>
 
 /** AI run snapshot 变化监听器，订阅者应只读消费快照而不持有可变内部状态。 */
 export type AiRunListener = (snapshot: AiRunSnapshot) => void
 
-/** Ai Run Adapter State 的运行状态。 */
+/** headless AI run adapter 状态接口：UI 通过此接口发起/中断 run、读取快照、订阅变化 */
 export type AiRunAdapterState = Readonly<{
+  /** 是否有活跃的 run 正在执行 */
   isRunning(): boolean
+  /** 中断当前 run（仅在有活跃 run 时生效） */
   abort(reason?: string): void
+  /** 获取当前只读快照 */
   snapshot(): AiRunSnapshot
+  /** 订阅快照变化；返回取消订阅函数 */
   subscribe(listener: AiRunListener): () => void
+  /** 发起一次 AI run；同一时刻只允许一个活跃 run，重复调用会抛错 */
   run<TInput extends AiJsonParams>(
     command: AiRunAdapterCommand<TInput>,
   ): Promise<AiRunAdapterRunStatus>

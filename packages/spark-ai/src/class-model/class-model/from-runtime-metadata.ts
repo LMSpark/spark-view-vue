@@ -11,7 +11,9 @@ import { CLASS_MODEL_DOCUMENT_VERSION } from './types'
 
 /** Runtime Document Input 的输入数据。 */
 type RuntimeDocumentInput = Readonly<{
+  /** 共享 JSON Schema 定义，映射为 ClassModelDocument.$defs。 */
   $defs?: Readonly<Record<string, AiJsonSchemaObject>>
+  /** 运行时 API 元数据数组；首元素作为 ClassModelDocument.module（真源），缺失时 throw。 */
   modules: readonly AiRuntimeApiMetadataJson[]
 }>
 

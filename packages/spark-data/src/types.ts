@@ -42,10 +42,15 @@ import type { LoggerApi } from '@spark-appworks/spark-utils'
 /** 事件发射器：DataSet/DataView 内部使用的最小事件接口 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SparkEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> = {
+  /** 订阅指定事件；同一 handler 可重复注册，每次 emit 都会调用 */
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
+  /** 取消订阅指定事件的指定 handler；必须与 on 传入的是同一函数引用 */
   off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
+  /** 同步触发指定事件，按注册顺序调用所有 handler */
   emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
+  /** 移除指定事件的所有 handler；省略 event 时移除全部事件的所有 handler */
   removeAllListeners<K extends string & keyof TEventMap>(event?: K): void
+  /** 返回指定事件当前注册的 handler 数量；省略 event 时返回所有事件 handler 总数 */
   listenerCount<K extends string & keyof TEventMap>(event?: K): number}
 
 /** 数据行：所有数据容器的基本行形状，可选携带实例级权限 */

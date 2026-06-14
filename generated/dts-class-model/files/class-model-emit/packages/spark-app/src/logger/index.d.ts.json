@@ -298,7 +298,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.945Z",
+  "generatedAt": "2026-06-14T20:07:15.496Z",
   "models": {
     "AppLoggerApi": {
       "name": "AppLoggerApi",
@@ -311,11 +311,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    debug(message: string, meta?: Record<string, unknown>): void;\n    info(message: string, meta?: Record<string, unknown>): void;\n    warn(message: string, meta?: Record<string, unknown>): void;\n    error(message: string, error?: Error | Record<string, unknown>): void;\n    success(message: string, meta?: Record<string, unknown>): void;\n}",
+        "declarationTypeText": "{\n    /** 输出调试级别日志，仅开发环境可见；用于流程跟踪和变量检查 */\n    debug(message: string, meta?: Record<string, unknown>): void;\n    /** 输出信息级别日志，标记正常业务流程关键节点（启动、切换、完成） */\n    info(message: string, meta?: Record<string, unknown>): void;\n    /** 输出警告级别日志，标记可恢复的异常或需要关注的退化情况 */\n    warn(message: string, meta?: Record<string, unknown>): void;\n    /** 输出错误级别日志，自动捕获调用栈；用于不可恢复异常和需要排查的失败 */\n    error(message: string, error?: Error | Record<string, unknown>): void;\n    /** 输出成功标记日志（实际按 info 级别输出，带成功图标），用于关键操作完成确认 */\n    success(message: string, meta?: Record<string, unknown>): void;\n}",
         "members": {
           "methods": [
             {
               "name": "debug",
+              "jsdoc": "输出调试级别日志，仅开发环境可见；用于流程跟踪和变量检查",
               "parameters": [
                 {
                   "name": "message",
@@ -352,6 +353,7 @@
             },
             {
               "name": "info",
+              "jsdoc": "输出信息级别日志，标记正常业务流程关键节点（启动、切换、完成）",
               "parameters": [
                 {
                   "name": "message",
@@ -388,6 +390,7 @@
             },
             {
               "name": "warn",
+              "jsdoc": "输出警告级别日志，标记可恢复的异常或需要关注的退化情况",
               "parameters": [
                 {
                   "name": "message",
@@ -424,6 +427,7 @@
             },
             {
               "name": "error",
+              "jsdoc": "输出错误级别日志，自动捕获调用栈；用于不可恢复异常和需要排查的失败",
               "parameters": [
                 {
                   "name": "message",
@@ -469,6 +473,7 @@
             },
             {
               "name": "success",
+              "jsdoc": "输出成功标记日志（实际按 info 级别输出，带成功图标），用于关键操作完成确认",
               "parameters": [
                 {
                   "name": "message",
@@ -513,7 +518,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/logger/index.d.ts",
-        "line": 29,
+        "line": 34,
         "className": "AppLoggerConfig",
         "declarationKind": "typeAlias"
       },
@@ -585,7 +590,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/logger/index.d.ts",
-        "line": 54,
+        "line": 59,
         "className": "LogTransport",
         "declarationKind": "typeAlias"
       },
@@ -632,7 +637,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/logger/index.d.ts",
-        "line": 73,
+        "line": 78,
         "className": "BatchTransportOptions",
         "declarationKind": "typeAlias"
       },
@@ -694,7 +699,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/logger/index.d.ts",
-        "line": 118,
+        "line": 123,
         "className": "AppLogger",
         "declarationKind": "class"
       },

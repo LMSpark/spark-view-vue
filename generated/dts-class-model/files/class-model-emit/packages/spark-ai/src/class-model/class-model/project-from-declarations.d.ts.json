@@ -36,7 +36,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:47:29.384Z",
+  "generatedAt": "2026-06-14T20:17:41.342Z",
   "models": {
     "ProjectDtsSourceFileProjectionOptions": {
       "name": "ProjectDtsSourceFileProjectionOptions",
@@ -49,11 +49,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    exportedOnly?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 仓库根目录的绝对路径，用于归一化 .d.ts 文件路径为 repo 相对路径。 */\n    repoRoot: string;\n    /** 待投影 .d.ts 文件的绝对路径。 */\n    absolutePath: string;\n    /** TypeScript SourceFile AST 实例（已解析完成）。 */\n    sourceFile: ts.SourceFile;\n    /** 是否仅投影 export 声明；默认 false 时投影全部顶层声明。 */\n    exportedOnly?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    exportedOnly?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 仓库根目录的绝对路径，用于归一化 .d.ts 文件路径为 repo 相对路径。 */\n    repoRoot: string;\n    /** 待投影 .d.ts 文件的绝对路径。 */\n    absolutePath: string;\n    /** TypeScript SourceFile AST 实例（已解析完成）。 */\n    sourceFile: ts.SourceFile;\n    /** 是否仅投影 export 声明；默认 false 时投影全部顶层声明。 */\n    exportedOnly?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -61,21 +61,25 @@
           "attributes": [
             {
               "name": "repoRoot",
+              "jsdoc": "仓库根目录的绝对路径，用于归一化 .d.ts 文件路径为 repo 相对路径。",
               "readable": true,
               "writable": false
             },
             {
               "name": "absolutePath",
+              "jsdoc": "待投影 .d.ts 文件的绝对路径。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sourceFile",
+              "jsdoc": "TypeScript SourceFile AST 实例（已解析完成）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "exportedOnly",
+              "jsdoc": "是否仅投影 export 声明；默认 false 时投影全部顶层声明。",
               "readable": true,
               "writable": false
             }

@@ -414,5 +414,6 @@ cancel: CancellableControl['cancel']}
  * spark-component 通过能力系统注入具体实现。
  */
 export type RouterLike = {
+  /** 执行路由跳转；支持路径字符串或带 query 的路径对象，由注入的实现决定实际导航行为（如 vue-router push 或内存跳转） */
   push(to: string | { path: string; query?: Record<string, string> }): unknown}
 

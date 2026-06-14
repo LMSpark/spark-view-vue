@@ -24,15 +24,20 @@ export type AiNativeRuntimeSchemaDefs = Readonly<Record<string, AiJsonSchema>>
 
 /** Ai Native Script Context Command 的命令参数。 */
 export type AiNativeScriptContextCommand<TInstance = unknown> = Readonly<{
+  /** 脚本执行时 this 绑定的业务根实例；脚本通过 this.xxx 访问实例上的 API 方法 */
   instance: TInstance
+  /** ClassModel API 元数据 JSON，声明脚本可调用的 API 对象及其方法签名 */
   metadata: AiRuntimeApiMetadataJson
+  /** 宿主运行上下文，提供平台级服务（如路径解析）注入；省略时脚本无宿主依赖 */
   host?: AiAgentRuntimeHostContext
+  /** 命名 JSON Schema 定义集，供脚本内校验函数按 $ref 引用；省略时校验不支持外部 schema */
   schemaDefs?: AiNativeRuntimeSchemaDefs
 }>
 
 /** Ai Native Script Run Command 的命令参数。 */
 export type AiNativeScriptRunCommand<TInstance = unknown> =
   AiNativeScriptContextCommand<TInstance> & Readonly<{
+    /** LLM 生成的 JavaScript async function body，脚本沙箱直接执行此文本；禁止包含 TS/JSX/import/export/函数包裹 */
     script: string
   }>
 
