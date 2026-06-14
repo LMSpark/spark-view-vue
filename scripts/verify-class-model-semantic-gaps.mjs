@@ -9,4 +9,4 @@ const repoRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const bundleRoot = resolve(repoRoot, 'generated/dts-class-model')
 
 assertClassModelSemanticGapsZero(bundleRoot)
-console.log('ClassModel semantic gaps verification passed (gapCount=0).')
+console.log('ClassModel semantic gate verification passed (module/model/constructor gaps=0).')

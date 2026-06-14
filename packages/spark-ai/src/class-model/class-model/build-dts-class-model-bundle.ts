@@ -857,8 +857,42 @@ function collectSemanticGaps(projection: DtsFileProjectionDocument): readonly Dt
         memberName: 'constructor',
       }))
     }
+    for (const attribute of semanticGapAttributes(model)) {
+      if (isMissingJsDoc(attribute.jsdoc)) {
+        gaps.push(createSemanticGap({
+          kind: 'attribute',
+          model,
+          provenance: attribute.provenance,
+          memberName: attribute.name,
+        }))
+      }
+    }
+    for (const method of semanticGapMethods(model)) {
+      if (isMissingJsDoc(method.jsdoc)) {
+        gaps.push(createSemanticGap({
+          kind: 'method',
+          model,
+          provenance: method.provenance,
+          memberName: method.name,
+        }))
+      }
+    }
   }
   return gaps
+}
+
+function semanticGapAttributes(model: DtsTypeDeclarationModel): readonly AttributeMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.attributes
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.attributes
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.attributes
+  return model.enumDecl.members
+}
+
+function semanticGapMethods(model: DtsTypeDeclarationModel): readonly MethodMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.methods
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.methods
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.methods
+  return []
 }
 
 function createModuleSemanticGap(module: DtsFileModuleSemanticMeta): DtsClassModelSemanticGap {
@@ -963,7 +997,7 @@ function createSemanticGapReport(
     notes: [
       '.d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。',
       'module 是单个 DTS shard 的入口语义；必须来自源文件头 JSDoc（职责/边界/AI用途），路径推导只作定位日志。',
-      'model 与 constructor 必须在首次声明处有 JSDoc；attribute/method 派生缓存不计入 CI 门禁。',
+      'model、constructor、attribute、method 都会记录 JSDoc 缺口；CI 门禁仅阻断 module/model/constructor。',
     ],
     gaps: sorted,
   }

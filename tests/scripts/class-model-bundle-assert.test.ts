@@ -114,19 +114,54 @@ describe('class-model-bundle-assert', () => {
     }
   })
 
-  it('throws semantic gaps zero gate when report has gaps', () => {
+  it('passes semantic gaps gate when only member documentation debt exists', () => {
     const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
     try {
       writeFileSync(join(root, 'semantic-gaps.json'), JSON.stringify({
-        gapCount: 1,
-        gaps: [{
-          kind: 'model',
-          className: 'Demo',
-          sourceFile: 'packages/demo.ts',
-        }],
+        gapCount: 2,
+        gaps: [
+          {
+            kind: 'attribute',
+            className: 'Demo',
+            memberName: 'name',
+            sourceFile: 'packages/demo.ts',
+          },
+          {
+            kind: 'method',
+            className: 'Demo',
+            memberName: 'run',
+            sourceFile: 'packages/demo.ts',
+          },
+        ],
       }))
 
-      expect(() => assertClassModelSemanticGapsZero(root)).toThrow(/gapCount=1/)
+      expect(() => assertClassModelSemanticGapsZero(root)).not.toThrow()
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('throws semantic gaps gate when module/model/constructor gaps exist', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    try {
+      writeFileSync(join(root, 'semantic-gaps.json'), JSON.stringify({
+        gapCount: 2,
+        gaps: [
+          {
+            kind: 'method',
+            className: 'Demo',
+            memberName: 'run',
+            sourceFile: 'packages/demo.ts',
+          },
+          {
+            kind: 'model',
+            className: 'Demo',
+            sourceFile: 'packages/demo.ts',
+          },
+        ],
+      }))
+
+      expect(() => assertClassModelSemanticGapsZero(root)).toThrow(/gateGapCount=1, totalGapCount=2/)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

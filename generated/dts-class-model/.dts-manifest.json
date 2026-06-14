@@ -189,7 +189,7 @@
     "class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T18:17:49.965Z"
+      "sourceModifiedAt": "2026-06-14T18:32:37.852Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/build-index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts",

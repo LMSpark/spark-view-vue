@@ -1011,17 +1011,23 @@ describe('readDtsClassModelBundleJson', () => {
       expect(report.gapCount).toBe(result.semanticGapCount)
       expect(gapIds).toContain('model:RTextProps.<model>')
       expect(gapIds).toContain('model:DemoModel.<model>')
-      expect(gapIds).not.toContain('attribute:RTextProps.missingLabel')
-      expect(gapIds).not.toContain('attribute:DemoModel.missingCount')
-      expect(gapIds).not.toContain('method:DemoModel.reset')
+      expect(gapIds).toContain('attribute:RTextProps.missingLabel')
+      expect(gapIds).toContain('attribute:DemoModel.missingCount')
+      expect(gapIds).toContain('method:DemoModel.reset')
       expect(report.gaps.find(gap => gap.className === 'RTextProps' && gap.kind === 'model')).toMatchObject({
         reason: 'missing-jsdoc',
       })
+      expect(report.gaps.find(gap => gap.className === 'DemoModel' && gap.kind === 'method' && gap.memberName === 'reset'))
+        .toMatchObject({
+          reason: 'missing-jsdoc',
+          sourceFile: 'packages/spark-component/src/components/fields/data-components/FieldText.props.ts',
+        })
       expect(report.gaps.find(gap => gap.className === 'RTextProps' && gap.kind === 'model')?.chainBreak)
         .toContain('RTextProps')
       expect(report.gaps.find(gap => gap.className === 'RTextProps' && gap.kind === 'model')?.fixHint)
         .toContain('FieldText.props.ts')
       expect(report.notes.join('\n')).toContain('.d.ts')
+      expect(report.notes.join('\n')).toContain('attribute、method')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }

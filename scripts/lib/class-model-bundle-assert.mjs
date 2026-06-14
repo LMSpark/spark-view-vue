@@ -56,7 +56,7 @@ export function assertClassModelGuideExecutableSchemas(bundleRoot) {
   assertGuideShardExecutableSchemas(root, manifest)
 }
 
-/** CI 门禁：module/model/constructor 级 semantic-gaps 必须为 0（见 build-dts-class-model-bundle collectSemanticGaps）。 */
+/** CI 门禁：module/model/constructor 级 semantic-gaps 必须为 0；attribute/method 作为报告债务输出。 */
 export function assertClassModelSemanticGapsZero(bundleRoot) {
   const root = resolve(bundleRoot)
   const semanticJsonPath = join(root, 'semantic-gaps.json')
@@ -66,18 +66,26 @@ export function assertClassModelSemanticGapsZero(bundleRoot) {
     )
   }
   const report = JSON.parse(readFileSync(semanticJsonPath, 'utf8'))
-  const gapCount = Number(report.gapCount ?? report.gaps?.length ?? 0)
-  if (!Number.isFinite(gapCount) || gapCount > 0) {
-    const samples = (report.gaps ?? []).slice(0, 10).map(gap => {
+  const gateGaps = semanticGateGaps(report)
+  const gapCount = gateGaps.length
+  if (gapCount > 0) {
+    const samples = gateGaps.slice(0, 10).map(gap => {
       const label = gap.memberName === undefined ? gap.className : `${gap.className}.${gap.memberName}`
       return `- [${gap.kind}] ${label} (${gap.sourceFile})`
     })
     throw new Error([
-      `ClassModel semantic gaps must be zero for CI gate (gapCount=${String(gapCount)}).`,
+      `ClassModel module/model/constructor semantic gaps must be zero for CI gate (gateGapCount=${String(gapCount)}, totalGapCount=${String(Number(report.gapCount ?? report.gaps?.length ?? 0))}).`,
       'Fix module/model/constructor JSDoc in source files, then run: pnpm run generate:class-model-surface',
       ...samples,
     ].join('\n'))
   }
+}
+
+function semanticGateGaps(report) {
+  const gaps = Array.isArray(report.gaps) ? report.gaps : []
+  return gaps.filter(gap => gap?.kind === 'module'
+    || gap?.kind === 'model'
+    || gap?.kind === 'constructor')
 }
 
 function assertGuideShardExecutableSchemas(bundleRoot, manifest) {
