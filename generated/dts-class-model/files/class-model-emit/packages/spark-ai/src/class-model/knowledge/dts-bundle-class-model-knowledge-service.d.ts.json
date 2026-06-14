@@ -533,7 +533,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.871Z",
+  "generatedAt": "2026-06-14T02:45:02.818Z",
   "$defs": {
     "DtsBundleClassModelKnowledgeRefreshInput": {
       "type": "object",

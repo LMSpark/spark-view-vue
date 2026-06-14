@@ -407,7 +407,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:50.016Z",
+  "generatedAt": "2026-06-14T02:45:04.163Z",
   "$defs": {
     "NavigationClientOptions": {
       "type": "object",

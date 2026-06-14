@@ -131,7 +131,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:49.128Z",
+  "generatedAt": "2026-06-14T02:45:03.534Z",
   "$defs": {
     "CascaderPath": {
       "type": "object",

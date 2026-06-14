@@ -1284,7 +1284,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.518Z",
+  "generatedAt": "2026-06-14T02:45:02.499Z",
   "$defs": {
     "ClassModelAgentAdapterConstructor": {
       "type": "object",

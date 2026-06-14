@@ -340,7 +340,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.954Z",
+  "generatedAt": "2026-06-14T02:45:02.880Z",
   "$defs": {
     "ModelGuideRenderInput": {
       "type": "object",

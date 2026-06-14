@@ -197,7 +197,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:49.466Z",
+  "generatedAt": "2026-06-14T02:45:03.751Z",
   "$defs": {
     "PermissionActionContext": {
       "type": "object",

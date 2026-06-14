@@ -171,7 +171,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.675Z",
+  "generatedAt": "2026-06-14T02:45:02.593Z",
   "$defs": {
     "AiAgentDiagnosticEventInput": {
       "type": "object",

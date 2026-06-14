@@ -232,7 +232,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:49.814Z",
+  "generatedAt": "2026-06-14T02:45:04.010Z",
   "$defs": {
     "CrudOperation": {
       "type": "object",

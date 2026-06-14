@@ -387,7 +387,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.910Z",
+  "generatedAt": "2026-06-14T02:45:02.825Z",
   "$defs": {
     "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
       "type": "object",

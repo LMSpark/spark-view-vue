@@ -766,7 +766,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:50.155Z",
+  "generatedAt": "2026-06-14T02:45:04.274Z",
   "$defs": {
     "ProjectNavigationDirtyScope": {
       "type": "object",

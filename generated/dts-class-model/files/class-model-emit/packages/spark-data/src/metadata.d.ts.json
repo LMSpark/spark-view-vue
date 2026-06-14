@@ -54,7 +54,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:49.718Z",
+  "generatedAt": "2026-06-14T02:45:03.952Z",
   "$defs": {
     "TableMetadataLike": {
       "type": "object",

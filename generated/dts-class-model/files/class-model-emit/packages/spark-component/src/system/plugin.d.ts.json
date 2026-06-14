@@ -44,7 +44,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:49.504Z",
+  "generatedAt": "2026-06-14T02:45:03.797Z",
   "$defs": {
     "SparkPluginOptions": {
       "type": "object",

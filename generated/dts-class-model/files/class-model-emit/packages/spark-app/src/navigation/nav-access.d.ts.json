@@ -130,7 +130,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:48.053Z",
+  "generatedAt": "2026-06-14T02:45:02.966Z",
   "$defs": {
     "DynamicRouterAccess": {
       "type": "object",

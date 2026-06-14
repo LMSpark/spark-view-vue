@@ -697,7 +697,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.867Z",
+  "generatedAt": "2026-06-14T02:45:02.815Z",
   "$defs": {
     "ClassModelKnowledgeQueryInput": {
       "type": "object",

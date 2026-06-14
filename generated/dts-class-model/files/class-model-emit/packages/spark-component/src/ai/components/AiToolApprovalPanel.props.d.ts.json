@@ -60,7 +60,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:48.201Z",
+  "generatedAt": "2026-06-14T02:45:03.045Z",
   "$defs": {
     "AiToolApprovalPanelProps": {
       "type": "object",

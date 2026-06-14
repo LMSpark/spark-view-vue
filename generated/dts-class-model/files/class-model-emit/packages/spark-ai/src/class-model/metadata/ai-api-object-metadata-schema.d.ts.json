@@ -818,7 +818,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.943Z",
+  "generatedAt": "2026-06-14T02:45:02.869Z",
   "$defs": {
     "AiApiActionFailureMode": {
       "type": "object",

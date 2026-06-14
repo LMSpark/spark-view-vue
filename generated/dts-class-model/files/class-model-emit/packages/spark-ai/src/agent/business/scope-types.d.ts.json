@@ -335,7 +335,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.547Z",
+  "generatedAt": "2026-06-14T02:45:02.534Z",
   "$defs": {
     "AiAgentTarget": {
       "type": "object",

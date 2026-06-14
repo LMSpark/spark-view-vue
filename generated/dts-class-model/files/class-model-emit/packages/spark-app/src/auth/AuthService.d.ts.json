@@ -323,7 +323,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:48.002Z",
+  "generatedAt": "2026-06-14T02:45:02.909Z",
   "$defs": {
     "AuthService": {
       "type": "object",

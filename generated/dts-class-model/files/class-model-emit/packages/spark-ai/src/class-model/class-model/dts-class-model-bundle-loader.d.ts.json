@@ -377,7 +377,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.774Z",
+  "generatedAt": "2026-06-14T02:45:02.765Z",
   "$defs": {
     "DtsClassModelBundleLoaderOptions": {
       "type": "object",

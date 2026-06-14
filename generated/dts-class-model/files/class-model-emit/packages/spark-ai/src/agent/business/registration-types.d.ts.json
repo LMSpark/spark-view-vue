@@ -749,7 +749,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.542Z",
+  "generatedAt": "2026-06-14T02:45:02.528Z",
   "$defs": {
     "AiAgentToolLoopNudgeReason": {
       "type": "object",

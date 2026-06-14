@@ -68,7 +68,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.819Z",
+  "generatedAt": "2026-06-14T02:45:02.786Z",
   "$defs": {
     "ClassModelReflectionConnectivityIssue": {
       "type": "object",

@@ -105,7 +105,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-14T02:38:48.199Z",
+  "generatedAt": "2026-06-14T02:45:03.042Z",
   "$defs": {
     "AiToolApprovalCardProps": {
       "type": "object",

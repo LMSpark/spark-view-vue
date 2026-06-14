@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "generatedAt": "2026-06-14T02:38:56.574Z",
+  "generatedAt": "2026-06-14T02:45:08.137Z",
   "scannedFileCount": 660,
   "files": {
     "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts": {

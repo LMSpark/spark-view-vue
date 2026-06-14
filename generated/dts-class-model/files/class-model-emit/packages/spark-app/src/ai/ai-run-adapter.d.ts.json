@@ -678,7 +678,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T02:38:47.989Z",
+  "generatedAt": "2026-06-14T02:45:02.902Z",
   "$defs": {
     "AiRunTraceSink": {
       "type": "object",
