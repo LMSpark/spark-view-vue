@@ -249,7 +249,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.178Z",
+  "generatedAt": "2026-06-14T22:53:58.147Z",
   "models": {
     "ComponentDefinition": {
       "name": "ComponentDefinition",
@@ -399,11 +399,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    register(...args: ComponentRegistrationArgs): void;\n    get(type: string): ComponentDefinition | undefined;\n    has(type: string): boolean;\n    unregister(type: string): boolean;\n    getAll(): ReadonlyMap<string, ComponentDefinition>;\n}",
+        "declarationTypeText": "{\n    /** 注册一个或多个组件定义到注册表。 */\n    register(...args: ComponentRegistrationArgs): void;\n    /** 按 type 获取组件定义。 */\n    get(type: string): ComponentDefinition | undefined;\n    /** 检查注册表是否包含指定 type。 */\n    has(type: string): boolean;\n    /** 从注册表移除指定 type，返回是否成功。 */\n    unregister(type: string): boolean;\n    /** 获取全部已注册组件定义的只读映射。 */\n    getAll(): ReadonlyMap<string, ComponentDefinition>;\n}",
         "members": {
           "methods": [
             {
               "name": "register",
+              "jsdoc": "注册一个或多个组件定义到注册表。",
               "parameters": [
                 {
                   "name": "args",
@@ -424,6 +425,7 @@
             },
             {
               "name": "get",
+              "jsdoc": "按 type 获取组件定义。",
               "parameters": [
                 {
                   "name": "type",
@@ -444,6 +446,7 @@
             },
             {
               "name": "has",
+              "jsdoc": "检查注册表是否包含指定 type。",
               "parameters": [
                 {
                   "name": "type",
@@ -460,6 +463,7 @@
             },
             {
               "name": "unregister",
+              "jsdoc": "从注册表移除指定 type，返回是否成功。",
               "parameters": [
                 {
                   "name": "type",
@@ -476,6 +480,7 @@
             },
             {
               "name": "getAll",
+              "jsdoc": "获取全部已注册组件定义的只读映射。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -503,16 +508,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/types.d.ts",
-        "line": 78,
+        "line": 83,
         "className": "ComponentRegistrationInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type: string;\n    component: unknown;\n    meta?: Record<string, unknown> | undefined;\n    options?: {\n        silent?: boolean;\n    } | undefined;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 组件类型标识（kebab-case）。 */\n    type: string;\n    /** Vue 组件实现。 */\n    component: unknown;\n    /** 扩展元数据（如 childrenMode）。 */\n    meta?: Record<string, unknown> | undefined;\n    /** 注册选项（如 silent 静默模式）。 */\n    options?: {\n        silent?: boolean;\n    } | undefined;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type: string;\n    component: unknown;\n    meta?: Record<string, unknown> | undefined;\n    options?: {\n        silent?: boolean;\n    } | undefined;\n}>",
+            "typeText": "Readonly<{\n    /** 组件类型标识（kebab-case）。 */\n    type: string;\n    /** Vue 组件实现。 */\n    component: unknown;\n    /** 扩展元数据（如 childrenMode）。 */\n    meta?: Record<string, unknown> | undefined;\n    /** 注册选项（如 silent 静默模式）。 */\n    options?: {\n        silent?: boolean;\n    } | undefined;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -520,21 +525,25 @@
           "attributes": [
             {
               "name": "type",
+              "jsdoc": "组件类型标识（kebab-case）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "component",
+              "jsdoc": "Vue 组件实现。",
               "readable": true,
               "writable": false
             },
             {
               "name": "meta",
+              "jsdoc": "扩展元数据（如 childrenMode）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "options",
+              "jsdoc": "注册选项（如 silent 静默模式）。",
               "readable": true,
               "writable": false
             }
@@ -548,7 +557,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/types.d.ts",
-        "line": 87,
+        "line": 96,
         "className": "ComponentRegistrationArgs",
         "declarationKind": "typeAlias"
       },

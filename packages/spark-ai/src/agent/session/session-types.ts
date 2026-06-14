@@ -12,20 +12,38 @@ import type { AiAgentTransportToolSpec } from '../transport/transport-types'
 // 第 1 节 · 工具调用结果
 // ═══════════════════════════════════════════════════════════════
 
-/** 工具调用失败结果 */
+/** 工具调用结果中的结构化检查项（error / warn / info）。 */
 export type AiAgentFunctionCallCheck = Readonly<{
+  /** 检查严重级别：error 表示失败，warn/info 仅提示。 */
   level: 'error' | 'warn' | 'info'
+  /** 机器可读检查码，供 LLM 与诊断系统定位问题。 */
   code: string
+  /** 人可读检查说明，写入 tool result 或 session 历史。 */
   message: string
+  /** 可选修复提示，引导 LLM 修正参数或补执行工具。 */
   hint?: string
 }>
 
-/** Ai Agent Function Call Failure 的语义模型。 */
+/**
+ * 工具调用失败结果。
+ *
+ * 字段：
+ *   ok     — 固定 false
+ *   code   — 机器可读失败码
+ *   msg    — 失败说明（回灌给 LLM）
+ *   fix    — 修正建议（回灌给 LLM）
+ *   checks — 可选附加检查项
+ */
 export type AiAgentFunctionCallFailure = Readonly<{
+  /** 固定 false，标识工具调用失败分支。 */
   ok: false
+  /** 机器可读失败码，对齐 AiAgentToolResult 错误 check 的 code。 */
   code: string
+  /** 失败说明，作为 tool role message 的 content 回灌给 LLM。 */
   msg: string
+  /** 修正建议，写入 tool result 的 fix 字段引导 LLM 重试。 */
   fix: string
+  /** 可选附加检查项，与主失败 check 一并回传给 LLM。 */
   checks?: readonly AiAgentFunctionCallCheck[]
 }>
 
@@ -53,14 +71,21 @@ export type AiAgentMessageSource = 'system' | 'ui' | 'llm'
 /** Ai Agent Function Call History Status 的语义模型。 */
 export type AiAgentFunctionCallHistoryStatus = 'requested' | 'completed' | 'failed'
 
-/** 历史条目公共字段 */
+/** 历史条目公共字段：会话定位、序号与时间戳。 */
 export type AiAgentHistoryEntryBase = Readonly<{
+  /** 业务模块 ID，标识该历史条目所属的业务类型。 */
   moduleId: string
+  /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */
   moduleInstanceId: string
+  /** 会话实例 ID，startSession 时分配，贯穿单次 Agent 会话生命周期。 */
   instanceId: string
+  /** 运行时实例 ID，标识产生该条目的 tool-loop / chat turn 上下文。 */
   runtimeInstanceId: string
+  /** 历史条目唯一 ID，用于去重与增量同步。 */
   id: string
+  /** 会话内单调递增序号，保证历史条目时序可重建。 */
   seq: number
+  /** 条目创建时间戳（毫秒），用于排序与诊断。 */
   timestamp: number
 }>
 
@@ -70,22 +95,35 @@ export type AiAgentHistoryEntryBase = Readonly<{
 
 /** 消息历史条目（用户消息 / 助手回复 / 系统消息） */
 export type AiAgentMessageHistoryEntry = AiAgentHistoryEntryBase & Readonly<{
+  /** 固定 'message'，作为历史条目联合类型的判别字段。 */
   kind: 'message'
+  /** OpenAI 对齐的消息角色：system / user / assistant。 */
   role: AiAgentMessageRole
+  /** 消息来源：system 内核注入、ui 用户界面、llm 模型输出。 */
   source: AiAgentMessageSource
+  /** 消息正文内容。 */
   content: string
+  /** 可选扩展元数据，供 UI 或诊断附加信息。 */
   metadata?: Record<string, unknown>
 }>
 
 /** 工具调用历史条目（OpenAI function call 记录） */
 export type AiAgentFunctionCallHistoryEntry = AiAgentHistoryEntryBase & Readonly<{
+  /** 固定 'functionCall'，作为历史条目联合类型的判别字段。 */
   kind: 'functionCall'
+  /** 被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */
   toolName: string
+  /** 工具调用参数，JSON 解析后的原始值。 */
   args: unknown
+  /** 工具调用状态：requested 已发起、completed 已成功、failed 已失败。 */
   status: AiAgentFunctionCallHistoryStatus
+  /** 工具调用完成时间戳（毫秒）；status 为 completed/failed 时写入。 */
   completedAt?: number
+  /** 工具调用成功返回值；status 为 completed 时写入。 */
   result?: unknown
+  /** 工具调用失败详情；status 为 failed 时写入，对齐 AiAgentFunctionCallFailure。 */
   error?: AiAgentFunctionCallFailure
+  /** 可选扩展元数据，供 UI 或诊断附加信息。 */
   metadata?: Record<string, unknown>
 }>
 
@@ -98,25 +136,41 @@ export type AiAgentHistoryEntry = AiAgentMessageHistoryEntry | AiAgentFunctionCa
 
 /** 会话记录：包含生命周期状态和历史条目，是 Agent 诊断与再次接入会话的根数据 */
 export type AiAgentSessionRecord = Readonly<{
+  /** 业务模块 ID，标识该会话所属的业务类型。 */
   moduleId: string
+  /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */
   moduleInstanceId: string
+  /** 会话实例 ID，startSession 时分配，作为会话主键。 */
   instanceId: string
+  /** 最近一次写入历史的运行时实例 ID，用于 turn 级追踪。 */
   runtimeInstanceId: string
+  /** 会话生命周期状态：Started 运行中、Stopped 已停止。 */
   status: AiAgentSessionStatus
+  /** 会话启动时间戳（毫秒）。 */
   startedAt: number
+  /** 会话最后更新时间戳（毫秒），每次 append 或 stop 时刷新。 */
   updatedAt: number
+  /** 会话停止时间戳（毫秒）；status 为 Stopped 时写入。 */
   stoppedAt?: number
+  /** 停止原因说明，stopSession 时可选传入。 */
   reason?: string
+  /** 按 seq 排序的完整历史条目列表（消息 + 工具调用）。 */
   history: readonly AiAgentHistoryEntry[]
 }>
 
 /** 会话启动结果：返回给业务方的初始状态 */
 export type AiAgentStartSessionResult = Readonly<{
+  /** 固定 'Started'，表示会话已成功创建。 */
   status: 'Started'
+  /** 新分配的会话实例 ID，后续 chat / append 均以此定位会话。 */
   instanceId: string
+  /** 业务模块 ID，与 registration.moduleId 一致。 */
   moduleId: string
+  /** 业务模块实例 ID，标识具体业务实例。 */
   moduleInstanceId: string
+  /** 完整会话记录，含初始空 history 与 Started 状态。 */
   session: AiAgentSessionRecord
+  /** 当前 registration 暴露给 LLM 的工具规格列表。 */
   tools: readonly AiAgentTransportToolSpec[]
 }>
 
@@ -126,12 +180,19 @@ export type AiAgentStartSessionResult = Readonly<{
 
 /** 向 sessionStore 追加工具调用记录的参数 */
 export type AiAgentAppendFunctionCallOptions = AiAgentRuntimeContext & Readonly<{
+  /** 产生该工具调用的运行时实例 ID，用于 turn 级历史隔离。 */
   runtimeInstanceId: string
+  /** 被调用的工具名称。 */
   toolName: string
+  /** 工具调用参数。 */
   args: unknown
+  /** 工具调用状态；省略时由 store 实现决定默认（通常为 requested）。 */
   status?: AiAgentFunctionCallHistoryStatus
+  /** 工具调用成功返回值；status 为 completed 时写入。 */
   result?: unknown
+  /** 工具调用失败详情；status 为 failed 时写入。 */
   error?: AiAgentFunctionCallFailure
+  /** 可选扩展元数据，供 UI 或诊断附加信息。 */
   metadata?: Record<string, unknown>
 }>
 

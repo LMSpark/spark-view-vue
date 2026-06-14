@@ -114,7 +114,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.121Z",
+  "generatedAt": "2026-06-14T22:53:56.388Z",
   "models": {
     "RendererStepsApi": {
       "name": "RendererStepsApi",
@@ -132,11 +132,12 @@
         "componentDirectory": "containers/layout"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    getActiveStep(): string | number | undefined;\n    getActiveStepIndex(): number;\n    setActiveStep(index: number): void;\n    nextStep(): void;\n    prevStep(): void;\n    getStepCount(): number;\n    getStepNames(): Array<string | number>;\n    isFirstStep(): boolean;\n    isLastStep(): boolean;\n}",
+        "declarationTypeText": "{\n    /** 获取当前激活步骤的标识（name 或 index）。 */\n    getActiveStep(): string | number | undefined;\n    /** 获取当前激活步骤的零基索引。 */\n    getActiveStepIndex(): number;\n    /** 按索引切换到指定步骤。 */\n    setActiveStep(index: number): void;\n    /** 前进到下一步骤。 */\n    nextStep(): void;\n    /** 回退到上一步骤。 */\n    prevStep(): void;\n    /** 获取步骤总数。 */\n    getStepCount(): number;\n    /** 获取全部步骤的名称列表。 */\n    getStepNames(): Array<string | number>;\n    /** 当前是否处于第一步。 */\n    isFirstStep(): boolean;\n    /** 当前是否处于最后一步。 */\n    isLastStep(): boolean;\n}",
         "members": {
           "methods": [
             {
               "name": "getActiveStep",
+              "jsdoc": "获取当前激活步骤的标识（name 或 index）。",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -158,6 +159,7 @@
             },
             {
               "name": "getActiveStepIndex",
+              "jsdoc": "获取当前激活步骤的零基索引。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -166,6 +168,7 @@
             },
             {
               "name": "setActiveStep",
+              "jsdoc": "按索引切换到指定步骤。",
               "parameters": [
                 {
                   "name": "index",
@@ -182,6 +185,7 @@
             },
             {
               "name": "nextStep",
+              "jsdoc": "前进到下一步骤。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -190,6 +194,7 @@
             },
             {
               "name": "prevStep",
+              "jsdoc": "回退到上一步骤。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -198,6 +203,7 @@
             },
             {
               "name": "getStepCount",
+              "jsdoc": "获取步骤总数。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -206,6 +212,7 @@
             },
             {
               "name": "getStepNames",
+              "jsdoc": "获取全部步骤的名称列表。",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -226,6 +233,7 @@
             },
             {
               "name": "isFirstStep",
+              "jsdoc": "当前是否处于第一步。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -234,6 +242,7 @@
             },
             {
               "name": "isLastStep",
+              "jsdoc": "当前是否处于最后一步。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

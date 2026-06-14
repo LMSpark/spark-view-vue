@@ -61,14 +61,17 @@ export type ThemeMode = 'light' | 'dark' | 'auto'
 
 /** 主题服务能力接口（最小契约，不含 Vue 响应式） */
 export type ThemeCapability = {
-    /** current 字段。 */
-readonly current: 'light' | 'dark'
-    /** mode 字段。 */
-readonly mode: ThemeMode
+  /** 当前生效的主题模式（light 或 dark）。 */
+  readonly current: 'light' | 'dark'
+  /** 用户选择的主题模式（含 auto）。 */
+  readonly mode: ThemeMode
+  /** 设置主题模式。 */
   setMode(mode: ThemeMode): void
-    /** 是否 is Dark。 */
-readonly isDark: boolean
-  toggle(): void}
+  /** 当前是否为暗色主题。 */
+  readonly isDark: boolean
+  /** 在 light/dark 之间切换主题。 */
+  toggle(): void
+}
 
 // ── 模块上下文能力 ────────────────────────────────────────────────────────
 
@@ -90,8 +93,11 @@ nodeId: string}
 
 /** MODULE_CONTEXT 能力接口 */
 export type ModuleContextCapability = {
+  /** 获取当前模块上下文快照。 */
   getCurrent(): ModuleContext | null
-  subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void}
+  /** 订阅模块上下文变更，返回取消订阅函数。 */
+  subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void
+}
 
 // ── 页面组件注册表能力 ─────────────────────────────────────────────────────
 
@@ -115,22 +121,34 @@ api: unknown}
 
 /** 页面内组件实例/API 注册表能力接口 */
 export type PageComponentRegistry = {
+  /** 注册组件实例元数据。 */
   registerInstance(entry: PageComponentInstanceEntry): void
+  /** 注销指定 id 的组件实例。 */
   unregisterInstance(id: string): void
+  /** 列出已注册实例，可按 type 过滤。 */
   listInstances(type?: string): PageComponentInstanceEntry[]
+  /** 按 id 获取组件实例元数据。 */
   getInstance(id: string): PageComponentInstanceEntry | null
 
+  /** 注册组件暴露的运行时 API。 */
   registerApi(entry: PageComponentApiEntry): void
+  /** 注销指定 id 的组件 API。 */
   unregisterApi(id: string): void
+  /** 列出已注册 API，可按 type 过滤。 */
   listApis(type?: string): PageComponentApiEntry[]
+  /** 按 id 获取组件 API 对象。 */
   getApi<T = unknown>(id: string): T | null
-  getApisByType<T = unknown>(type: string): T[]}
+  /** 按 type 获取同类组件 API 列表。 */
+  getApisByType<T = unknown>(type: string): T[]
+}
 
 // ── CSS 作用域注入能力 ─────────────────────────────────────────────────────
 
 /** 页面作用域 CSS 注入能力（由 SparkPageRenderer 提供） */
 export type PageCssScopeCapability = {
-  inject(css: string): void}
+  /** 向当前页面作用域注入 CSS 文本。 */
+  inject(css: string): void
+}
 
 // ── CapabilityTypeMap 扩展（数据层键 + 渲染层键 + 页面 UI/权限键） ────────
 

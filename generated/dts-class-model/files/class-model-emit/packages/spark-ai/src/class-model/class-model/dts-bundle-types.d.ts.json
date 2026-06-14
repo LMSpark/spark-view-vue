@@ -323,7 +323,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T19:03:35.064Z",
+  "generatedAt": "2026-06-14T22:57:28.640Z",
   "models": {
     "DtsFileProjectionDocument": {
       "name": "DtsFileProjectionDocument",
@@ -336,11 +336,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** per-file 投影协议版本；与 bundle manifest 的 schemaVersion 独立演进。 */\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    /** class-model-emit 下 `.d.ts` 的仓库相对路径，作为 shard 文件名和 manifest 索引键。 */\n    sourcePath: string;\n    /** 该 shard 的模块级语义元数据：名称、JSDoc、组件归属和导出 symbol 列表。 */\n    module: DtsFileModuleSemanticMeta;\n    /** 本 shard 导出的 DtsTypeDeclarationModel 符号名列表，与 models 键集合一致。 */\n    symbols: readonly string[];\n    /** 符号名 → 完整 DtsTypeDeclarationModel 投影；内存形态保留强类型，写盘时转为 bundle JSON 精简形态。 */\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+            "typeText": "Readonly<{\n    /** per-file 投影协议版本；与 bundle manifest 的 schemaVersion 独立演进。 */\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    /** class-model-emit 下 `.d.ts` 的仓库相对路径，作为 shard 文件名和 manifest 索引键。 */\n    sourcePath: string;\n    /** 该 shard 的模块级语义元数据：名称、JSDoc、组件归属和导出 symbol 列表。 */\n    module: DtsFileModuleSemanticMeta;\n    /** 本 shard 导出的 DtsTypeDeclarationModel 符号名列表，与 models 键集合一致。 */\n    symbols: readonly string[];\n    /** 符号名 → 完整 DtsTypeDeclarationModel 投影；内存形态保留强类型，写盘时转为 bundle JSON 精简形态。 */\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -348,26 +348,31 @@
           "attributes": [
             {
               "name": "schemaVersion",
+              "jsdoc": "per-file 投影协议版本；与 bundle manifest 的 schemaVersion 独立演进。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sourcePath",
+              "jsdoc": "class-model-emit 下 `.d.ts` 的仓库相对路径，作为 shard 文件名和 manifest 索引键。",
               "readable": true,
               "writable": false
             },
             {
               "name": "module",
+              "jsdoc": "该 shard 的模块级语义元数据：名称、JSDoc、组件归属和导出 symbol 列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "symbols",
+              "jsdoc": "本 shard 导出的 DtsTypeDeclarationModel 符号名列表，与 models 键集合一致。",
               "readable": true,
               "writable": false
             },
             {
               "name": "models",
+              "jsdoc": "符号名 → 完整 DtsTypeDeclarationModel 投影；内存形态保留强类型，写盘时转为 bundle JSON 精简形态。",
               "readable": true,
               "writable": false
             },
@@ -387,16 +392,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 23,
+        "line": 28,
         "className": "DtsFileProjectionBundleJson",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    $schema: 'https://json-schema.org/draft/2020-12/schema';\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    module: DtsFileModuleSemanticMeta;\n    $defs: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, unknown>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** JSON Schema Draft 2020-12 标识；校验工具据此选择 schema 方言。 */\n    $schema: 'https://json-schema.org/draft/2020-12/schema';\n    /** per-file 投影协议版本，与 DtsFileProjectionDocument.schemaVersion 对齐。 */\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    /** 该 shard 的模块级语义元数据，与内存投影 document.module 一致。 */\n    module: DtsFileModuleSemanticMeta;\n    /** 共享 JSON Schema 定义池；models 内各声明的 jsonSchema 通过 $ref 引用此字典以保证 shard 自包含。 */\n    $defs: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** 符号名 → 精简 model 载荷；强类型字段已剥离，仅保留 JSON 可序列化结构。 */\n    models: Readonly<Record<string, unknown>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    $schema: 'https://json-schema.org/draft/2020-12/schema';\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    module: DtsFileModuleSemanticMeta;\n    $defs: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, unknown>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+            "typeText": "Readonly<{\n    /** JSON Schema Draft 2020-12 标识；校验工具据此选择 schema 方言。 */\n    $schema: 'https://json-schema.org/draft/2020-12/schema';\n    /** per-file 投影协议版本，与 DtsFileProjectionDocument.schemaVersion 对齐。 */\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    /** 该 shard 的模块级语义元数据，与内存投影 document.module 一致。 */\n    module: DtsFileModuleSemanticMeta;\n    /** 共享 JSON Schema 定义池；models 内各声明的 jsonSchema 通过 $ref 引用此字典以保证 shard 自包含。 */\n    $defs: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** 符号名 → 精简 model 载荷；强类型字段已剥离，仅保留 JSON 可序列化结构。 */\n    models: Readonly<Record<string, unknown>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -404,26 +409,31 @@
           "attributes": [
             {
               "name": "$schema",
+              "jsdoc": "JSON Schema Draft 2020-12 标识；校验工具据此选择 schema 方言。",
               "readable": true,
               "writable": false
             },
             {
               "name": "schemaVersion",
+              "jsdoc": "per-file 投影协议版本，与 DtsFileProjectionDocument.schemaVersion 对齐。",
               "readable": true,
               "writable": false
             },
             {
               "name": "module",
+              "jsdoc": "该 shard 的模块级语义元数据，与内存投影 document.module 一致。",
               "readable": true,
               "writable": false
             },
             {
               "name": "$defs",
+              "jsdoc": "共享 JSON Schema 定义池；models 内各声明的 jsonSchema 通过 $ref 引用此字典以保证 shard 自包含。",
               "readable": true,
               "writable": false
             },
             {
               "name": "models",
+              "jsdoc": "符号名 → 精简 model 载荷；强类型字段已剥离，仅保留 JSON 可序列化结构。",
               "readable": true,
               "writable": false
             },
@@ -443,7 +453,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 33,
+        "line": 43,
         "className": "DtsFileModuleJsDocSource",
         "declarationKind": "typeAlias"
       },
@@ -472,16 +482,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 35,
+        "line": 45,
         "className": "DtsFileModuleSemanticMeta",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 模块语义标识；monorepo 包内为 `packageName:modulePath`，workspace 根为 modulePath。 */\n    name: string;\n    /** class-model-emit 下 `.d.ts` 的仓库相对路径，与 DtsFileProjectionDocument.sourcePath 一致。 */\n    sourcePath: string;\n    /** 对应 TypeScript/Vue 源文件的仓库相对路径；由 emit 路径反推，用于 gap 修复提示和组件归属推断。 */\n    sourceFile: string;\n    /** monorepo 包名（如 `@spark-appworks/spark-ai`）；workspace 根 `src/` 下文件为 `app`，无法推断时为 undefined。 */\n    packageName?: string;\n    /** 去掉 packages 包 src 前缀或 workspace src 前缀后的模块路径，不含扩展名。 */\n    modulePath: string;\n    /** 模块级 JSDoc 正文；来自 leading-jsdoc、源文件注释或路径/symbol 推导。 */\n    jsdoc: string;\n    /** jsdoc 字段的来源：leading-jsdoc = emit 文件首段注释，source-file-jsdoc = 源文件顶部注释，inferred = 自动推导。 */\n    jsdocSource: DtsFileModuleJsDocSource;\n    /** 本 shard 导出的 DtsTypeDeclarationModel 符号名列表。 */\n    symbols: readonly string[];\n    /** SPARK 组件名；仅当 shard 对应 Vue/组件源文件且能解析组件目录时存在。 */\n    componentName?: string;\n    /** 组件类型标签（如 container、field）；来自组件目录元数据。 */\n    componentType?: string;\n    /** 组件在 UI 层级中的级别（table-level、field-level 等）。 */\n    componentLevel?: ComponentClassModelLevel;\n    /** 组件在架构分层中的归属（layout-container、data-field 等）。 */\n    componentLayer?: ComponentClassModelLayer;\n    /** 组件源码目录的仓库相对路径；用于 gap 报告和知识检索时的组件上下文。 */\n    componentDirectory?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 模块语义标识；monorepo 包内为 `packageName:modulePath`，workspace 根为 modulePath。 */\n    name: string;\n    /** class-model-emit 下 `.d.ts` 的仓库相对路径，与 DtsFileProjectionDocument.sourcePath 一致。 */\n    sourcePath: string;\n    /** 对应 TypeScript/Vue 源文件的仓库相对路径；由 emit 路径反推，用于 gap 修复提示和组件归属推断。 */\n    sourceFile: string;\n    /** monorepo 包名（如 `@spark-appworks/spark-ai`）；workspace 根 `src/` 下文件为 `app`，无法推断时为 undefined。 */\n    packageName?: string;\n    /** 去掉 packages 包 src 前缀或 workspace src 前缀后的模块路径，不含扩展名。 */\n    modulePath: string;\n    /** 模块级 JSDoc 正文；来自 leading-jsdoc、源文件注释或路径/symbol 推导。 */\n    jsdoc: string;\n    /** jsdoc 字段的来源：leading-jsdoc = emit 文件首段注释，source-file-jsdoc = 源文件顶部注释，inferred = 自动推导。 */\n    jsdocSource: DtsFileModuleJsDocSource;\n    /** 本 shard 导出的 DtsTypeDeclarationModel 符号名列表。 */\n    symbols: readonly string[];\n    /** SPARK 组件名；仅当 shard 对应 Vue/组件源文件且能解析组件目录时存在。 */\n    componentName?: string;\n    /** 组件类型标签（如 container、field）；来自组件目录元数据。 */\n    componentType?: string;\n    /** 组件在 UI 层级中的级别（table-level、field-level 等）。 */\n    componentLevel?: ComponentClassModelLevel;\n    /** 组件在架构分层中的归属（layout-container、data-field 等）。 */\n    componentLayer?: ComponentClassModelLayer;\n    /** 组件源码目录的仓库相对路径；用于 gap 报告和知识检索时的组件上下文。 */\n    componentDirectory?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -489,66 +499,79 @@
           "attributes": [
             {
               "name": "name",
+              "jsdoc": "模块语义标识；monorepo 包内为 `packageName:modulePath`，workspace 根为 modulePath。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sourcePath",
+              "jsdoc": "class-model-emit 下 `.d.ts` 的仓库相对路径，与 DtsFileProjectionDocument.sourcePath 一致。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sourceFile",
+              "jsdoc": "对应 TypeScript/Vue 源文件的仓库相对路径；由 emit 路径反推，用于 gap 修复提示和组件归属推断。",
               "readable": true,
               "writable": false
             },
             {
               "name": "packageName",
+              "jsdoc": "monorepo 包名（如 `@spark-appworks/spark-ai`）；workspace 根 `src/` 下文件为 `app`，无法推断时为 undefined。",
               "readable": true,
               "writable": false
             },
             {
               "name": "modulePath",
+              "jsdoc": "去掉 packages 包 src 前缀或 workspace src 前缀后的模块路径，不含扩展名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "jsdoc",
+              "jsdoc": "模块级 JSDoc 正文；来自 leading-jsdoc、源文件注释或路径/symbol 推导。",
               "readable": true,
               "writable": false
             },
             {
               "name": "jsdocSource",
+              "jsdoc": "jsdoc 字段的来源：leading-jsdoc = emit 文件首段注释，source-file-jsdoc = 源文件顶部注释，inferred = 自动推导。",
               "readable": true,
               "writable": false
             },
             {
               "name": "symbols",
+              "jsdoc": "本 shard 导出的 DtsTypeDeclarationModel 符号名列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentName",
+              "jsdoc": "SPARK 组件名；仅当 shard 对应 Vue/组件源文件且能解析组件目录时存在。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentType",
+              "jsdoc": "组件类型标签（如 container、field）；来自组件目录元数据。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentLevel",
+              "jsdoc": "组件在 UI 层级中的级别（table-level、field-level 等）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentLayer",
+              "jsdoc": "组件在架构分层中的归属（layout-container、data-field 等）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentDirectory",
+              "jsdoc": "组件源码目录的仓库相对路径；用于 gap 报告和知识检索时的组件上下文。",
               "readable": true,
               "writable": false
             }
@@ -562,16 +585,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 51,
+        "line": 74,
         "className": "DtsClassModelBundleFileEntry",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** shard JSON 文件名（相对 generated/dts-class-model/files/）；不含目录前缀。 */\n    file: string;\n    /** 该 shard 的模块级语义元数据快照，与 manifest 构建时内存投影一致。 */\n    module: DtsFileModuleSemanticMeta;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
+            "typeText": "Readonly<{\n    /** shard JSON 文件名（相对 generated/dts-class-model/files/）；不含目录前缀。 */\n    file: string;\n    /** 该 shard 的模块级语义元数据快照，与 manifest 构建时内存投影一致。 */\n    module: DtsFileModuleSemanticMeta;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -579,11 +602,13 @@
           "attributes": [
             {
               "name": "file",
+              "jsdoc": "shard JSON 文件名（相对 generated/dts-class-model/files/）；不含目录前缀。",
               "readable": true,
               "writable": false
             },
             {
               "name": "module",
+              "jsdoc": "该 shard 的模块级语义元数据快照，与 manifest 构建时内存投影一致。",
               "readable": true,
               "writable": false
             }
@@ -597,16 +622,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 56,
+        "line": 81,
         "className": "DtsClassModelBundleClassEntry",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 声明所在 shard 的 emit `.d.ts` 仓库相对路径；classIndex 的主键之一。 */\n    sourcePath: string;\n    /** 承载该 class 声明的 shard JSON 文件名；loader 据此定位 models 载荷。 */\n    file: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
+            "typeText": "Readonly<{\n    /** 声明所在 shard 的 emit `.d.ts` 仓库相对路径；classIndex 的主键之一。 */\n    sourcePath: string;\n    /** 承载该 class 声明的 shard JSON 文件名；loader 据此定位 models 载荷。 */\n    file: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -614,11 +639,13 @@
           "attributes": [
             {
               "name": "sourcePath",
+              "jsdoc": "声明所在 shard 的 emit `.d.ts` 仓库相对路径；classIndex 的主键之一。",
               "readable": true,
               "writable": false
             },
             {
               "name": "file",
+              "jsdoc": "承载该 class 声明的 shard JSON 文件名；loader 据此定位 models 载荷。",
               "readable": true,
               "writable": false
             }
@@ -632,16 +659,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 61,
+        "line": 88,
         "className": "DtsClassModelBundleManifest",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** bundle 协议版本；loader 据此判断是否需要迁移或拒绝不兼容 manifest。 */\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    /** 协议标识常量，固定为 `spark-appworks.dts-class-model.bundle`。 */\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    /** 扫描到的 emit `.d.ts` 文件总数；含被 duplicate 跳过的文件。 */\n    scannedFileCount: number;\n    /** sourcePath → 文件条目；索引每个 shard 的 JSON 文件名和模块语义。 */\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    /** className → 类条目；跨 shard 全局索引，duplicate 时仅保留 keptFile 对应条目。 */\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    /** 同名 class 冲突记录；manifest 构建时后者被跳过，仅保留 keptFile。 */\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
+            "typeText": "Readonly<{\n    /** bundle 协议版本；loader 据此判断是否需要迁移或拒绝不兼容 manifest。 */\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    /** 协议标识常量，固定为 `spark-appworks.dts-class-model.bundle`。 */\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    /** 扫描到的 emit `.d.ts` 文件总数；含被 duplicate 跳过的文件。 */\n    scannedFileCount: number;\n    /** sourcePath → 文件条目；索引每个 shard 的 JSON 文件名和模块语义。 */\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    /** className → 类条目；跨 shard 全局索引，duplicate 时仅保留 keptFile 对应条目。 */\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    /** 同名 class 冲突记录；manifest 构建时后者被跳过，仅保留 keptFile。 */\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -649,31 +676,37 @@
           "attributes": [
             {
               "name": "schemaVersion",
+              "jsdoc": "bundle 协议版本；loader 据此判断是否需要迁移或拒绝不兼容 manifest。",
               "readable": true,
               "writable": false
             },
             {
               "name": "protocol",
+              "jsdoc": "协议标识常量，固定为 `spark-appworks.dts-class-model.bundle`。",
               "readable": true,
               "writable": false
             },
             {
               "name": "scannedFileCount",
+              "jsdoc": "扫描到的 emit `.d.ts` 文件总数；含被 duplicate 跳过的文件。",
               "readable": true,
               "writable": false
             },
             {
               "name": "files",
+              "jsdoc": "sourcePath → 文件条目；索引每个 shard 的 JSON 文件名和模块语义。",
               "readable": true,
               "writable": false
             },
             {
               "name": "classIndex",
+              "jsdoc": "className → 类条目；跨 shard 全局索引，duplicate 时仅保留 keptFile 对应条目。",
               "readable": true,
               "writable": false
             },
             {
               "name": "duplicates",
+              "jsdoc": "同名 class 冲突记录；manifest 构建时后者被跳过，仅保留 keptFile。",
               "readable": true,
               "writable": false
             }
@@ -687,16 +720,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 70,
+        "line": 103,
         "className": "DtsClassModelDuplicateRecord",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 发生冲突的 DtsTypeDeclarationModel 符号名。 */\n    className: string;\n    /** 保留在 classIndex 中的 shard 路径；manifest 构建时先遇者优先。 */\n    keptFile: string;\n    /** 被跳过的 shard 路径；该文件中的同名声明不会进入 classIndex。 */\n    skippedFile: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
+            "typeText": "Readonly<{\n    /** 发生冲突的 DtsTypeDeclarationModel 符号名。 */\n    className: string;\n    /** 保留在 classIndex 中的 shard 路径；manifest 构建时先遇者优先。 */\n    keptFile: string;\n    /** 被跳过的 shard 路径；该文件中的同名声明不会进入 classIndex。 */\n    skippedFile: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -704,16 +737,19 @@
           "attributes": [
             {
               "name": "className",
+              "jsdoc": "发生冲突的 DtsTypeDeclarationModel 符号名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "keptFile",
+              "jsdoc": "保留在 classIndex 中的 shard 路径；manifest 构建时先遇者优先。",
               "readable": true,
               "writable": false
             },
             {
               "name": "skippedFile",
+              "jsdoc": "被跳过的 shard 路径；该文件中的同名声明不会进入 classIndex。",
               "readable": true,
               "writable": false
             }
@@ -727,7 +763,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 76,
+        "line": 112,
         "className": "DtsClassModelSemanticGapKind",
         "declarationKind": "typeAlias"
       },
@@ -764,16 +800,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 78,
+        "line": 114,
         "className": "DtsClassModelSemanticGap",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 缺口层级：module = 模块 JSDoc，model = 类型声明，constructor/attribute/method = 成员级。 */\n    kind: DtsClassModelSemanticGapKind;\n    /** 缺口所属 DtsTypeDeclarationModel 符号名；module 级缺口时为模块 name。 */\n    className: string;\n    /** 缺口所属模块语义标识；module 级缺口时与 className 相同，成员级缺口时可选。 */\n    moduleName?: string;\n    /** 成员级缺口时的属性/方法/constructor 名；module 和 model 级缺口时为 undefined。 */\n    memberName?: string;\n    /** 缺口原因：missing-jsdoc = 无注释，inferred-module-jsdoc = 路径推导，weak-module-jsdoc = 注释过弱。 */\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    /** 人类可读的语义链断点描述；说明哪一环缺少 JSDoc 或语义不足。 */\n    chainBreak: string;\n    /** 修复指引：指向应补 JSDoc 的源文件路径和后续 generate 命令。 */\n    fixHint: string;\n    /** 缺口在 class-model-emit `.d.ts` 中的声明文件路径（仓库相对）。 */\n    declarationFile: string;\n    /** 缺口在 declarationFile 中的行号（1-based）。 */\n    declarationLine: number;\n    /** 应补 JSDoc 的 TypeScript/Vue 源文件路径（仓库相对）；由 declarationFile 反推。 */\n    sourceFile: string;\n    /** 缺口所属 SPARK 组件名；仅组件 shard 存在。 */\n    componentName?: string;\n    /** 缺口所属组件类型标签。 */\n    componentType?: string;\n    /** 缺口所属组件 UI 级别。 */\n    componentLevel?: ComponentClassModelLevel;\n    /** 缺口所属组件架构分层。 */\n    componentLayer?: ComponentClassModelLayer;\n    /** 缺口所属组件源码目录。 */\n    componentDirectory?: string;\n    /** 缺口所属声明种类；与 SourceProvenanceMeta.declarationKind 对齐。 */\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
+            "typeText": "Readonly<{\n    /** 缺口层级：module = 模块 JSDoc，model = 类型声明，constructor/attribute/method = 成员级。 */\n    kind: DtsClassModelSemanticGapKind;\n    /** 缺口所属 DtsTypeDeclarationModel 符号名；module 级缺口时为模块 name。 */\n    className: string;\n    /** 缺口所属模块语义标识；module 级缺口时与 className 相同，成员级缺口时可选。 */\n    moduleName?: string;\n    /** 成员级缺口时的属性/方法/constructor 名；module 和 model 级缺口时为 undefined。 */\n    memberName?: string;\n    /** 缺口原因：missing-jsdoc = 无注释，inferred-module-jsdoc = 路径推导，weak-module-jsdoc = 注释过弱。 */\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    /** 人类可读的语义链断点描述；说明哪一环缺少 JSDoc 或语义不足。 */\n    chainBreak: string;\n    /** 修复指引：指向应补 JSDoc 的源文件路径和后续 generate 命令。 */\n    fixHint: string;\n    /** 缺口在 class-model-emit `.d.ts` 中的声明文件路径（仓库相对）。 */\n    declarationFile: string;\n    /** 缺口在 declarationFile 中的行号（1-based）。 */\n    declarationLine: number;\n    /** 应补 JSDoc 的 TypeScript/Vue 源文件路径（仓库相对）；由 declarationFile 反推。 */\n    sourceFile: string;\n    /** 缺口所属 SPARK 组件名；仅组件 shard 存在。 */\n    componentName?: string;\n    /** 缺口所属组件类型标签。 */\n    componentType?: string;\n    /** 缺口所属组件 UI 级别。 */\n    componentLevel?: ComponentClassModelLevel;\n    /** 缺口所属组件架构分层。 */\n    componentLayer?: ComponentClassModelLayer;\n    /** 缺口所属组件源码目录。 */\n    componentDirectory?: string;\n    /** 缺口所属声明种类；与 SourceProvenanceMeta.declarationKind 对齐。 */\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -781,81 +817,97 @@
           "attributes": [
             {
               "name": "kind",
+              "jsdoc": "缺口层级：module = 模块 JSDoc，model = 类型声明，constructor/attribute/method = 成员级。",
               "readable": true,
               "writable": false
             },
             {
               "name": "className",
+              "jsdoc": "缺口所属 DtsTypeDeclarationModel 符号名；module 级缺口时为模块 name。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleName",
+              "jsdoc": "缺口所属模块语义标识；module 级缺口时与 className 相同，成员级缺口时可选。",
               "readable": true,
               "writable": false
             },
             {
               "name": "memberName",
+              "jsdoc": "成员级缺口时的属性/方法/constructor 名；module 和 model 级缺口时为 undefined。",
               "readable": true,
               "writable": false
             },
             {
               "name": "reason",
+              "jsdoc": "缺口原因：missing-jsdoc = 无注释，inferred-module-jsdoc = 路径推导，weak-module-jsdoc = 注释过弱。",
               "readable": true,
               "writable": false
             },
             {
               "name": "chainBreak",
+              "jsdoc": "人类可读的语义链断点描述；说明哪一环缺少 JSDoc 或语义不足。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fixHint",
+              "jsdoc": "修复指引：指向应补 JSDoc 的源文件路径和后续 generate 命令。",
               "readable": true,
               "writable": false
             },
             {
               "name": "declarationFile",
+              "jsdoc": "缺口在 class-model-emit `.d.ts` 中的声明文件路径（仓库相对）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "declarationLine",
+              "jsdoc": "缺口在 declarationFile 中的行号（1-based）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sourceFile",
+              "jsdoc": "应补 JSDoc 的 TypeScript/Vue 源文件路径（仓库相对）；由 declarationFile 反推。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentName",
+              "jsdoc": "缺口所属 SPARK 组件名；仅组件 shard 存在。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentType",
+              "jsdoc": "缺口所属组件类型标签。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentLevel",
+              "jsdoc": "缺口所属组件 UI 级别。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentLayer",
+              "jsdoc": "缺口所属组件架构分层。",
               "readable": true,
               "writable": false
             },
             {
               "name": "componentDirectory",
+              "jsdoc": "缺口所属组件源码目录。",
               "readable": true,
               "writable": false
             },
             {
               "name": "declarationKind",
+              "jsdoc": "缺口所属声明种类；与 SourceProvenanceMeta.declarationKind 对齐。",
               "readable": true,
               "writable": false
             }
@@ -869,16 +921,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 97,
+        "line": 149,
         "className": "DtsClassModelSemanticGapReport",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** gaps 数组长度；与 manifest 构建或 audit 扫描结果一致。 */\n    gapCount: number;\n    /** 报告级说明（如扫描范围、已知限制）；不参与逐条 gap 修复。 */\n    notes: readonly string[];\n    /** 逐条语义缺口记录；按 className 和 memberName 排序供 CI 或人工修复。 */\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
+            "typeText": "Readonly<{\n    /** gaps 数组长度；与 manifest 构建或 audit 扫描结果一致。 */\n    gapCount: number;\n    /** 报告级说明（如扫描范围、已知限制）；不参与逐条 gap 修复。 */\n    notes: readonly string[];\n    /** 逐条语义缺口记录；按 className 和 memberName 排序供 CI 或人工修复。 */\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -886,16 +938,19 @@
           "attributes": [
             {
               "name": "gapCount",
+              "jsdoc": "gaps 数组长度；与 manifest 构建或 audit 扫描结果一致。",
               "readable": true,
               "writable": false
             },
             {
               "name": "notes",
+              "jsdoc": "报告级说明（如扫描范围、已知限制）；不参与逐条 gap 修复。",
               "readable": true,
               "writable": false
             },
             {
               "name": "gaps",
+              "jsdoc": "逐条语义缺口记录；按 className 和 memberName 排序供 CI 或人工修复。",
               "readable": true,
               "writable": false
             }
@@ -909,16 +964,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 103,
+        "line": 158,
         "className": "ProjectDtsFileProjectionOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** monorepo 仓库根目录绝对路径；用于将 absolutePath 归一化为仓库相对 sourcePath。 */\n    repoRoot: string;\n    /** 待投影的 emit `.d.ts` 文件绝对路径。 */\n    absolutePath: string;\n    /** 为 true 时仅投影 export 导出的顶层声明；默认 false 包含非 export 声明。 */\n    exportedOnly?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** monorepo 仓库根目录绝对路径；用于将 absolutePath 归一化为仓库相对 sourcePath。 */\n    repoRoot: string;\n    /** 待投影的 emit `.d.ts` 文件绝对路径。 */\n    absolutePath: string;\n    /** 为 true 时仅投影 export 导出的顶层声明；默认 false 包含非 export 声明。 */\n    exportedOnly?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -926,16 +981,19 @@
           "attributes": [
             {
               "name": "repoRoot",
+              "jsdoc": "monorepo 仓库根目录绝对路径；用于将 absolutePath 归一化为仓库相对 sourcePath。",
               "readable": true,
               "writable": false
             },
             {
               "name": "absolutePath",
+              "jsdoc": "待投影的 emit `.d.ts` 文件绝对路径。",
               "readable": true,
               "writable": false
             },
             {
               "name": "exportedOnly",
+              "jsdoc": "为 true 时仅投影 export 导出的顶层声明；默认 false 包含非 export 声明。",
               "readable": true,
               "writable": false
             }

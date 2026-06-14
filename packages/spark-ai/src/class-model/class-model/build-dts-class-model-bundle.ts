@@ -44,20 +44,31 @@ export type BuildDtsClassModelBundleProgressPhase =
 
 /** Build Dts Class Model Bundle Progress 的语义模型。 */
 export type BuildDtsClassModelBundleProgress = Readonly<{
+  /** 当前 bundle 构建阶段。 */
   phase: BuildDtsClassModelBundleProgressPhase
+  /** 当前已处理文件序号（1-based）。 */
   current?: number
+  /** 待处理文件总数。 */
   total?: number
+  /** 当前正在投影的 emit 源路径。 */
   sourcePath?: string
 }>
 
 /** Build Dts Class Model Bundle Options 的调用配置。 */
 export type BuildDtsClassModelBundleOptions = Readonly<{
+  /** 仓库根目录，用于规范化相对路径。 */
   repoRoot: string
+  /** 参与 bundle 闭包的 root .d.ts 绝对路径列表。 */
   rootFiles: readonly string[]
+  /** bundle 输出目录（manifest、shard、semantic-gaps）。 */
   outputDir: string
+  /** 可选 TypeScript CompilerHost，供测试或自定义读文件。 */
   compilerHost?: ts.CompilerHost
+  /** true 时只投影 export 可见 symbol。 */
   exportedOnly?: boolean
+  /** 进度回调，按 phase 与文件序号推送事件。 */
   onProgress?: (event: BuildDtsClassModelBundleProgress) => void
+  /** 文件投影进度报告间隔（按文件数取模）；默认 50。 */
   progressInterval?: number
   /** 仅投影并落盘这些 emit 源路径；rootFiles 仍可包含依赖闭包供 import 正则寻址。 */
   projectOnlySourcePaths?: ReadonlySet<string>
@@ -67,11 +78,17 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
 
 /** Build Dts Class Model Bundle Result 的返回结果。 */
 export type BuildDtsClassModelBundleResult = Readonly<{
+  /** 生成的 manifest 对象（未落盘前的内存快照）。 */
   manifest: DtsClassModelBundleManifest
+  /** manifest.json 的绝对输出路径。 */
   manifestPath: string
+  /** semantic-gaps.json 的绝对输出路径。 */
   semanticLogJsonPath: string
+  /** 检测到的 JSDoc 语义缺口总数。 */
   semanticGapCount: number
+  /** 实际写入的 shard 文件数。 */
   fileCount: number
+  /** 投影出的 DtsTypeDeclarationModel 总数。 */
   modelCount: number
 }>
 

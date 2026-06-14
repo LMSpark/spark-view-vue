@@ -17,7 +17,9 @@ import {
 
 /** Dts Bundle Class Model Knowledge Service Options 的调用配置。 */
 export type DtsBundleClassModelKnowledgeRefreshInput = Readonly<{
+  /** 知识闭包的根 className，决定可达模型范围。 */
   rootClassName: string
+  /** 触发刷新的目标 className；按需增量编译时使用。 */
   requestedClassName?: string
 }>
 
@@ -34,18 +36,27 @@ export type DtsBundleClassModelKnowledgeRefreshFunction = (
 
 /** Dts Bundle Class Model Knowledge Service Options 的调用配置。 */
 export type DtsBundleClassModelKnowledgeServiceOptions = Readonly<{
+  /** bundle shard 加载器，负责 manifest 与按需拉取。 */
   loader: DtsClassModelBundleLoader
+  /** 知识闭包的根 className。 */
   rootClassName: string
+  /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */
   refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+  /** bundle 刷新策略：never / before-first-load / always。 */
   refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
 }>
 
 /** Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。 */
 export type CreateDtsBundleClassModelKnowledgeProviderOptions = Readonly<{
+  /** manifest.json 的 URL，loader 入口。 */
   dtsClassModelManifestUrl: string
+  /** 知识闭包的根 className。 */
   rootClassName: string
+  /** 自定义 JSON fetch；默认使用 fetch。 */
   fetchJson?: (url: string) => Promise<unknown>
+  /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */
   refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+  /** bundle 刷新策略：never / before-first-load / always。 */
   refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
 }>
 

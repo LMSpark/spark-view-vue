@@ -190,7 +190,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:27.899Z",
+  "generatedAt": "2026-06-14T22:53:58.792Z",
   "models": {
     "DtsBundleClassModelKnowledgeRefreshInput": {
       "name": "DtsBundleClassModelKnowledgeRefreshInput",
@@ -203,11 +203,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    rootClassName: string;\n    requestedClassName?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 知识闭包的根 className，决定可达模型范围。 */\n    rootClassName: string;\n    /** 触发刷新的目标 className；按需增量编译时使用。 */\n    requestedClassName?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    rootClassName: string;\n    requestedClassName?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 知识闭包的根 className，决定可达模型范围。 */\n    rootClassName: string;\n    /** 触发刷新的目标 className；按需增量编译时使用。 */\n    requestedClassName?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -215,11 +215,13 @@
           "attributes": [
             {
               "name": "rootClassName",
+              "jsdoc": "知识闭包的根 className，决定可达模型范围。",
               "readable": true,
               "writable": false
             },
             {
               "name": "requestedClassName",
+              "jsdoc": "触发刷新的目标 className；按需增量编译时使用。",
               "readable": true,
               "writable": false
             }
@@ -233,7 +235,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-        "line": 16,
+        "line": 18,
         "className": "DtsBundleClassModelKnowledgeRefreshPolicy",
         "declarationKind": "typeAlias"
       },
@@ -262,7 +264,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-        "line": 18,
+        "line": 20,
         "className": "DtsBundleClassModelKnowledgeRefreshFunction",
         "declarationKind": "typeAlias"
       },
@@ -277,16 +279,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-        "line": 20,
+        "line": 22,
         "className": "DtsBundleClassModelKnowledgeServiceOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    loader: DtsClassModelBundleLoader;\n    rootClassName: string;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** bundle shard 加载器，负责 manifest 与按需拉取。 */\n    loader: DtsClassModelBundleLoader;\n    /** 知识闭包的根 className。 */\n    rootClassName: string;\n    /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** bundle 刷新策略：never / before-first-load / always。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    loader: DtsClassModelBundleLoader;\n    rootClassName: string;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
+            "typeText": "Readonly<{\n    /** bundle shard 加载器，负责 manifest 与按需拉取。 */\n    loader: DtsClassModelBundleLoader;\n    /** 知识闭包的根 className。 */\n    rootClassName: string;\n    /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** bundle 刷新策略：never / before-first-load / always。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -294,21 +296,25 @@
           "attributes": [
             {
               "name": "loader",
+              "jsdoc": "bundle shard 加载器，负责 manifest 与按需拉取。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootClassName",
+              "jsdoc": "知识闭包的根 className。",
               "readable": true,
               "writable": false
             },
             {
               "name": "refreshBundle",
+              "jsdoc": "外部 bundle 刷新钩子，在 reload 前触发重新编译。",
               "readable": true,
               "writable": false
             },
             {
               "name": "refreshPolicy",
+              "jsdoc": "bundle 刷新策略：never / before-first-load / always。",
               "readable": true,
               "writable": false
             }
@@ -322,16 +328,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-        "line": 27,
+        "line": 33,
         "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    dtsClassModelManifestUrl: string;\n    rootClassName: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** manifest.json 的 URL，loader 入口。 */\n    dtsClassModelManifestUrl: string;\n    /** 知识闭包的根 className。 */\n    rootClassName: string;\n    /** 自定义 JSON fetch；默认使用 fetch。 */\n    fetchJson?: (url: string) => Promise<unknown>;\n    /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** bundle 刷新策略：never / before-first-load / always。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    dtsClassModelManifestUrl: string;\n    rootClassName: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
+            "typeText": "Readonly<{\n    /** manifest.json 的 URL，loader 入口。 */\n    dtsClassModelManifestUrl: string;\n    /** 知识闭包的根 className。 */\n    rootClassName: string;\n    /** 自定义 JSON fetch；默认使用 fetch。 */\n    fetchJson?: (url: string) => Promise<unknown>;\n    /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** bundle 刷新策略：never / before-first-load / always。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -339,21 +345,25 @@
           "attributes": [
             {
               "name": "dtsClassModelManifestUrl",
+              "jsdoc": "manifest.json 的 URL，loader 入口。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootClassName",
+              "jsdoc": "知识闭包的根 className。",
               "readable": true,
               "writable": false
             },
             {
               "name": "refreshBundle",
+              "jsdoc": "外部 bundle 刷新钩子，在 reload 前触发重新编译。",
               "readable": true,
               "writable": false
             },
             {
               "name": "refreshPolicy",
+              "jsdoc": "bundle 刷新策略：never / before-first-load / always。",
               "readable": true,
               "writable": false
             }
@@ -361,6 +371,7 @@
           "methods": [
             {
               "name": "fetchJson",
+              "jsdoc": "自定义 JSON fetch；默认使用 fetch。",
               "parameters": [
                 {
                   "name": "url",
@@ -391,7 +402,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-        "line": 36,
+        "line": 47,
         "className": "DtsBundleClassModelKnowledgeService",
         "declarationKind": "class"
       },

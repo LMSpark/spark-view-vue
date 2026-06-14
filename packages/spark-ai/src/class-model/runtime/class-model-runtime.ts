@@ -15,14 +15,19 @@ import { CLASS_MODEL_TOOL_NAMES, isClassModelToolName, type ClassModelToolName }
 
 /** Class Model Script Command 的命令参数。 */
 export type ClassModelScriptCommand = Readonly<{
+  /** 待执行的 model_script 源码字符串。 */
   script: string
+  /** 可选 Host 上下文，注入 script 执行环境。 */
   host?: unknown
 }>
 
 /** Class Model Runtime Options 的调用配置。 */
 export type ClassModelRuntimeOptions = Readonly<{
+  /** 内存 ClassModelDocument；未提供 knowledge 时用于默认 provider。 */
   document?: ClassModelDocument
+  /** 知识查询 provider；可替换为 Web Worker 远程实现。 */
   knowledge?: ClassModelKnowledgeProvider
+  /** script 工具的唯一执行入口，承接 model_script 调用。 */
   scriptExecutor: ClassModelScriptExecutor
 }>
 
@@ -33,17 +38,25 @@ export type { ClassModelToolSpec } from '../tools/class-model-tool-specs'
 
 /** Class Model Tool Result 的返回结果。 */
 export type ClassModelToolResult = Readonly<{
+  /** 工具是否执行成功。 */
   ok: boolean
+  /** 成功时的业务数据载荷。 */
   data?: AiJsonValue
+  /** 结构化检查项（error/warn/info），失败时通常非空。 */
   checks?: readonly ClassModelToolCheck[]
+  /** 可选运行状态快照，供后续 turn 或 UI 读取。 */
   state?: Readonly<Record<string, unknown>>
 }>
 
 /** Class Model Tool Check 的语义模型。 */
 export type ClassModelToolCheck = Readonly<{
+  /** 检查等级：error 阻断，warn/info 提示。 */
   level: 'error' | 'warn' | 'info'
+  /** 稳定检查码，供恢复提示与 UI 识别。 */
   code: string
+  /** 面向用户或日志的检查说明。 */
   message: string
+  /** 可选修复提示。 */
   hint?: string
 }>
 

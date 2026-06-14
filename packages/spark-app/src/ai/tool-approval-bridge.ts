@@ -12,17 +12,25 @@ import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 
 /** Ai Tool Approval Request 的语义模型。 */
 export type AiToolApprovalRequest = Readonly<{
+  /** 审批请求唯一标识。 */
   id: string
+  /** 发起 tool call 的业务模块 id。 */
   moduleId: string
+  /** 业务模块实例 id。 */
   moduleInstanceId: string
+  /** Agent 实例 id。 */
   instanceId: string
+  /** 待审批的工具名称。 */
   toolName: string
+  /** 工具调用参数。 */
   args: AiJsonParams
+  /** 请求创建时间戳（毫秒）。 */
   requestedAt: number
 }>
 
 /** Ai Tool Approval Bridge Snapshot 的语义模型。 */
 export type AiToolApprovalBridgeSnapshot = Readonly<{
+  /** 当前待审批请求列表。 */
   pending: readonly AiToolApprovalRequest[]
 }>
 
@@ -31,12 +39,15 @@ export type AiToolApprovalBridgeListener = (snapshot: AiToolApprovalBridgeSnapsh
 
 /** Ai Tool Approval Request Id Factory 的语义模型。 */
 export type AiToolApprovalRequestIdFactory = Readonly<{
+  /** 为 tool call 审批请求生成唯一 id。 */
   createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string
 }>
 
 /** Ai Tool Approval Bridge Options 的调用配置。 */
 export type AiToolApprovalBridgeOptions = Readonly<{
+  /** 自定义当前时间戳来源（默认 Date.now）。 */
   now?: () => number
+  /** 自定义审批请求 id 工厂。 */
   idFactory?: AiToolApprovalRequestIdFactory
 }>
 

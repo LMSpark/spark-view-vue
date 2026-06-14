@@ -133,7 +133,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.117Z",
+  "generatedAt": "2026-06-14T22:53:56.991Z",
   "models": {
     "RendererCollapseApi": {
       "name": "RendererCollapseApi",
@@ -151,11 +151,12 @@
         "componentDirectory": "containers/layout"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    getExpandedItems(): string | number | Array<string | number> | undefined;\n    setExpandedItems(value: string | number | Array<string | number>): void;\n    expandAll(): void;\n    collapseAll(): void;\n    toggleItem(name: string | number): void;\n    isItemExpanded(name: string | number): boolean;\n}",
+        "declarationTypeText": "{\n    /** 获取当前展开的面板项（单个或数组）。 */\n    getExpandedItems(): string | number | Array<string | number> | undefined;\n    /** 设置展开的面板项。 */\n    setExpandedItems(value: string | number | Array<string | number>): void;\n    /** 展开全部面板项。 */\n    expandAll(): void;\n    /** 折叠全部面板项。 */\n    collapseAll(): void;\n    /** 切换指定面板项的展开/折叠状态。 */\n    toggleItem(name: string | number): void;\n    /** 查询指定面板项是否处于展开状态。 */\n    isItemExpanded(name: string | number): boolean;\n}",
         "members": {
           "methods": [
             {
               "name": "getExpandedItems",
+              "jsdoc": "获取当前展开的面板项（单个或数组）。",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -193,6 +194,7 @@
             },
             {
               "name": "setExpandedItems",
+              "jsdoc": "设置展开的面板项。",
               "parameters": [
                 {
                   "name": "value",
@@ -234,6 +236,7 @@
             },
             {
               "name": "expandAll",
+              "jsdoc": "展开全部面板项。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -242,6 +245,7 @@
             },
             {
               "name": "collapseAll",
+              "jsdoc": "折叠全部面板项。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -250,6 +254,7 @@
             },
             {
               "name": "toggleItem",
+              "jsdoc": "切换指定面板项的展开/折叠状态。",
               "parameters": [
                 {
                   "name": "name",
@@ -275,6 +280,7 @@
             },
             {
               "name": "isItemExpanded",
+              "jsdoc": "查询指定面板项是否处于展开状态。",
               "parameters": [
                 {
                   "name": "name",

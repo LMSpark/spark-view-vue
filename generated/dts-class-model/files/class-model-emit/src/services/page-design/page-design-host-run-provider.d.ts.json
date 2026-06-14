@@ -57,7 +57,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.300Z",
+  "generatedAt": "2026-06-14T22:54:33.750Z",
   "models": {
     "PageDesignDeliveryContext": {
       "name": "PageDesignDeliveryContext",
@@ -70,11 +70,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 页面设计工作区编辑器。 */\n    editor: ProjectWorkspace;\n    /** 当前页面节点 id。 */\n    pageId: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
+            "typeText": "Readonly<{\n    /** 页面设计工作区编辑器。 */\n    editor: ProjectWorkspace;\n    /** 当前页面节点 id。 */\n    pageId: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -82,11 +82,13 @@
           "attributes": [
             {
               "name": "editor",
+              "jsdoc": "页面设计工作区编辑器。",
               "readable": true,
               "writable": false
             },
             {
               "name": "pageId",
+              "jsdoc": "当前页面节点 id。",
               "readable": true,
               "writable": false
             }
@@ -100,16 +102,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
-        "line": 17,
+        "line": 19,
         "className": "CreatePageDesignDeliveryPortOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 交付模式（manual 或 auto）。 */\n    mode: AiDeliveryMode;\n    /** 是否执行实际落盘保存。 */\n    shouldSave: boolean;\n    /** 回滚时的交付状态标记。 */\n    rollbackStatus: 'skipped' | 'rolledBack';\n    /** 限定保存的文件名列表（省略则保存全部 dirty 文件）。 */\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
+            "typeText": "Readonly<{\n    /** 交付模式（manual 或 auto）。 */\n    mode: AiDeliveryMode;\n    /** 是否执行实际落盘保存。 */\n    shouldSave: boolean;\n    /** 回滚时的交付状态标记。 */\n    rollbackStatus: 'skipped' | 'rolledBack';\n    /** 限定保存的文件名列表（省略则保存全部 dirty 文件）。 */\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -117,21 +119,25 @@
           "attributes": [
             {
               "name": "mode",
+              "jsdoc": "交付模式（manual 或 auto）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "shouldSave",
+              "jsdoc": "是否执行实际落盘保存。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rollbackStatus",
+              "jsdoc": "回滚时的交付状态标记。",
               "readable": true,
               "writable": false
             },
             {
               "name": "saveFileNames",
+              "jsdoc": "限定保存的文件名列表（省略则保存全部 dirty 文件）。",
               "readable": true,
               "writable": false
             }

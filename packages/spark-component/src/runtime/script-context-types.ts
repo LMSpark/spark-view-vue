@@ -179,43 +179,57 @@ export type ScriptContext = {
  * 函数直接来自组件层 `permission/` 模块导出。
  */
 export type PermissionApiInScript = {
-  // ── 动作权限 ──
+  /** 判断指定动作在当前权限上下文中是否被允许。 */
   isPermittedAction(action: string | undefined, context: PermissionActionContext): boolean
+  /** 判断动作是否属于模型级权限（如 create/import/export）。 */
   isModelScopedPermAction(action: string | undefined): boolean
+  /** 判断动作是否属于行级权限（如 delete/edit/create-child）。 */
   isRowScopedPermAction(action: string | undefined): boolean
 
-  // ── 模型级检查 ──
+  /** 检查模型是否允许新建记录。 */
   canCreate(modelPermission?: ModelPermission): boolean
+  /** 检查模型是否允许导入数据。 */
   canImport(modelPermission?: ModelPermission): boolean
+  /** 检查模型是否允许导出数据。 */
   canExport(modelPermission?: ModelPermission): boolean
 
-  // ── 行级检查 ──
+  /** 检查指定行是否允许删除。 */
   canDelete(row: DataRow): boolean
+  /** 检查指定行是否允许创建子节点。 */
   canCreateChild(row: DataRow): boolean
+  /** 检查指定行是否允许编辑。 */
   canEdit(row: DataRow): boolean
 
-  // ── 字段级检查 ──
+  /** 检查指定字段在当前行是否可见。 */
   isFieldVisible(field: string, row: DataRow): boolean
+  /** 检查指定字段在当前行是否可编辑。 */
   isFieldEditable(field: string, row: DataRow): boolean
+  /** 获取指定字段在当前行的可见性级别。 */
   getFieldVisibility(field: string, row: DataRow): FieldVisibility
 
-  // ── 字段渲染状态 ──
+  /** 解析字段的完整权限渲染状态（可见性 + 可编辑性 + 脱敏规则）。 */
   resolveFieldPermissionState(
     field: string | undefined,
     row: DataRow | null | undefined,
     config?: Omit<FieldRenderConfig, 'field'>,
   ): FieldRenderState | null
+  /** 根据字段渲染配置与行数据计算字段渲染状态。 */
   computeFieldState(config: FieldRenderConfig, row: DataRow): FieldRenderState
 
-  // ── 行过滤 ──
+  /** 过滤出允许删除的行集合。 */
   filterDeletableRows(rows: DataRow[]): DataRow[]
+  /** 过滤出允许编辑的行集合。 */
   filterEditableRows(rows: DataRow[]): DataRow[]
+  /** 过滤行中不可见字段，仅保留可见业务字段。 */
   filterFields(row: DataRow): Record<string, unknown>
+  /** 从候选字段列表中返回当前行可编辑的字段名。 */
   getEditableFields(row: DataRow, allFields: string[]): string[]
+  /** 从候选字段列表中返回当前行可见的字段名。 */
   getVisibleFields(row: DataRow, allFields: string[]): string[]
+  /** 过滤行中不可展示字段，保留权限元数据与服务端已脱敏值。 */
   filterDisplayableFields(row: DataRow): DataRow
 
-  // ── 工具 ──
+  /** 从数据源对象中提取模型级权限快照。 */
   extractModelPermission(dataSource: { _modelPerm?: ModelPermission } | null | undefined): ModelPermission | undefined
 }
 

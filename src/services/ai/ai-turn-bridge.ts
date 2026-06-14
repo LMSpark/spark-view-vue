@@ -34,11 +34,17 @@ const MAX_AI_TURN_DIAGNOSTICS = 300
 
 /** Ai Turn Bridge Diagnostic 的诊断信息。 */
 type AiTurnBridgeDiagnostic = Readonly<{
+  /** 诊断记录时间戳（毫秒）。 */
   at: number
+  /** 诊断事件类型标识。 */
   type: string
+  /** 关联的 AI 会话 id。 */
   sessionId?: string
+  /** 关联的 turn id。 */
   turnId?: string
+  /** 可选的错误或状态描述。 */
   message?: string
+  /** 附加结构化诊断详情。 */
   details?: Record<string, unknown>
 }>
 
@@ -46,9 +52,13 @@ const aiTurnDiagnostics: AiTurnBridgeDiagnostic[] = []
 
 /** Ai Agent Turn Bridge Options 的调用配置。 */
 export type AiAgentTurnBridgeOptions = Readonly<{
+  /** 传输模式：app-sse（SSE 流式）或 session-turn（同步回合）。 */
   transport?: 'app-sse' | 'session-turn'
+  /** turn 事件总超时（毫秒）。 */
   timeoutMs?: number
+  /** 流式 idle 超时（毫秒）。 */
   idleTimeoutMs?: number
+  /** 上下文窗口大小（消息条数上限）。 */
   windowSize?: number
 }>
 

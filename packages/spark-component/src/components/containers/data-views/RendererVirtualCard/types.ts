@@ -9,15 +9,26 @@ import type { BaseContainerApi } from '../../support/base-container-api.js'
 
 /** Renderer Virtual Card Api 的语义模型。 */
 export type RendererVirtualCardApi = BaseContainerApi & {
+  /** 获取当前虚拟卡片列表的全部行数据。 */
   getRows(): DataRow[]
+  /** 获取已缓存的页码列表。 */
   getCachedPages(): number[]
+  /** 获取正在加载中的页码列表。 */
   getPendingPages(): number[]
+  /** 获取当前视口可见的页码列表。 */
   getVisiblePages(): number[]
+  /** 获取当前页码。 */
   getCurrentPage(): number
+  /** 获取总页数。 */
   getTotalPages(): number
+  /** 获取滚动进度描述文本。 */
   getScrollProgress(): string
+  /** 获取数据加载策略描述文本。 */
   getLoadPolicyText(): string
+  /** 获取滚轮交互状态描述文本。 */
   getWheelStatusText(): string
+  /** 滚动到指定页码。 */
   scrollToPage(page: number): Promise<void>
+  /** 清空已缓存的分页数据。 */
   clearCache(): void
 }

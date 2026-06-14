@@ -230,7 +230,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.319Z",
+  "generatedAt": "2026-06-14T22:54:22.904Z",
   "models": {
     "ProjectPlanningRunInput": {
       "name": "ProjectPlanningRunInput",
@@ -243,11 +243,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    projectId: string;\n    /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n    /** 各导航节点策划输入（含模块/页面）。 */\n    navigationNodes: readonly NavigationPlanningRunInput[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 项目唯一标识。 */\n    projectId: string;\n    /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n    /** 各导航节点策划输入（含模块/页面）。 */\n    navigationNodes: readonly NavigationPlanningRunInput[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    projectId: string;\n    /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n    /** 各导航节点策划输入（含模块/页面）。 */\n    navigationNodes: readonly NavigationPlanningRunInput[];\n}>",
+            "typeText": "Readonly<{\n    /** 项目唯一标识。 */\n    projectId: string;\n    /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n    /** 各导航节点策划输入（含模块/页面）。 */\n    navigationNodes: readonly NavigationPlanningRunInput[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -255,6 +255,7 @@
           "attributes": [
             {
               "name": "projectId",
+              "jsdoc": "项目唯一标识。",
               "readable": true,
               "writable": false
             },
@@ -292,16 +293,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 29,
+        "line": 30,
         "className": "ProjectPlanningAgentInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    projectScopeKey: string;\n    projectId: string;\n    requirement: string;\n    planningAttachmentRef?: string;\n    planningAttachmentText?: string;\n    navigationNodes: NavigationPlanningAgentInput[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** Agent 输入的身份键（通常等于 projectId）。 */\n    projectScopeKey: string;\n    /** 项目唯一标识。 */\n    projectId: string;\n    /** 项目级策划短需求文本。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文。 */\n    planningAttachmentText?: string;\n    /** 各导航节点的策划输入列表。 */\n    navigationNodes: NavigationPlanningAgentInput[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    projectScopeKey: string;\n    projectId: string;\n    requirement: string;\n    planningAttachmentRef?: string;\n    planningAttachmentText?: string;\n    navigationNodes: NavigationPlanningAgentInput[];\n}>",
+            "typeText": "Readonly<{\n    /** Agent 输入的身份键（通常等于 projectId）。 */\n    projectScopeKey: string;\n    /** 项目唯一标识。 */\n    projectId: string;\n    /** 项目级策划短需求文本。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文。 */\n    planningAttachmentText?: string;\n    /** 各导航节点的策划输入列表。 */\n    navigationNodes: NavigationPlanningAgentInput[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -309,31 +310,37 @@
           "attributes": [
             {
               "name": "projectScopeKey",
+              "jsdoc": "Agent 输入的身份键（通常等于 projectId）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "projectId",
+              "jsdoc": "项目唯一标识。",
               "readable": true,
               "writable": false
             },
             {
               "name": "requirement",
+              "jsdoc": "项目级策划短需求文本。",
               "readable": true,
               "writable": false
             },
             {
               "name": "planningAttachmentRef",
+              "jsdoc": "项目级策划详细说明附件引用。",
               "readable": true,
               "writable": false
             },
             {
               "name": "planningAttachmentText",
+              "jsdoc": "项目级附件解析正文。",
               "readable": true,
               "writable": false
             },
             {
               "name": "navigationNodes",
+              "jsdoc": "各导航节点的策划输入列表。",
               "readable": true,
               "writable": false
             }
@@ -347,16 +354,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 38,
+        "line": 45,
         "className": "NavigationPlanningAgentInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    requirement: string;\n    planningAttachmentRef?: string;\n    planningAttachmentText?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 导航节点 id。 */\n    nodeId: string;\n    /** 节点显示标题。 */\n    title: string;\n    /** 节点类型（module/page 等）。 */\n    nodeKind: string;\n    /** 节点短需求（navigation description）。 */\n    requirement: string;\n    /** 节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文。 */\n    planningAttachmentText?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    requirement: string;\n    planningAttachmentRef?: string;\n    planningAttachmentText?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 导航节点 id。 */\n    nodeId: string;\n    /** 节点显示标题。 */\n    title: string;\n    /** 节点类型（module/page 等）。 */\n    nodeKind: string;\n    /** 节点短需求（navigation description）。 */\n    requirement: string;\n    /** 节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文。 */\n    planningAttachmentText?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -364,31 +371,37 @@
           "attributes": [
             {
               "name": "nodeId",
+              "jsdoc": "导航节点 id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "title",
+              "jsdoc": "节点显示标题。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nodeKind",
+              "jsdoc": "节点类型（module/page 等）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "requirement",
+              "jsdoc": "节点短需求（navigation description）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "planningAttachmentRef",
+              "jsdoc": "节点策划详细说明附件引用。",
               "readable": true,
               "writable": false
             },
             {
               "name": "planningAttachmentText",
+              "jsdoc": "节点附件解析正文。",
               "readable": true,
               "writable": false
             }
@@ -402,16 +415,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 47,
+        "line": 60,
         "className": "NavigationPlanningRunInput",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 导航节点 id。 */\n    nodeId: string;\n    /** 节点显示标题。 */\n    title: string;\n    /** 节点类型（module/page 等）。 */\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    /** 节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 导航节点 id。 */\n    nodeId: string;\n    /** 节点显示标题。 */\n    title: string;\n    /** 节点类型（module/page 等）。 */\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    /** 节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -419,16 +432,19 @@
           "attributes": [
             {
               "name": "nodeId",
+              "jsdoc": "导航节点 id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "title",
+              "jsdoc": "节点显示标题。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nodeKind",
+              "jsdoc": "节点类型（module/page 等）。",
               "readable": true,
               "writable": false
             },
@@ -440,6 +456,7 @@
             },
             {
               "name": "planningAttachmentRef",
+              "jsdoc": "节点策划详细说明附件引用。",
               "readable": true,
               "writable": false
             },
@@ -459,7 +476,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 58,
+        "line": 75,
         "className": "ResolveProjectPlanningRunInputOptions",
         "declarationKind": "typeAlias"
       },
@@ -502,7 +519,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 67,
+        "line": 84,
         "className": "FilterNavigationPlanningNodesOptions",
         "declarationKind": "typeAlias"
       },
@@ -539,7 +556,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 74,
+        "line": 91,
         "className": "ResolveScopedProjectPlanningRunInputOptions",
         "declarationKind": "typeAlias"
       },
@@ -566,16 +583,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 76,
+        "line": 93,
         "className": "EnsureProjectPlanningBusinessOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    getProjectPlanningEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** AI Agent Host 实例。 */\n    host: AiAgentHost;\n    /** 按 moduleInstanceId 获取 ProjectWorkspace 编辑器。 */\n    getProjectPlanningEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    host: AiAgentHost;\n    getProjectPlanningEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
+            "typeText": "Readonly<{\n    /** AI Agent Host 实例。 */\n    host: AiAgentHost;\n    /** 按 moduleInstanceId 获取 ProjectWorkspace 编辑器。 */\n    getProjectPlanningEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -583,6 +600,7 @@
           "attributes": [
             {
               "name": "host",
+              "jsdoc": "AI Agent Host 实例。",
               "readable": true,
               "writable": false
             }
@@ -590,6 +608,7 @@
           "methods": [
             {
               "name": "getProjectPlanningEditor",
+              "jsdoc": "按 moduleInstanceId 获取 ProjectWorkspace 编辑器。",
               "parameters": [
                 {
                   "name": "context",
@@ -614,16 +633,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-business.d.ts",
-        "line": 92,
+        "line": 111,
         "className": "ProjectPlanningGateValidationResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否通过 tool gate 校验。 */\n    ok: boolean;\n    /** 拒绝原因（ok 为 false 时）。 */\n    reason?: string;\n    /** 给 LLM 的修正建议（ok 为 false 时）。 */\n    fix?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 是否通过 tool gate 校验。 */\n    ok: boolean;\n    /** 拒绝原因（ok 为 false 时）。 */\n    reason?: string;\n    /** 给 LLM 的修正建议（ok 为 false 时）。 */\n    fix?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -631,16 +650,19 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "是否通过 tool gate 校验。",
               "readable": true,
               "writable": false
             },
             {
               "name": "reason",
+              "jsdoc": "拒绝原因（ok 为 false 时）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "给 LLM 的修正建议（ok 为 false 时）。",
               "readable": true,
               "writable": false
             }

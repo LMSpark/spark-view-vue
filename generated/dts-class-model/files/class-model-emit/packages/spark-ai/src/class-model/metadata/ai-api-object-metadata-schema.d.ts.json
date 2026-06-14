@@ -320,7 +320,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T19:03:35.069Z",
+  "generatedAt": "2026-06-14T22:54:39.450Z",
   "models": {
     "AiApiActionFailureMode": {
       "name": "AiApiActionFailureMode",
@@ -483,11 +483,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 源码文件路径（相对 repoRoot 或 emit 路径）。 */\n    file: string;\n    /** 声明所在源码行号（1-based）。 */\n    line: number;\n    /** 声明所属 class/interface/type 名。 */\n    className: string;\n    /** 成员级溯源时的属性/方法名；类型级溯源时为 undefined。 */\n    memberName?: string;\n    /** 可能的 .d.ts 类型入口路径，与 file 可能不同。 */\n    typeEntryFile?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 源码文件路径（相对 repoRoot 或 emit 路径）。 */\n    file: string;\n    /** 声明所在源码行号（1-based）。 */\n    line: number;\n    /** 声明所属 class/interface/type 名。 */\n    className: string;\n    /** 成员级溯源时的属性/方法名；类型级溯源时为 undefined。 */\n    memberName?: string;\n    /** 可能的 .d.ts 类型入口路径，与 file 可能不同。 */\n    typeEntryFile?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -495,26 +495,31 @@
           "attributes": [
             {
               "name": "file",
+              "jsdoc": "源码文件路径（相对 repoRoot 或 emit 路径）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "line",
+              "jsdoc": "声明所在源码行号（1-based）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "className",
+              "jsdoc": "声明所属 class/interface/type 名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "memberName",
+              "jsdoc": "成员级溯源时的属性/方法名；类型级溯源时为 undefined。",
               "readable": true,
               "writable": false
             },
             {
               "name": "typeEntryFile",
+              "jsdoc": "可能的 .d.ts 类型入口路径，与 file 可能不同。",
               "readable": true,
               "writable": false
             }
@@ -528,16 +533,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 48,
+        "line": 53,
         "className": "AiApiObjectMetadata",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    kind: string;\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    constructorSignature?: AiApiConstructorMetadata;\n    actions: readonly AiApiActionMetadata[];\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** API kind 标识，脚本与 registry 中的唯一键。 */\n    kind: string;\n    /** 对外展示名，通常与 kind 一致。 */\n    name: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 可选构造函数元数据。 */\n    constructorSignature?: AiApiConstructorMetadata;\n    /** 该 API 对象可调用的 action 列表。 */\n    actions: readonly AiApiActionMetadata[];\n    /** 可读/可写属性元数据列表。 */\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    kind: string;\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    constructorSignature?: AiApiConstructorMetadata;\n    actions: readonly AiApiActionMetadata[];\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
+            "typeText": "Readonly<{\n    /** API kind 标识，脚本与 registry 中的唯一键。 */\n    kind: string;\n    /** 对外展示名，通常与 kind 一致。 */\n    name: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 可选构造函数元数据。 */\n    constructorSignature?: AiApiConstructorMetadata;\n    /** 该 API 对象可调用的 action 列表。 */\n    actions: readonly AiApiActionMetadata[];\n    /** 可读/可写属性元数据列表。 */\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -545,41 +550,49 @@
           "attributes": [
             {
               "name": "kind",
+              "jsdoc": "API kind 标识，脚本与 registry 中的唯一键。",
               "readable": true,
               "writable": false
             },
             {
               "name": "name",
+              "jsdoc": "对外展示名，通常与 kind 一致。",
               "readable": true,
               "writable": false
             },
             {
               "name": "description",
+              "jsdoc": "面向 LLM 的简短说明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "jsdoc",
+              "jsdoc": "从源码 JSDoc 原样拷贝的语义块。",
               "readable": true,
               "writable": false
             },
             {
               "name": "provenance",
+              "jsdoc": "反射溯源，指向源码声明位置。",
               "readable": true,
               "writable": false
             },
             {
               "name": "constructorSignature",
+              "jsdoc": "可选构造函数元数据。",
               "readable": true,
               "writable": false
             },
             {
               "name": "actions",
+              "jsdoc": "该 API 对象可调用的 action 列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "attributes",
+              "jsdoc": "可读/可写属性元数据列表。",
               "readable": true,
               "writable": false
             }
@@ -593,16 +606,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 59,
+        "line": 72,
         "className": "AiApiConstructorMetadata",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 构造函数面向 LLM 的说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 构造参数 JSON Schema（object 形态）。 */\n    paramsSchema: AiJsonSchemaObject;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n}>",
+            "typeText": "Readonly<{\n    /** 构造函数面向 LLM 的说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 构造参数 JSON Schema（object 形态）。 */\n    paramsSchema: AiJsonSchemaObject;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -610,21 +623,25 @@
           "attributes": [
             {
               "name": "description",
+              "jsdoc": "构造函数面向 LLM 的说明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "jsdoc",
+              "jsdoc": "从源码 JSDoc 原样拷贝的语义块。",
               "readable": true,
               "writable": false
             },
             {
               "name": "provenance",
+              "jsdoc": "反射溯源，指向源码声明位置。",
               "readable": true,
               "writable": false
             },
             {
               "name": "paramsSchema",
+              "jsdoc": "构造参数 JSON Schema（object 形态）。",
               "readable": true,
               "writable": false
             }
@@ -638,16 +655,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 66,
+        "line": 83,
         "className": "AiApiAttributeMetadata",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 属性名，脚本 object 链上的键。 */\n    name: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 属性值 JSON Schema。 */\n    schema: AiJsonSchema;\n    /** LLM/脚本是否可读该属性。 */\n    readable: boolean;\n    /** LLM/脚本是否可写该属性。 */\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
+            "typeText": "Readonly<{\n    /** 属性名，脚本 object 链上的键。 */\n    name: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 属性值 JSON Schema。 */\n    schema: AiJsonSchema;\n    /** LLM/脚本是否可读该属性。 */\n    readable: boolean;\n    /** LLM/脚本是否可写该属性。 */\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -655,36 +672,43 @@
           "attributes": [
             {
               "name": "name",
+              "jsdoc": "属性名，脚本 object 链上的键。",
               "readable": true,
               "writable": false
             },
             {
               "name": "description",
+              "jsdoc": "面向 LLM 的简短说明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "jsdoc",
+              "jsdoc": "从源码 JSDoc 原样拷贝的语义块。",
               "readable": true,
               "writable": false
             },
             {
               "name": "provenance",
+              "jsdoc": "反射溯源，指向源码声明位置。",
               "readable": true,
               "writable": false
             },
             {
               "name": "schema",
+              "jsdoc": "属性值 JSON Schema。",
               "readable": true,
               "writable": false
             },
             {
               "name": "readable",
+              "jsdoc": "LLM/脚本是否可读该属性。",
               "readable": true,
               "writable": false
             },
             {
               "name": "writable",
+              "jsdoc": "LLM/脚本是否可写该属性。",
               "readable": true,
               "writable": false
             },
@@ -704,16 +728,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 78,
+        "line": 102,
         "className": "AiApiActionMetadata",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** action 对外名称，script 上下文中的 callable 键。 */\n    name: string;\n    /** 业务 class 上实际调用的 methodName。 */\n    methodName: string;\n    /** 可选完整方法签名文本，供 guide 投影。 */\n    signatureText?: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 调用参数 JSON Schema（object 形态）。 */\n    paramsSchema: AiJsonSchemaObject;\n    /** 是否将 AiNativePathContext 作为首参注入 method。 */\n    takesContext?: boolean;\n    /** 返回值 JSON Schema。 */\n    resultSchema?: AiJsonSchema;\n    /** action 返回值中嵌套 API 对象的引用列表。 */\n    resultApis?: readonly AiApiResultApiRef[];\n    /** 调用前须遵守的使用规则（自然语言）。 */\n    usageRules?: readonly string[];\n    /** 调用前必须先完成的 action 名列表。 */\n    requiredBeforeCall?: readonly string[];\n    /** 已知失败模式与修复建议。 */\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    /** 多组调用示例。 */\n    examples?: readonly AiApiActionExample[];\n    /** 不应调用的反例与原因。 */\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
+            "typeText": "Readonly<{\n    /** action 对外名称，script 上下文中的 callable 键。 */\n    name: string;\n    /** 业务 class 上实际调用的 methodName。 */\n    methodName: string;\n    /** 可选完整方法签名文本，供 guide 投影。 */\n    signatureText?: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 调用参数 JSON Schema（object 形态）。 */\n    paramsSchema: AiJsonSchemaObject;\n    /** 是否将 AiNativePathContext 作为首参注入 method。 */\n    takesContext?: boolean;\n    /** 返回值 JSON Schema。 */\n    resultSchema?: AiJsonSchema;\n    /** action 返回值中嵌套 API 对象的引用列表。 */\n    resultApis?: readonly AiApiResultApiRef[];\n    /** 调用前须遵守的使用规则（自然语言）。 */\n    usageRules?: readonly string[];\n    /** 调用前必须先完成的 action 名列表。 */\n    requiredBeforeCall?: readonly string[];\n    /** 已知失败模式与修复建议。 */\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    /** 多组调用示例。 */\n    examples?: readonly AiApiActionExample[];\n    /** 不应调用的反例与原因。 */\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -721,66 +745,79 @@
           "attributes": [
             {
               "name": "name",
+              "jsdoc": "action 对外名称，script 上下文中的 callable 键。",
               "readable": true,
               "writable": false
             },
             {
               "name": "methodName",
+              "jsdoc": "业务 class 上实际调用的 methodName。",
               "readable": true,
               "writable": false
             },
             {
               "name": "signatureText",
+              "jsdoc": "可选完整方法签名文本，供 guide 投影。",
               "readable": true,
               "writable": false
             },
             {
               "name": "description",
+              "jsdoc": "面向 LLM 的简短说明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "jsdoc",
+              "jsdoc": "从源码 JSDoc 原样拷贝的语义块。",
               "readable": true,
               "writable": false
             },
             {
               "name": "provenance",
+              "jsdoc": "反射溯源，指向源码声明位置。",
               "readable": true,
               "writable": false
             },
             {
               "name": "paramsSchema",
+              "jsdoc": "调用参数 JSON Schema（object 形态）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "takesContext",
+              "jsdoc": "是否将 AiNativePathContext 作为首参注入 method。",
               "readable": true,
               "writable": false
             },
             {
               "name": "resultSchema",
+              "jsdoc": "返回值 JSON Schema。",
               "readable": true,
               "writable": false
             },
             {
               "name": "resultApis",
+              "jsdoc": "action 返回值中嵌套 API 对象的引用列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "usageRules",
+              "jsdoc": "调用前须遵守的使用规则（自然语言）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "requiredBeforeCall",
+              "jsdoc": "调用前必须先完成的 action 名列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "failureModes",
+              "jsdoc": "已知失败模式与修复建议。",
               "readable": true,
               "writable": false
             },
@@ -792,11 +829,13 @@
             },
             {
               "name": "examples",
+              "jsdoc": "多组调用示例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "antiExamples",
+              "jsdoc": "不应调用的反例与原因。",
               "readable": true,
               "writable": false
             }
@@ -810,16 +849,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 98,
+        "line": 137,
         "className": "AiApiResultApiRef",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    /** 嵌套 API 对象元数据；紧凑 runtime JSON 中可由 $ref 替代。 */\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    /** 嵌套 API 对象元数据；紧凑 runtime JSON 中可由 $ref 替代。 */\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -833,6 +872,7 @@
             },
             {
               "name": "api",
+              "jsdoc": "嵌套 API 对象元数据；紧凑 runtime JSON 中可由 $ref 替代。",
               "readable": true,
               "writable": false
             },
@@ -852,16 +892,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 106,
+        "line": 146,
         "className": "AiRuntimeApiMetadataJson",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaVersion: 1 | 2;\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** runtime metadata 格式版本：1 内联嵌套，2 使用 apiRegistry 去重。 */\n    schemaVersion: 1 | 2;\n    /** 脚本入口 root API 对象元数据。 */\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaVersion: 1 | 2;\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
+            "typeText": "Readonly<{\n    /** runtime metadata 格式版本：1 内联嵌套，2 使用 apiRegistry 去重。 */\n    schemaVersion: 1 | 2;\n    /** 脚本入口 root API 对象元数据。 */\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -869,11 +909,13 @@
           "attributes": [
             {
               "name": "schemaVersion",
+              "jsdoc": "runtime metadata 格式版本：1 内联嵌套，2 使用 apiRegistry 去重。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootApi",
+              "jsdoc": "脚本入口 root API 对象元数据。",
               "readable": true,
               "writable": false
             },

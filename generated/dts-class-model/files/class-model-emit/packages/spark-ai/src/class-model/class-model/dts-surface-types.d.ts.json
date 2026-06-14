@@ -63,7 +63,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:27.887Z",
+  "generatedAt": "2026-06-14T22:53:12.126Z",
   "models": {
     "DtsClassModelSurfaceDocument": {
       "name": "DtsClassModelSurfaceDocument",
@@ -76,11 +76,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** surface 文档格式版本，与 bundle shard 的 schemaVersion 独立演进。 */\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    /** 投影来源标识，区分 emit 路径与生成策略。 */\n    source: ClassModelEmitSource;\n    /** 触发 surface 投影的配置文件路径（相对 repoRoot）。 */\n    configPath: string;\n    /** 按 className 索引的 DtsTypeDeclarationModel 快照。 */\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 源文件路径到该文件导出 className 列表的反向索引。 */\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    /** ISO 8601 生成时间戳；离线 bundle 可省略。 */\n    generatedAt?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
+            "typeText": "Readonly<{\n    /** surface 文档格式版本，与 bundle shard 的 schemaVersion 独立演进。 */\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    /** 投影来源标识，区分 emit 路径与生成策略。 */\n    source: ClassModelEmitSource;\n    /** 触发 surface 投影的配置文件路径（相对 repoRoot）。 */\n    configPath: string;\n    /** 按 className 索引的 DtsTypeDeclarationModel 快照。 */\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 源文件路径到该文件导出 className 列表的反向索引。 */\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    /** ISO 8601 生成时间戳；离线 bundle 可省略。 */\n    generatedAt?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -88,31 +88,37 @@
           "attributes": [
             {
               "name": "schemaVersion",
+              "jsdoc": "surface 文档格式版本，与 bundle shard 的 schemaVersion 独立演进。",
               "readable": true,
               "writable": false
             },
             {
               "name": "source",
+              "jsdoc": "投影来源标识，区分 emit 路径与生成策略。",
               "readable": true,
               "writable": false
             },
             {
               "name": "configPath",
+              "jsdoc": "触发 surface 投影的配置文件路径（相对 repoRoot）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "models",
+              "jsdoc": "按 className 索引的 DtsTypeDeclarationModel 快照。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fileIndex",
+              "jsdoc": "源文件路径到该文件导出 className 列表的反向索引。",
               "readable": true,
               "writable": false
             },
             {
               "name": "generatedAt",
+              "jsdoc": "ISO 8601 生成时间戳；离线 bundle 可省略。",
               "readable": true,
               "writable": false
             }
@@ -126,16 +132,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",
-        "line": 20,
+        "line": 26,
         "className": "ProjectDtsClassModelSurfaceOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    configPath: string;\n    skipVueComponentDts?: boolean;\n    exportedOnly?: boolean;\n    failOnDuplicate?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 投影配置文件路径，决定 rootFiles 与 emit 范围。 */\n    configPath: string;\n    /** true 时跳过 Vue 组件 .vue.d.ts，只投影 TS 声明。 */\n    skipVueComponentDts?: boolean;\n    /** true 时只保留 export 可见的 declaration symbol。 */\n    exportedOnly?: boolean;\n    /** true 时遇到跨文件 className 重复立即失败。 */\n    failOnDuplicate?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    configPath: string;\n    skipVueComponentDts?: boolean;\n    exportedOnly?: boolean;\n    failOnDuplicate?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 投影配置文件路径，决定 rootFiles 与 emit 范围。 */\n    configPath: string;\n    /** true 时跳过 Vue 组件 .vue.d.ts，只投影 TS 声明。 */\n    skipVueComponentDts?: boolean;\n    /** true 时只保留 export 可见的 declaration symbol。 */\n    exportedOnly?: boolean;\n    /** true 时遇到跨文件 className 重复立即失败。 */\n    failOnDuplicate?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -143,21 +149,25 @@
           "attributes": [
             {
               "name": "configPath",
+              "jsdoc": "投影配置文件路径，决定 rootFiles 与 emit 范围。",
               "readable": true,
               "writable": false
             },
             {
               "name": "skipVueComponentDts",
+              "jsdoc": "true 时跳过 Vue 组件 .vue.d.ts，只投影 TS 声明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "exportedOnly",
+              "jsdoc": "true 时只保留 export 可见的 declaration symbol。",
               "readable": true,
               "writable": false
             },
             {
               "name": "failOnDuplicate",
+              "jsdoc": "true 时遇到跨文件 className 重复立即失败。",
               "readable": true,
               "writable": false
             }

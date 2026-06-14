@@ -13,19 +13,29 @@ import { stringifyAiAgentPayload } from './payload-codec'
 
 /** Ai Agent Diagnostic Event Input 的输入数据。 */
 type AiAgentDiagnosticEventInput = Readonly<{
+  /** 当前 chat 请求，含 onStreamEvent 回调。 */
   request: AiAgentChatRequest
+  /** 业务作用域，用于构造 turnKey 与 streamKey。 */
   scope: AiAgentScope
+  /** 当前 turn 元信息（turnId 等）。 */
   turn: AiAgentTurnMeta
+  /** 诊断事件类型：LLM 请求前或流式追加。 */
   type: 'llm-request' | 'llm-append'
+  /** 待序列化为 JSON 的 LLM 诊断载荷。 */
   data: unknown
 }>
 
 /** Tool Result Event Input 的输入数据。 */
 type ToolResultEventInput = Readonly<{
+  /** 当前 chat 请求，含 onStreamEvent 回调。 */
   request: AiAgentChatRequest
+  /** 业务作用域，用于构造 turnKey 与 streamKey。 */
   scope: AiAgentScope
+  /** 当前 turn 元信息（turnId 等）。 */
   turn: AiAgentTurnMeta
+  /** 事件归属的能力模块 ID，前端据此路由 UI。 */
   eventModuleId: string
+  /** 待序列化为 JSON 的工具结果载荷。 */
   data: unknown
 }>
 

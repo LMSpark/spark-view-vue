@@ -42,15 +42,21 @@ import {
 
 /** pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。 */
 export type PageDesignDeliveryContext = Readonly<{
+  /** 页面设计工作区编辑器。 */
   editor: ProjectWorkspace
+  /** 当前页面节点 id。 */
   pageId: string
 }>
 
 /** Create Page Design Delivery Port Options 的调用配置。 */
 export type CreatePageDesignDeliveryPortOptions = Readonly<{
+  /** 交付模式（manual 或 auto）。 */
   mode: AiDeliveryMode
+  /** 是否执行实际落盘保存。 */
   shouldSave: boolean
+  /** 回滚时的交付状态标记。 */
   rollbackStatus: 'skipped' | 'rolledBack'
+  /** 限定保存的文件名列表（省略则保存全部 dirty 文件）。 */
   saveFileNames?: readonly PageNodeFileName[]
 }>
 

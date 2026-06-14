@@ -359,7 +359,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.168Z",
+  "generatedAt": "2026-06-14T22:53:49.858Z",
   "models": {
     "SubtreeFieldPolicy": {
       "name": "SubtreeFieldPolicy",
@@ -416,24 +416,24 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    /** current 字段。 */\n    readonly current: 'light' | 'dark';\n    /** mode 字段。 */\n    readonly mode: ThemeMode;\n    setMode(mode: ThemeMode): void;\n    /** 是否 is Dark。 */\n    readonly isDark: boolean;\n    toggle(): void;\n}",
+        "declarationTypeText": "{\n    /** 当前生效的主题模式（light 或 dark）。 */\n    readonly current: 'light' | 'dark';\n    /** 用户选择的主题模式（含 auto）。 */\n    readonly mode: ThemeMode;\n    /** 设置主题模式。 */\n    setMode(mode: ThemeMode): void;\n    /** 当前是否为暗色主题。 */\n    readonly isDark: boolean;\n    /** 在 light/dark 之间切换主题。 */\n    toggle(): void;\n}",
         "members": {
           "attributes": [
             {
               "name": "current",
-              "jsdoc": "current 字段。",
+              "jsdoc": "当前生效的主题模式（light 或 dark）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "mode",
-              "jsdoc": "mode 字段。",
+              "jsdoc": "用户选择的主题模式（含 auto）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "isDark",
-              "jsdoc": "是否 is Dark。",
+              "jsdoc": "当前是否为暗色主题。",
               "readable": true,
               "writable": false
             }
@@ -441,6 +441,7 @@
           "methods": [
             {
               "name": "setMode",
+              "jsdoc": "设置主题模式。",
               "parameters": [
                 {
                   "name": "mode",
@@ -458,6 +459,7 @@
             },
             {
               "name": "toggle",
+              "jsdoc": "在 light/dark 之间切换主题。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -474,7 +476,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 43,
+        "line": 45,
         "className": "ModuleContextItem",
         "declarationKind": "typeAlias"
       },
@@ -504,7 +506,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 50,
+        "line": 52,
         "className": "ModuleContext",
         "declarationKind": "typeAlias"
       },
@@ -540,16 +542,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 59,
+        "line": 61,
         "className": "ModuleContextCapability",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    getCurrent(): ModuleContext | null;\n    subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void;\n}",
+        "declarationTypeText": "{\n    /** 获取当前模块上下文快照。 */\n    getCurrent(): ModuleContext | null;\n    /** 订阅模块上下文变更，返回取消订阅函数。 */\n    subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void;\n}",
         "members": {
           "methods": [
             {
               "name": "getCurrent",
+              "jsdoc": "获取当前模块上下文快照。",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -568,6 +571,7 @@
             },
             {
               "name": "subscribe",
+              "jsdoc": "订阅模块上下文变更，返回取消订阅函数。",
               "parameters": [
                 {
                   "name": "handler",
@@ -647,7 +651,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 64,
+        "line": 68,
         "className": "PageComponentInstanceEntry",
         "declarationKind": "typeAlias"
       },
@@ -683,7 +687,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 73,
+        "line": 77,
         "className": "PageComponentApiEntry",
         "declarationKind": "typeAlias"
       },
@@ -719,16 +723,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 82,
+        "line": 86,
         "className": "PageComponentRegistry",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    registerInstance(entry: PageComponentInstanceEntry): void;\n    unregisterInstance(id: string): void;\n    listInstances(type?: string): PageComponentInstanceEntry[];\n    getInstance(id: string): PageComponentInstanceEntry | null;\n    registerApi(entry: PageComponentApiEntry): void;\n    unregisterApi(id: string): void;\n    listApis(type?: string): PageComponentApiEntry[];\n    getApi<T = unknown>(id: string): T | null;\n    getApisByType<T = unknown>(type: string): T[];\n}",
+        "declarationTypeText": "{\n    /** 注册组件实例元数据。 */\n    registerInstance(entry: PageComponentInstanceEntry): void;\n    /** 注销指定 id 的组件实例。 */\n    unregisterInstance(id: string): void;\n    /** 列出已注册实例，可按 type 过滤。 */\n    listInstances(type?: string): PageComponentInstanceEntry[];\n    /** 按 id 获取组件实例元数据。 */\n    getInstance(id: string): PageComponentInstanceEntry | null;\n    /** 注册组件暴露的运行时 API。 */\n    registerApi(entry: PageComponentApiEntry): void;\n    /** 注销指定 id 的组件 API。 */\n    unregisterApi(id: string): void;\n    /** 列出已注册 API，可按 type 过滤。 */\n    listApis(type?: string): PageComponentApiEntry[];\n    /** 按 id 获取组件 API 对象。 */\n    getApi<T = unknown>(id: string): T | null;\n    /** 按 type 获取同类组件 API 列表。 */\n    getApisByType<T = unknown>(type: string): T[];\n}",
         "members": {
           "methods": [
             {
               "name": "registerInstance",
+              "jsdoc": "注册组件实例元数据。",
               "parameters": [
                 {
                   "name": "entry",
@@ -746,6 +751,7 @@
             },
             {
               "name": "unregisterInstance",
+              "jsdoc": "注销指定 id 的组件实例。",
               "parameters": [
                 {
                   "name": "id",
@@ -762,6 +768,7 @@
             },
             {
               "name": "listInstances",
+              "jsdoc": "列出已注册实例，可按 type 过滤。",
               "parameters": [
                 {
                   "name": "type",
@@ -785,6 +792,7 @@
             },
             {
               "name": "getInstance",
+              "jsdoc": "按 id 获取组件实例元数据。",
               "parameters": [
                 {
                   "name": "id",
@@ -811,6 +819,7 @@
             },
             {
               "name": "registerApi",
+              "jsdoc": "注册组件暴露的运行时 API。",
               "parameters": [
                 {
                   "name": "entry",
@@ -828,6 +837,7 @@
             },
             {
               "name": "unregisterApi",
+              "jsdoc": "注销指定 id 的组件 API。",
               "parameters": [
                 {
                   "name": "id",
@@ -844,6 +854,7 @@
             },
             {
               "name": "listApis",
+              "jsdoc": "列出已注册 API，可按 type 过滤。",
               "parameters": [
                 {
                   "name": "type",
@@ -867,6 +878,7 @@
             },
             {
               "name": "getApi",
+              "jsdoc": "按 id 获取组件 API 对象。",
               "parameters": [
                 {
                   "name": "id",
@@ -893,6 +905,7 @@
             },
             {
               "name": "getApisByType",
+              "jsdoc": "按 type 获取同类组件 API 列表。",
               "parameters": [
                 {
                   "name": "type",
@@ -921,16 +934,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
-        "line": 94,
+        "line": 107,
         "className": "PageCssScopeCapability",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    inject(css: string): void;\n}",
+        "declarationTypeText": "{\n    /** 向当前页面作用域注入 CSS 文本。 */\n    inject(css: string): void;\n}",
         "members": {
           "methods": [
             {
               "name": "inject",
+              "jsdoc": "向当前页面作用域注入 CSS 文本。",
               "parameters": [
                 {
                   "name": "css",

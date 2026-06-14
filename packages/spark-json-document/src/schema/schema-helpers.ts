@@ -16,17 +16,21 @@ import type {
 
 /** String Schema Options 的调用配置。 */
 export type StringSchemaOptions = Readonly<{
+  /** 是否允许 null 值（type 变为 ['string', 'null']）。 */
   nullable?: boolean
+  /** 最小字符串长度约束。 */
   minLength?: number
 }>
 
 /** Number Schema Options 的调用配置。 */
 export type NumberSchemaOptions = Readonly<{
+  /** 是否允许 null 值（type 变为 ['number', 'null']）。 */
   nullable?: boolean
 }>
 
 /** Boolean Schema Options 的调用配置。 */
 export type BooleanSchemaOptions = Readonly<{
+  /** 是否允许 null 值（type 变为 ['boolean', 'null']）。 */
   nullable?: boolean
 }>
 
@@ -71,7 +75,9 @@ export function booleanSchema(description: string, options: BooleanSchemaOptions
 
 /** Enum Schema Options 的调用配置。 */
 export type EnumSchemaOptions = Readonly<{
+  /** 枚举值的 JSON Schema 类型（默认按 values 推断）。 */
   type?: 'string' | 'number'
+  /** 是否允许 null 值（enum 追加 null）。 */
   nullable?: boolean
 }>
 
@@ -100,8 +106,11 @@ export function arraySchema(items: JsonSchema = anySchema(), description?: strin
 
 /** Object Schema Options 的调用配置。 */
 export type ObjectSchemaOptions = Readonly<{
+  /** 必填属性名列表。 */
   required?: readonly string[]
+  /** schema 描述文本。 */
   description?: string
+  /** 额外属性的 schema 约束（false 表示禁止额外属性）。 */
   additionalProperties?: JsonSchema
 }>
 

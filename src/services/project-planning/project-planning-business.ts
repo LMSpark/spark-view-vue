@@ -44,6 +44,7 @@ function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledge
 
 /** Project Planning Run Input 的输入数据。 */
 export type ProjectPlanningRunInput = Readonly<{
+  /** 项目唯一标识。 */
   projectId: string
   /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */
   requirement: string
@@ -57,31 +58,47 @@ export type ProjectPlanningRunInput = Readonly<{
 
 /** Host inputContract 用可变数组，满足 AiJsonParams。 */
 export type ProjectPlanningAgentInput = Readonly<{
+  /** Agent 输入的身份键（通常等于 projectId）。 */
   projectScopeKey: string
+  /** 项目唯一标识。 */
   projectId: string
+  /** 项目级策划短需求文本。 */
   requirement: string
+  /** 项目级策划详细说明附件引用。 */
   planningAttachmentRef?: string
+  /** 项目级附件解析正文。 */
   planningAttachmentText?: string
+  /** 各导航节点的策划输入列表。 */
   navigationNodes: NavigationPlanningAgentInput[]
 }>
 
 /** Navigation Planning Agent Input 的输入数据。 */
 export type NavigationPlanningAgentInput = Readonly<{
+  /** 导航节点 id。 */
   nodeId: string
+  /** 节点显示标题。 */
   title: string
+  /** 节点类型（module/page 等）。 */
   nodeKind: string
+  /** 节点短需求（navigation description）。 */
   requirement: string
+  /** 节点策划详细说明附件引用。 */
   planningAttachmentRef?: string
+  /** 节点附件解析正文。 */
   planningAttachmentText?: string
 }>
 
 /** Navigation Planning Run Input 的输入数据。 */
 export type NavigationPlanningRunInput = Readonly<{
+  /** 导航节点 id。 */
   nodeId: string
+  /** 节点显示标题。 */
   title: string
+  /** 节点类型（module/page 等）。 */
   nodeKind: string
   /** 节点短需求，即 navigation description。 */
   requirement: string
+  /** 节点策划详细说明附件引用。 */
   planningAttachmentRef?: string
   /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */
   planningAttachmentText?: string
@@ -111,7 +128,9 @@ export type ResolveScopedProjectPlanningRunInputOptions =
 
 /** Ensure Project Planning Business Options 的调用配置。 */
 export type EnsureProjectPlanningBusinessOptions = Readonly<{
+  /** AI Agent Host 实例。 */
   host: AiAgentHost
+  /** 按 moduleInstanceId 获取 ProjectWorkspace 编辑器。 */
   getProjectPlanningEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
 }>
 
@@ -423,8 +442,11 @@ function evaluateProjectPlanningBeforeFunctionCall(
 
 /** Project Planning Gate Validation Result 的返回结果。 */
 export type ProjectPlanningGateValidationResult = Readonly<{
+  /** 是否通过 tool gate 校验。 */
   ok: boolean
+  /** 拒绝原因（ok 为 false 时）。 */
   reason?: string
+  /** 给 LLM 的修正建议（ok 为 false 时）。 */
   fix?: string
 }>
 

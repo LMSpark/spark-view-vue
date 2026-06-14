@@ -130,7 +130,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.111Z",
+  "generatedAt": "2026-06-14T22:53:43.683Z",
   "models": {
     "RendererVirtualCardApi": {
       "name": "RendererVirtualCardApi",
@@ -148,7 +148,7 @@
         "componentDirectory": "containers/data-views"
       },
       "typeAlias": {
-        "declarationTypeText": "BaseContainerApi & {\n    getRows(): DataRow[];\n    getCachedPages(): number[];\n    getPendingPages(): number[];\n    getVisiblePages(): number[];\n    getCurrentPage(): number;\n    getTotalPages(): number;\n    getScrollProgress(): string;\n    getLoadPolicyText(): string;\n    getWheelStatusText(): string;\n    scrollToPage(page: number): Promise<void>;\n    clearCache(): void;\n}",
+        "declarationTypeText": "BaseContainerApi & {\n    /** 获取当前虚拟卡片列表的全部行数据。 */\n    getRows(): DataRow[];\n    /** 获取已缓存的页码列表。 */\n    getCachedPages(): number[];\n    /** 获取正在加载中的页码列表。 */\n    getPendingPages(): number[];\n    /** 获取当前视口可见的页码列表。 */\n    getVisiblePages(): number[];\n    /** 获取当前页码。 */\n    getCurrentPage(): number;\n    /** 获取总页数。 */\n    getTotalPages(): number;\n    /** 获取滚动进度描述文本。 */\n    getScrollProgress(): string;\n    /** 获取数据加载策略描述文本。 */\n    getLoadPolicyText(): string;\n    /** 获取滚轮交互状态描述文本。 */\n    getWheelStatusText(): string;\n    /** 滚动到指定页码。 */\n    scrollToPage(page: number): Promise<void>;\n    /** 清空已缓存的分页数据。 */\n    clearCache(): void;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -157,13 +157,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    getRows(): DataRow[];\n    getCachedPages(): number[];\n    getPendingPages(): number[];\n    getVisiblePages(): number[];\n    getCurrentPage(): number;\n    getTotalPages(): number;\n    getScrollProgress(): string;\n    getLoadPolicyText(): string;\n    getWheelStatusText(): string;\n    scrollToPage(page: number): Promise<void>;\n    clearCache(): void;\n}"
+            "typeText": "{\n    /** 获取当前虚拟卡片列表的全部行数据。 */\n    getRows(): DataRow[];\n    /** 获取已缓存的页码列表。 */\n    getCachedPages(): number[];\n    /** 获取正在加载中的页码列表。 */\n    getPendingPages(): number[];\n    /** 获取当前视口可见的页码列表。 */\n    getVisiblePages(): number[];\n    /** 获取当前页码。 */\n    getCurrentPage(): number;\n    /** 获取总页数。 */\n    getTotalPages(): number;\n    /** 获取滚动进度描述文本。 */\n    getScrollProgress(): string;\n    /** 获取数据加载策略描述文本。 */\n    getLoadPolicyText(): string;\n    /** 获取滚轮交互状态描述文本。 */\n    getWheelStatusText(): string;\n    /** 滚动到指定页码。 */\n    scrollToPage(page: number): Promise<void>;\n    /** 清空已缓存的分页数据。 */\n    clearCache(): void;\n}"
           }
         ],
         "members": {
           "methods": [
             {
               "name": "getRows",
+              "jsdoc": "获取当前虚拟卡片列表的全部行数据。",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -175,6 +176,7 @@
             },
             {
               "name": "getCachedPages",
+              "jsdoc": "获取已缓存的页码列表。",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -186,6 +188,7 @@
             },
             {
               "name": "getPendingPages",
+              "jsdoc": "获取正在加载中的页码列表。",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -197,6 +200,7 @@
             },
             {
               "name": "getVisiblePages",
+              "jsdoc": "获取当前视口可见的页码列表。",
               "parameters": [],
               "type": {
                 "type": "array",
@@ -208,6 +212,7 @@
             },
             {
               "name": "getCurrentPage",
+              "jsdoc": "获取当前页码。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -216,6 +221,7 @@
             },
             {
               "name": "getTotalPages",
+              "jsdoc": "获取总页数。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -224,6 +230,7 @@
             },
             {
               "name": "getScrollProgress",
+              "jsdoc": "获取滚动进度描述文本。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -232,6 +239,7 @@
             },
             {
               "name": "getLoadPolicyText",
+              "jsdoc": "获取数据加载策略描述文本。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -240,6 +248,7 @@
             },
             {
               "name": "getWheelStatusText",
+              "jsdoc": "获取滚轮交互状态描述文本。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -248,6 +257,7 @@
             },
             {
               "name": "scrollToPage",
+              "jsdoc": "滚动到指定页码。",
               "parameters": [
                 {
                   "name": "page",
@@ -270,6 +280,7 @@
             },
             {
               "name": "clearCache",
+              "jsdoc": "清空已缓存的分页数据。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",

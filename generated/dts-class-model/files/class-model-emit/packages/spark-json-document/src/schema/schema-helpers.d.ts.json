@@ -92,7 +92,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.244Z",
+  "generatedAt": "2026-06-14T22:54:04.791Z",
   "models": {
     "StringSchemaOptions": {
       "name": "StringSchemaOptions",
@@ -105,11 +105,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n    minLength?: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['string', 'null']）。 */\n    nullable?: boolean;\n    /** 最小字符串长度约束。 */\n    minLength?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nullable?: boolean;\n    minLength?: number;\n}>",
+            "typeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['string', 'null']）。 */\n    nullable?: boolean;\n    /** 最小字符串长度约束。 */\n    minLength?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -117,11 +117,13 @@
           "attributes": [
             {
               "name": "nullable",
+              "jsdoc": "是否允许 null 值（type 变为 ['string', 'null']）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "minLength",
+              "jsdoc": "最小字符串长度约束。",
               "readable": true,
               "writable": false
             }
@@ -135,16 +137,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 14,
+        "line": 16,
         "className": "NumberSchemaOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['number', 'null']）。 */\n    nullable?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nullable?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['number', 'null']）。 */\n    nullable?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -152,6 +154,7 @@
           "attributes": [
             {
               "name": "nullable",
+              "jsdoc": "是否允许 null 值（type 变为 ['number', 'null']）。",
               "readable": true,
               "writable": false
             }
@@ -165,16 +168,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 18,
+        "line": 21,
         "className": "BooleanSchemaOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['boolean', 'null']）。 */\n    nullable?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nullable?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['boolean', 'null']）。 */\n    nullable?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -182,6 +185,7 @@
           "attributes": [
             {
               "name": "nullable",
+              "jsdoc": "是否允许 null 值（type 变为 ['boolean', 'null']）。",
               "readable": true,
               "writable": false
             }
@@ -195,16 +199,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 30,
+        "line": 34,
         "className": "EnumSchemaOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type?: 'string' | 'number';\n    nullable?: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 枚举值的 JSON Schema 类型（默认按 values 推断）。 */\n    type?: 'string' | 'number';\n    /** 是否允许 null 值（enum 追加 null）。 */\n    nullable?: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type?: 'string' | 'number';\n    nullable?: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 枚举值的 JSON Schema 类型（默认按 values 推断）。 */\n    type?: 'string' | 'number';\n    /** 是否允许 null 值（enum 追加 null）。 */\n    nullable?: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -212,11 +216,13 @@
           "attributes": [
             {
               "name": "type",
+              "jsdoc": "枚举值的 JSON Schema 类型（默认按 values 推断）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nullable",
+              "jsdoc": "是否允许 null 值（enum 追加 null）。",
               "readable": true,
               "writable": false
             }
@@ -230,16 +236,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 39,
+        "line": 45,
         "className": "ObjectSchemaOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    required?: readonly string[];\n    description?: string;\n    additionalProperties?: JsonSchema;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 必填属性名列表。 */\n    required?: readonly string[];\n    /** schema 描述文本。 */\n    description?: string;\n    /** 额外属性的 schema 约束（false 表示禁止额外属性）。 */\n    additionalProperties?: JsonSchema;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    required?: readonly string[];\n    description?: string;\n    additionalProperties?: JsonSchema;\n}>",
+            "typeText": "Readonly<{\n    /** 必填属性名列表。 */\n    required?: readonly string[];\n    /** schema 描述文本。 */\n    description?: string;\n    /** 额外属性的 schema 约束（false 表示禁止额外属性）。 */\n    additionalProperties?: JsonSchema;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -247,16 +253,19 @@
           "attributes": [
             {
               "name": "required",
+              "jsdoc": "必填属性名列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "description",
+              "jsdoc": "schema 描述文本。",
               "readable": true,
               "writable": false
             },
             {
               "name": "additionalProperties",
+              "jsdoc": "额外属性的 schema 约束（false 表示禁止额外属性）。",
               "readable": true,
               "writable": false
             }

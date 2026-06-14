@@ -18,17 +18,25 @@ export type DataViewEditingEventName =
 
 /** Data View Editing Events 的语义模型。 */
 export type DataViewEditingEvents = {
+  /** 订阅 DataView 编辑态事件。 */
   on(eventName: DataViewEditingEventName, handler: () => void): void
-  off(eventName: DataViewEditingEventName, handler: () => void): void}
+  /** 取消订阅 DataView 编辑态事件。 */
+  off(eventName: DataViewEditingEventName, handler: () => void): void
+}
 
 /** Data View Editing Source 的语义模型。 */
 export type DataViewEditingSource = {
+  /** 从行数据中提取主键值。 */
   getPkKey(row: DataRow): string | number | undefined
+  /** 检查指定行（或任意行）是否存在未保存的编辑变更。 */
   hasEditingChanges(id?: string | number): boolean
+  /** 获取指定 id 的编辑中行副本。 */
   getEditingRow(id: string | number): DataRow | null
+  /** 更新指定行字段的编辑值并返回更新后的行副本。 */
   updateEditingValue(id: string | number, field: string, value: unknown): DataRow
-    /** events 字段。 */
-events?: DataViewEditingEvents}
+  /** 编辑态事件总线（可选）。 */
+  events?: DataViewEditingEvents
+}
 
 export function isDataViewEditingSource(value: unknown): value is DataViewEditingSource {
   if (!isRecord(value)) return false
@@ -47,9 +55,13 @@ export function resolveDataViewEditingRow(source: unknown, row: DataRow | null):
 
 /** Data View Editing Write Input 的输入数据。 */
 export type DataViewEditingWriteInput = Readonly<{
+  /** DataView 编辑源对象。 */
   source: unknown
+  /** 目标行数据。 */
   row: DataRow | null
+  /** 要写入的字段名。 */
   field: string
+  /** 要写入的字段值。 */
   value: unknown
 }>
 

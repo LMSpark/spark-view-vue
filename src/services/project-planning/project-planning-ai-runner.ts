@@ -39,19 +39,27 @@ export type ProjectPlanningAiRunOptions = ResolveScopedProjectPlanningRunInputOp
 
 /** Project Planning Ai Run Events 的语义模型。 */
 export type ProjectPlanningAiRunEvents = Readonly<{
+  /** tool call 发生时的回调。 */
   onToolCall?: (record: AiAgentToolCallRecord) => void
 }>
 
 /** Project Planning Ai Run Command 的命令参数。 */
 export type ProjectPlanningAiRunCommand = ProjectPlanningAiRunOptions & Readonly<{
+  /** 项目工作区编辑器实例。 */
   editor: ProjectWorkspace
+  /** Spark capability 消费者（用于查找 AI Agent Host）。 */
   consumeCapability?: SparkCapabilityConsumer | null
   /** 测试或编排层可直接注入 Host，跳过 capability 查找。 */
   host?: AiAgentHost
+  /** 运行期事件回调集合。 */
   events?: ProjectPlanningAiRunEvents
+  /** trace 输出 sink。 */
   trace?: AiRunTraceSink
+  /** AI run 适配器状态（跨轮次复用）。 */
   adapter?: AiRunAdapterState
+  /** tool call 前置拦截钩子。 */
   beforeFunctionCall?: AiRunBeforeFunctionCall
+  /** 运行被中止时的回调。 */
   onAbort?: AiRunAbortHandler
   /** 默认使用 requirement 作为 user turn 文本。 */
   userMessage?: string
@@ -59,9 +67,13 @@ export type ProjectPlanningAiRunCommand = ProjectPlanningAiRunOptions & Readonly
 
 /** Project Planning Ai Run Result 的返回结果。 */
 export type ProjectPlanningAiRunResult = Readonly<{
+  /** 本次运行是否观察到至少一次 tool call。 */
   sawToolCall: boolean
+  /** 注入 Agent 的完整输入契约。 */
   input: ProjectPlanningAgentInput
+  /** 运行结束后导航树是否有未保存变更。 */
   navigationDirty: boolean
+  /** 是否已成功保存导航变更。 */
   savedNavigation: boolean
 }>
 

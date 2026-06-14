@@ -174,7 +174,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.015Z",
+  "generatedAt": "2026-06-14T22:54:12.104Z",
   "models": {
     "AiToolApprovalRequest": {
       "name": "AiToolApprovalRequest",
@@ -187,11 +187,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    id: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    toolName: string;\n    args: AiJsonParams;\n    requestedAt: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 审批请求唯一标识。 */\n    id: string;\n    /** 发起 tool call 的业务模块 id。 */\n    moduleId: string;\n    /** 业务模块实例 id。 */\n    moduleInstanceId: string;\n    /** Agent 实例 id。 */\n    instanceId: string;\n    /** 待审批的工具名称。 */\n    toolName: string;\n    /** 工具调用参数。 */\n    args: AiJsonParams;\n    /** 请求创建时间戳（毫秒）。 */\n    requestedAt: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    id: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    toolName: string;\n    args: AiJsonParams;\n    requestedAt: number;\n}>",
+            "typeText": "Readonly<{\n    /** 审批请求唯一标识。 */\n    id: string;\n    /** 发起 tool call 的业务模块 id。 */\n    moduleId: string;\n    /** 业务模块实例 id。 */\n    moduleInstanceId: string;\n    /** Agent 实例 id。 */\n    instanceId: string;\n    /** 待审批的工具名称。 */\n    toolName: string;\n    /** 工具调用参数。 */\n    args: AiJsonParams;\n    /** 请求创建时间戳（毫秒）。 */\n    requestedAt: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -199,36 +199,43 @@
           "attributes": [
             {
               "name": "id",
+              "jsdoc": "审批请求唯一标识。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleId",
+              "jsdoc": "发起 tool call 的业务模块 id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
+              "jsdoc": "业务模块实例 id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instanceId",
+              "jsdoc": "Agent 实例 id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "toolName",
+              "jsdoc": "待审批的工具名称。",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "工具调用参数。",
               "readable": true,
               "writable": false
             },
             {
               "name": "requestedAt",
+              "jsdoc": "请求创建时间戳（毫秒）。",
               "readable": true,
               "writable": false
             }
@@ -242,16 +249,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
-        "line": 20,
+        "line": 27,
         "className": "AiToolApprovalBridgeSnapshot",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    pending: readonly AiToolApprovalRequest[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 当前待审批请求列表。 */\n    pending: readonly AiToolApprovalRequest[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    pending: readonly AiToolApprovalRequest[];\n}>",
+            "typeText": "Readonly<{\n    /** 当前待审批请求列表。 */\n    pending: readonly AiToolApprovalRequest[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -259,6 +266,7 @@
           "attributes": [
             {
               "name": "pending",
+              "jsdoc": "当前待审批请求列表。",
               "readable": true,
               "writable": false
             }
@@ -272,7 +280,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
-        "line": 24,
+        "line": 32,
         "className": "AiToolApprovalBridgeListener",
         "declarationKind": "typeAlias"
       },
@@ -287,16 +295,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
-        "line": 26,
+        "line": 34,
         "className": "AiToolApprovalRequestIdFactory",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 为 tool call 审批请求生成唯一 id。 */\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
+            "typeText": "Readonly<{\n    /** 为 tool call 审批请求生成唯一 id。 */\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -304,6 +312,7 @@
           "methods": [
             {
               "name": "createId",
+              "jsdoc": "为 tool call 审批请求生成唯一 id。",
               "parameters": [
                 {
                   "name": "options",
@@ -335,16 +344,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
-        "line": 30,
+        "line": 39,
         "className": "AiToolApprovalBridgeOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    now?: () => number;\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 自定义当前时间戳来源（默认 Date.now）。 */\n    now?: () => number;\n    /** 自定义审批请求 id 工厂。 */\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    now?: () => number;\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
+            "typeText": "Readonly<{\n    /** 自定义当前时间戳来源（默认 Date.now）。 */\n    now?: () => number;\n    /** 自定义审批请求 id 工厂。 */\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -352,6 +361,7 @@
           "attributes": [
             {
               "name": "idFactory",
+              "jsdoc": "自定义审批请求 id 工厂。",
               "readable": true,
               "writable": false
             }
@@ -359,6 +369,7 @@
           "methods": [
             {
               "name": "now",
+              "jsdoc": "自定义当前时间戳来源（默认 Date.now）。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -375,7 +386,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
-        "line": 35,
+        "line": 46,
         "className": "AiToolApprovalBridge",
         "declarationKind": "class"
       },

@@ -6,9 +6,16 @@
  */
 /** Renderer Collapse Api 的语义模型。 */
 export type RendererCollapseApi = {
+  /** 获取当前展开的面板项（单个或数组）。 */
   getExpandedItems(): string | number | Array<string | number> | undefined
+  /** 设置展开的面板项。 */
   setExpandedItems(value: string | number | Array<string | number>): void
+  /** 展开全部面板项。 */
   expandAll(): void
+  /** 折叠全部面板项。 */
   collapseAll(): void
+  /** 切换指定面板项的展开/折叠状态。 */
   toggleItem(name: string | number): void
-  isItemExpanded(name: string | number): boolean}
+  /** 查询指定面板项是否处于展开状态。 */
+  isItemExpanded(name: string | number): boolean
+}

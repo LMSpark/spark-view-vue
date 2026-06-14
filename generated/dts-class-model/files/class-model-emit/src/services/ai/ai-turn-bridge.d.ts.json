@@ -66,7 +66,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.293Z",
+  "generatedAt": "2026-06-14T22:54:33.754Z",
   "models": {
     "AiTurnBridgeDiagnostic": {
       "name": "AiTurnBridgeDiagnostic",
@@ -79,11 +79,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 诊断记录时间戳（毫秒）。 */\n    at: number;\n    /** 诊断事件类型标识。 */\n    type: string;\n    /** 关联的 AI 会话 id。 */\n    sessionId?: string;\n    /** 关联的 turn id。 */\n    turnId?: string;\n    /** 可选的错误或状态描述。 */\n    message?: string;\n    /** 附加结构化诊断详情。 */\n    details?: Record<string, unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** 诊断记录时间戳（毫秒）。 */\n    at: number;\n    /** 诊断事件类型标识。 */\n    type: string;\n    /** 关联的 AI 会话 id。 */\n    sessionId?: string;\n    /** 关联的 turn id。 */\n    turnId?: string;\n    /** 可选的错误或状态描述。 */\n    message?: string;\n    /** 附加结构化诊断详情。 */\n    details?: Record<string, unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -91,31 +91,37 @@
           "attributes": [
             {
               "name": "at",
+              "jsdoc": "诊断记录时间戳（毫秒）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "type",
+              "jsdoc": "诊断事件类型标识。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sessionId",
+              "jsdoc": "关联的 AI 会话 id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "turnId",
+              "jsdoc": "关联的 turn id。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "可选的错误或状态描述。",
               "readable": true,
               "writable": false
             },
             {
               "name": "details",
+              "jsdoc": "附加结构化诊断详情。",
               "readable": true,
               "writable": false
             }
@@ -129,16 +135,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-turn-bridge.d.ts",
-        "line": 25,
+        "line": 31,
         "className": "AiAgentTurnBridgeOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 传输模式：app-sse（SSE 流式）或 session-turn（同步回合）。 */\n    transport?: 'app-sse' | 'session-turn';\n    /** turn 事件总超时（毫秒）。 */\n    timeoutMs?: number;\n    /** 流式 idle 超时（毫秒）。 */\n    idleTimeoutMs?: number;\n    /** 上下文窗口大小（消息条数上限）。 */\n    windowSize?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
+            "typeText": "Readonly<{\n    /** 传输模式：app-sse（SSE 流式）或 session-turn（同步回合）。 */\n    transport?: 'app-sse' | 'session-turn';\n    /** turn 事件总超时（毫秒）。 */\n    timeoutMs?: number;\n    /** 流式 idle 超时（毫秒）。 */\n    idleTimeoutMs?: number;\n    /** 上下文窗口大小（消息条数上限）。 */\n    windowSize?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -146,21 +152,25 @@
           "attributes": [
             {
               "name": "transport",
+              "jsdoc": "传输模式：app-sse（SSE 流式）或 session-turn（同步回合）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "timeoutMs",
+              "jsdoc": "turn 事件总超时（毫秒）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "idleTimeoutMs",
+              "jsdoc": "流式 idle 超时（毫秒）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "windowSize",
+              "jsdoc": "上下文窗口大小（消息条数上限）。",
               "readable": true,
               "writable": false
             }

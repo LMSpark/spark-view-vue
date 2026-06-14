@@ -15,24 +15,35 @@ import type { AiApiObjectMetadata } from './ai-api-object-metadata-schema'
 
 /** 从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。 */
 export type AiApiMetadataGraphEdge = Readonly<{
+  /** 父 API 对象的 kind 标识。 */
   parentKind: string
+  /** 到达子 API 的边类型：属性引用或 action 返回值。 */
   via: 'attribute' | 'action'
+  /** 边上的属性名或 action 名。 */
   viaName: string
+  /** 边指向的子 API 对象元数据。 */
   child: AiApiObjectMetadata
 }>
 
 /** metadata 图中的一个节点（含出边）。 */
 export type AiApiMetadataGraphNode = Readonly<{
+  /** 当前节点对应的 API 对象元数据。 */
   api: AiApiObjectMetadata
+  /** 父节点 kind；根节点为 undefined。 */
   parentKind?: string
+  /** 从当前节点出发的所有 metadata 边。 */
   edges: readonly AiApiMetadataGraphEdge[]
 }>
 
 /** 扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。 */
 export type AiApiNestedApiRecord = Readonly<{
+  /** 嵌套 API 对象元数据。 */
   api: AiApiObjectMetadata
+  /** 首次发现该嵌套 API 时的父 kind。 */
   parentKind: string
+  /** 首次发现时的边类型（属性或 action）。 */
   via: AiApiMetadataGraphEdge['via']
+  /** 首次发现时的属性名或 action 名。 */
   viaName: string
 }>
 

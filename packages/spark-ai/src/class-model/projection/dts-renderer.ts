@@ -14,44 +14,63 @@ import {
 
 /** Model Guide Render Input 的输入数据。 */
 export type ModelGuideRenderInput = Readonly<{
+  /** 完整 ClassModelDocument，供类型解析与签名渲染。 */
   document: ClassModelDocument
+  /** 目标模型的 kind（className）。 */
   kind: string
 }>
 
 /** Model Guide 的语义模型。 */
 export type ModelGuide = Readonly<{
+  /** 模型 kind 标识。 */
   kind: string
+  /** 模型声明头行（class/interface/type 前缀）。 */
   declaration: string
+  /** 含 JSDoc 与成员的完整 guide 文本。 */
   text: string
 }>
 
 /** Attribute Guide Render Input 的输入数据。 */
 export type AttributeGuideRenderInput = Readonly<{
+  /** 完整 ClassModelDocument，供类型解析与签名渲染。 */
   document: ClassModelDocument
+  /** 属性所属模型的 kind。 */
   kind: string
+  /** 目标属性名。 */
   attributeName: string
 }>
 
 /** Attribute Guide 的语义模型。 */
 export type AttributeGuide = Readonly<{
+  /** 属性所属模型的 kind。 */
   kind: string
+  /** 目标属性名。 */
   attributeName: string
+  /** 属性单行声明（含 readonly 与类型）。 */
   declaration: string
+  /** 含模型 JSDoc 与属性声明的 guide 文本。 */
   text: string
 }>
 
 /** Method Guide Render Input 的输入数据。 */
 export type MethodGuideRenderInput = Readonly<{
+  /** 完整 ClassModelDocument，供类型解析与签名渲染。 */
   document: ClassModelDocument
+  /** 方法所属模型的 kind。 */
   kind: string
+  /** 目标方法名。 */
   methodName: string
 }>
 
 /** Method Guide 的语义模型。 */
 export type MethodGuide = Readonly<{
+  /** 方法所属模型的 kind。 */
   kind: string
+  /** 目标方法名。 */
   methodName: string
+  /** 方法单行签名声明。 */
   declaration: string
+  /** 含模型 JSDoc 与方法声明的 guide 文本。 */
   text: string
 }>
 

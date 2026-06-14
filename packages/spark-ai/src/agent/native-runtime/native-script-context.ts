@@ -16,7 +16,9 @@ type ScriptCallback = (...args: readonly unknown[]) => unknown
 type ScriptActionArg = AiJsonParams | ScriptCallback
 /** Ai Native Path Context 的运行上下文。 */
 type AiNativePathContext = Readonly<{
+  /** 从 root 到当前 API 对象的路径段（属性/action 名序列）。 */
   segments: readonly string[]
+  /** 可选 Host 运行时上下文，供 takesContext action 注入。 */
   host?: AiAgentRuntimeHostContext
 }>
 type ApiMethod = (first: AiNativePathContext | AiJsonParams, second?: AiJsonParams) => unknown
@@ -35,18 +37,27 @@ type ResolvedValue = {
 
 /** Ai Api Script Context Command 的命令参数。 */
 export type AiApiScriptContextCommand = Readonly<{
+  /** 业务实例对象，作为 script 上下文的 root target。 */
   instance: unknown
+  /** 该实例对应的 API 对象元数据（actions/attributes 白名单）。 */
   api: AiApiObjectMetadata
+  /** 路径与 Host 上下文，供 action 调用链传递。 */
   ctx: AiNativePathContext
+  /** 参数校验选项，控制 schema 校验严格度。 */
   validateOptions?: AiJsonSchemaValidateOptions
 }>
 
 /** Execute Ai Api Action Command 的命令参数。 */
 export type ExecuteAiApiActionCommand = Readonly<{
+  /** 接收 action 调用的业务 target 对象。 */
   target: unknown
+  /** 待执行的 API action 元数据。 */
   action: AiApiActionMetadata
+  /** script 传入的参数或 callback，归一化前原始形态。 */
   args: ScriptActionArg
+  /** 路径与 Host 上下文，供 takesContext action 使用。 */
   ctx: AiNativePathContext
+  /** 参数校验选项，控制 schema 校验严格度。 */
   validateOptions?: AiJsonSchemaValidateOptions
 }>
 

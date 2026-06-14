@@ -60,39 +60,88 @@ type ClassModelAgentAdapterConstructor<T> = new (...args: never[]) => T
 
 /** agent_complete 调用领域完成方法时的输入。 */
 export type ClassModelAgentCompleteActionOptions = AiAgentRuntimeContext & Readonly<{
+  /** LLM 传入的任务完成摘要，来自 agent_complete({ summary }) 并经 trim 校验。 */
   summary: string
+  /** agent_complete 原始工具参数，含 summary 及后续 schema 扩展字段。 */
   args: AiJsonParams
 }>
 
-/** agent_complete 领域完成方法可返回的检查项。 */
+/**
+ * agent_complete 领域完成方法可返回的结构化检查项。
+ *
+ * 字段：
+ *   level   — 严重级别：error / warn / info
+ *   code    — 机器可读检查码
+ *   message — 人可读说明
+ *   hint    — 可选修复提示
+ */
 export type ClassModelAgentCompleteCheck = Readonly<{
+  /** 检查严重级别：error 阻断完成，warn/info 仅提示。 */
   level: 'error' | 'warn' | 'info'
+  /** 机器可读检查码，写入 tool result checks 供 LLM 定位问题。 */
   code: string
+  /** 人可读检查说明，描述未完成项或风险提示。 */
   message: string
+  /** 可选修复提示，引导 LLM 补查知识或补执行 model_script。 */
   hint?: string
 }>
 
-/** agent_complete 领域完成方法通过时的返回形态。 */
+/**
+ * agent_complete 领域完成方法通过时的返回形态。
+ *
+ * 字段：
+ *   ok                    — 固定 true，表示领域模型接受完成
+ *   completed             — 可选，显式标记业务目标已达成
+ *   summary               — 可选，覆盖 LLM 传入的完成摘要
+ *   finalAssistantMessage — 可选，发送给用户的最终助手消息
+ *   data                  — 可选，附加业务数据写入 tool result
+ *   checks                — 可选，附带 info/warn 级检查项
+ */
 export type ClassModelAgentCompleteAccepted = Readonly<{
+  /** 固定 true，表示领域模型接受 agent_complete 请求。 */
   ok: true
+  /** 显式标记业务目标已达成；省略时由 normalize 逻辑默认为 completed。 */
   completed?: boolean
+  /** 完成摘要，写入 tool result 的 summary 字段；省略时使用 LLM 传入的 summary。 */
   summary?: string
+  /** 发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */
   finalAssistantMessage?: string
+  /** 附加业务数据，合并进 agent_complete 成功 tool result。 */
   data?: AiJsonValue
+  /** 附带 info/warn 级检查项，不回灌失败但供 LLM 阅读。 */
   checks?: readonly ClassModelAgentCompleteCheck[]
 }>
 
-/** agent_complete 领域完成方法拒绝完成时的返回形态。 */
+/**
+ * agent_complete 领域完成方法拒绝完成时的返回形态。
+ *
+ * 字段：
+ *   ok                   — 固定 false
+ *   code / msg / message — 失败码与说明（msg 与 message 二选一）
+ *   fix                  — 给 LLM 的修正建议
+ *   checks               — 结构化检查项
+ *   requiredCapabilities — 需补齐的业务能力，runtime 会翻译为知识恢复路径
+ *   missingFacts         — 当前缺失的业务事实
+ *   nextStep             — 建议的下一步操作
+ */
 export type ClassModelAgentCompleteRejected = Readonly<{
+  /** 固定 false，表示领域模型拒绝 agent_complete 请求。 */
   ok: false
+  /** 机器可读拒绝码，默认 AGENT_COMPLETE_REJECTED。 */
   code?: string
+  /** 拒绝原因（短消息），写入 tool result 的 msg 字段。 */
   msg?: string
+  /** 拒绝原因（长说明），与 msg 二选一，normalize 时优先 msg。 */
   message?: string
+  /** 给 LLM 的修正建议，写入 tool result 的 fix 字段。 */
   fix?: string
+  /** 结构化检查项，合并进失败 tool result 的 checks。 */
   checks?: readonly ClassModelAgentCompleteCheck[]
   /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */
   requiredCapabilities?: readonly string[]
+  /** 当前缺失的业务事实列表，供 LLM 补查或补执行。 */
   missingFacts?: readonly string[]
+  /** 建议的下一步操作，缺省时 fix 字段会回退使用此值。 */
   nextStep?: string
 }>
 
@@ -105,39 +154,60 @@ export type ClassModelAgentCompleteActionResult =
 
 /** Class Model Agent Adapter Register Command 的命令参数。 */
 export type ClassModelAgentAdapterRegisterCommand<T> = Readonly<{
+  /** 目标 Agent Host，registration 将注册到其 alias 路由表。 */
   host: AiAgentHost
+  /** Host 内的业务别名，供 createSession / chat 路由到该 ClassModel Agent。 */
   alias: string
+  /** 业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。 */
   moduleClass: ClassModelAgentAdapterConstructor<T>
+  /** 可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。 */
   metadata?: AiRuntimeApiMetadataJson
+  /** ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。 */
   options: ClassModelAgentAdapterRegisterOptions<T>
 }>
 
 /** Class Model Agent Adapter Registration Command 的命令参数。 */
 export type ClassModelAgentAdapterRegistrationCommand<T> = Readonly<{
+  /** 业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。 */
   moduleClass: ClassModelAgentAdapterConstructor<T>
+  /** 可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。 */
   metadata?: AiRuntimeApiMetadataJson
+  /** ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。 */
   options: ClassModelAgentAdapterRegisterOptions<T>
 }>
 
 /** Class Model Agent Adapter Register Options 的调用配置。 */
 export type ClassModelAgentAdapterRegisterOptions<T> = Readonly<{
+  /** 业务模块唯一标识；省略时使用 metadata.rootApi.kind 或 rootClassName。 */
   moduleId?: string
+  /** 预构造的业务根实例；与 resolveInstance 二选一，resolveInstance 优先。 */
   instance?: T
+  /** moduleClass 构造函数参数；instance 与 resolveInstance 均未提供时用于 Reflect.construct。 */
   constructArgs?: readonly unknown[]
+  /** 按运行时上下文动态解析业务实例；用于多 tenant / 多 session 实例隔离。 */
   resolveInstance?: (context: AiAgentRuntimeContext) => T
   /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */
   jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>
+  /** DTS-native 模式的 manifest URL；无 metadata 时必填，供 executeDtsNativeScript 加载契约。 */
   dtsClassModelManifestUrl?: string
+  /** 自定义 manifest JSON 拉取函数；省略时使用默认 fetch。 */
   dtsClassModelFetchJson?: (url: string) => Promise<unknown>
+  /** 根模型 className/kind；无 metadata 时用于 DTS 路径和 promptSnapshot。 */
   rootClassName?: string
+  /** 自定义 ClassModel 知识提供者；省略且无 document 时自动创建 DTS bundle provider。 */
   knowledge?: ClassModelKnowledgeProvider
+  /** 注册化输入契约，校验新任务入口参数并生成 LLM 编排规则。 */
   inputContract?: AiAgentInputContract
+  /** 会话历史持久化存储；省略时使用 DefaultAiAgentSessionStore（内存）。 */
   sessionStore?: AiAgentSessionStore
+  /** 动态系统提示生成器；每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。 */
   systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined
+  /** 工具调用前置处理器；reject/abort 不会执行 ClassModel runtime 工具。 */
   beforeFunctionCall?: (
     instance: T,
     options: AiAgentBeforeFunctionCallOptions,
   ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
+  /** 工具调用后置处理器；返回 continue/complete/abort 决定工具循环后续行为。 */
   afterFunctionCall?: (
     instance: T,
     options: AiAgentAfterFunctionCallOptions,
@@ -149,16 +219,23 @@ export type ClassModelAgentAdapterRegisterOptions<T> = Readonly<{
     instance: T,
     options: ClassModelAgentCompleteActionOptions,
   ) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>
+  /** 会话启动回调；createSession 时调用一次，可初始化业务实例状态。 */
   onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>
+  /** 业务实例结束回调；endInstance 时调用，directive 携带 complete/abort 指令。 */
   onEndBusinessInstance?: (
     instance: T,
     context: AiAgentRuntimeContext,
     directive: AiAgentLifecycleDirective,
   ) => void | Promise<void>
+  /** 模块实例释放回调；清理外部资源（WebSocket、临时文件等）。 */
   releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void
+  /** tool-loop 回合纠偏；业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */
   toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
+  /** 视为“已进入执行阶段”的工具名集合；默认仅 model_script。 */
   executionToolNames?: ReadonlySet<string>
+  /** 扩展 plan-without-tool 检测关键词（小写匹配 LLM 输出文本）。 */
   planWithoutToolMarkers?: readonly string[]
+  /** FC 失败恢复：在 ClassModel 默认 hints 之外补充业务域 RECOVERY_HINT。 */
   enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 

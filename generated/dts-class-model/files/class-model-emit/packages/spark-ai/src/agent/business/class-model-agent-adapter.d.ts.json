@@ -485,7 +485,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T19:03:35.052Z",
+  "generatedAt": "2026-06-14T22:53:15.817Z",
   "models": {
     "ClassModelAgentAdapterConstructor": {
       "name": "ClassModelAgentAdapterConstructor",
@@ -513,7 +513,7 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    summary: string;\n    args: AiJsonParams;\n}>",
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** LLM 传入的任务完成摘要，来自 agent_complete({ summary }) 并经 trim 校验。 */\n    summary: string;\n    /** agent_complete 原始工具参数，含 summary 及后续 schema 扩展字段。 */\n    args: AiJsonParams;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -522,7 +522,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    summary: string;\n    args: AiJsonParams;\n}>",
+            "typeText": "Readonly<{\n    /** LLM 传入的任务完成摘要，来自 agent_complete({ summary }) 并经 trim 校验。 */\n    summary: string;\n    /** agent_complete 原始工具参数，含 summary 及后续 schema 扩展字段。 */\n    args: AiJsonParams;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -530,11 +530,13 @@
           "attributes": [
             {
               "name": "summary",
+              "jsdoc": "LLM 传入的任务完成摘要，来自 agent_complete({ summary }) 并经 trim 校验。",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "agent_complete 原始工具参数，含 summary 及后续 schema 扩展字段。",
               "readable": true,
               "writable": false
             }
@@ -544,20 +546,20 @@
     },
     "ClassModelAgentCompleteCheck": {
       "name": "ClassModelAgentCompleteCheck",
-      "jsdoc": "agent_complete 领域完成方法可返回的检查项。",
+      "jsdoc": "agent_complete 领域完成方法可返回的结构化检查项。\n字段：\nlevel   — 严重级别：error / warn / info\ncode    — 机器可读检查码\nmessage — 人可读说明\nhint    — 可选修复提示",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 25,
+        "line": 35,
         "className": "ClassModelAgentCompleteCheck",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 检查严重级别：error 阻断完成，warn/info 仅提示。 */\n    level: 'error' | 'warn' | 'info';\n    /** 机器可读检查码，写入 tool result checks 供 LLM 定位问题。 */\n    code: string;\n    /** 人可读检查说明，描述未完成项或风险提示。 */\n    message: string;\n    /** 可选修复提示，引导 LLM 补查知识或补执行 model_script。 */\n    hint?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 检查严重级别：error 阻断完成，warn/info 仅提示。 */\n    level: 'error' | 'warn' | 'info';\n    /** 机器可读检查码，写入 tool result checks 供 LLM 定位问题。 */\n    code: string;\n    /** 人可读检查说明，描述未完成项或风险提示。 */\n    message: string;\n    /** 可选修复提示，引导 LLM 补查知识或补执行 model_script。 */\n    hint?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -565,21 +567,25 @@
           "attributes": [
             {
               "name": "level",
+              "jsdoc": "检查严重级别：error 阻断完成，warn/info 仅提示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "机器可读检查码，写入 tool result checks 供 LLM 定位问题。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "人可读检查说明，描述未完成项或风险提示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "hint",
+              "jsdoc": "可选修复提示，引导 LLM 补查知识或补执行 model_script。",
               "readable": true,
               "writable": false
             }
@@ -589,20 +595,20 @@
     },
     "ClassModelAgentCompleteAccepted": {
       "name": "ClassModelAgentCompleteAccepted",
-      "jsdoc": "agent_complete 领域完成方法通过时的返回形态。",
+      "jsdoc": "agent_complete 领域完成方法通过时的返回形态。\n字段：\nok                    — 固定 true，表示领域模型接受完成\ncompleted             — 可选，显式标记业务目标已达成\nsummary               — 可选，覆盖 LLM 传入的完成摘要\nfinalAssistantMessage — 可选，发送给用户的最终助手消息\ndata                  — 可选，附加业务数据写入 tool result\nchecks                — 可选，附带 info/warn 级检查项",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 32,
+        "line": 56,
         "className": "ClassModelAgentCompleteAccepted",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: true;\n    completed?: boolean;\n    summary?: string;\n    finalAssistantMessage?: string;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 固定 true，表示领域模型接受 agent_complete 请求。 */\n    ok: true;\n    /** 显式标记业务目标已达成；省略时由 normalize 逻辑默认为 completed。 */\n    completed?: boolean;\n    /** 完成摘要，写入 tool result 的 summary 字段；省略时使用 LLM 传入的 summary。 */\n    summary?: string;\n    /** 发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */\n    finalAssistantMessage?: string;\n    /** 附加业务数据，合并进 agent_complete 成功 tool result。 */\n    data?: AiJsonValue;\n    /** 附带 info/warn 级检查项，不回灌失败但供 LLM 阅读。 */\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: true;\n    completed?: boolean;\n    summary?: string;\n    finalAssistantMessage?: string;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
+            "typeText": "Readonly<{\n    /** 固定 true，表示领域模型接受 agent_complete 请求。 */\n    ok: true;\n    /** 显式标记业务目标已达成；省略时由 normalize 逻辑默认为 completed。 */\n    completed?: boolean;\n    /** 完成摘要，写入 tool result 的 summary 字段；省略时使用 LLM 传入的 summary。 */\n    summary?: string;\n    /** 发送给用户的最终助手消息，替代 LLM 当前轮次的输出。 */\n    finalAssistantMessage?: string;\n    /** 附加业务数据，合并进 agent_complete 成功 tool result。 */\n    data?: AiJsonValue;\n    /** 附带 info/warn 级检查项，不回灌失败但供 LLM 阅读。 */\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -610,31 +616,37 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "固定 true，表示领域模型接受 agent_complete 请求。",
               "readable": true,
               "writable": false
             },
             {
               "name": "completed",
+              "jsdoc": "显式标记业务目标已达成；省略时由 normalize 逻辑默认为 completed。",
               "readable": true,
               "writable": false
             },
             {
               "name": "summary",
+              "jsdoc": "完成摘要，写入 tool result 的 summary 字段；省略时使用 LLM 传入的 summary。",
               "readable": true,
               "writable": false
             },
             {
               "name": "finalAssistantMessage",
+              "jsdoc": "发送给用户的最终助手消息，替代 LLM 当前轮次的输出。",
               "readable": true,
               "writable": false
             },
             {
               "name": "data",
+              "jsdoc": "附加业务数据，合并进 agent_complete 成功 tool result。",
               "readable": true,
               "writable": false
             },
             {
               "name": "checks",
+              "jsdoc": "附带 info/warn 级检查项，不回灌失败但供 LLM 阅读。",
               "readable": true,
               "writable": false
             }
@@ -644,20 +656,20 @@
     },
     "ClassModelAgentCompleteRejected": {
       "name": "ClassModelAgentCompleteRejected",
-      "jsdoc": "agent_complete 领域完成方法拒绝完成时的返回形态。",
+      "jsdoc": "agent_complete 领域完成方法拒绝完成时的返回形态。\n字段：\nok                   — 固定 false\ncode / msg / message — 失败码与说明（msg 与 message 二选一）\nfix                  — 给 LLM 的修正建议\nchecks               — 结构化检查项\nrequiredCapabilities — 需补齐的业务能力，runtime 会翻译为知识恢复路径\nmissingFacts         — 当前缺失的业务事实\nnextStep             — 建议的下一步操作",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 41,
+        "line": 82,
         "className": "ClassModelAgentCompleteRejected",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: false;\n    code?: string;\n    msg?: string;\n    message?: string;\n    fix?: string;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 固定 false，表示领域模型拒绝 agent_complete 请求。 */\n    ok: false;\n    /** 机器可读拒绝码，默认 AGENT_COMPLETE_REJECTED。 */\n    code?: string;\n    /** 拒绝原因（短消息），写入 tool result 的 msg 字段。 */\n    msg?: string;\n    /** 拒绝原因（长说明），与 msg 二选一，normalize 时优先 msg。 */\n    message?: string;\n    /** 给 LLM 的修正建议，写入 tool result 的 fix 字段。 */\n    fix?: string;\n    /** 结构化检查项，合并进失败 tool result 的 checks。 */\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    /** 当前缺失的业务事实列表，供 LLM 补查或补执行。 */\n    missingFacts?: readonly string[];\n    /** 建议的下一步操作，缺省时 fix 字段会回退使用此值。 */\n    nextStep?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: false;\n    code?: string;\n    msg?: string;\n    message?: string;\n    fix?: string;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 固定 false，表示领域模型拒绝 agent_complete 请求。 */\n    ok: false;\n    /** 机器可读拒绝码，默认 AGENT_COMPLETE_REJECTED。 */\n    code?: string;\n    /** 拒绝原因（短消息），写入 tool result 的 msg 字段。 */\n    msg?: string;\n    /** 拒绝原因（长说明），与 msg 二选一，normalize 时优先 msg。 */\n    message?: string;\n    /** 给 LLM 的修正建议，写入 tool result 的 fix 字段。 */\n    fix?: string;\n    /** 结构化检查项，合并进失败 tool result 的 checks。 */\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    /** 当前缺失的业务事实列表，供 LLM 补查或补执行。 */\n    missingFacts?: readonly string[];\n    /** 建议的下一步操作，缺省时 fix 字段会回退使用此值。 */\n    nextStep?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -665,31 +677,37 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "固定 false，表示领域模型拒绝 agent_complete 请求。",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "机器可读拒绝码，默认 AGENT_COMPLETE_REJECTED。",
               "readable": true,
               "writable": false
             },
             {
               "name": "msg",
+              "jsdoc": "拒绝原因（短消息），写入 tool result 的 msg 字段。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "拒绝原因（长说明），与 msg 二选一，normalize 时优先 msg。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "给 LLM 的修正建议，写入 tool result 的 fix 字段。",
               "readable": true,
               "writable": false
             },
             {
               "name": "checks",
+              "jsdoc": "结构化检查项，合并进失败 tool result 的 checks。",
               "readable": true,
               "writable": false
             },
@@ -701,11 +719,13 @@
             },
             {
               "name": "missingFacts",
+              "jsdoc": "当前缺失的业务事实列表，供 LLM 补查或补执行。",
               "readable": true,
               "writable": false
             },
             {
               "name": "nextStep",
+              "jsdoc": "建议的下一步操作，缺省时 fix 字段会回退使用此值。",
               "readable": true,
               "writable": false
             }
@@ -719,7 +739,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 54,
+        "line": 103,
         "className": "ClassModelAgentCompleteActionResult",
         "declarationKind": "typeAlias"
       },
@@ -756,16 +776,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 56,
+        "line": 105,
         "className": "ClassModelAgentAdapterRegisterCommand",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 目标 Agent Host，registration 将注册到其 alias 路由表。 */\n    host: AiAgentHost;\n    /** Host 内的业务别名，供 createSession / chat 路由到该 ClassModel Agent。 */\n    alias: string;\n    /** 业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。 */\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    /** 可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。 */\n    metadata?: AiRuntimeApiMetadataJson;\n    /** ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。 */\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+            "typeText": "Readonly<{\n    /** 目标 Agent Host，registration 将注册到其 alias 路由表。 */\n    host: AiAgentHost;\n    /** Host 内的业务别名，供 createSession / chat 路由到该 ClassModel Agent。 */\n    alias: string;\n    /** 业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。 */\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    /** 可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。 */\n    metadata?: AiRuntimeApiMetadataJson;\n    /** ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。 */\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -773,26 +793,31 @@
           "attributes": [
             {
               "name": "host",
+              "jsdoc": "目标 Agent Host，registration 将注册到其 alias 路由表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "alias",
+              "jsdoc": "Host 内的业务别名，供 createSession / chat 路由到该 ClassModel Agent。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleClass",
+              "jsdoc": "业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。",
               "readable": true,
               "writable": false
             },
             {
               "name": "metadata",
+              "jsdoc": "可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。",
               "readable": true,
               "writable": false
             },
             {
               "name": "options",
+              "jsdoc": "ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。",
               "readable": true,
               "writable": false
             }
@@ -806,16 +831,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 64,
+        "line": 118,
         "className": "ClassModelAgentAdapterRegistrationCommand",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。 */\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    /** 可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。 */\n    metadata?: AiRuntimeApiMetadataJson;\n    /** ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。 */\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+            "typeText": "Readonly<{\n    /** 业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。 */\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    /** 可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。 */\n    metadata?: AiRuntimeApiMetadataJson;\n    /** ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。 */\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -823,16 +848,19 @@
           "attributes": [
             {
               "name": "moduleClass",
+              "jsdoc": "业务根模型构造函数，用于实例化或 resolveInstance 缺省构造。",
               "readable": true,
               "writable": false
             },
             {
               "name": "metadata",
+              "jsdoc": "可选 AiRuntimeApiMetadataJson；提供时走 metadata-native 路径，否则走 DTS manifest 路径。",
               "readable": true,
               "writable": false
             },
             {
               "name": "options",
+              "jsdoc": "ClassModel Agent 注册选项，含生命周期钩子、知识源和 agent_complete 配置。",
               "readable": true,
               "writable": false
             }
@@ -846,16 +874,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 70,
+        "line": 127,
         "className": "ClassModelAgentAdapterRegisterOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务模块唯一标识；省略时使用 metadata.rootApi.kind 或 rootClassName。 */\n    moduleId?: string;\n    /** 预构造的业务根实例；与 resolveInstance 二选一，resolveInstance 优先。 */\n    instance?: T;\n    /** moduleClass 构造函数参数；instance 与 resolveInstance 均未提供时用于 Reflect.construct。 */\n    constructArgs?: readonly unknown[];\n    /** 按运行时上下文动态解析业务实例；用于多 tenant / 多 session 实例隔离。 */\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** DTS-native 模式的 manifest URL；无 metadata 时必填，供 executeDtsNativeScript 加载契约。 */\n    dtsClassModelManifestUrl?: string;\n    /** 自定义 manifest JSON 拉取函数；省略时使用默认 fetch。 */\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    /** 根模型 className/kind；无 metadata 时用于 DTS 路径和 promptSnapshot。 */\n    rootClassName?: string;\n    /** 自定义 ClassModel 知识提供者；省略且无 document 时自动创建 DTS bundle provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n    /** 注册化输入契约，校验新任务入口参数并生成 LLM 编排规则。 */\n    inputContract?: AiAgentInputContract;\n    /** 会话历史持久化存储；省略时使用 DefaultAiAgentSessionStore（内存）。 */\n    sessionStore?: AiAgentSessionStore;\n    /** 动态系统提示生成器；每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。 */\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    /** 工具调用前置处理器；reject/abort 不会执行 ClassModel runtime 工具。 */\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    /** 工具调用后置处理器；返回 continue/complete/abort 决定工具循环后续行为。 */\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    /** 会话启动回调；createSession 时调用一次，可初始化业务实例状态。 */\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    /** 业务实例结束回调；endInstance 时调用，directive 携带 complete/abort 指令。 */\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    /** 模块实例释放回调；清理外部资源（WebSocket、临时文件等）。 */\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    /** tool-loop 回合纠偏；业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    /** 视为“已进入执行阶段”的工具名集合；默认仅 model_script。 */\n    executionToolNames?: ReadonlySet<string>;\n    /** 扩展 plan-without-tool 检测关键词（小写匹配 LLM 输出文本）。 */\n    planWithoutToolMarkers?: readonly string[];\n    /** FC 失败恢复：在 ClassModel 默认 hints 之外补充业务域 RECOVERY_HINT。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+            "typeText": "Readonly<{\n    /** 业务模块唯一标识；省略时使用 metadata.rootApi.kind 或 rootClassName。 */\n    moduleId?: string;\n    /** 预构造的业务根实例；与 resolveInstance 二选一，resolveInstance 优先。 */\n    instance?: T;\n    /** moduleClass 构造函数参数；instance 与 resolveInstance 均未提供时用于 Reflect.construct。 */\n    constructArgs?: readonly unknown[];\n    /** 按运行时上下文动态解析业务实例；用于多 tenant / 多 session 实例隔离。 */\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** DTS-native 模式的 manifest URL；无 metadata 时必填，供 executeDtsNativeScript 加载契约。 */\n    dtsClassModelManifestUrl?: string;\n    /** 自定义 manifest JSON 拉取函数；省略时使用默认 fetch。 */\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    /** 根模型 className/kind；无 metadata 时用于 DTS 路径和 promptSnapshot。 */\n    rootClassName?: string;\n    /** 自定义 ClassModel 知识提供者；省略且无 document 时自动创建 DTS bundle provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n    /** 注册化输入契约，校验新任务入口参数并生成 LLM 编排规则。 */\n    inputContract?: AiAgentInputContract;\n    /** 会话历史持久化存储；省略时使用 DefaultAiAgentSessionStore（内存）。 */\n    sessionStore?: AiAgentSessionStore;\n    /** 动态系统提示生成器；每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。 */\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    /** 工具调用前置处理器；reject/abort 不会执行 ClassModel runtime 工具。 */\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    /** 工具调用后置处理器；返回 continue/complete/abort 决定工具循环后续行为。 */\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    /** 会话启动回调；createSession 时调用一次，可初始化业务实例状态。 */\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    /** 业务实例结束回调；endInstance 时调用，directive 携带 complete/abort 指令。 */\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    /** 模块实例释放回调；清理外部资源（WebSocket、临时文件等）。 */\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    /** tool-loop 回合纠偏；业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    /** 视为“已进入执行阶段”的工具名集合；默认仅 model_script。 */\n    executionToolNames?: ReadonlySet<string>;\n    /** 扩展 plan-without-tool 检测关键词（小写匹配 LLM 输出文本）。 */\n    planWithoutToolMarkers?: readonly string[];\n    /** FC 失败恢复：在 ClassModel 默认 hints 之外补充业务域 RECOVERY_HINT。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -863,16 +891,19 @@
           "attributes": [
             {
               "name": "moduleId",
+              "jsdoc": "业务模块唯一标识；省略时使用 metadata.rootApi.kind 或 rootClassName。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instance",
+              "jsdoc": "预构造的业务根实例；与 resolveInstance 二选一，resolveInstance 优先。",
               "readable": true,
               "writable": false
             },
             {
               "name": "constructArgs",
+              "jsdoc": "moduleClass 构造函数参数；instance 与 resolveInstance 均未提供时用于 Reflect.construct。",
               "readable": true,
               "writable": false
             },
@@ -884,26 +915,31 @@
             },
             {
               "name": "dtsClassModelManifestUrl",
+              "jsdoc": "DTS-native 模式的 manifest URL；无 metadata 时必填，供 executeDtsNativeScript 加载契约。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootClassName",
+              "jsdoc": "根模型 className/kind；无 metadata 时用于 DTS 路径和 promptSnapshot。",
               "readable": true,
               "writable": false
             },
             {
               "name": "knowledge",
+              "jsdoc": "自定义 ClassModel 知识提供者；省略且无 document 时自动创建 DTS bundle provider。",
               "readable": true,
               "writable": false
             },
             {
               "name": "inputContract",
+              "jsdoc": "注册化输入契约，校验新任务入口参数并生成 LLM 编排规则。",
               "readable": true,
               "writable": false
             },
             {
               "name": "sessionStore",
+              "jsdoc": "会话历史持久化存储；省略时使用 DefaultAiAgentSessionStore（内存）。",
               "readable": true,
               "writable": false
             },
@@ -915,11 +951,13 @@
             },
             {
               "name": "executionToolNames",
+              "jsdoc": "视为“已进入执行阶段”的工具名集合；默认仅 model_script。",
               "readable": true,
               "writable": false
             },
             {
               "name": "planWithoutToolMarkers",
+              "jsdoc": "扩展 plan-without-tool 检测关键词（小写匹配 LLM 输出文本）。",
               "readable": true,
               "writable": false
             }
@@ -927,6 +965,7 @@
           "methods": [
             {
               "name": "resolveInstance",
+              "jsdoc": "按运行时上下文动态解析业务实例；用于多 tenant / 多 session 实例隔离。",
               "parameters": [
                 {
                   "name": "context",
@@ -945,6 +984,7 @@
             },
             {
               "name": "dtsClassModelFetchJson",
+              "jsdoc": "自定义 manifest JSON 拉取函数；省略时使用默认 fetch。",
               "parameters": [
                 {
                   "name": "url",
@@ -967,6 +1007,7 @@
             },
             {
               "name": "systemPrompt",
+              "jsdoc": "动态系统提示生成器；每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。",
               "parameters": [
                 {
                   "name": "instance",
@@ -995,6 +1036,7 @@
             },
             {
               "name": "beforeFunctionCall",
+              "jsdoc": "工具调用前置处理器；reject/abort 不会执行 ClassModel runtime 工具。",
               "parameters": [
                 {
                   "name": "instance",
@@ -1037,6 +1079,7 @@
             },
             {
               "name": "afterFunctionCall",
+              "jsdoc": "工具调用后置处理器；返回 continue/complete/abort 决定工具循环后续行为。",
               "parameters": [
                 {
                   "name": "instance",
@@ -1122,6 +1165,7 @@
             },
             {
               "name": "onStartSession",
+              "jsdoc": "会话启动回调；createSession 时调用一次，可初始化业务实例状态。",
               "parameters": [
                 {
                   "name": "instance",
@@ -1162,6 +1206,7 @@
             },
             {
               "name": "onEndBusinessInstance",
+              "jsdoc": "业务实例结束回调；endInstance 时调用，directive 携带 complete/abort 指令。",
               "parameters": [
                 {
                   "name": "instance",
@@ -1210,6 +1255,7 @@
             },
             {
               "name": "releaseModuleInstance",
+              "jsdoc": "模块实例释放回调；清理外部资源（WebSocket、临时文件等）。",
               "parameters": [
                 {
                   "name": "instance",
@@ -1234,6 +1280,7 @@
             },
             {
               "name": "toolLoopNudge",
+              "jsdoc": "tool-loop 回合纠偏；业务 SOP 由 app 层注入，内核只保留协议级 nudge。",
               "parameters": [
                 {
                   "name": "context",
@@ -1254,6 +1301,7 @@
             },
             {
               "name": "enrichRecoveryHints",
+              "jsdoc": "FC 失败恢复：在 ClassModel 默认 hints 之外补充业务域 RECOVERY_HINT。",
               "parameters": [
                 {
                   "name": "command",
@@ -1279,7 +1327,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 99,
+        "line": 176,
         "className": "ClassModelAgentAdapter",
         "declarationKind": "class"
       },

@@ -153,7 +153,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.289Z",
+  "generatedAt": "2026-06-14T22:54:19.919Z",
   "models": {
     "AiDeliveryMode": {
       "name": "AiDeliveryMode",
@@ -191,11 +191,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 产物类型（页面文件或导航变更）。 */\n    kind: 'page-file' | 'navigation';\n    /** 产物名称（文件名或导航标识）。 */\n    name: string;\n    /** 产物当前交付状态。 */\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
+            "typeText": "Readonly<{\n    /** 产物类型（页面文件或导航变更）。 */\n    kind: 'page-file' | 'navigation';\n    /** 产物名称（文件名或导航标识）。 */\n    name: string;\n    /** 产物当前交付状态。 */\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -203,16 +203,19 @@
           "attributes": [
             {
               "name": "kind",
+              "jsdoc": "产物类型（页面文件或导航变更）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "name",
+              "jsdoc": "产物名称（文件名或导航标识）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "status",
+              "jsdoc": "产物当前交付状态。",
               "readable": true,
               "writable": false
             }
@@ -226,16 +229,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 15,
+        "line": 18,
         "className": "AiDeliveryResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 交付模式（手动或自动）。 */\n    mode: AiDeliveryMode;\n    /** 交付最终状态。 */\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    /** 涉及的交付产物列表。 */\n    artifacts: readonly AiDeliveryArtifact[];\n    /** 可选的状态描述或错误信息。 */\n    message?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 交付模式（手动或自动）。 */\n    mode: AiDeliveryMode;\n    /** 交付最终状态。 */\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    /** 涉及的交付产物列表。 */\n    artifacts: readonly AiDeliveryArtifact[];\n    /** 可选的状态描述或错误信息。 */\n    message?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -243,21 +246,25 @@
           "attributes": [
             {
               "name": "mode",
+              "jsdoc": "交付模式（手动或自动）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "status",
+              "jsdoc": "交付最终状态。",
               "readable": true,
               "writable": false
             },
             {
               "name": "artifacts",
+              "jsdoc": "涉及的交付产物列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "可选的状态描述或错误信息。",
               "readable": true,
               "writable": false
             }
@@ -271,7 +278,7 @@
       "declarationKind": "interface",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 22,
+        "line": 29,
         "className": "AiDeliveryPort",
         "declarationKind": "interface"
       },
@@ -280,6 +287,7 @@
           "attributes": [
             {
               "name": "mode",
+              "jsdoc": "交付模式（manual 需人工确认，auto 自动落盘）。",
               "readable": true,
               "writable": false
             }
@@ -287,6 +295,7 @@
           "methods": [
             {
               "name": "save",
+              "jsdoc": "执行交付落盘并返回回执。",
               "parameters": [
                 {
                   "name": "context",
@@ -311,6 +320,7 @@
             },
             {
               "name": "trace",
+              "jsdoc": "记录交付 trace（日志/遥测）。",
               "parameters": [
                 {
                   "name": "context",
@@ -342,6 +352,7 @@
             },
             {
               "name": "rollback",
+              "jsdoc": "交付失败时执行回滚并返回回执。",
               "parameters": [
                 {
                   "name": "context",
@@ -381,16 +392,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 29,
+        "line": 40,
         "className": "AiDeliveryResultExtras",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 关联的交付回执。 */\n    delivery: AiDeliveryResult;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
+            "typeText": "Readonly<{\n    /** 关联的交付回执。 */\n    delivery: AiDeliveryResult;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -398,6 +409,7 @@
           "attributes": [
             {
               "name": "delivery",
+              "jsdoc": "关联的交付回执。",
               "readable": true,
               "writable": false
             }

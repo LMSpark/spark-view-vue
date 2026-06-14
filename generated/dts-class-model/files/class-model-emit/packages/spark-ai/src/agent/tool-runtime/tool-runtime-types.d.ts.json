@@ -431,7 +431,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:27.866Z",
+  "generatedAt": "2026-06-14T22:54:26.635Z",
   "models": {
     "AiAgentToolCheckLevel": {
       "name": "AiAgentToolCheckLevel",
@@ -662,11 +662,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: boolean;\n    data?: TData;\n    checks?: readonly AiAgentToolCheck[];\n    state?: Record<string, unknown>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具是否执行成功。 */\n    ok: boolean;\n    /** 成功时的业务数据载荷。 */\n    data?: TData;\n    /** 结构化检查项（error/warn/info）。 */\n    checks?: readonly AiAgentToolCheck[];\n    /** 可选运行状态快照。 */\n    state?: Record<string, unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: boolean;\n    data?: TData;\n    checks?: readonly AiAgentToolCheck[];\n    state?: Record<string, unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** 工具是否执行成功。 */\n    ok: boolean;\n    /** 成功时的业务数据载荷。 */\n    data?: TData;\n    /** 结构化检查项（error/warn/info）。 */\n    checks?: readonly AiAgentToolCheck[];\n    /** 可选运行状态快照。 */\n    state?: Record<string, unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -674,21 +674,25 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "工具是否执行成功。",
               "readable": true,
               "writable": false
             },
             {
               "name": "data",
+              "jsdoc": "成功时的业务数据载荷。",
               "readable": true,
               "writable": false
             },
             {
               "name": "checks",
+              "jsdoc": "结构化检查项（error/warn/info）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "state",
+              "jsdoc": "可选运行状态快照。",
               "readable": true,
               "writable": false
             }
@@ -702,7 +706,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 45,
+        "line": 49,
         "className": "AiAgentToolResult",
         "declarationKind": "class"
       },
@@ -941,16 +945,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 66,
+        "line": 70,
         "className": "AiAgentToolSpec",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
+        "declarationTypeText": "Readonly<{\n    /** OpenAI function tool 类型标识，固定为 'function'。 */\n    type: 'function';\n    /** function 工具的名称、描述与 JSON Schema 参数。 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
+            "typeText": "Readonly<{\n    /** OpenAI function tool 类型标识，固定为 'function'。 */\n    type: 'function';\n    /** function 工具的名称、描述与 JSON Schema 参数。 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -958,11 +962,13 @@
           "attributes": [
             {
               "name": "type",
+              "jsdoc": "OpenAI function tool 类型标识，固定为 'function'。",
               "readable": true,
               "writable": false
             },
             {
               "name": "function",
+              "jsdoc": "function 工具的名称、描述与 JSON Schema 参数。",
               "readable": true,
               "writable": false
             }
@@ -976,16 +982,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 76,
+        "line": 82,
         "className": "AiAgentRuntimeHostContext",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务模块 ID。 */\n    moduleId: string;\n    /** 模块实例 ID，区分同模块多实例。 */\n    moduleInstanceId: string;\n    /** 全局实例 ID，跨模块唯一。 */\n    instanceId: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n}>",
+            "typeText": "Readonly<{\n    /** 业务模块 ID。 */\n    moduleId: string;\n    /** 模块实例 ID，区分同模块多实例。 */\n    moduleInstanceId: string;\n    /** 全局实例 ID，跨模块唯一。 */\n    instanceId: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -993,16 +999,19 @@
           "attributes": [
             {
               "name": "moduleId",
+              "jsdoc": "业务模块 ID。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
+              "jsdoc": "模块实例 ID，区分同模块多实例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instanceId",
+              "jsdoc": "全局实例 ID，跨模块唯一。",
               "readable": true,
               "writable": false
             }
@@ -1016,16 +1025,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 82,
+        "line": 91,
         "className": "AiAgentToolRuntimeKnowledgeProjection",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    promptSnapshot: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 注入 LLM system prompt 的知识快照文本。 */\n    promptSnapshot: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    promptSnapshot: string;\n}>",
+            "typeText": "Readonly<{\n    /** 注入 LLM system prompt 的知识快照文本。 */\n    promptSnapshot: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1033,6 +1042,7 @@
           "attributes": [
             {
               "name": "promptSnapshot",
+              "jsdoc": "注入 LLM system prompt 的知识快照文本。",
               "readable": true,
               "writable": false
             }
@@ -1046,16 +1056,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 86,
+        "line": 96,
         "className": "AiAgentToolRuntimeInspectFinding",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 发现项等级：error / warn / info。 */\n    level: 'error' | 'warn' | 'info';\n    /** 稳定发现码。 */\n    code: string;\n    /** 面向用户或日志的说明。 */\n    message: string;\n    /** 可选修复建议。 */\n    fix?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 发现项等级：error / warn / info。 */\n    level: 'error' | 'warn' | 'info';\n    /** 稳定发现码。 */\n    code: string;\n    /** 面向用户或日志的说明。 */\n    message: string;\n    /** 可选修复建议。 */\n    fix?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1063,21 +1073,25 @@
           "attributes": [
             {
               "name": "level",
+              "jsdoc": "发现项等级：error / warn / info。",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "稳定发现码。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "面向用户或日志的说明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "可选修复建议。",
               "readable": true,
               "writable": false
             }
@@ -1091,16 +1105,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 93,
+        "line": 107,
         "className": "AiAgentToolRuntimeInspectReport",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    status: 'ok' | 'warning' | 'error';\n    rootKinds: readonly string[];\n    moduleCount: number;\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 自检总体状态：ok / warning / error。 */\n    status: 'ok' | 'warning' | 'error';\n    /** 已注册 root API kind 列表。 */\n    rootKinds: readonly string[];\n    /** 已加载业务模块数量。 */\n    moduleCount: number;\n    /** 结构化发现项列表。 */\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    status: 'ok' | 'warning' | 'error';\n    rootKinds: readonly string[];\n    moduleCount: number;\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
+            "typeText": "Readonly<{\n    /** 自检总体状态：ok / warning / error。 */\n    status: 'ok' | 'warning' | 'error';\n    /** 已注册 root API kind 列表。 */\n    rootKinds: readonly string[];\n    /** 已加载业务模块数量。 */\n    moduleCount: number;\n    /** 结构化发现项列表。 */\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1108,21 +1122,25 @@
           "attributes": [
             {
               "name": "status",
+              "jsdoc": "自检总体状态：ok / warning / error。",
               "readable": true,
               "writable": false
             },
             {
               "name": "rootKinds",
+              "jsdoc": "已注册 root API kind 列表。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleCount",
+              "jsdoc": "已加载业务模块数量。",
               "readable": true,
               "writable": false
             },
             {
               "name": "findings",
+              "jsdoc": "结构化发现项列表。",
               "readable": true,
               "writable": false
             }
@@ -1136,16 +1154,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
-        "line": 100,
+        "line": 118,
         "className": "AiAgentToolRuntime",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    getTools(): readonly AiAgentToolSpec[];\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 返回当前可用的 OpenAI function tool 规格列表。 */\n    getTools(): readonly AiAgentToolSpec[];\n    /** 按名称执行工具，传入参数与 Host 上下文。 */\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    /** 投影当前知识快照，供 LLM prompt 注入。 */\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    /** 自检工具运行时配置与注册完整性。 */\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    getTools(): readonly AiAgentToolSpec[];\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
+            "typeText": "Readonly<{\n    /** 返回当前可用的 OpenAI function tool 规格列表。 */\n    getTools(): readonly AiAgentToolSpec[];\n    /** 按名称执行工具，传入参数与 Host 上下文。 */\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    /** 投影当前知识快照，供 LLM prompt 注入。 */\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    /** 自检工具运行时配置与注册完整性。 */\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1153,6 +1171,7 @@
           "methods": [
             {
               "name": "getTools",
+              "jsdoc": "返回当前可用的 OpenAI function tool 规格列表。",
               "parameters": [],
               "type": {
                 "type": "unknown",
@@ -1161,6 +1180,7 @@
             },
             {
               "name": "executeTool",
+              "jsdoc": "按名称执行工具，传入参数与 Host 上下文。",
               "parameters": [
                 {
                   "name": "toolName",
@@ -1207,6 +1227,7 @@
             },
             {
               "name": "projectKnowledge",
+              "jsdoc": "投影当前知识快照，供 LLM prompt 注入。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -1216,6 +1237,7 @@
             },
             {
               "name": "inspect",
+              "jsdoc": "自检工具运行时配置与注册完整性。",
               "parameters": [],
               "type": {
                 "type": "reference",

@@ -96,17 +96,27 @@ optionValueField?: string
 
 /** Component Registry 的语义模型。 */
 export type ComponentRegistry = {
+  /** 注册一个或多个组件定义到注册表。 */
   register(...args: ComponentRegistrationArgs): void
+  /** 按 type 获取组件定义。 */
   get(type: string): ComponentDefinition | undefined
+  /** 检查注册表是否包含指定 type。 */
   has(type: string): boolean
+  /** 从注册表移除指定 type，返回是否成功。 */
   unregister(type: string): boolean
-  getAll(): ReadonlyMap<string, ComponentDefinition>}
+  /** 获取全部已注册组件定义的只读映射。 */
+  getAll(): ReadonlyMap<string, ComponentDefinition>
+}
 
 /** Component Registration Input 的输入数据。 */
 export type ComponentRegistrationInput = Readonly<{
+  /** 组件类型标识（kebab-case）。 */
   type: string
+  /** Vue 组件实现。 */
   component: unknown
+  /** 扩展元数据（如 childrenMode）。 */
   meta?: Record<string, unknown> | undefined
+  /** 注册选项（如 silent 静默模式）。 */
   options?: { silent?: boolean } | undefined
 }>
 

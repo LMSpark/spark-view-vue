@@ -78,7 +78,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:49:27.949Z",
+  "generatedAt": "2026-06-14T22:53:14.744Z",
   "models": {
     "AiApiMetadataGraphEdge": {
       "name": "AiApiMetadataGraphEdge",
@@ -91,11 +91,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    parentKind: string;\n    via: 'attribute' | 'action';\n    viaName: string;\n    child: AiApiObjectMetadata;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 父 API 对象的 kind 标识。 */\n    parentKind: string;\n    /** 到达子 API 的边类型：属性引用或 action 返回值。 */\n    via: 'attribute' | 'action';\n    /** 边上的属性名或 action 名。 */\n    viaName: string;\n    /** 边指向的子 API 对象元数据。 */\n    child: AiApiObjectMetadata;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    parentKind: string;\n    via: 'attribute' | 'action';\n    viaName: string;\n    child: AiApiObjectMetadata;\n}>",
+            "typeText": "Readonly<{\n    /** 父 API 对象的 kind 标识。 */\n    parentKind: string;\n    /** 到达子 API 的边类型：属性引用或 action 返回值。 */\n    via: 'attribute' | 'action';\n    /** 边上的属性名或 action 名。 */\n    viaName: string;\n    /** 边指向的子 API 对象元数据。 */\n    child: AiApiObjectMetadata;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -103,21 +103,25 @@
           "attributes": [
             {
               "name": "parentKind",
+              "jsdoc": "父 API 对象的 kind 标识。",
               "readable": true,
               "writable": false
             },
             {
               "name": "via",
+              "jsdoc": "到达子 API 的边类型：属性引用或 action 返回值。",
               "readable": true,
               "writable": false
             },
             {
               "name": "viaName",
+              "jsdoc": "边上的属性名或 action 名。",
               "readable": true,
               "writable": false
             },
             {
               "name": "child",
+              "jsdoc": "边指向的子 API 对象元数据。",
               "readable": true,
               "writable": false
             }
@@ -131,16 +135,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts",
-        "line": 22,
+        "line": 26,
         "className": "AiApiMetadataGraphNode",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    api: AiApiObjectMetadata;\n    parentKind?: string;\n    edges: readonly AiApiMetadataGraphEdge[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 当前节点对应的 API 对象元数据。 */\n    api: AiApiObjectMetadata;\n    /** 父节点 kind；根节点为 undefined。 */\n    parentKind?: string;\n    /** 从当前节点出发的所有 metadata 边。 */\n    edges: readonly AiApiMetadataGraphEdge[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    api: AiApiObjectMetadata;\n    parentKind?: string;\n    edges: readonly AiApiMetadataGraphEdge[];\n}>",
+            "typeText": "Readonly<{\n    /** 当前节点对应的 API 对象元数据。 */\n    api: AiApiObjectMetadata;\n    /** 父节点 kind；根节点为 undefined。 */\n    parentKind?: string;\n    /** 从当前节点出发的所有 metadata 边。 */\n    edges: readonly AiApiMetadataGraphEdge[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -148,16 +152,19 @@
           "attributes": [
             {
               "name": "api",
+              "jsdoc": "当前节点对应的 API 对象元数据。",
               "readable": true,
               "writable": false
             },
             {
               "name": "parentKind",
+              "jsdoc": "父节点 kind；根节点为 undefined。",
               "readable": true,
               "writable": false
             },
             {
               "name": "edges",
+              "jsdoc": "从当前节点出发的所有 metadata 边。",
               "readable": true,
               "writable": false
             }
@@ -171,16 +178,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts",
-        "line": 28,
+        "line": 35,
         "className": "AiApiNestedApiRecord",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    api: AiApiObjectMetadata;\n    parentKind: string;\n    via: AiApiMetadataGraphEdge['via'];\n    viaName: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 嵌套 API 对象元数据。 */\n    api: AiApiObjectMetadata;\n    /** 首次发现该嵌套 API 时的父 kind。 */\n    parentKind: string;\n    /** 首次发现时的边类型（属性或 action）。 */\n    via: AiApiMetadataGraphEdge['via'];\n    /** 首次发现时的属性名或 action 名。 */\n    viaName: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    api: AiApiObjectMetadata;\n    parentKind: string;\n    via: AiApiMetadataGraphEdge['via'];\n    viaName: string;\n}>",
+            "typeText": "Readonly<{\n    /** 嵌套 API 对象元数据。 */\n    api: AiApiObjectMetadata;\n    /** 首次发现该嵌套 API 时的父 kind。 */\n    parentKind: string;\n    /** 首次发现时的边类型（属性或 action）。 */\n    via: AiApiMetadataGraphEdge['via'];\n    /** 首次发现时的属性名或 action 名。 */\n    viaName: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -188,21 +195,25 @@
           "attributes": [
             {
               "name": "api",
+              "jsdoc": "嵌套 API 对象元数据。",
               "readable": true,
               "writable": false
             },
             {
               "name": "parentKind",
+              "jsdoc": "首次发现该嵌套 API 时的父 kind。",
               "readable": true,
               "writable": false
             },
             {
               "name": "via",
+              "jsdoc": "首次发现时的边类型（属性或 action）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "viaName",
+              "jsdoc": "首次发现时的属性名或 action 名。",
               "readable": true,
               "writable": false
             }

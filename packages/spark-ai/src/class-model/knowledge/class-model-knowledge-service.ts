@@ -36,41 +36,57 @@ import {
 
 /** Class Model Knowledge Query Input 的输入数据。 */
 export type ClassModelKnowledgeQueryInput = Readonly<{
+  /** 限定查询的 DtsTypeDeclarationModel kind；省略则查可达闭包。 */
   kind?: string
+  /** 关键词过滤，匹配名称、摘要与成员文本。 */
   keyword?: string
+  /** true 时在结果中包含 constructor/attributes/methods 摘要。 */
   includeMembers: boolean
 }>
 
 /** Class Model Model Guide Input 的输入数据。 */
 export type ClassModelModelGuideInput = Readonly<{
+  /** 目标模型的 kind（className）。 */
   kind: string
 }>
 
 /** Class Model Attribute Guide Input 的输入数据。 */
 export type ClassModelAttributeGuideInput = Readonly<{
+  /** 属性所属模型的 kind。 */
   kind: string
+  /** 目标属性名。 */
   attributeName: string
 }>
 
 /** Class Model Method Guide Input 的输入数据。 */
 export type ClassModelMethodGuideInput = Readonly<{
+  /** 方法所属模型的 kind。 */
   kind: string
+  /** 目标方法名（action 名）。 */
   methodName: string
 }>
 
 /** Class Model Knowledge Provider 的语义模型。 */
 export type ClassModelKnowledgeProvider = Readonly<{
+  /** 可选刷新钩子，重新加载 surface 或 bundle。 */
   refresh?: (requestedClassName?: string) => Promise<void>
+  /** 按 kind/keyword 查询可达模型知识。 */
   query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>
+  /** 返回单个模型的完整 guide 文本。 */
   modelGuide(input: ClassModelModelGuideInput): string | Promise<string>
+  /** 返回单个属性的 guide 文本。 */
   attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>
+  /** 返回单个方法的 guide 文本。 */
   methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>
 }>
 
 /** Class Model Knowledge Service Options 的调用配置。 */
 export type ClassModelKnowledgeServiceOptions = Readonly<{
+  /** 内存 ClassModelDocument 后端；与 surface 二选一。 */
   document?: ClassModelDocument
+  /** 预加载的 surface 文档后端；与 document 二选一。 */
   surface?: DtsClassModelSurfaceDocument
+  /** surface 模式的根 className，决定可达闭包起点。 */
   rootClassName?: string
 }>
 

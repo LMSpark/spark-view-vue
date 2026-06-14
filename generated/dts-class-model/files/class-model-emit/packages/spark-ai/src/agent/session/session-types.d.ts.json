@@ -450,11 +450,11 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T19:03:35.059Z",
+  "generatedAt": "2026-06-14T22:53:30.676Z",
   "models": {
     "AiAgentFunctionCallCheck": {
       "name": "AiAgentFunctionCallCheck",
-      "jsdoc": "工具调用失败结果",
+      "jsdoc": "工具调用结果中的结构化检查项（error / warn / info）。",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
@@ -463,11 +463,11 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 检查严重级别：error 表示失败，warn/info 仅提示。 */\n    level: 'error' | 'warn' | 'info';\n    /** 机器可读检查码，供 LLM 与诊断系统定位问题。 */\n    code: string;\n    /** 人可读检查说明，写入 tool result 或 session 历史。 */\n    message: string;\n    /** 可选修复提示，引导 LLM 修正参数或补执行工具。 */\n    hint?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 检查严重级别：error 表示失败，warn/info 仅提示。 */\n    level: 'error' | 'warn' | 'info';\n    /** 机器可读检查码，供 LLM 与诊断系统定位问题。 */\n    code: string;\n    /** 人可读检查说明，写入 tool result 或 session 历史。 */\n    message: string;\n    /** 可选修复提示，引导 LLM 修正参数或补执行工具。 */\n    hint?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -475,21 +475,25 @@
           "attributes": [
             {
               "name": "level",
+              "jsdoc": "检查严重级别：error 表示失败，warn/info 仅提示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "机器可读检查码，供 LLM 与诊断系统定位问题。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
+              "jsdoc": "人可读检查说明，写入 tool result 或 session 历史。",
               "readable": true,
               "writable": false
             },
             {
               "name": "hint",
+              "jsdoc": "可选修复提示，引导 LLM 修正参数或补执行工具。",
               "readable": true,
               "writable": false
             }
@@ -499,20 +503,20 @@
     },
     "AiAgentFunctionCallFailure": {
       "name": "AiAgentFunctionCallFailure",
-      "jsdoc": "Ai Agent Function Call Failure 的语义模型。",
+      "jsdoc": "工具调用失败结果。\n字段：\nok     — 固定 false\ncode   — 机器可读失败码\nmsg    — 失败说明（回灌给 LLM）\nfix    — 修正建议（回灌给 LLM）\nchecks — 可选附加检查项",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 17,
+        "line": 30,
         "className": "AiAgentFunctionCallFailure",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 固定 false，标识工具调用失败分支。 */\n    ok: false;\n    /** 机器可读失败码，对齐 AiAgentToolResult 错误 check 的 code。 */\n    code: string;\n    /** 失败说明，作为 tool role message 的 content 回灌给 LLM。 */\n    msg: string;\n    /** 修正建议，写入 tool result 的 fix 字段引导 LLM 重试。 */\n    fix: string;\n    /** 可选附加检查项，与主失败 check 一并回传给 LLM。 */\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
+            "typeText": "Readonly<{\n    /** 固定 false，标识工具调用失败分支。 */\n    ok: false;\n    /** 机器可读失败码，对齐 AiAgentToolResult 错误 check 的 code。 */\n    code: string;\n    /** 失败说明，作为 tool role message 的 content 回灌给 LLM。 */\n    msg: string;\n    /** 修正建议，写入 tool result 的 fix 字段引导 LLM 重试。 */\n    fix: string;\n    /** 可选附加检查项，与主失败 check 一并回传给 LLM。 */\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -520,26 +524,31 @@
           "attributes": [
             {
               "name": "ok",
+              "jsdoc": "固定 false，标识工具调用失败分支。",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
+              "jsdoc": "机器可读失败码，对齐 AiAgentToolResult 错误 check 的 code。",
               "readable": true,
               "writable": false
             },
             {
               "name": "msg",
+              "jsdoc": "失败说明，作为 tool role message 的 content 回灌给 LLM。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fix",
+              "jsdoc": "修正建议，写入 tool result 的 fix 字段引导 LLM 重试。",
               "readable": true,
               "writable": false
             },
             {
               "name": "checks",
+              "jsdoc": "可选附加检查项，与主失败 check 一并回传给 LLM。",
               "readable": true,
               "writable": false
             }
@@ -553,7 +562,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 29,
+        "line": 47,
         "className": "AiAgentFunctionCallResult",
         "declarationKind": "typeAlias"
       },
@@ -580,7 +589,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 35,
+        "line": 53,
         "className": "AiAgentSessionStatus",
         "declarationKind": "typeAlias"
       },
@@ -605,7 +614,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 37,
+        "line": 55,
         "className": "AiAgentMessageRole",
         "declarationKind": "typeAlias"
       },
@@ -634,7 +643,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 39,
+        "line": 57,
         "className": "AiAgentMessageSource",
         "declarationKind": "typeAlias"
       },
@@ -663,7 +672,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 41,
+        "line": 59,
         "className": "AiAgentFunctionCallHistoryStatus",
         "declarationKind": "typeAlias"
       },
@@ -688,20 +697,20 @@
     },
     "AiAgentHistoryEntryBase": {
       "name": "AiAgentHistoryEntryBase",
-      "jsdoc": "历史条目公共字段",
+      "jsdoc": "历史条目公共字段：会话定位、序号与时间戳。",
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 43,
+        "line": 61,
         "className": "AiAgentHistoryEntryBase",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    id: string;\n    seq: number;\n    timestamp: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务模块 ID，标识该历史条目所属的业务类型。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */\n    moduleInstanceId: string;\n    /** 会话实例 ID，startSession 时分配，贯穿单次 Agent 会话生命周期。 */\n    instanceId: string;\n    /** 运行时实例 ID，标识产生该条目的 tool-loop / chat turn 上下文。 */\n    runtimeInstanceId: string;\n    /** 历史条目唯一 ID，用于去重与增量同步。 */\n    id: string;\n    /** 会话内单调递增序号，保证历史条目时序可重建。 */\n    seq: number;\n    /** 条目创建时间戳（毫秒），用于排序与诊断。 */\n    timestamp: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    id: string;\n    seq: number;\n    timestamp: number;\n}>",
+            "typeText": "Readonly<{\n    /** 业务模块 ID，标识该历史条目所属的业务类型。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */\n    moduleInstanceId: string;\n    /** 会话实例 ID，startSession 时分配，贯穿单次 Agent 会话生命周期。 */\n    instanceId: string;\n    /** 运行时实例 ID，标识产生该条目的 tool-loop / chat turn 上下文。 */\n    runtimeInstanceId: string;\n    /** 历史条目唯一 ID，用于去重与增量同步。 */\n    id: string;\n    /** 会话内单调递增序号，保证历史条目时序可重建。 */\n    seq: number;\n    /** 条目创建时间戳（毫秒），用于排序与诊断。 */\n    timestamp: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -709,36 +718,43 @@
           "attributes": [
             {
               "name": "moduleId",
+              "jsdoc": "业务模块 ID，标识该历史条目所属的业务类型。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
+              "jsdoc": "业务模块实例 ID，标识同一 moduleId 下的具体业务实例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instanceId",
+              "jsdoc": "会话实例 ID，startSession 时分配，贯穿单次 Agent 会话生命周期。",
               "readable": true,
               "writable": false
             },
             {
               "name": "runtimeInstanceId",
+              "jsdoc": "运行时实例 ID，标识产生该条目的 tool-loop / chat turn 上下文。",
               "readable": true,
               "writable": false
             },
             {
               "name": "id",
+              "jsdoc": "历史条目唯一 ID，用于去重与增量同步。",
               "readable": true,
               "writable": false
             },
             {
               "name": "seq",
+              "jsdoc": "会话内单调递增序号，保证历史条目时序可重建。",
               "readable": true,
               "writable": false
             },
             {
               "name": "timestamp",
+              "jsdoc": "条目创建时间戳（毫秒），用于排序与诊断。",
               "readable": true,
               "writable": false
             }
@@ -752,12 +768,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 53,
+        "line": 78,
         "className": "AiAgentMessageHistoryEntry",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    kind: 'message';\n    role: AiAgentMessageRole;\n    source: AiAgentMessageSource;\n    content: string;\n    metadata?: Record<string, unknown>;\n}>",
+        "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    /** 固定 'message'，作为历史条目联合类型的判别字段。 */\n    kind: 'message';\n    /** OpenAI 对齐的消息角色：system / user / assistant。 */\n    role: AiAgentMessageRole;\n    /** 消息来源：system 内核注入、ui 用户界面、llm 模型输出。 */\n    source: AiAgentMessageSource;\n    /** 消息正文内容。 */\n    content: string;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -766,7 +782,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    kind: 'message';\n    role: AiAgentMessageRole;\n    source: AiAgentMessageSource;\n    content: string;\n    metadata?: Record<string, unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** 固定 'message'，作为历史条目联合类型的判别字段。 */\n    kind: 'message';\n    /** OpenAI 对齐的消息角色：system / user / assistant。 */\n    role: AiAgentMessageRole;\n    /** 消息来源：system 内核注入、ui 用户界面、llm 模型输出。 */\n    source: AiAgentMessageSource;\n    /** 消息正文内容。 */\n    content: string;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -774,26 +790,31 @@
           "attributes": [
             {
               "name": "kind",
+              "jsdoc": "固定 'message'，作为历史条目联合类型的判别字段。",
               "readable": true,
               "writable": false
             },
             {
               "name": "role",
+              "jsdoc": "OpenAI 对齐的消息角色：system / user / assistant。",
               "readable": true,
               "writable": false
             },
             {
               "name": "source",
+              "jsdoc": "消息来源：system 内核注入、ui 用户界面、llm 模型输出。",
               "readable": true,
               "writable": false
             },
             {
               "name": "content",
+              "jsdoc": "消息正文内容。",
               "readable": true,
               "writable": false
             },
             {
               "name": "metadata",
+              "jsdoc": "可选扩展元数据，供 UI 或诊断附加信息。",
               "readable": true,
               "writable": false
             }
@@ -807,12 +828,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 61,
+        "line": 91,
         "className": "AiAgentFunctionCallHistoryEntry",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    kind: 'functionCall';\n    toolName: string;\n    args: unknown;\n    status: AiAgentFunctionCallHistoryStatus;\n    completedAt?: number;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+        "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    /** 固定 'functionCall'，作为历史条目联合类型的判别字段。 */\n    kind: 'functionCall';\n    /** 被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，JSON 解析后的原始值。 */\n    args: unknown;\n    /** 工具调用状态：requested 已发起、completed 已成功、failed 已失败。 */\n    status: AiAgentFunctionCallHistoryStatus;\n    /** 工具调用完成时间戳（毫秒）；status 为 completed/failed 时写入。 */\n    completedAt?: number;\n    /** 工具调用成功返回值；status 为 completed 时写入。 */\n    result?: unknown;\n    /** 工具调用失败详情；status 为 failed 时写入，对齐 AiAgentFunctionCallFailure。 */\n    error?: AiAgentFunctionCallFailure;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -821,7 +842,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    kind: 'functionCall';\n    toolName: string;\n    args: unknown;\n    status: AiAgentFunctionCallHistoryStatus;\n    completedAt?: number;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** 固定 'functionCall'，作为历史条目联合类型的判别字段。 */\n    kind: 'functionCall';\n    /** 被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，JSON 解析后的原始值。 */\n    args: unknown;\n    /** 工具调用状态：requested 已发起、completed 已成功、failed 已失败。 */\n    status: AiAgentFunctionCallHistoryStatus;\n    /** 工具调用完成时间戳（毫秒）；status 为 completed/failed 时写入。 */\n    completedAt?: number;\n    /** 工具调用成功返回值；status 为 completed 时写入。 */\n    result?: unknown;\n    /** 工具调用失败详情；status 为 failed 时写入，对齐 AiAgentFunctionCallFailure。 */\n    error?: AiAgentFunctionCallFailure;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -829,41 +850,49 @@
           "attributes": [
             {
               "name": "kind",
+              "jsdoc": "固定 'functionCall'，作为历史条目联合类型的判别字段。",
               "readable": true,
               "writable": false
             },
             {
               "name": "toolName",
+              "jsdoc": "被调用的工具名称，来自 LLM tool_calls 中的 function.name。",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "工具调用参数，JSON 解析后的原始值。",
               "readable": true,
               "writable": false
             },
             {
               "name": "status",
+              "jsdoc": "工具调用状态：requested 已发起、completed 已成功、failed 已失败。",
               "readable": true,
               "writable": false
             },
             {
               "name": "completedAt",
+              "jsdoc": "工具调用完成时间戳（毫秒）；status 为 completed/failed 时写入。",
               "readable": true,
               "writable": false
             },
             {
               "name": "result",
+              "jsdoc": "工具调用成功返回值；status 为 completed 时写入。",
               "readable": true,
               "writable": false
             },
             {
               "name": "error",
+              "jsdoc": "工具调用失败详情；status 为 failed 时写入，对齐 AiAgentFunctionCallFailure。",
               "readable": true,
               "writable": false
             },
             {
               "name": "metadata",
+              "jsdoc": "可选扩展元数据，供 UI 或诊断附加信息。",
               "readable": true,
               "writable": false
             }
@@ -877,7 +906,7 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 72,
+        "line": 110,
         "className": "AiAgentHistoryEntry",
         "declarationKind": "typeAlias"
       },
@@ -904,16 +933,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 74,
+        "line": 112,
         "className": "AiAgentSessionRecord",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    status: AiAgentSessionStatus;\n    startedAt: number;\n    updatedAt: number;\n    stoppedAt?: number;\n    reason?: string;\n    history: readonly AiAgentHistoryEntry[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 业务模块 ID，标识该会话所属的业务类型。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */\n    moduleInstanceId: string;\n    /** 会话实例 ID，startSession 时分配，作为会话主键。 */\n    instanceId: string;\n    /** 最近一次写入历史的运行时实例 ID，用于 turn 级追踪。 */\n    runtimeInstanceId: string;\n    /** 会话生命周期状态：Started 运行中、Stopped 已停止。 */\n    status: AiAgentSessionStatus;\n    /** 会话启动时间戳（毫秒）。 */\n    startedAt: number;\n    /** 会话最后更新时间戳（毫秒），每次 append 或 stop 时刷新。 */\n    updatedAt: number;\n    /** 会话停止时间戳（毫秒）；status 为 Stopped 时写入。 */\n    stoppedAt?: number;\n    /** 停止原因说明，stopSession 时可选传入。 */\n    reason?: string;\n    /** 按 seq 排序的完整历史条目列表（消息 + 工具调用）。 */\n    history: readonly AiAgentHistoryEntry[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    status: AiAgentSessionStatus;\n    startedAt: number;\n    updatedAt: number;\n    stoppedAt?: number;\n    reason?: string;\n    history: readonly AiAgentHistoryEntry[];\n}>",
+            "typeText": "Readonly<{\n    /** 业务模块 ID，标识该会话所属的业务类型。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */\n    moduleInstanceId: string;\n    /** 会话实例 ID，startSession 时分配，作为会话主键。 */\n    instanceId: string;\n    /** 最近一次写入历史的运行时实例 ID，用于 turn 级追踪。 */\n    runtimeInstanceId: string;\n    /** 会话生命周期状态：Started 运行中、Stopped 已停止。 */\n    status: AiAgentSessionStatus;\n    /** 会话启动时间戳（毫秒）。 */\n    startedAt: number;\n    /** 会话最后更新时间戳（毫秒），每次 append 或 stop 时刷新。 */\n    updatedAt: number;\n    /** 会话停止时间戳（毫秒）；status 为 Stopped 时写入。 */\n    stoppedAt?: number;\n    /** 停止原因说明，stopSession 时可选传入。 */\n    reason?: string;\n    /** 按 seq 排序的完整历史条目列表（消息 + 工具调用）。 */\n    history: readonly AiAgentHistoryEntry[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -921,51 +950,61 @@
           "attributes": [
             {
               "name": "moduleId",
+              "jsdoc": "业务模块 ID，标识该会话所属的业务类型。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
+              "jsdoc": "业务模块实例 ID，标识同一 moduleId 下的具体业务实例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instanceId",
+              "jsdoc": "会话实例 ID，startSession 时分配，作为会话主键。",
               "readable": true,
               "writable": false
             },
             {
               "name": "runtimeInstanceId",
+              "jsdoc": "最近一次写入历史的运行时实例 ID，用于 turn 级追踪。",
               "readable": true,
               "writable": false
             },
             {
               "name": "status",
+              "jsdoc": "会话生命周期状态：Started 运行中、Stopped 已停止。",
               "readable": true,
               "writable": false
             },
             {
               "name": "startedAt",
+              "jsdoc": "会话启动时间戳（毫秒）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "updatedAt",
+              "jsdoc": "会话最后更新时间戳（毫秒），每次 append 或 stop 时刷新。",
               "readable": true,
               "writable": false
             },
             {
               "name": "stoppedAt",
+              "jsdoc": "会话停止时间戳（毫秒）；status 为 Stopped 时写入。",
               "readable": true,
               "writable": false
             },
             {
               "name": "reason",
+              "jsdoc": "停止原因说明，stopSession 时可选传入。",
               "readable": true,
               "writable": false
             },
             {
               "name": "history",
+              "jsdoc": "按 seq 排序的完整历史条目列表（消息 + 工具调用）。",
               "readable": true,
               "writable": false
             }
@@ -979,16 +1018,16 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 87,
+        "line": 135,
         "className": "AiAgentStartSessionResult",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    status: 'Started';\n    instanceId: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    session: AiAgentSessionRecord;\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 固定 'Started'，表示会话已成功创建。 */\n    status: 'Started';\n    /** 新分配的会话实例 ID，后续 chat / append 均以此定位会话。 */\n    instanceId: string;\n    /** 业务模块 ID，与 registration.moduleId 一致。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识具体业务实例。 */\n    moduleInstanceId: string;\n    /** 完整会话记录，含初始空 history 与 Started 状态。 */\n    session: AiAgentSessionRecord;\n    /** 当前 registration 暴露给 LLM 的工具规格列表。 */\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    status: 'Started';\n    instanceId: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    session: AiAgentSessionRecord;\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
+            "typeText": "Readonly<{\n    /** 固定 'Started'，表示会话已成功创建。 */\n    status: 'Started';\n    /** 新分配的会话实例 ID，后续 chat / append 均以此定位会话。 */\n    instanceId: string;\n    /** 业务模块 ID，与 registration.moduleId 一致。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识具体业务实例。 */\n    moduleInstanceId: string;\n    /** 完整会话记录，含初始空 history 与 Started 状态。 */\n    session: AiAgentSessionRecord;\n    /** 当前 registration 暴露给 LLM 的工具规格列表。 */\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -996,31 +1035,37 @@
           "attributes": [
             {
               "name": "status",
+              "jsdoc": "固定 'Started'，表示会话已成功创建。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instanceId",
+              "jsdoc": "新分配的会话实例 ID，后续 chat / append 均以此定位会话。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleId",
+              "jsdoc": "业务模块 ID，与 registration.moduleId 一致。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
+              "jsdoc": "业务模块实例 ID，标识具体业务实例。",
               "readable": true,
               "writable": false
             },
             {
               "name": "session",
+              "jsdoc": "完整会话记录，含初始空 history 与 Started 状态。",
               "readable": true,
               "writable": false
             },
             {
               "name": "tools",
+              "jsdoc": "当前 registration 暴露给 LLM 的工具规格列表。",
               "readable": true,
               "writable": false
             }
@@ -1034,12 +1079,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 96,
+        "line": 150,
         "className": "AiAgentAppendFunctionCallOptions",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    runtimeInstanceId: string;\n    toolName: string;\n    args: unknown;\n    status?: AiAgentFunctionCallHistoryStatus;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** 产生该工具调用的运行时实例 ID，用于 turn 级历史隔离。 */\n    runtimeInstanceId: string;\n    /** 被调用的工具名称。 */\n    toolName: string;\n    /** 工具调用参数。 */\n    args: unknown;\n    /** 工具调用状态；省略时由 store 实现决定默认（通常为 requested）。 */\n    status?: AiAgentFunctionCallHistoryStatus;\n    /** 工具调用成功返回值；status 为 completed 时写入。 */\n    result?: unknown;\n    /** 工具调用失败详情；status 为 failed 时写入。 */\n    error?: AiAgentFunctionCallFailure;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -1048,7 +1093,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    runtimeInstanceId: string;\n    toolName: string;\n    args: unknown;\n    status?: AiAgentFunctionCallHistoryStatus;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+            "typeText": "Readonly<{\n    /** 产生该工具调用的运行时实例 ID，用于 turn 级历史隔离。 */\n    runtimeInstanceId: string;\n    /** 被调用的工具名称。 */\n    toolName: string;\n    /** 工具调用参数。 */\n    args: unknown;\n    /** 工具调用状态；省略时由 store 实现决定默认（通常为 requested）。 */\n    status?: AiAgentFunctionCallHistoryStatus;\n    /** 工具调用成功返回值；status 为 completed 时写入。 */\n    result?: unknown;\n    /** 工具调用失败详情；status 为 failed 时写入。 */\n    error?: AiAgentFunctionCallFailure;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1056,36 +1101,43 @@
           "attributes": [
             {
               "name": "runtimeInstanceId",
+              "jsdoc": "产生该工具调用的运行时实例 ID，用于 turn 级历史隔离。",
               "readable": true,
               "writable": false
             },
             {
               "name": "toolName",
+              "jsdoc": "被调用的工具名称。",
               "readable": true,
               "writable": false
             },
             {
               "name": "args",
+              "jsdoc": "工具调用参数。",
               "readable": true,
               "writable": false
             },
             {
               "name": "status",
+              "jsdoc": "工具调用状态；省略时由 store 实现决定默认（通常为 requested）。",
               "readable": true,
               "writable": false
             },
             {
               "name": "result",
+              "jsdoc": "工具调用成功返回值；status 为 completed 时写入。",
               "readable": true,
               "writable": false
             },
             {
               "name": "error",
+              "jsdoc": "工具调用失败详情；status 为 failed 时写入。",
               "readable": true,
               "writable": false
             },
             {
               "name": "metadata",
+              "jsdoc": "可选扩展元数据，供 UI 或诊断附加信息。",
               "readable": true,
               "writable": false
             }
@@ -1099,7 +1151,7 @@
       "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts",
-        "line": 120,
+        "line": 181,
         "className": "AiAgentSessionStore",
         "declarationKind": "class"
       },

@@ -9,29 +9,41 @@ export type AiDeliveryMode = 'manual' | 'auto'
 
 /** 单次交付涉及的文件或导航变更摘要。 */
 export type AiDeliveryArtifact = Readonly<{
+  /** 产物类型（页面文件或导航变更）。 */
   kind: 'page-file' | 'navigation'
+  /** 产物名称（文件名或导航标识）。 */
   name: string
+  /** 产物当前交付状态。 */
   status: 'dirty' | 'saved' | 'skipped' | 'rolledBack'
 }>
 
 /** Host Run 结束后的交付回执，包含模式、状态与产物列表。 */
 export type AiDeliveryResult = Readonly<{
+  /** 交付模式（手动或自动）。 */
   mode: AiDeliveryMode
+  /** 交付最终状态。 */
   status: 'saved' | 'skipped' | 'rolledBack' | 'failed'
+  /** 涉及的交付产物列表。 */
   artifacts: readonly AiDeliveryArtifact[]
+  /** 可选的状态描述或错误信息。 */
   message?: string
 }>
 
 /** 应用层交付端口：负责 save、trace 与 rollback 三阶段契约。 */
 export interface AiDeliveryPort<TContext> {
+  /** 交付模式（manual 需人工确认，auto 自动落盘）。 */
   readonly mode: AiDeliveryMode
+  /** 执行交付落盘并返回回执。 */
   save(context: TContext): Promise<AiDeliveryResult>
+  /** 记录交付 trace（日志/遥测）。 */
   trace(context: TContext, result: AiDeliveryResult): Promise<void>
+  /** 交付失败时执行回滚并返回回执。 */
   rollback(context: TContext, error: Error): Promise<AiDeliveryResult>
 }
 
 /** 附加在 Error 上的交付回执扩展字段。 */
 export type AiDeliveryResultExtras = Readonly<{
+  /** 关联的交付回执。 */
   delivery: AiDeliveryResult
 }>
 

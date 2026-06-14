@@ -249,7 +249,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T18:49:28.126Z",
+  "generatedAt": "2026-06-14T22:53:34.870Z",
   "models": {
     "BaseCrudContainerApi": {
       "name": "BaseCrudContainerApi",
@@ -262,11 +262,12 @@
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    getDataSource(): DataView | null;\n    addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>;\n    editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>;\n    removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>;\n}",
+        "declarationTypeText": "{\n    /** 获取容器绑定的 DataView 数据源。 */\n    getDataSource(): DataView | null;\n    /** 新增一行并提交到远端，返回新行或 CRUD 结果。 */\n    addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>;\n    /** 按主键 id 更新行并提交到远端。 */\n    editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>;\n    /** 按主键 id 删除行并提交到远端。 */\n    removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>;\n}",
         "members": {
           "methods": [
             {
               "name": "getDataSource",
+              "jsdoc": "获取容器绑定的 DataView 数据源。",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -284,6 +285,7 @@
             },
             {
               "name": "addRow",
+              "jsdoc": "新增一行并提交到远端，返回新行或 CRUD 结果。",
               "parameters": [
                 {
                   "name": "row",
@@ -331,6 +333,7 @@
             },
             {
               "name": "editRowById",
+              "jsdoc": "按主键 id 更新行并提交到远端。",
               "parameters": [
                 {
                   "name": "id",
@@ -390,6 +393,7 @@
             },
             {
               "name": "removeRow",
+              "jsdoc": "按主键 id 删除行并提交到远端。",
               "parameters": [
                 {
                   "name": "id",
@@ -444,12 +448,12 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/support/base-container-api.d.ts",
-        "line": 28,
+        "line": 32,
         "className": "BaseContainerApi",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "BaseCrudContainerApi & {\n    getCurrentRow(): DataRow | null;\n    refresh(): Promise<void>;\n    appendRow(row: DataRow): void;\n    updateRowById(id: string | number, patch: Partial<DataRow>): boolean;\n    deleteRowById(id: string | number): boolean;\n    setCurrentRow(row: DataRow | null): void;\n    setCurrentRowById(id: string | number | null): boolean;\n}",
+        "declarationTypeText": "BaseCrudContainerApi & {\n    /** 获取当前选中/聚焦的行。 */\n    getCurrentRow(): DataRow | null;\n    /** 刷新容器绑定的 DataView 数据。 */\n    refresh(): Promise<void>;\n    /** 在本地 DataView 追加一行（不立即提交远端）。 */\n    appendRow(row: DataRow): void;\n    /** 按主键 id 在本地更新行数据（不立即提交远端）。 */\n    updateRowById(id: string | number, patch: Partial<DataRow>): boolean;\n    /** 按主键 id 在本地删除行（不立即提交远端）。 */\n    deleteRowById(id: string | number): boolean;\n    /** 设置当前选中/聚焦的行。 */\n    setCurrentRow(row: DataRow | null): void;\n    /** 按主键 id 设置当前行，返回是否找到目标行。 */\n    setCurrentRowById(id: string | number | null): boolean;\n}",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -458,13 +462,14 @@
           },
           {
             "kind": "intersection",
-            "typeText": "{\n    getCurrentRow(): DataRow | null;\n    refresh(): Promise<void>;\n    appendRow(row: DataRow): void;\n    updateRowById(id: string | number, patch: Partial<DataRow>): boolean;\n    deleteRowById(id: string | number): boolean;\n    setCurrentRow(row: DataRow | null): void;\n    setCurrentRowById(id: string | number | null): boolean;\n}"
+            "typeText": "{\n    /** 获取当前选中/聚焦的行。 */\n    getCurrentRow(): DataRow | null;\n    /** 刷新容器绑定的 DataView 数据。 */\n    refresh(): Promise<void>;\n    /** 在本地 DataView 追加一行（不立即提交远端）。 */\n    appendRow(row: DataRow): void;\n    /** 按主键 id 在本地更新行数据（不立即提交远端）。 */\n    updateRowById(id: string | number, patch: Partial<DataRow>): boolean;\n    /** 按主键 id 在本地删除行（不立即提交远端）。 */\n    deleteRowById(id: string | number): boolean;\n    /** 设置当前选中/聚焦的行。 */\n    setCurrentRow(row: DataRow | null): void;\n    /** 按主键 id 设置当前行，返回是否找到目标行。 */\n    setCurrentRowById(id: string | number | null): boolean;\n}"
           }
         ],
         "members": {
           "methods": [
             {
               "name": "getCurrentRow",
+              "jsdoc": "获取当前选中/聚焦的行。",
               "parameters": [],
               "type": {
                 "type": "union",
@@ -482,6 +487,7 @@
             },
             {
               "name": "refresh",
+              "jsdoc": "刷新容器绑定的 DataView 数据。",
               "parameters": [],
               "type": {
                 "type": "reference",
@@ -496,6 +502,7 @@
             },
             {
               "name": "appendRow",
+              "jsdoc": "在本地 DataView 追加一行（不立即提交远端）。",
               "parameters": [
                 {
                   "name": "row",
@@ -512,6 +519,7 @@
             },
             {
               "name": "updateRowById",
+              "jsdoc": "按主键 id 在本地更新行数据（不立即提交远端）。",
               "parameters": [
                 {
                   "name": "id",
@@ -550,6 +558,7 @@
             },
             {
               "name": "deleteRowById",
+              "jsdoc": "按主键 id 在本地删除行（不立即提交远端）。",
               "parameters": [
                 {
                   "name": "id",
@@ -575,6 +584,7 @@
             },
             {
               "name": "setCurrentRow",
+              "jsdoc": "设置当前选中/聚焦的行。",
               "parameters": [
                 {
                   "name": "row",
@@ -600,6 +610,7 @@
             },
             {
               "name": "setCurrentRowById",
+              "jsdoc": "按主键 id 设置当前行，返回是否找到目标行。",
               "parameters": [
                 {
                   "name": "id",
@@ -637,16 +648,17 @@
       "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/support/base-container-api.d.ts",
-        "line": 40,
+        "line": 51,
         "className": "VisibilityContainerApi",
         "declarationKind": "typeAlias"
       },
       "typeAlias": {
-        "declarationTypeText": "{\n    open(): void;\n    close(): void;\n    isVisible(): boolean;\n    toggle(): void;\n}",
+        "declarationTypeText": "{\n    /** 打开容器（显示面板）。 */\n    open(): void;\n    /** 关闭容器（隐藏面板）。 */\n    close(): void;\n    /** 查询容器当前是否可见。 */\n    isVisible(): boolean;\n    /** 切换容器可见状态。 */\n    toggle(): void;\n}",
         "members": {
           "methods": [
             {
               "name": "open",
+              "jsdoc": "打开容器（显示面板）。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -655,6 +667,7 @@
             },
             {
               "name": "close",
+              "jsdoc": "关闭容器（隐藏面板）。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -663,6 +676,7 @@
             },
             {
               "name": "isVisible",
+              "jsdoc": "查询容器当前是否可见。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
@@ -671,6 +685,7 @@
             },
             {
               "name": "toggle",
+              "jsdoc": "切换容器可见状态。",
               "parameters": [],
               "type": {
                 "type": "intrinsic",
