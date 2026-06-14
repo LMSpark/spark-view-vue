@@ -124,6 +124,7 @@
             {
               "name": "clearSelected",
               "jsdoc": "清除 session 选中缓存（业务切换时由 session 层传入）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

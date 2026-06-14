@@ -213,6 +213,7 @@
             {
               "name": "toString",
               "jsdoc": "执行 to String 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"

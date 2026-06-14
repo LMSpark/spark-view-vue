@@ -124,6 +124,7 @@
             {
               "name": "undo",
               "jsdoc": "撤销：cursor 后退一步，返回前一个快照；不可撤销时返回 null。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -142,6 +143,7 @@
             {
               "name": "redo",
               "jsdoc": "重做：cursor 前进一步，返回下一个快照；不可重做时返回 null。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -160,6 +162,7 @@
             {
               "name": "clear",
               "jsdoc": "清空全部历史。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

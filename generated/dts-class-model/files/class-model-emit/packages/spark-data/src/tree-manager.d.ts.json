@@ -520,6 +520,7 @@
             {
               "name": "endpointContextProvider",
               "jsdoc": "endpoint Context Provider 回调。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -614,6 +615,7 @@
             {
               "name": "getConfig",
               "jsdoc": "获取树配置\n@returns 树配置副本",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "TreeConfig",
@@ -644,6 +646,7 @@
             {
               "name": "clear",
               "jsdoc": "清空缓存",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -652,6 +655,7 @@
             {
               "name": "getAllNodes",
               "jsdoc": "返回缓存中所有扁平节点的数组",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -717,6 +721,7 @@
             {
               "name": "toJson",
               "jsdoc": "将所有扁平节点序列化为 JSON 字符串（用于导出）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -789,6 +794,7 @@
             {
               "name": "getRoots",
               "jsdoc": "获取根节点\n@returns 根节点数组",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {

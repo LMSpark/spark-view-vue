@@ -155,7 +155,8 @@
       "title": "AiRunAdapterOptions",
       "properties": {
         "formatError": {
-          "$ref": "#/$defs/AiRunErrorFormatter"
+          "type": "object",
+          "title": "AiRunErrorFormatter"
         }
       },
       "additionalProperties": false
@@ -176,7 +177,8 @@
           "title": "TInput"
         },
         "runInput": {
-          "$ref": "../../../spark-ai/src/agent/ag-ui/ag-ui-types.d.ts.json#/$defs/SparkAgUiRunInput"
+          "type": "object",
+          "title": "SparkAgUiRunInput"
         },
         "threadId": {
           "type": "string"
@@ -188,10 +190,12 @@
           "$ref": "#/$defs/AiRunTraceSink"
         },
         "beforeFunctionCall": {
-          "$ref": "#/$defs/AiRunBeforeFunctionCall"
+          "type": "object",
+          "title": "AiRunBeforeFunctionCall"
         },
         "onAbort": {
-          "$ref": "#/$defs/AiRunAbortHandler"
+          "type": "object",
+          "title": "AiRunAbortHandler"
         },
         "userMessage": {
           "type": "string"
@@ -203,7 +207,8 @@
           "type": "object",
           "properties": {
             "event": {
-              "$ref": "../../../spark-ai/src/agent/ag-ui/ag-ui-types.d.ts.json#/$defs/SparkAgUiEvent"
+              "type": "object",
+              "title": "SparkAgUiEvent"
             }
           },
           "additionalProperties": false
@@ -242,7 +247,8 @@
         "agUiEvents": {
           "type": "array",
           "items": {
-            "$ref": "../../../spark-ai/src/agent/ag-ui/ag-ui-types.d.ts.json#/$defs/SparkAgUiEvent"
+            "type": "object",
+            "title": "SparkAgUiEvent"
           }
         },
         "timeline": {
@@ -289,7 +295,8 @@
           "type": "object",
           "properties": {
             "listener": {
-              "$ref": "#/$defs/AiRunListener"
+              "type": "object",
+              "title": "AiRunListener"
             }
           },
           "additionalProperties": false
@@ -454,6 +461,7 @@
             },
             {
               "name": "finish",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -461,6 +469,7 @@
             },
             {
               "name": "reset",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -851,6 +860,7 @@
           "methods": [
             {
               "name": "isRunning",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -877,6 +887,7 @@
             },
             {
               "name": "snapshot",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "AiRunSnapshot",

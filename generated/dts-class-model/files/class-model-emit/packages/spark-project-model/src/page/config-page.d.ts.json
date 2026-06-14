@@ -153,7 +153,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "text": {
               "type": "string"
@@ -178,7 +179,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -188,7 +190,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -200,7 +203,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "text": {
               "type": "string"
@@ -213,7 +217,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -225,7 +230,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -237,7 +243,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -249,7 +256,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -265,7 +273,8 @@
         "method.getDirtyFileNames.return": {
           "type": "array",
           "items": {
-            "$ref": "page-file.d.ts.json#/$defs/PageNodeFileName"
+            "type": "object",
+            "title": "PageNodeFileName"
           }
         },
         "method.getNodeTree.params": {
@@ -444,6 +453,7 @@
             },
             {
               "name": "toRenderConfig",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "PageNodeRenderConfig",
@@ -558,6 +568,7 @@
             {
               "name": "isDirty",
               "jsdoc": "是否 is Dirty。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -591,6 +602,7 @@
             {
               "name": "markLoaded",
               "jsdoc": "执行 mark Loaded 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -599,6 +611,7 @@
             {
               "name": "markUnloaded",
               "jsdoc": "执行 mark Unloaded 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -740,6 +753,7 @@
             {
               "name": "getDirtyFileNames",
               "jsdoc": "读取 Dirty File Names。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -752,6 +766,7 @@
             {
               "name": "getNodeTree",
               "jsdoc": "读取 rule.json 节点树。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "SparkNodeTreeModel"
@@ -816,6 +831,7 @@
             {
               "name": "getDataSetTool",
               "jsdoc": "读取 pagedata 数据集工具入口。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "DataSetCrudTool"
@@ -880,6 +896,7 @@
             {
               "name": "toRenderConfig",
               "jsdoc": "to Render Config 配置。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "PageNodeRenderConfig",
@@ -889,6 +906,7 @@
             {
               "name": "toSummary",
               "jsdoc": "执行 to Summary 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectPageNodeSummary",

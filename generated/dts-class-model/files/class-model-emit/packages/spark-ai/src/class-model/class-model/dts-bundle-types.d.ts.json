@@ -65,6 +65,10 @@
         "module": {
           "$ref": "#/$defs/DtsFileModuleSemanticMeta"
         },
+        "$defs": {
+          "type": "object",
+          "title": "Record<string, AiJsonSchemaObject>"
+        },
         "models": {
           "type": "object",
           "title": "Record<string, unknown>"

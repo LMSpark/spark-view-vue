@@ -200,6 +200,7 @@
             {
               "name": "logout",
               "jsdoc": "用户登出\n@throws 登出 API 调用失败时抛出异常（但仍会清除本地 Token）\n@example ```typescript\ntry {\nawait authService.logout()\nconsole.log('登出成功')\n} catch (error) {\nconsole.error('登出失败:', error.message)\n}\n```",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -214,6 +215,7 @@
             {
               "name": "checkAuth",
               "jsdoc": "检查认证状态\n@returns 认证结果或 null（未认证）\n@example ```typescript\nconst authResult = await authService.checkAuth()\nif (authResult) {\nconsole.log('用户已认证:', authResult.user.username)\n} else {\nconsole.log('用户未认证')\n}\n```",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -238,6 +240,7 @@
             {
               "name": "isAuthenticated",
               "jsdoc": "检查是否已认证\n@returns 是否已认证\n@note 这是一个同步方法，不会发起网络请求",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -246,6 +249,7 @@
             {
               "name": "getToken",
               "jsdoc": "获取当前 Token\n@returns Token 字符串或 null",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -280,6 +284,7 @@
             {
               "name": "clearToken",
               "jsdoc": "清除 Token",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -288,6 +293,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁认证服务，释放所有资源\n- 清除 Token\n- 清除并发刷新锁\n- 移除所有生命周期钩子引用\n- 标记为未初始化（后续调用将静默返回或抛出）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -296,6 +302,7 @@
             {
               "name": "refreshToken",
               "jsdoc": "刷新 Token\n内置并发锁：多个并发调用会共享同一个刷新请求，\n避免多个 refresh 请求同时发出导致 refresh token 被消耗。\n@returns 新的 Token\n@throws 刷新失败时抛出异常",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

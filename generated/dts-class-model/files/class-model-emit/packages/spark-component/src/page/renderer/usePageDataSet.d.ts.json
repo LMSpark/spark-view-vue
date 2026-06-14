@@ -131,6 +131,7 @@
             {
               "name": "clearDataSet",
               "jsdoc": "clear Data Set 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

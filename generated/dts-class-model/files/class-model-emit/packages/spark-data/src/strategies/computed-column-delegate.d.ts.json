@@ -179,6 +179,7 @@
             {
               "name": "invalidateCache",
               "jsdoc": "@internal 失效编译缓存，下次 syncFromConfig 将强制重编译。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -187,6 +188,7 @@
             {
               "name": "syncFromConfig",
               "jsdoc": "从宿主的 DataTable 列定义编译并注册计算列。\n内置编译缓存：列指纹 + ctx 不变时跳过。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -289,6 +291,7 @@
             {
               "name": "destroy",
               "jsdoc": "清空所有状态（DataView.destroy 时调用）。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

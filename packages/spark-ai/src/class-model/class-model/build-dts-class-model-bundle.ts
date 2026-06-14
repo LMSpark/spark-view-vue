@@ -98,6 +98,7 @@ type BundleSchemaRefContext = Readonly<{
   currentSourcePath: string
   currentBundleFile: string
   projectedClassNamesBySourcePath: ReadonlyMap<string, ReadonlySet<string>>
+  schemaClassNamesBySourcePath: ReadonlyMap<string, ReadonlySet<string>>
   classNameSourceIndex: ReadonlyMap<string, string | undefined>
   typeReferenceIndex: ReadonlyMap<string, ReadonlyMap<string, TypeReferenceTarget>>
 }>
@@ -203,11 +204,17 @@ export function buildDtsClassModelBundle(
     )
   }
   const classNameSourceIndex = buildClassNameSourceIndex(projectedClassNamesBySourcePath)
+  const schemaClassNamesBySourcePath = buildSchemaClassNamesBySourcePath({
+    outputDir,
+    projectedFiles,
+    knownSourcePaths: options.knownProjectedClassNamesBySourcePath?.keys() ?? [],
+  })
   for (const projectedFile of projectedFiles) {
     const compactProjection = compactDtsFileProjectionForBundle(projectedFile.projection, {
       currentSourcePath: projectedFile.sourcePath,
       currentBundleFile: projectedFile.bundleFile,
       projectedClassNamesBySourcePath,
+      schemaClassNamesBySourcePath,
       classNameSourceIndex,
       typeReferenceIndex,
     })
@@ -461,9 +468,7 @@ function compactPersistedConstructorMetaForBundle(constructorMeta: ConstructorMe
     ...(constructorMeta.parameterStyle === undefined || constructorMeta.parameterStyle === 'positional'
       ? {}
       : { parameterStyle: constructorMeta.parameterStyle }),
-    ...(constructorMeta.parameters === undefined || constructorMeta.parameters.length === 0
-      ? {}
-      : { parameters: constructorMeta.parameters }),
+    parameters: constructorMeta.parameters ?? [],
     ...(constructorMeta.provenance === undefined ? {} : { provenance: constructorMeta.provenance }),
   }
 }
@@ -483,7 +488,7 @@ function compactPersistedMethodMetaForBundle(method: MethodMeta): Record<string,
     name: method.name,
     ...(method.jsdoc.length === 0 ? {} : { jsdoc: method.jsdoc }),
     ...(method.parameterStyle === undefined || method.parameterStyle === 'positional' ? {} : { parameterStyle: method.parameterStyle }),
-    ...(method.parameters === undefined || method.parameters.length === 0 ? {} : { parameters: method.parameters }),
+    parameters: method.parameters ?? [],
     ...(method.type === undefined ? {} : { type: method.type }),
     ...(method.signatureText === undefined ? {} : { signatureText: method.signatureText }),
     ...(method.takesContext === undefined ? {} : { takesContext: method.takesContext }),
@@ -715,18 +720,20 @@ function dtsTypeReferenceTargetForBundle(
 
   const currentFileModels = refContext.projectedClassNamesBySourcePath.get(refContext.currentSourcePath)
   if (currentFileModels?.has(parsed.localName) === true) {
-    return {
+    const target = {
       targetName: parsed.localName,
       targetSourcePath: refContext.currentSourcePath,
     }
+    return refTargetExists(target, refContext) ? target : undefined
   }
 
   const uniqueSourcePath = refContext.classNameSourceIndex.get(parsed.localName)
   if (uniqueSourcePath !== undefined) {
-    return {
+    const target = {
       targetName: parsed.localName,
       targetSourcePath: uniqueSourcePath,
     }
+    return refTargetExists(target, refContext) ? target : undefined
   }
   return undefined
 }
@@ -747,6 +754,42 @@ function buildClassNameSourceIndex(
   return index
 }
 
+function buildSchemaClassNamesBySourcePath(command: Readonly<{
+  outputDir: string
+  projectedFiles: readonly ProjectedBundleFile[]
+  knownSourcePaths: Iterable<string>
+}>): ReadonlyMap<string, ReadonlySet<string>> {
+  const index = new Map<string, ReadonlySet<string>>()
+  for (const sourcePath of command.knownSourcePaths) {
+    const existing = readExistingShardSchemaClassNames(command.outputDir, sourcePath)
+    if (existing.size > 0) index.set(sourcePath, existing)
+  }
+  for (const projectedFile of command.projectedFiles) {
+    index.set(projectedFile.sourcePath, collectSchemaClassNames(projectedFile.projection.models))
+  }
+  return index
+}
+
+function collectSchemaClassNames(models: Readonly<Record<string, DtsTypeDeclarationModel>>): ReadonlySet<string> {
+  const names = new Set<string>()
+  const modelsWithSchema = attachModelJsonSchemas(models)
+  for (const [className, model] of Object.entries(modelsWithSchema)) {
+    if (model.jsonSchema !== undefined) names.add(className)
+  }
+  return names
+}
+
+function readExistingShardSchemaClassNames(outputDir: string, sourcePath: string): ReadonlySet<string> {
+  const shardPath = resolve(outputDir, dtsSourcePathToBundleRelativeJson(sourcePath))
+  try {
+    const shard = JSON.parse(readFileSync(shardPath, 'utf8')) as { $defs?: unknown }
+    if (shard.$defs === null || typeof shard.$defs !== 'object' || Array.isArray(shard.$defs)) return new Set()
+    return new Set(Object.keys(shard.$defs))
+  } catch {
+    return new Set()
+  }
+}
+
 function parseDtsReferenceTitle(title: string): { namespaceName?: string; localName: string } | undefined {
   const match = /^(?:(?<namespace>[A-Za-z_$][\w$]*)\.)?(?<local>[A-Za-z_$][\w$]*)/u.exec(title.trim())
   const localName = match?.groups?.['local']
@@ -761,7 +804,7 @@ function refTargetExists(
   target: TypeReferenceTarget,
   refContext: BundleSchemaRefContext,
 ): boolean {
-  return refContext.projectedClassNamesBySourcePath.get(target.targetSourcePath)?.has(target.targetName) ?? false
+  return refContext.schemaClassNamesBySourcePath.get(target.targetSourcePath)?.has(target.targetName) ?? false
 }
 
 function isTypeReferencePlaceholderSchema(schema: AiJsonSchemaObject): boolean {

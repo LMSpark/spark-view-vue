@@ -273,6 +273,7 @@
             {
               "name": "start",
               "jsdoc": "启动会话：创建/接入 sessionStore 记录 + 生成工具规约",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -287,6 +288,7 @@
             {
               "name": "getSessionRecord",
               "jsdoc": "获取当前会话记录：Agent 能力诊断和再次接入会话的读取起点",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

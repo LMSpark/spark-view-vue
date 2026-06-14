@@ -147,7 +147,8 @@
         "props": {
           "allOf": [
             {
-              "$ref": "#/$defs/FieldOptionProps"
+              "type": "object",
+              "title": "FieldOptionProps"
             },
             {
               "$ref": "../context/useFieldPermission.d.ts.json#/$defs/FieldPermissionProps"

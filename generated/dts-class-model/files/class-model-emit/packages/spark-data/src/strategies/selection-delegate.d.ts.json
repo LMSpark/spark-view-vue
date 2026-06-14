@@ -327,6 +327,7 @@
             {
               "name": "applyAutoFirst",
               "jsdoc": "数据加载完成后应用 autoCurrentFirst / autoSelectFirst 逻辑。\nupdateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。\n先强制清零（无事件），再通过正式 setter 写入新值；setter 发射领域事件，\nDataSet.onAnyViewChange 订阅者（如 SparkPageRenderer）因此能正确收到事件。\nautoCurrentFirst / autoSelectFirst 彼此独立，各自触发自己的事件。\n单选模式下 setCurrentRow 内部会自动同步 selectedRows，这里用\n_suppressSelectionSync 抑制，让 autoSelectFirst 独立决定。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -492,6 +493,7 @@
             {
               "name": "clearSelectedRows",
               "jsdoc": "清空选中行",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -610,6 +612,7 @@
             {
               "name": "cleanupInvalidSelections",
               "jsdoc": "清理已不在 rows 中的选中状态\n在 rows 被部分刷新（非整体替换）时调用，同步清理失效的指针。\n@returns 是否发生了清理",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"

@@ -73,10 +73,12 @@
           "$ref": "../../../packages/spark-app/src/ai/ai-run-adapter.d.ts.json#/$defs/AiRunAdapterState"
         },
         "beforeFunctionCall": {
-          "$ref": "../../../packages/spark-app/src/ai/ai-run-adapter.d.ts.json#/$defs/AiRunBeforeFunctionCall"
+          "type": "object",
+          "title": "AiRunBeforeFunctionCall"
         },
         "onAbort": {
-          "$ref": "../../../packages/spark-app/src/ai/ai-run-adapter.d.ts.json#/$defs/AiRunAbortHandler"
+          "type": "object",
+          "title": "AiRunAbortHandler"
         },
         "userMessage": {
           "type": "string"

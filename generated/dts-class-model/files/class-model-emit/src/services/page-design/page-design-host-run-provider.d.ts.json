@@ -49,7 +49,8 @@
         "saveFileNames": {
           "type": "array",
           "items": {
-            "$ref": "../../../packages/spark-project-model/src/page/page-file.d.ts.json#/$defs/PageNodeFileName"
+            "type": "object",
+            "title": "PageNodeFileName"
           }
         }
       },

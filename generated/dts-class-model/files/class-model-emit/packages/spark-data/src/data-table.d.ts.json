@@ -471,6 +471,7 @@
             {
               "name": "onDataSetRelationsReady",
               "jsdoc": "DataSet 关系规范化完成后调用——通知所有视图重编译含聚合的计算列并重算聚合行。\n封装后置重算职责：DataSet 只需调用此方法，不直接触碰 view 内部。\n遍历各视图委托给 view.onDataSetRelationsReady()，DataSet 不需要了解视图内部细节。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -603,6 +604,7 @@
             {
               "name": "toJson",
               "jsdoc": "将 DataTable 序列化为 canonical TableMetadata（表核 + views 壳）。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "TableMetadata",
@@ -741,6 +743,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁所有视图（包括 default 视图）\n@remarks 应在 DataTable 不再使用时调用，防止内存泄漏",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

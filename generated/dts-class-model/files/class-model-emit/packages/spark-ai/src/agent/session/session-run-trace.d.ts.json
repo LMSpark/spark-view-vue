@@ -291,7 +291,8 @@
           "type": "object",
           "properties": {
             "listener": {
-              "$ref": "#/$defs/AiAgentRunTraceListener"
+              "type": "object",
+              "title": "AiAgentRunTraceListener"
             }
           },
           "additionalProperties": false
@@ -634,6 +635,7 @@
           "methods": [
             {
               "name": "now",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -681,6 +683,7 @@
           "methods": [
             {
               "name": "snapshot",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "AiAgentRunTraceSnapshot",
@@ -833,6 +836,7 @@
             },
             {
               "name": "finish",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -840,6 +844,7 @@
             },
             {
               "name": "reset",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

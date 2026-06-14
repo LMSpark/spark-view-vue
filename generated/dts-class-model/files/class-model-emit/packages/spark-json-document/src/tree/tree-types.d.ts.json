@@ -117,7 +117,8 @@
       "title": "MutationResult",
       "properties": {
         "model": {
-          "$ref": "#/$defs/TreeModel"
+          "type": "object",
+          "title": "TreeModel"
         },
         "focusId": {
           "type": "string"
@@ -137,7 +138,8 @@
       "title": "RenameNodeKeyInput",
       "properties": {
         "model": {
-          "$ref": "#/$defs/TreeModel"
+          "type": "object",
+          "title": "TreeModel"
         },
         "uid": {
           "type": "string"
@@ -157,7 +159,8 @@
       "title": "UpdateNodeTypeInput",
       "properties": {
         "model": {
-          "$ref": "#/$defs/TreeModel"
+          "type": "object",
+          "title": "TreeModel"
         },
         "uid": {
           "type": "string"

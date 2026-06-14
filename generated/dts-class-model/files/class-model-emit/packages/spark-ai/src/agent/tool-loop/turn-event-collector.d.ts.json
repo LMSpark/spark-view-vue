@@ -135,6 +135,7 @@
           "methods": [
             {
               "name": "close",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

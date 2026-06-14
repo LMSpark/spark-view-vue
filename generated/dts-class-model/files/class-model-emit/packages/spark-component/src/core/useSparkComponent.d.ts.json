@@ -75,10 +75,12 @@
           "additionalProperties": false
         },
         "sparkConsume": {
-          "$ref": "#/$defs/SparkCapabilityConsumer"
+          "type": "object",
+          "title": "SparkCapabilityConsumer"
         },
         "logger": {
-          "$ref": "#/$defs/LoggerApi"
+          "type": "object",
+          "title": "LoggerApi"
         }
       },
       "required": [
@@ -96,7 +98,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "#/$defs/CapabilityKey"
+              "type": "object",
+              "title": "CapabilityKey<T>"
             }
           },
           "additionalProperties": false
@@ -129,7 +132,8 @@
           "additionalProperties": false
         },
         "sparkConsume": {
-          "$ref": "#/$defs/SparkCapabilityConsumer"
+          "type": "object",
+          "title": "SparkCapabilityConsumer"
         }
       },
       "required": [
@@ -144,7 +148,8 @@
       "title": "UseSparkComponentOptions",
       "properties": {
         "parentContext": {
-          "$ref": "#/$defs/CapabilityContext"
+          "type": "object",
+          "title": "CapabilityContext"
         }
       },
       "additionalProperties": false
@@ -175,14 +180,11 @@
           ]
         },
         "parentContext": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/CapabilityContext"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": [
+            "null",
+            "object"
+          ],
+          "title": "CapabilityContext"
         }
       },
       "required": [

@@ -770,6 +770,7 @@
             {
               "name": "clearAll",
               "jsdoc": "清除全部三态追踪状态（视图全量刷新 / 销毁时调用）。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1045,6 +1046,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁——清理所有内存状态",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

@@ -74,6 +74,7 @@
           "methods": [
             {
               "name": "isCollapsed",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -97,6 +98,7 @@
             },
             {
               "name": "toggle",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

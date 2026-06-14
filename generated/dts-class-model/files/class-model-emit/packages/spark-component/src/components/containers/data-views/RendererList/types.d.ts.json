@@ -80,6 +80,7 @@
           "methods": [
             {
               "name": "getRows",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -90,6 +91,7 @@
             },
             {
               "name": "getItemCount",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"

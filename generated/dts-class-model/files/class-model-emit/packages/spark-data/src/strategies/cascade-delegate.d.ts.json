@@ -87,6 +87,7 @@
             {
               "name": "setupCascade",
               "jsdoc": "建立级联监听\n沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →\n按 dependencyType 订阅对应的父视图独立事件。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -95,6 +96,7 @@
             {
               "name": "teardownCascade",
               "jsdoc": "清理全部级联订阅",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -103,6 +105,7 @@
             {
               "name": "cancelPendingRequest",
               "jsdoc": "取消待处理的级联请求",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -111,6 +114,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁 — 清理订阅 + 取消待处理请求",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

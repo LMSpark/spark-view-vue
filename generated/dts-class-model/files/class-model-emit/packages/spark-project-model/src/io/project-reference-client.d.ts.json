@@ -175,6 +175,7 @@
             {
               "name": "getProjectsApi",
               "jsdoc": "get Projects Api 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"

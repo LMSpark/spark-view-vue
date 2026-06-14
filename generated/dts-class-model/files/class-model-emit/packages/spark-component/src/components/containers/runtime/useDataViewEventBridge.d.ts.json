@@ -164,7 +164,8 @@
       "title": "RequestStateChangedContext",
       "properties": {
         "state": {
-          "$ref": "#/$defs/DataViewRequestState"
+          "type": "object",
+          "title": "DataViewRequestState"
         },
         "view": {
           "$ref": "../../../../../spark-data/src/data-view.d.ts.json#/$defs/DataView"
@@ -1048,6 +1049,7 @@
             {
               "name": "onDetached",
               "jsdoc": "当 view 为空或 enabled=false 时触发（可做 UI 复位）。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

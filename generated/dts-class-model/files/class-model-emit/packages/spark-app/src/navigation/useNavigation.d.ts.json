@@ -110,6 +110,7 @@
             {
               "name": "getHeaders",
               "jsdoc": "返回额外请求头（如 Authorization），用于远程上下文数据加载",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",

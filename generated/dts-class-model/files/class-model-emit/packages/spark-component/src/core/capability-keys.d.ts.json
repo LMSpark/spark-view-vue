@@ -458,6 +458,7 @@
             },
             {
               "name": "toggle",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -549,6 +550,7 @@
           "methods": [
             {
               "name": "getCurrent",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

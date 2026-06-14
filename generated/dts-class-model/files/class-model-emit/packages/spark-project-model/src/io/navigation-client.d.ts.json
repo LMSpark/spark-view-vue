@@ -206,6 +206,7 @@
             {
               "name": "getNavigationApi",
               "jsdoc": "get Navigation Api 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -275,6 +276,7 @@
             {
               "name": "loadRoot",
               "jsdoc": "加载 Root。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

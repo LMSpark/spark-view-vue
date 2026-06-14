@@ -80,6 +80,7 @@
           "methods": [
             {
               "name": "getDetailData",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",

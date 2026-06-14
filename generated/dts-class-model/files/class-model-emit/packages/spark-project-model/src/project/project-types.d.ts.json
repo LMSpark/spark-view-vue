@@ -164,7 +164,8 @@
           "type": "string"
         },
         "fileName": {
-          "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+          "type": "object",
+          "title": "PageNodeFileName"
         },
         "text": {
           "type": "string"

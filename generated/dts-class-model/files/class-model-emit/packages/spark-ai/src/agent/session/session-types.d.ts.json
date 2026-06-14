@@ -1106,7 +1106,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "会话存储抽象类。\n定义了 Host 层所需的全部持久化操作。业务方可继承此类实现自定义存储\n（如 localStorage、IndexedDB、服务端持久化），也可直接使用默认的\nDefaultAiAgentSessionStore（纯内存实现）。\n历史会话只属于 spark-ai：它支撑 Agent 能力诊断、失败回看和后续再次接入\n同一业务会话；业务包和 smoke 只能读取它，不应复制或维护第二份历史。\n方法分类：\n生命周期 — startSession / stopSession / getSession / listSessions\n历史查询 — getSessionHistory\n追加记录 — appendMessage / appendFunctionCall",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [
@@ -1198,6 +1199,7 @@
             {
               "name": "listSessions",
               "jsdoc": "列出所有会话",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly AiAgentSessionRecord[]"

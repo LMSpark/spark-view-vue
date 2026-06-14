@@ -267,6 +267,7 @@
           "methods": [
             {
               "name": "getDataSource",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -464,6 +465,7 @@
           "methods": [
             {
               "name": "getCurrentRow",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -480,6 +482,7 @@
             },
             {
               "name": "refresh",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -644,6 +647,7 @@
           "methods": [
             {
               "name": "open",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -651,6 +655,7 @@
             },
             {
               "name": "close",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -658,6 +663,7 @@
             },
             {
               "name": "isVisible",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -665,6 +671,7 @@
             },
             {
               "name": "toggle",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

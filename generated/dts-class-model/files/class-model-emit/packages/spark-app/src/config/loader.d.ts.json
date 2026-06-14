@@ -169,13 +169,15 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "私有构造函数，确保运行时配置缓存只通过 getInstance 维护一个进程内单例。",
-          "signatureText": "private constructor()"
+          "signatureText": "private constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [
             {
               "name": "getInstance",
               "jsdoc": "获取单例实例",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ConfigLoader",
@@ -185,6 +187,7 @@
             {
               "name": "loadDefaultConfig",
               "jsdoc": "加载默认配置",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -260,6 +263,7 @@
             {
               "name": "clearCache",
               "jsdoc": "清除缓存",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -282,13 +286,15 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "租户识别器",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [
             {
               "name": "fromQuery",
               "jsdoc": "从 URL 参数获取租户 ID",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -306,6 +312,7 @@
             {
               "name": "fromSubdomain",
               "jsdoc": "从子域名获取租户 ID\n例如：demo.example.com -> demo",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -323,6 +330,7 @@
             {
               "name": "fromLocalStorage",
               "jsdoc": "从 localStorage 获取租户 ID",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -340,6 +348,7 @@
             {
               "name": "fromCookie",
               "jsdoc": "从 cookie 获取租户 ID",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -357,6 +366,7 @@
             {
               "name": "resolve",
               "jsdoc": "综合识别租户 ID（按优先级）\n优先级：URL 参数 > 子域名 > localStorage > cookie",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

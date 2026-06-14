@@ -54,7 +54,8 @@
           "type": "string"
         },
         "refreshBundle": {
-          "$ref": "#/$defs/DtsBundleClassModelKnowledgeRefreshFunction"
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
         },
         "refreshPolicy": {
           "$ref": "#/$defs/DtsBundleClassModelKnowledgeRefreshPolicy"
@@ -74,7 +75,8 @@
           "type": "string"
         },
         "refreshBundle": {
-          "$ref": "#/$defs/DtsBundleClassModelKnowledgeRefreshFunction"
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
         },
         "refreshPolicy": {
           "$ref": "#/$defs/DtsBundleClassModelKnowledgeRefreshPolicy"
@@ -420,6 +422,7 @@
             {
               "name": "init",
               "jsdoc": "初始化 manifest，保持动态加载入口 fail-fast。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

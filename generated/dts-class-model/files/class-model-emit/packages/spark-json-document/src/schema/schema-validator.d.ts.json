@@ -253,7 +253,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "静态工具类禁止实例化；所有校验入口必须通过 static 方法共享同一个 AJV 2020 实例。",
-          "signatureText": "private constructor()"
+          "signatureText": "private constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [

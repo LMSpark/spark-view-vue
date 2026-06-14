@@ -87,7 +87,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "Host 内部业务注册表，按 moduleId 保存 AI 业务定义并保护注册期不变量。",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [
@@ -147,6 +148,7 @@
             {
               "name": "list",
               "jsdoc": "列出当前所有业务注册项，供 Host 诊断、dry-run 和对外摘要使用。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {

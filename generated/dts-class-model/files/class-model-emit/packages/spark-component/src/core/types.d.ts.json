@@ -476,6 +476,7 @@
             },
             {
               "name": "getAll",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ReadonlyMap",

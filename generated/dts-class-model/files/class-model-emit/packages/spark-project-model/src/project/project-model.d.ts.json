@@ -41,7 +41,8 @@
           "type": "object",
           "properties": {
             "listener": {
-              "$ref": "project-types.d.ts.json#/$defs/ProjectModelEventListener"
+              "type": "object",
+              "title": "ProjectModelEventListener"
             }
           },
           "additionalProperties": false
@@ -489,7 +490,8 @@
           "type": "object",
           "properties": {
             "fileName": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "pageId": {
               "type": "string"
@@ -512,7 +514,8 @@
           "type": "object",
           "properties": {
             "fileName": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -524,7 +527,8 @@
           "type": "object",
           "properties": {
             "fileName": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -536,7 +540,8 @@
           "type": "object",
           "properties": {
             "fileName": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -548,7 +553,8 @@
           "type": "object",
           "properties": {
             "fileName": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -618,7 +624,8 @@
               "type": "string"
             },
             "fileName": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -970,6 +977,7 @@
             {
               "name": "readPlanningProjection",
               "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -982,6 +990,7 @@
             {
               "name": "readProjectPlanningInput",
               "jsdoc": "读取项目级策划输入：navigation 根 description（短需求）+ 可选策划附件引用。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectPlanningInput",
@@ -1009,6 +1018,7 @@
             {
               "name": "readNavigationPlanningInputs",
               "jsdoc": "读取全部导航节点策划输入（扁平遍历顺序）。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly NavigationPlanningInput[]"
@@ -1169,6 +1179,7 @@
             {
               "name": "refreshNavRefs",
               "jsdoc": "执行 refresh Nav Refs 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1177,6 +1188,7 @@
             {
               "name": "toTree",
               "jsdoc": "执行 to Tree 操作。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -1271,6 +1283,7 @@
             {
               "name": "clearActivePage",
               "jsdoc": "清空 Active Page。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1279,6 +1292,7 @@
             {
               "name": "getActivePage",
               "jsdoc": "读取 Active Page。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -1297,6 +1311,7 @@
             {
               "name": "beginNavigationDraft",
               "jsdoc": "执行 begin Navigation Draft 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "NavigationNodeDraft",
@@ -1306,6 +1321,7 @@
             {
               "name": "discardNavigationDraft",
               "jsdoc": "执行 discard Navigation Draft 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1380,6 +1396,7 @@
             {
               "name": "applyNestedConfigPagePreset",
               "jsdoc": "嵌套配置页 preset：page + hidden + 无 path。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1434,6 +1451,7 @@
             {
               "name": "isActivePageLoaded",
               "jsdoc": "是否 is Active Page Loaded。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -1514,6 +1532,7 @@
             {
               "name": "getDataSetTool",
               "jsdoc": "读取 Data Set Tool。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -1587,6 +1606,7 @@
             {
               "name": "getNodeTree",
               "jsdoc": "读取 Node Tree。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -1709,6 +1729,7 @@
             {
               "name": "readNavigationProjection",
               "jsdoc": "读取承载轴投影：导航树、选中节点与 pageFeatures。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectNavigationProjection",
@@ -1718,6 +1739,7 @@
             {
               "name": "readActivePageProjection",
               "jsdoc": "执行 read Active Page Projection 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectActivePageProjection",
@@ -1727,6 +1749,7 @@
             {
               "name": "readDirtyProjection",
               "jsdoc": "执行 read Dirty Projection 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectDirtyProjection",

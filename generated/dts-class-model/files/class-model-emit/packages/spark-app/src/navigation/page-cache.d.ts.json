@@ -180,6 +180,7 @@
             },
             {
               "name": "clearAllCache",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"
@@ -187,6 +188,7 @@
             },
             {
               "name": "getCacheStats",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"
@@ -228,6 +230,7 @@
             },
             {
               "name": "clearAllCache",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"
@@ -235,6 +238,7 @@
             },
             {
               "name": "getCacheStats",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"

@@ -377,6 +377,7 @@
           "methods": [
             {
               "name": "getRows",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -387,6 +388,7 @@
             },
             {
               "name": "getSelectedRows",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -397,6 +399,7 @@
             },
             {
               "name": "query",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -758,6 +761,7 @@
             },
             {
               "name": "clearSelectedRows",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -765,6 +769,7 @@
             },
             {
               "name": "clearUiSelection",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -798,6 +803,7 @@
             },
             {
               "name": "doLayout",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -805,6 +811,7 @@
             },
             {
               "name": "getNativeTable",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "unknown"

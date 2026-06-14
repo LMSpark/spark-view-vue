@@ -81,6 +81,48 @@ describe('readDtsClassModelBundleJson', () => {
     }
   })
 
+  it('does not emit $ref to type aliases without persisted schema', () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-ref-${String(process.pid)}-${String(Date.now())}`)
+    try {
+      const sourcePath = 'class-model-emit/packages/demo/src/adapter.d.ts'
+      const absolutePath = resolve(tempRoot, sourcePath)
+      const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+      mkdirSync(dirname(absolutePath), { recursive: true })
+      writeFileSync(absolutePath, [
+        '/** @module demo:adapter',
+        ' * 职责：验证 schema ref 只指向实际存在的 $defs。',
+        ' * 边界：只覆盖构造函数别名这种不可 JSON Schema 化的声明。',
+        ' * AI用途：防止生成器把不可验证声明写成悬空 $ref。',
+        ' */',
+        '/** 构造函数别名，不应生成 JSON Schema $defs。 */',
+        'export type Ctor = new (...args: never[]) => object',
+        '/** 引用构造函数别名的可序列化命令。 */',
+        'export type Command = Readonly<{',
+        '  moduleClass: Ctor',
+        '  name: string',
+        '}>',
+      ].join('\n'), 'utf8')
+
+      buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [absolutePath],
+        outputDir,
+      })
+      const shardPath = resolve(outputDir, 'files', `${sourcePath}.json`)
+      const shard = JSON.parse(readFileSync(shardPath, 'utf8')) as {
+        $defs: Record<string, { properties?: Record<string, unknown> }>
+      }
+
+      expect(shard.$defs['Ctor']).toBeUndefined()
+      expect(shard.$defs['Command']?.properties?.['moduleClass']).toEqual({
+        type: 'object',
+        title: 'Ctor',
+      })
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
   it('parses a generated per-file projection shard', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-shard-${String(process.pid)}-${String(Date.now())}`)
     try {
@@ -138,12 +180,16 @@ describe('readDtsClassModelBundleJson', () => {
       })
       expect(Object.keys(projection.models)).toContain('SparkAIModel')
       expect(rawRecord.models?.['SparkAIModel']?.classDecl?.constructorMeta).not.toHaveProperty('paramsSchema')
+      expect(rawRecord.models?.['SparkAIModel']?.classDecl?.constructorMeta).toHaveProperty('parameters', [])
       expect(sparkModel.classDecl.constructorMeta.signatureText).toBe('constructor()')
       expect(sparkModel.classDecl.constructorMeta.paramsSchema).toMatchObject({
         type: 'object',
         properties: {},
         additionalProperties: false,
       })
+      const rawToJsonMethod = rawRecord.models?.['SparkAIModel']?.classDecl?.members?.methods
+        ?.find(method => method['name'] === 'toJson')
+      expect(rawToJsonMethod).toHaveProperty('parameters', [])
       const removeMethod = sparkModel.classDecl.members.methods.find(method => method.name === 'remove')
       const rawRemoveMethod = rawRecord.models?.['SparkAIModel']?.classDecl?.members?.methods
         ?.find(method => method['name'] === 'remove')

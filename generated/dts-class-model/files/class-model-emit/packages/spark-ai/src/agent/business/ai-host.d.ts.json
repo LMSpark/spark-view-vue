@@ -562,6 +562,7 @@
           "methods": [
             {
               "name": "create",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "AiAgentRegistration",
@@ -799,7 +800,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "用共享 host state 构造不可变门面实例；外部必须通过 create/register/ensure 创建或窄化 Host。",
-          "signatureText": "private constructor()"
+          "signatureText": "private constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [
@@ -980,6 +982,7 @@
             {
               "name": "listRegistrations",
               "jsdoc": "列出 Host 当前暴露的业务入口，用于启动日志、控制台和接入自检。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly AiAgentHostRegistrationSummary[]"

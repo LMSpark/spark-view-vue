@@ -75,7 +75,8 @@
               "type": "string"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "content": {
               "type": "string"
@@ -120,7 +121,8 @@
               "type": "string"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -136,7 +138,8 @@
               "type": "string"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "version": {
               "type": "number"
@@ -155,7 +158,8 @@
               "type": "string"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -171,7 +175,8 @@
               "type": "string"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "version": {
               "type": "number"
@@ -248,6 +253,7 @@
             {
               "name": "getPageFilesApi",
               "jsdoc": "get Page Files Api 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"

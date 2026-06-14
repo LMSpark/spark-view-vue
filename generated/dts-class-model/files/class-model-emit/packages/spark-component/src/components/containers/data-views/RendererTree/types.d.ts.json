@@ -336,6 +336,7 @@
           "methods": [
             {
               "name": "getTreeData",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -346,6 +347,7 @@
             },
             {
               "name": "getNativeTree",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "unknown"
@@ -353,6 +355,7 @@
             },
             {
               "name": "getCurrentNode",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -473,6 +476,7 @@
             },
             {
               "name": "getCheckedKeys",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {

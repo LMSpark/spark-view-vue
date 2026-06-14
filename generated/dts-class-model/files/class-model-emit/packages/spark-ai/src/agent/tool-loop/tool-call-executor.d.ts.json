@@ -35,7 +35,8 @@
           "type": "number"
         },
         "resolveToolName": {
-          "$ref": "#/$defs/AiAgentToolNameResolver"
+          "type": "object",
+          "title": "AiAgentToolNameResolver"
         },
         "call": {
           "$ref": "../transport/transport-types.d.ts.json#/$defs/AiAgentTransportToolCall"
@@ -223,7 +224,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "Ai Agent Tool Call Executor 的语义模型。",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [

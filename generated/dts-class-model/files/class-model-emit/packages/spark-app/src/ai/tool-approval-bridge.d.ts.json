@@ -161,7 +161,8 @@
           "type": "object",
           "properties": {
             "listener": {
-              "$ref": "#/$defs/AiToolApprovalBridgeListener"
+              "type": "object",
+              "title": "AiToolApprovalBridgeListener"
             }
           },
           "additionalProperties": false
@@ -358,6 +359,7 @@
           "methods": [
             {
               "name": "now",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -414,6 +416,7 @@
             {
               "name": "listPending",
               "jsdoc": "执行 list Pending 操作。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly AiToolApprovalRequest[]"

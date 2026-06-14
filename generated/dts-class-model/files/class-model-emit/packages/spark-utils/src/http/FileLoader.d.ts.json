@@ -150,7 +150,8 @@
               "type": "string"
             },
             "opts": {
-              "$ref": "#/$defs/TransformedFileLoadOptions"
+              "type": "object",
+              "title": "TransformedFileLoadOptions"
             }
           },
           "additionalProperties": false
@@ -169,7 +170,8 @@
               }
             },
             "opts": {
-              "$ref": "#/$defs/TransformedFileLoadOptions"
+              "type": "object",
+              "title": "TransformedFileLoadOptions"
             }
           },
           "additionalProperties": false
@@ -219,7 +221,8 @@
               "type": "string"
             },
             "options": {
-              "$ref": "#/$defs/TransformedFileLoadOptions"
+              "type": "object",
+              "title": "TransformedFileLoadOptions"
             }
           },
           "additionalProperties": false
@@ -1349,6 +1352,7 @@
             {
               "name": "getCacheStats",
               "jsdoc": "获取内存缓存统计信息",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"

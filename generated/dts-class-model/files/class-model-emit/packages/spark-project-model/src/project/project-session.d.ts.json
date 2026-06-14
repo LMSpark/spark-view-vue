@@ -399,6 +399,7 @@
             {
               "name": "discardNavigationDraft",
               "jsdoc": "执行 discard Navigation Draft 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -425,6 +426,7 @@
             {
               "name": "markNavigationClean",
               "jsdoc": "执行 mark Navigation Clean 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -503,6 +505,7 @@
             {
               "name": "syncWithModel",
               "jsdoc": "执行 sync With Model 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

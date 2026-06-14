@@ -129,6 +129,7 @@
             {
               "name": "getAggregates",
               "jsdoc": "返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -148,6 +149,7 @@
             {
               "name": "emitSummaryChanged",
               "jsdoc": "通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -156,6 +158,7 @@
             {
               "name": "emitSelectionSummaryChanged",
               "jsdoc": "通知订阅方仅选中行聚合已更新（selectionAggregateResult）。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

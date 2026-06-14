@@ -34,7 +34,8 @@
           "title": "AiAgentRuntimeHostContext"
         },
         "schemaDefs": {
-          "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
+          "type": "object",
+          "title": "AiNativeRuntimeSchemaDefs"
         }
       },
       "additionalProperties": false

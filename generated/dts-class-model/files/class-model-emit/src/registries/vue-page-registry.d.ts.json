@@ -185,6 +185,7 @@
           "methods": [
             {
               "name": "load",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

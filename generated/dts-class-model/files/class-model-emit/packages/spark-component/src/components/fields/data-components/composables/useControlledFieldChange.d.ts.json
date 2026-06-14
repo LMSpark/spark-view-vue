@@ -181,6 +181,7 @@
             {
               "name": "getValue",
               "jsdoc": "get Value 回调。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "TValue",

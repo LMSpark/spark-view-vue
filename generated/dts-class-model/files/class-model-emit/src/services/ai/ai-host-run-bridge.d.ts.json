@@ -79,7 +79,8 @@
           "title": "THost"
         },
         "prepareRun": {
-          "$ref": "#/$defs/AiHostRunPrepare"
+          "type": "object",
+          "title": "AiHostRunPrepare<THost>"
         },
         "defaultTimeoutMs": {
           "type": "number"
@@ -295,6 +296,7 @@
           "methods": [
             {
               "name": "start",
+              "parameters": [],
               "type": {
                 "type": "reflection",
                 "declaration": {

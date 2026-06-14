@@ -22,7 +22,8 @@
       "properties": {
         "schemaVersion": true,
         "source": {
-          "$ref": "class-model-emit-path.d.ts.json#/$defs/ClassModelEmitSource"
+          "type": "object",
+          "title": "ClassModelEmitSource"
         },
         "configPath": {
           "type": "string"

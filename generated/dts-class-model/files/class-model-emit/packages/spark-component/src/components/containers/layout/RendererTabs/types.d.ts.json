@@ -108,6 +108,7 @@
           "methods": [
             {
               "name": "getActiveTab",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -153,6 +154,7 @@
             },
             {
               "name": "getPaneNames",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -172,6 +174,7 @@
             },
             {
               "name": "getPaneCount",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"

@@ -371,7 +371,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "options": {
               "$ref": "#/$defs/ProjectPageLoadOptions"
@@ -387,7 +388,8 @@
           "type": "object",
           "properties": {
             "name": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -549,7 +551,8 @@
           "type": "object",
           "properties": {
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -565,7 +568,8 @@
               "type": "number"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -578,7 +582,8 @@
           "type": "object",
           "properties": {
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -594,7 +599,8 @@
               "type": "number"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             }
           },
           "additionalProperties": false
@@ -612,7 +618,8 @@
             "filename": {
               "anyOf": [
                 {
-                  "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+                  "type": "object",
+                  "title": "PageNodeFileName"
                 },
                 {
                   "const": "__created"
@@ -957,6 +964,7 @@
             {
               "name": "getPageFilesApi",
               "jsdoc": "get Page Files Api 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -965,6 +973,7 @@
             {
               "name": "getNavigationApi",
               "jsdoc": "get Navigation Api 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -973,6 +982,7 @@
             {
               "name": "getProjectsApi",
               "jsdoc": "get Projects Api 回调。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -998,6 +1008,7 @@
             {
               "name": "getHeaders",
               "jsdoc": "get Headers 回调。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -1055,6 +1066,7 @@
             {
               "name": "getActivePageRenderNode",
               "jsdoc": "读取 Active Page Render Node。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -1073,6 +1085,7 @@
             {
               "name": "loadNavigation",
               "jsdoc": "加载 Navigation。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -1316,6 +1329,7 @@
             {
               "name": "saveDirtyPageFiles",
               "jsdoc": "保存 Dirty Page Files。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -1330,6 +1344,7 @@
             {
               "name": "saveAll",
               "jsdoc": "保存 All。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -1759,6 +1774,7 @@
             {
               "name": "listReferenceProjects",
               "jsdoc": "执行 list Reference Projects 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

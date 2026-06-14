@@ -137,6 +137,7 @@
           "methods": [
             {
               "name": "getActiveStep",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -157,6 +158,7 @@
             },
             {
               "name": "getActiveStepIndex",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -180,6 +182,7 @@
             },
             {
               "name": "nextStep",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -187,6 +190,7 @@
             },
             {
               "name": "prevStep",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -194,6 +198,7 @@
             },
             {
               "name": "getStepCount",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -201,6 +206,7 @@
             },
             {
               "name": "getStepNames",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -220,6 +226,7 @@
             },
             {
               "name": "isFirstStep",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -227,6 +234,7 @@
             },
             {
               "name": "isLastStep",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"

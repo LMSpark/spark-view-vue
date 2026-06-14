@@ -123,7 +123,8 @@
           "const": "value"
         },
         "value": {
-          "$ref": "#/$defs/DataViewMemberValue"
+          "type": "object",
+          "title": "DataViewMemberValue"
         },
         "source": {
           "$ref": "../types.d.ts.json#/$defs/DataSource"

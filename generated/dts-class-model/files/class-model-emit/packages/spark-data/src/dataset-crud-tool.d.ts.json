@@ -2707,6 +2707,7 @@
             {
               "name": "toJson",
               "jsdoc": "将当前 DataSet 序列化为元数据对象。\n@returns 可用于持久化或传输的 DataSet 元数据。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "DataSetMetadata",
@@ -2716,6 +2717,7 @@
             {
               "name": "getCanUndo",
               "jsdoc": "查询当前数据集历史是否可撤销。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -2724,6 +2726,7 @@
             {
               "name": "getCanRedo",
               "jsdoc": "查询当前数据集历史是否可重做。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -2732,6 +2735,7 @@
             {
               "name": "getHistoryCursor",
               "jsdoc": "查询当前数据集历史栈游标位置。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -2740,6 +2744,7 @@
             {
               "name": "undo",
               "jsdoc": "撤销最近一次结构写操作。\n成功时替换内部 DataSet 并返回 true；无可撤销时返回 false。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -2748,6 +2753,7 @@
             {
               "name": "redo",
               "jsdoc": "重做最近一次被撤销的操作。\n成功时替换内部 DataSet 并返回 true；无可重做时返回 false。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -2756,6 +2762,7 @@
             {
               "name": "clearHistory",
               "jsdoc": "清空当前数据集的 undo/redo 历史，只保留当前快照作为新的历史起点。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2816,6 +2823,7 @@
             {
               "name": "listTables",
               "jsdoc": "列出当前 DataSet 中的全部数据表。\n@returns 数据表实例列表。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {

@@ -607,6 +607,7 @@
             {
               "name": "flush",
               "jsdoc": "立即刷新队列中的日志（批量传输器可选实现）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -615,6 +616,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁传输器，释放定时器等资源",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -673,6 +675,7 @@
             {
               "name": "getPageId",
               "jsdoc": "获取当前页面 ID（每条日志自动附带）",
+              "parameters": [],
               "type": {
                 "type": "optional",
                 "elementType": {

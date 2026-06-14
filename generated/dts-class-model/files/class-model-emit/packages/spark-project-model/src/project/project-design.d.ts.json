@@ -612,6 +612,7 @@
             {
               "name": "readPlanningProjection",
               "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -727,6 +728,7 @@
             {
               "name": "refreshNavRefs",
               "jsdoc": "执行 refresh Nav Refs 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -735,6 +737,7 @@
             {
               "name": "toTree",
               "jsdoc": "执行 to Tree 操作。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {

@@ -144,6 +144,7 @@
             {
               "name": "resolveView",
               "jsdoc": "解析关联 DataView",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -161,6 +162,7 @@
             {
               "name": "resolveScopedRow",
               "jsdoc": "解析作用域行（行内按钮 / currentRow）",
+              "parameters": [],
               "type": {
                 "type": "optional",
                 "elementType": {
@@ -172,6 +174,7 @@
             {
               "name": "resolveContext",
               "jsdoc": "构造执行上下文",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ActionExecutionContext",
@@ -239,6 +242,7 @@
             {
               "name": "executeAction",
               "jsdoc": "执行内置动作",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

@@ -82,7 +82,8 @@
               "type": "string"
             },
             "filename": {
-              "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+              "type": "object",
+              "title": "PageNodeFileName"
             },
             "options": {
               "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeLoadOptions"
@@ -224,6 +225,7 @@
             {
               "name": "getHeaders",
               "jsdoc": "get Headers 回调。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -351,6 +353,7 @@
             {
               "name": "clearAllCache",
               "jsdoc": "清空 All Cache。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"
@@ -359,6 +362,7 @@
             {
               "name": "getCacheStats",
               "jsdoc": "读取 Cache Stats。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        size: number;\n        keys: string[];\n    }"
@@ -367,6 +371,7 @@
             {
               "name": "getHttpClient",
               "jsdoc": "读取 Http Client。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "HttpClientBase"

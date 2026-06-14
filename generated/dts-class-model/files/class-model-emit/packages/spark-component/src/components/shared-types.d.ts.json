@@ -2098,6 +2098,7 @@
             {
               "name": "onOpen",
               "jsdoc": "打开动作触发时回调。\n一般用于进入显示流程前准备数据或记录埋点。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2106,6 +2107,7 @@
             {
               "name": "onClose",
               "jsdoc": "关闭动作触发时回调。\n一般用于执行关闭确认、清理临时状态或通知外层。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2114,6 +2116,7 @@
             {
               "name": "onOpened",
               "jsdoc": "打开完成后回调。\n适合执行依赖 DOM 已稳定可见的逻辑，例如 autofocus 或尺寸测量。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2122,6 +2125,7 @@
             {
               "name": "onClosed",
               "jsdoc": "关闭完成后回调。\n适合做最终清理、销毁临时资源或恢复外层页面状态。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

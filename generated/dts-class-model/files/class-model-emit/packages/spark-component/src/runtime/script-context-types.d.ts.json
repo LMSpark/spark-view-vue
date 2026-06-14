@@ -670,6 +670,7 @@
             {
               "name": "$el",
               "jsdoc": "当前页面容器 DOM 元素（可用于 focus、scroll 等操作）",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

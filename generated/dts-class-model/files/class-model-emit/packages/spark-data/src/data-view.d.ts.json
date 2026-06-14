@@ -1658,6 +1658,7 @@
             {
               "name": "resetPrimaryKey",
               "jsdoc": "清除显式覆盖，恢复从 DataTable 列定义自动推导主键",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1845,6 +1846,7 @@
             {
               "name": "clearSelectedRows",
               "jsdoc": "清空多选行",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1932,6 +1934,7 @@
             {
               "name": "onDataSetRelationsReady",
               "jsdoc": "@internal DataSet 关系规范化完成后由 DataTable 调用——重挂级联订阅并重编译计算列（含聚合 resolver）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -1961,6 +1964,7 @@
             {
               "name": "getDataSet",
               "jsdoc": "@internal 返回 DataSet 实例",
+              "parameters": [],
               "type": {
                 "type": "optional",
                 "elementType": {
@@ -2032,6 +2036,7 @@
             {
               "name": "requestData",
               "jsdoc": "视图级加载编排器（幂等：requestState≠Idle 时直接返回）。外部应使用 refresh() 或 loadFromServer()。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -2247,6 +2252,7 @@
             {
               "name": "refresh",
               "jsdoc": "强制刷新：先置 Idle 再 requestData()；远程表重拉，静态/无 API 表走本地同步。清除 staged 模式的脏追踪状态。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -2874,6 +2880,7 @@
             {
               "name": "clearAll",
               "jsdoc": "清空所有状态并发射 cleared 事件（通知 UI 和子视图）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2882,6 +2889,7 @@
             {
               "name": "resetState",
               "jsdoc": "重置行数据和选中状态，并将 requestState 重置为 Idle。\n同时清除脏追踪状态（staged 模式下的未提交变更）。\n通过领域事件通知订阅者刷新 rows / selection / request / aggregate / editing。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2890,6 +2898,7 @@
             {
               "name": "cleanupInvalidSelections",
               "jsdoc": "清理已不在 rows 中的选中状态，返回是否发生了清理（委托给 SelectionDelegate）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -3249,6 +3258,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁视图，释放所有订阅、委托和外部引用\n应在资源释放时调用，防止内存泄漏。\n销毁顺序：级联委托 → CRUD 委托 → 防抖定时器 → 事件总线 → 行数据 → TreeManager → DataTable 引用",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -3257,6 +3267,7 @@
             {
               "name": "isDestroyed",
               "jsdoc": "检查视图是否已销毁",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -3359,6 +3370,7 @@
             {
               "name": "initAutoSelection",
               "jsdoc": "对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态（静态数据路径用）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -3367,6 +3379,7 @@
             {
               "name": "toJson",
               "jsdoc": "执行 to Json 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ViewMetadata",

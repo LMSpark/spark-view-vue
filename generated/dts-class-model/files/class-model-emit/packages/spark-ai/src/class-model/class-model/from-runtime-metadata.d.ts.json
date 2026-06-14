@@ -19,6 +19,10 @@
       "type": "object",
       "title": "RuntimeDocumentInput",
       "properties": {
+        "$defs": {
+          "type": "object",
+          "title": "Record<string, AiJsonSchemaObject>"
+        },
         "modules": {
           "type": "array",
           "items": {

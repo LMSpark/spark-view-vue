@@ -1153,6 +1153,7 @@
           "methods": [
             {
               "name": "getTools",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly AiAgentToolSpec[]"
@@ -1206,6 +1207,7 @@
             },
             {
               "name": "projectKnowledge",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "AiAgentToolRuntimeKnowledgeProjection",
@@ -1214,6 +1216,7 @@
             },
             {
               "name": "inspect",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "AiAgentToolRuntimeInspectReport",

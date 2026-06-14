@@ -130,7 +130,8 @@
           }
         },
         "layoutForNewTable": {
-          "$ref": "#/$defs/LayoutForNewTable"
+          "type": "object",
+          "title": "LayoutForNewTable"
         }
       },
       "additionalProperties": false,
@@ -397,6 +398,7 @@
           "methods": [
             {
               "name": "createId",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"

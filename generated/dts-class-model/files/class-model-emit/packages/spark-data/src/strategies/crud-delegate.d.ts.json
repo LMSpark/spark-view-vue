@@ -324,6 +324,7 @@
             {
               "name": "ensureCrudService",
               "jsdoc": "确保 CrudService 已初始化，否则抛出",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "CrudService",
@@ -333,6 +334,7 @@
             {
               "name": "getCrudConfig",
               "jsdoc": "获取 CRUD 操作配置（超时、重试等）",
+              "parameters": [],
               "type": {
                 "type": "optional",
                 "elementType": {
@@ -774,6 +776,7 @@
             {
               "name": "destroy",
               "jsdoc": "销毁 — CrudService 由 DataTable 管理，此处无需释放",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

@@ -394,6 +394,7 @@
             {
               "name": "loader",
               "jsdoc": "动态导入函数",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -458,7 +459,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "Plugin Registry 的语义模型。",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [
@@ -589,6 +591,7 @@
             {
               "name": "getAll",
               "jsdoc": "读取 All。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -601,6 +604,7 @@
             {
               "name": "getAllIds",
               "jsdoc": "读取 All Ids。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -629,6 +633,7 @@
             {
               "name": "clear",
               "jsdoc": "执行 clear 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -637,6 +642,7 @@
             {
               "name": "getStats",
               "jsdoc": "读取 Stats。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "{\n        total: number;\n        plugins: string[];\n    }"
@@ -659,7 +665,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "插件管理器 - 负责加载和管理插件生命周期",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [

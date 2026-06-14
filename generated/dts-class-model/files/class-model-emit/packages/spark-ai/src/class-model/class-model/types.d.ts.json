@@ -54,6 +54,10 @@
         "module": {
           "type": "object",
           "title": "AiRuntimeApiMetadataJson"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Record<string, AiJsonSchemaObject>"
         }
       },
       "additionalProperties": false

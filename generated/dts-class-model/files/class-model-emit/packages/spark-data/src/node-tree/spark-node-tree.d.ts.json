@@ -2303,6 +2303,7 @@
             {
               "name": "toJSON",
               "jsdoc": "导出当前组件实例子树快照。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "SparkNode",
@@ -2312,6 +2313,7 @@
             {
               "name": "getAllData",
               "jsdoc": "获取当前绑定子树的完整数据快照。\n语义上等价于 toJSON()。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "SparkNode",
@@ -2321,6 +2323,7 @@
             {
               "name": "undo",
               "jsdoc": "撤销最近一次写操作，还原到上一个快照。\n返回撤销后的 root；无可撤销时返回 null 不修改状态。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -2339,6 +2342,7 @@
             {
               "name": "redo",
               "jsdoc": "重做最近一次被撤销的写操作。\n返回重做后的 root；无可重做时返回 null 不修改状态。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -2357,6 +2361,7 @@
             {
               "name": "clearHistory",
               "jsdoc": "清空全部历史，仅保留当前快照。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -2365,6 +2370,7 @@
             {
               "name": "estimateHistorySize",
               "jsdoc": "估算单个快照的节点数量，用于评估历史栈的相对内存占用。\n由于不可变树的结构共享特性，实际内存开销小于该值 × 历史长度。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -2373,6 +2379,7 @@
             {
               "name": "getHistoryStats",
               "jsdoc": "返回历史栈的统计信息。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "SparkNodeTreeHistoryStats",
@@ -2542,6 +2549,7 @@
             {
               "name": "countNodes",
               "jsdoc": "统计当前组件实例子树中的结构节点数量。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -2550,6 +2558,7 @@
             {
               "name": "collectDataViewKeys",
               "jsdoc": "收集当前组件实例子树中出现过的全部唯一 DataView 定位键。\n包括容器、展示、动作、选项等 props.dataViewKey / props.optionDataViewKey。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Set",
@@ -2564,6 +2573,7 @@
             {
               "name": "collectHandlerNames",
               "jsdoc": "收集当前组件实例子树中 props.on 里声明过的全部唯一处理器名。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Set",

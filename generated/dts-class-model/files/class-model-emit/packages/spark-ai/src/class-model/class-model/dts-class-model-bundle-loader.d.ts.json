@@ -232,6 +232,7 @@
             {
               "name": "init",
               "jsdoc": "执行 init 操作。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -247,6 +248,7 @@
             {
               "name": "clearCache",
               "jsdoc": "清空已加载 manifest/shard/model 缓存，下次查询重新读取 bundle。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -255,6 +257,7 @@
             {
               "name": "reload",
               "jsdoc": "重新读取 manifest，用于编译器更新 generated bundle 后刷新知识。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",

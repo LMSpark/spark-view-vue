@@ -20,7 +20,8 @@
       "title": "CreateClassModelKnowledgeWorkerApiOptions",
       "properties": {
         "refreshBundle": {
-          "$ref": "dts-bundle-class-model-knowledge-service.d.ts.json#/$defs/DtsBundleClassModelKnowledgeRefreshFunction"
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
         },
         "refreshPolicy": {
           "$ref": "dts-bundle-class-model-knowledge-service.d.ts.json#/$defs/DtsBundleClassModelKnowledgeRefreshPolicy"

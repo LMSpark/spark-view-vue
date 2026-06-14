@@ -164,6 +164,7 @@
           "methods": [
             {
               "name": "getRows",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -174,6 +175,7 @@
             },
             {
               "name": "getCachedPages",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -184,6 +186,7 @@
             },
             {
               "name": "getPendingPages",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -194,6 +197,7 @@
             },
             {
               "name": "getVisiblePages",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -204,6 +208,7 @@
             },
             {
               "name": "getCurrentPage",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -211,6 +216,7 @@
             },
             {
               "name": "getTotalPages",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -218,6 +224,7 @@
             },
             {
               "name": "getScrollProgress",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -225,6 +232,7 @@
             },
             {
               "name": "getLoadPolicyText",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -232,6 +240,7 @@
             },
             {
               "name": "getWheelStatusText",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -261,6 +270,7 @@
             },
             {
               "name": "clearCache",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

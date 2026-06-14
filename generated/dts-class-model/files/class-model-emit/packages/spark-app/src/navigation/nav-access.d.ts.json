@@ -76,6 +76,7 @@
           "methods": [
             {
               "name": "refreshRoutes",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -98,6 +99,7 @@
             },
             {
               "name": "getNavTree",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

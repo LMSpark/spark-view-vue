@@ -156,6 +156,7 @@
           "methods": [
             {
               "name": "getExpandedItems",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -233,6 +234,7 @@
             },
             {
               "name": "expandAll",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -240,6 +242,7 @@
             },
             {
               "name": "collapseAll",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

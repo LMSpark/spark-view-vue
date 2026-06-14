@@ -106,6 +106,7 @@
             {
               "name": "getToken",
               "jsdoc": "=============================================================================\n公共 API 方法\n=============================================================================\n获取当前存储的令牌\n根据配置的存储类型和当前运行环境，检索存储的令牌。\n在服务端或测试环境中自动使用内存存储。\n@returns 令牌字符串或 null（如果不存在）\n@example ```typescript\nconst token = tokenManager.getToken()\nif (token) {\nconsole.log('Token found:', token)\n} else {\nconsole.log('No token stored')\n}\n```",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -140,6 +141,7 @@
             {
               "name": "clearToken",
               "jsdoc": "清除存储的令牌\n从当前存储后端中移除令牌。在服务端或测试环境中\n清除内存存储。\n@example ```typescript\ntokenManager.clearToken()\nconsole.log('Token cleared')\n```",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

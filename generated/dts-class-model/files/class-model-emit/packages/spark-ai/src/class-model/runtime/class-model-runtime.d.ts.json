@@ -46,7 +46,8 @@
           "title": "ClassModelKnowledgeProvider"
         },
         "scriptExecutor": {
-          "$ref": "#/$defs/ClassModelScriptExecutor"
+          "type": "object",
+          "title": "ClassModelScriptExecutor"
         }
       },
       "additionalProperties": false
@@ -146,7 +147,8 @@
               "type": "string"
             },
             "rawArgs": {
-              "$ref": "#/$defs/ClassModelToolArgs"
+              "type": "object",
+              "title": "ClassModelToolArgs"
             },
             "host": true
           },
@@ -420,6 +422,7 @@
             {
               "name": "getTools",
               "jsdoc": "读取 Tools。",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly ClassModelToolSpec[]"

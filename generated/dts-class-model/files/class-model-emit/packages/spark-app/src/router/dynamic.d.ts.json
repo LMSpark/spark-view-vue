@@ -255,6 +255,7 @@
             {
               "name": "registerRoutes",
               "jsdoc": "注册所有路由（从导航树派生）",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -286,6 +287,7 @@
             {
               "name": "refreshRoutes",
               "jsdoc": "刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -309,6 +311,7 @@
             {
               "name": "getNavTree",
               "jsdoc": "获取已加载的导航树（导航模式下可用）",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -326,6 +329,7 @@
             {
               "name": "getRegisteredRoutes",
               "jsdoc": "获取已注册路由列表",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {

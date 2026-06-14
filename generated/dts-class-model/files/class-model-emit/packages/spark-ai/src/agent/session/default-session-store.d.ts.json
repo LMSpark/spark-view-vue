@@ -175,6 +175,7 @@
           "methods": [
             {
               "name": "now",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "number"
@@ -309,6 +310,7 @@
             {
               "name": "listSessions",
               "jsdoc": "列出所有会话（按 startedAt 升序）",
+              "parameters": [],
               "type": {
                 "type": "unknown",
                 "name": "readonly AiAgentSessionRecord[]"

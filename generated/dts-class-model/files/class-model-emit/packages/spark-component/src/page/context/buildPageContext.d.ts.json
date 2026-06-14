@@ -126,6 +126,7 @@
             {
               "name": "getDataSet",
               "jsdoc": "DataSet getter（闭包引用，每次调用返回最新值）",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -143,6 +144,7 @@
             {
               "name": "getComponentRegistry",
               "jsdoc": "页面级组件注册中心 getter（可选）",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -161,6 +163,7 @@
             {
               "name": "getModuleContext",
               "jsdoc": "模块上下文 getter（可选，每次调用返回最新快照）",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

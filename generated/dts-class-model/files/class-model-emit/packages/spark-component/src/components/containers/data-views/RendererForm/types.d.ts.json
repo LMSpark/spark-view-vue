@@ -118,6 +118,7 @@
           "methods": [
             {
               "name": "getFormData",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -135,6 +136,7 @@
             },
             {
               "name": "getNativeForm",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "unknown"
@@ -142,6 +144,7 @@
             },
             {
               "name": "validate",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -155,6 +158,7 @@
             },
             {
               "name": "resetFields",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -162,6 +166,7 @@
             },
             {
               "name": "clearValidate",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

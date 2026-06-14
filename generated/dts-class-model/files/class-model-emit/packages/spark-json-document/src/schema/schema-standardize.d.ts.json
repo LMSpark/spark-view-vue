@@ -142,6 +142,10 @@
         },
         "description": {
           "type": "string"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Record<string, StandardJsonSchema>"
         }
       },
       "additionalProperties": false

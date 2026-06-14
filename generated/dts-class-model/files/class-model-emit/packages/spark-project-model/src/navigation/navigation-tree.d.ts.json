@@ -233,6 +233,7 @@
           "methods": [
             {
               "name": "toNodeData",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectNodeData",

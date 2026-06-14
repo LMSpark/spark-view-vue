@@ -170,6 +170,7 @@
             {
               "name": "getText",
               "jsdoc": "get Text 文本。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
@@ -212,6 +213,7 @@
             {
               "name": "markSaved",
               "jsdoc": "执行 mark Saved 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -220,6 +222,7 @@
             {
               "name": "getTool",
               "jsdoc": "读取 Tool。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "DataSetCrudTool"
@@ -301,6 +304,7 @@
             {
               "name": "undo",
               "jsdoc": "执行 undo 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -309,6 +313,7 @@
             {
               "name": "redo",
               "jsdoc": "执行 redo 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"

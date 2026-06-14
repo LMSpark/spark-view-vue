@@ -493,6 +493,7 @@
             {
               "name": "getCurrentNode",
               "jsdoc": "返回当前选中的原生树节点数据。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "unknown"
@@ -802,6 +803,7 @@
             {
               "name": "expand",
               "jsdoc": "展开当前原生树节点。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"

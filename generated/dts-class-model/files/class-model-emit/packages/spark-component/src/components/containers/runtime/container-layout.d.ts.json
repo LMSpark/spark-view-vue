@@ -349,6 +349,7 @@
             {
               "name": "children",
               "jsdoc": "子节点集合。",
+              "parameters": [],
               "type": {
                 "type": "optional",
                 "elementType": {
@@ -360,6 +361,7 @@
             {
               "name": "bodyClass",
               "jsdoc": "复合容器内容区 class；空值会被标准化为空字符串。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -381,6 +383,7 @@
             {
               "name": "gridColumns",
               "jsdoc": "复合容器内容区列数；字符串/数字都会被标准化为正整数。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -406,6 +409,7 @@
             {
               "name": "gridAutoRows",
               "jsdoc": "复合容器内容区自动行高；仅接受有效字符串。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -427,6 +431,7 @@
             {
               "name": "gridGap",
               "jsdoc": "复合容器内容区间距；数字转 px，字符串按 CSS 原样透传。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

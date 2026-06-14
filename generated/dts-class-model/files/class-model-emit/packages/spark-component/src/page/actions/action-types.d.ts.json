@@ -893,6 +893,7 @@
             {
               "name": "getCurrentRow",
               "jsdoc": "获取表单当前绑定的数据行（未绑定时返回 null）",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -910,6 +911,7 @@
             {
               "name": "getFormData",
               "jsdoc": "获取表单当前填写的字段数据（不含主键）",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -928,6 +930,7 @@
             {
               "name": "validate",
               "jsdoc": "可选：触发表单校验；返回 false 则执行器中止提交",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -2172,6 +2175,7 @@
             {
               "name": "getDataSet",
               "jsdoc": "获取当前页面的 DataSet 实例（用于 DataViewKey 解析）；页面未就绪时返回 null",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -2189,6 +2193,7 @@
             {
               "name": "getDataSource",
               "jsdoc": "可选：获取容器作用域 DataView（调用方已确定 DataView 时提供）。\n适用于容器明确持有 DataView 的场景（如 r-table 内置按钮），\n此时可省略 descriptor 上的 DataViewKey，避免误报\"数据视图未就绪\"。",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -2206,6 +2211,7 @@
             {
               "name": "getPageService",
               "jsdoc": "获取页面服务能力（消息/确认/弹窗等 UI 交互）；未注册时返回 null",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [
@@ -2224,6 +2230,7 @@
             {
               "name": "getRouter",
               "jsdoc": "获取路由器（navigate 动作使用）；非路由环境返回 null",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

@@ -307,6 +307,7 @@
             {
               "name": "ensurePkColumn",
               "jsdoc": "统一注册 `_pk` 计算列——无论单列还是多列主键。\n调用时机：\n- `dataTable` setter（列定义变更时）\n- `primaryKey` setter（显式覆盖时）\n幺等：字段列表不变时跳过重新注册。\n补计算（`_computedDelegate.apply(rows)`）由调用方负责。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -315,6 +316,7 @@
             {
               "name": "getPkColumnMeta",
               "jsdoc": "返回 `_pk` 列的元数据（DataColumn）。\n类型推导规则：\n- 单列 PK 且有列定义 → 继承源列 type\n- 多列 PK / 无列定义 → `'string'`",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "DataColumn",
@@ -324,6 +326,7 @@
             {
               "name": "resetPrimaryKey",
               "jsdoc": "清除显式覆盖，恢复从 DataTable 列定义自动推导主键。\n同时清除 `_pk` 计算列注册状态，下次 `ensurePkColumn()` 时重新注册。\n@example view.primaryKey = 'uuid'  // 显式覆盖\nview.resetPrimaryKey()    // 恢复列推导",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -435,6 +438,7 @@
             {
               "name": "removePrimaryKeyGenerator",
               "jsdoc": "移除主键生成器",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -493,6 +497,7 @@
             {
               "name": "getPrimaryKeyGeneratorConfig",
               "jsdoc": "获取主键生成器配置",
+              "parameters": [],
               "type": {
                 "type": "optional",
                 "elementType": {

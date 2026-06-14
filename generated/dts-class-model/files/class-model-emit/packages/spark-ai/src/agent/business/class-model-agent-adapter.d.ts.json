@@ -170,7 +170,8 @@
           "type": "string"
         },
         "moduleClass": {
-          "$ref": "#/$defs/ClassModelAgentAdapterConstructor"
+          "type": "object",
+          "title": "ClassModelAgentAdapterConstructor<T>"
         },
         "metadata": {
           "type": "object",
@@ -188,7 +189,8 @@
       "title": "ClassModelAgentAdapterRegistrationCommand",
       "properties": {
         "moduleClass": {
-          "$ref": "#/$defs/ClassModelAgentAdapterConstructor"
+          "type": "object",
+          "title": "ClassModelAgentAdapterConstructor<T>"
         },
         "metadata": {
           "type": "object",
@@ -1284,7 +1286,8 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "Class Model Agent Adapter 的语义模型。",
-          "signatureText": "constructor()"
+          "signatureText": "constructor()",
+          "parameters": []
         },
         "members": {
           "methods": [

@@ -81,6 +81,15 @@ function extractSchemaNode(value: unknown, defs: Map<string, JsonSchema>): unkno
   const output: Record<string, unknown> = {}
   for (const [key, child] of Object.entries(value)) {
     if (key === '$defs') continue
+    if (key === 'properties' && isRecord(child)) {
+      output[key] = Object.fromEntries(
+        Object.entries(child).map(([propertyName, propertySchema]) => [
+          propertyName,
+          extractSchemaNode(propertySchema, defs),
+        ]),
+      )
+      continue
+    }
     output[key] = extractSchemaNode(child, defs)
   }
   return output

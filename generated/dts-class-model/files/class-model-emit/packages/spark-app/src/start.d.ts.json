@@ -292,6 +292,7 @@
             {
               "name": "getHeaders",
               "jsdoc": "动态请求头回调（每次请求时调用，注入租户上下文）",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Record",
@@ -310,6 +311,7 @@
             {
               "name": "isAuthenticated",
               "jsdoc": "认证状态检查（DynamicRouter 据此决定使用远程导航树还是 preAuthNavTree）",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -318,6 +320,7 @@
             {
               "name": "loadNavigation",
               "jsdoc": "导航数据加载函数 — 导航树作为路由的唯一来源。\n已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。\nrefreshRoutes() 返回加载后的导航树供 UI 直接消费。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -332,6 +335,7 @@
             {
               "name": "loadPlatformNavigation",
               "jsdoc": "平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "Promise",
@@ -346,6 +350,7 @@
             {
               "name": "isPlatformNavigationEnabled",
               "jsdoc": "是否启用平台工作台导航注册。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "boolean"
@@ -427,6 +432,7 @@
             {
               "name": "onBeforeStart",
               "jsdoc": "启动前钩子",
+              "parameters": [],
               "type": {
                 "type": "union",
                 "types": [

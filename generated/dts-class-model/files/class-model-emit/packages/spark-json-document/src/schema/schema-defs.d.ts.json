@@ -28,7 +28,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.034Z",
+  "generatedAt": "2026-06-14T18:04:18.406Z",
   "models": {
     "JsonSchemaLocalDefsExtraction": {
       "name": "JsonSchemaLocalDefsExtraction",

@@ -42,6 +42,31 @@ describe('JSON Schema $defs helpers', () => {
     })
   })
 
+  it('does not treat property names as schema $defs keywords', () => {
+    const extracted = extractJsonSchemaLocalDefs({
+      type: 'object',
+      properties: {
+        $defs: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        value: { type: 'string' },
+      },
+    })
+
+    expect(extracted.schema).toEqual({
+      type: 'object',
+      properties: {
+        $defs: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        value: { type: 'string' },
+      },
+    })
+    expect(extracted.defs).toEqual({})
+  })
+
   it('standardizes root refs with local defs without creating $ref siblings', () => {
     const schema = standardizeJsonSchemaWithLocalDefs({
       $ref: '#/$defs/QueryParams',

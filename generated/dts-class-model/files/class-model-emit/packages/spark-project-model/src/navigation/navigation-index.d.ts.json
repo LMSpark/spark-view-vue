@@ -184,6 +184,7 @@
           "methods": [
             {
               "name": "toNodeData",
+              "parameters": [],
               "type": {
                 "type": "reference",
                 "name": "ProjectNodeData",
@@ -234,6 +235,7 @@
             {
               "name": "rebuild",
               "jsdoc": "执行 rebuild 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -242,6 +244,7 @@
             {
               "name": "invalidateTree",
               "jsdoc": "执行 invalidate Tree 操作。",
+              "parameters": [],
               "type": {
                 "type": "intrinsic",
                 "name": "void"
@@ -305,6 +308,7 @@
             {
               "name": "buildTree",
               "jsdoc": "执行 build Tree 操作。",
+              "parameters": [],
               "type": {
                 "type": "array",
                 "elementType": {
