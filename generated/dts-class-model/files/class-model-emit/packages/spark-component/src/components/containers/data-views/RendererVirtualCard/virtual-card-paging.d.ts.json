@@ -25,6 +25,59 @@
     "WheelPageEvent",
     "VirtualCardPagingOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.406Z",
+  "$defs": {
+    "VirtualCardViewportExpose": {
+      "type": "object",
+      "title": "VirtualCardViewportExpose",
+      "description": "虚拟卡片视口组件对分页逻辑暴露的滚动能力。"
+    },
+    "WheelPageEvent": {
+      "type": "object",
+      "title": "WheelPageEvent",
+      "description": "只读取滚轮纵向位移的分页事件。",
+      "properties": {
+        "deltaY": {
+          "type": "number"
+        }
+      }
+    },
+    "VirtualCardPagingOptions": {
+      "type": "object",
+      "title": "VirtualCardPagingOptions",
+      "description": "r-virtual-card 虚拟分页、缓存和预加载策略配置。",
+      "properties": {
+        "viewportRef": {
+          "type": "object",
+          "title": "Ref<VirtualCardViewportExpose | null>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ComputedRef<DataView | null>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "total": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "page": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "pageSize": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "requestState": {
+          "type": "object",
+          "title": "ComputedRef<RequestState>"
+        }
+      }
+    }
+  },
   "models": {
     "VirtualCardViewportExpose": {
       "kind": "VirtualCardViewportExpose",
@@ -431,59 +484,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.155Z",
-  "$defs": {
-    "VirtualCardViewportExpose": {
-      "type": "object",
-      "title": "VirtualCardViewportExpose",
-      "description": "虚拟卡片视口组件对分页逻辑暴露的滚动能力。"
-    },
-    "WheelPageEvent": {
-      "type": "object",
-      "title": "WheelPageEvent",
-      "description": "只读取滚轮纵向位移的分页事件。",
-      "properties": {
-        "deltaY": {
-          "type": "number"
-        }
-      }
-    },
-    "VirtualCardPagingOptions": {
-      "type": "object",
-      "title": "VirtualCardPagingOptions",
-      "description": "r-virtual-card 虚拟分页、缓存和预加载策略配置。",
-      "properties": {
-        "viewportRef": {
-          "type": "object",
-          "title": "Ref<VirtualCardViewportExpose | null>"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ComputedRef<DataView | null>"
-        },
-        "rows": {
-          "type": "object",
-          "title": "ComputedRef<readonly DataRow[]>"
-        },
-        "total": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        },
-        "page": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        },
-        "pageSize": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        },
-        "requestState": {
-          "type": "object",
-          "title": "ComputedRef<RequestState>"
-        }
-      }
     }
   }
 }

@@ -62,6 +62,28 @@ ClassModel 全量门禁 (verify:class-model:full)
 - `verify-class-model-guide-params-schema.mjs`：`verify:class-model:full` 的 paramsSchema 校验。
 - ClassModel 编译期 TS API：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
 
+## 编译管线调试
+
+关键步骤已埋 `buildDebugBreak()`（`scripts/lib/build-debug.mjs`）。**仅**在 Cursor/VS Code 通过调试器启动（Node inspector 已附加）时才会在 `debugger` 处停住；日常 `pnpm run build:*` 不受影响。
+
+**推荐用法**
+
+1. 打开 **Run and Debug**（`.vscode/launch.json` 已配置）。
+2. 选择配置，例如 `Build: packages (dry-run)` 或 `Build: ClassModel generate (full)`。
+3. F5 启动；在 `[build-trace]` 日志对应步骤自动断点，或在脚本里自行加 IDE 断点。
+
+| Launch 配置 | 对应流水线 |
+|-------------|-----------|
+| `Build: packages (dry-run)` | 拓扑顺序，不实际编译 |
+| `Build: packages (force, spark-utils)` | 单包强制重建 |
+| `Build: frontend pipeline` | ensure bundle → vite build |
+| `Build: ensure ClassModel bundle` | manifest 检查 / generate / assert |
+| `Build: ClassModel generate (full)` | 内存 emit → JSON bundle |
+| `Build: vite build (root FE only)` | 仅根 Vite 生产构建（含 closeBundle 拷贝） |
+| `Attach: Node (port 9229)` | 终端 `node --inspect-brk=9229 scripts/...` 后附加 |
+
+仅看步骤日志、不断点：`SPARK_BUILD_TRACE=1 pnpm run build:packages`
+
 ## 放置原则
 
 - 需要被仓库维护者显式执行的脚本放这里。

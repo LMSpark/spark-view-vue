@@ -16,6 +16,23 @@
   "symbols": [
     "ResolvedUrl"
   ],
+  "generatedAt": "2026-06-11T12:38:13.611Z",
+  "$defs": {
+    "ResolvedUrl": {
+      "type": "object",
+      "title": "ResolvedUrl",
+      "description": "URL 模板解析工具\n统一支持两种路径参数风格：\n- Express 风格：`/users/:id/orders/:orderId`\n- 花括号风格：`/users/{id}/orders/{orderId}`\n解析后返回替换后的 URL 及未被模板消费的剩余参数。",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "rest": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "ResolvedUrl": {
       "kind": "ResolvedUrl",
@@ -51,23 +68,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.827Z",
-  "$defs": {
-    "ResolvedUrl": {
-      "type": "object",
-      "title": "ResolvedUrl",
-      "description": "URL 模板解析工具\n统一支持两种路径参数风格：\n- Express 风格：`/users/:id/orders/:orderId`\n- 花括号风格：`/users/{id}/orders/{orderId}`\n解析后返回替换后的 URL 及未被模板消费的剩余参数。",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "rest": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
     }
   }
 }

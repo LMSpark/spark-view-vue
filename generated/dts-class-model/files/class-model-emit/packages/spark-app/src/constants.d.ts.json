@@ -18,6 +18,19 @@
     "ErrorCode",
     "Environment"
   ],
+  "generatedAt": "2026-06-11T12:48:50.941Z",
+  "$defs": {
+    "ErrorCode": {
+      "type": "object",
+      "title": "ErrorCode",
+      "description": "Error Code 的语义模型。"
+    },
+    "Environment": {
+      "type": "object",
+      "title": "Environment",
+      "description": "Environment 的语义模型。"
+    }
+  },
   "models": {
     "ErrorCode": {
       "kind": "ErrorCode",
@@ -48,19 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.949Z",
-  "$defs": {
-    "ErrorCode": {
-      "type": "object",
-      "title": "ErrorCode",
-      "description": "Error Code 的语义模型。"
-    },
-    "Environment": {
-      "type": "object",
-      "title": "Environment",
-      "description": "Environment 的语义模型。"
     }
   }
 }

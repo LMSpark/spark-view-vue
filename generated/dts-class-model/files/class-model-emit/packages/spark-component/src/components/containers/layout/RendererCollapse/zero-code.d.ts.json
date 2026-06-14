@@ -21,6 +21,28 @@
   "symbols": [
     "RendererCollapseZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.424Z",
+  "$defs": {
+    "RendererCollapseZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererCollapseZeroCodeOptions",
+      "description": "Renderer Collapse Zero Code Options 的调用配置。",
+      "properties": {
+        "currentValue": {
+          "type": "object",
+          "title": "ValueRef<string | number | Array<string | number> | undefined>"
+        },
+        "itemConfigs": {
+          "type": "object",
+          "title": "ValueRef<SparkNode[]>"
+        },
+        "onChange": {
+          "type": "object",
+          "title": "(value: string | number | Array<string | number>) => void"
+        }
+      }
+    }
+  },
   "models": {
     "RendererCollapseZeroCodeOptions": {
       "kind": "RendererCollapseZeroCodeOptions",
@@ -216,28 +238,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.244Z",
-  "$defs": {
-    "RendererCollapseZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererCollapseZeroCodeOptions",
-      "description": "Renderer Collapse Zero Code Options 的调用配置。",
-      "properties": {
-        "currentValue": {
-          "type": "object",
-          "title": "ValueRef<string | number | Array<string | number> | undefined>"
-        },
-        "itemConfigs": {
-          "type": "object",
-          "title": "ValueRef<SparkNode[]>"
-        },
-        "onChange": {
-          "type": "object",
-          "title": "(value: string | number | Array<string | number>) => void"
-        }
-      }
     }
   }
 }

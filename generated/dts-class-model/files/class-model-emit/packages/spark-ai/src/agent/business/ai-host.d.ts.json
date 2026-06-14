@@ -36,6 +36,166 @@
     "AiAgentHostDryRunResult",
     "AiAgentHost"
   ],
+  "generatedAt": "2026-06-14T01:03:51.209Z",
+  "$defs": {
+    "CreateAiAgentHostOptions": {
+      "type": "object",
+      "title": "CreateAiAgentHostOptions",
+      "description": "Host 构造选项：必须提供 turnCallbacks（APP 层 I/O 回调），可选 maxToolRounds 安全阀",
+      "properties": {
+        "turnCallbacks": {
+          "type": "object",
+          "title": "AiAgentTurnCallbacks"
+        },
+        "maxToolRounds": {
+          "type": "number"
+        }
+      }
+    },
+    "AiAgentHostRunResult": {
+      "type": "object",
+      "title": "AiAgentHostRunResult",
+      "description": "Host.run() 的返回值：包含创建的 task 和 session",
+      "properties": {
+        "task": {
+          "type": "object",
+          "title": "AiAgentTask"
+        },
+        "session": {
+          "type": "object",
+          "title": "AiAgentSession"
+        },
+        "resultExtras": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        }
+      }
+    },
+    "AiAgentHostEntryMap": {
+      "type": "object",
+      "title": "AiAgentHostEntryMap",
+      "description": "泛型注册表映射：alias → registration，供泛型类型推断使用"
+    },
+    "AiAgentHostRegistrationInput": {
+      "type": "object",
+      "title": "AiAgentHostRegistrationInput",
+      "description": "从 registration 泛型参数中提取输入类型"
+    },
+    "AiAgentHostEnsureCommand": {
+      "type": "object",
+      "title": "AiAgentHostEnsureCommand",
+      "description": "ensure 命令：延迟创建 registration 的工厂指令",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentHostRegistrationSummary": {
+      "type": "object",
+      "title": "AiAgentHostRegistrationSummary",
+      "description": "Ai Agent Host Registration Summary 的语义模型。",
+      "properties": {
+        "alias": {
+          "type": "string"
+        },
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "rootKinds": {
+          "type": "array"
+        },
+        "moduleCount": {
+          "type": "number"
+        },
+        "status": true
+      }
+    },
+    "AiAgentHostRegistrationDescription": {
+      "type": "object",
+      "title": "AiAgentHostRegistrationDescription",
+      "description": "Ai Agent Host Registration Description 的语义模型。",
+      "properties": {
+        "inspectReport": {
+          "type": "object",
+          "title": "AiAgentToolRuntimeInspectReport"
+        }
+      }
+    },
+    "AiAgentHostDryRunDiagnostic": {
+      "type": "object",
+      "title": "AiAgentHostDryRunDiagnostic",
+      "description": "Ai Agent Host Dry Run Diagnostic 的诊断信息。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentHostOrchestrationSummary": {
+      "type": "object",
+      "title": "AiAgentHostOrchestrationSummary",
+      "description": "Ai Agent Host Orchestration Summary 的语义模型。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "userMessageLength": {
+          "type": "number"
+        },
+        "systemPromptLength": {
+          "type": "number"
+        },
+        "readonlyStepCount": {
+          "type": "number"
+        }
+      }
+    },
+    "AiAgentHostDryRunResult": {
+      "type": "object",
+      "title": "AiAgentHostDryRunResult",
+      "description": "Ai Agent Host Dry Run Result 的返回结果。"
+    },
+    "AiAgentHost": {
+      "type": "object",
+      "title": "AiAgentHost",
+      "description": "AI 业务宿主编排器。\n对外暴露四个核心方法：\nregister(alias, registration) — 注册一个业务（别名 + 注册项）\nensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）\nhas(alias)                    — 检查别名是否已注册\nrun(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）\n泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。"
+    }
+  },
   "models": {
     "CreateAiAgentHostOptions": {
       "kind": "CreateAiAgentHostOptions",
@@ -1037,166 +1197,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.409Z",
-  "$defs": {
-    "CreateAiAgentHostOptions": {
-      "type": "object",
-      "title": "CreateAiAgentHostOptions",
-      "description": "Host 构造选项：必须提供 turnCallbacks（APP 层 I/O 回调），可选 maxToolRounds 安全阀",
-      "properties": {
-        "turnCallbacks": {
-          "type": "object",
-          "title": "AiAgentTurnCallbacks"
-        },
-        "maxToolRounds": {
-          "type": "number"
-        }
-      }
-    },
-    "AiAgentHostRunResult": {
-      "type": "object",
-      "title": "AiAgentHostRunResult",
-      "description": "Host.run() 的返回值：包含创建的 task 和 session",
-      "properties": {
-        "task": {
-          "type": "object",
-          "title": "AiAgentTask"
-        },
-        "session": {
-          "type": "object",
-          "title": "AiAgentSession"
-        },
-        "resultExtras": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        }
-      }
-    },
-    "AiAgentHostEntryMap": {
-      "type": "object",
-      "title": "AiAgentHostEntryMap",
-      "description": "泛型注册表映射：alias → registration，供泛型类型推断使用"
-    },
-    "AiAgentHostRegistrationInput": {
-      "type": "object",
-      "title": "AiAgentHostRegistrationInput",
-      "description": "从 registration 泛型参数中提取输入类型"
-    },
-    "AiAgentHostEnsureCommand": {
-      "type": "object",
-      "title": "AiAgentHostEnsureCommand",
-      "description": "ensure 命令：延迟创建 registration 的工厂指令",
-      "properties": {
-        "moduleId": {
-          "type": "string"
-        }
-      }
-    },
-    "AiAgentHostRegistrationSummary": {
-      "type": "object",
-      "title": "AiAgentHostRegistrationSummary",
-      "description": "Ai Agent Host Registration Summary 的语义模型。",
-      "properties": {
-        "alias": {
-          "type": "string"
-        },
-        "moduleId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "rootKinds": {
-          "type": "array"
-        },
-        "moduleCount": {
-          "type": "number"
-        },
-        "status": true
-      }
-    },
-    "AiAgentHostRegistrationDescription": {
-      "type": "object",
-      "title": "AiAgentHostRegistrationDescription",
-      "description": "Ai Agent Host Registration Description 的语义模型。",
-      "properties": {
-        "inspectReport": {
-          "type": "object",
-          "title": "AiAgentToolRuntimeInspectReport"
-        }
-      }
-    },
-    "AiAgentHostDryRunDiagnostic": {
-      "type": "object",
-      "title": "AiAgentHostDryRunDiagnostic",
-      "description": "Ai Agent Host Dry Run Diagnostic 的诊断信息。",
-      "properties": {
-        "level": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warn"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
-          ]
-        },
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "fix": {
-          "type": "string"
-        }
-      }
-    },
-    "AiAgentHostOrchestrationSummary": {
-      "type": "object",
-      "title": "AiAgentHostOrchestrationSummary",
-      "description": "Ai Agent Host Orchestration Summary 的语义模型。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "userMessageLength": {
-          "type": "number"
-        },
-        "systemPromptLength": {
-          "type": "number"
-        },
-        "readonlyStepCount": {
-          "type": "number"
-        }
-      }
-    },
-    "AiAgentHostDryRunResult": {
-      "type": "object",
-      "title": "AiAgentHostDryRunResult",
-      "description": "Ai Agent Host Dry Run Result 的返回结果。"
-    },
-    "AiAgentHost": {
-      "type": "object",
-      "title": "AiAgentHost",
-      "description": "AI 业务宿主编排器。\n对外暴露四个核心方法：\nregister(alias, registration) — 注册一个业务（别名 + 注册项）\nensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）\nhas(alias)                    — 检查别名是否已注册\nrun(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）\n泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。"
     }
   }
 }

@@ -21,6 +21,28 @@
   "symbols": [
     "RendererListZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.391Z",
+  "$defs": {
+    "RendererListZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererListZeroCodeOptions",
+      "description": "Renderer List Zero Code Options 的调用配置。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ValueRef<readonly DataRow[]>"
+        }
+      }
+    }
+  },
   "models": {
     "RendererListZeroCodeOptions": {
       "kind": "RendererListZeroCodeOptions",
@@ -72,28 +94,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.089Z",
-  "$defs": {
-    "RendererListZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererListZeroCodeOptions",
-      "description": "Renderer List Zero Code Options 的调用配置。",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
-        },
-        "rows": {
-          "type": "object",
-          "title": "ValueRef<readonly DataRow[]>"
-        }
-      }
     }
   }
 }

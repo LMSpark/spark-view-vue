@@ -16,6 +16,23 @@
   "symbols": [
     "RuntimeDocumentInput"
   ],
+  "generatedAt": "2026-06-11T22:25:30.892Z",
+  "$defs": {
+    "RuntimeDocumentInput": {
+      "type": "object",
+      "title": "RuntimeDocumentInput",
+      "description": "Runtime Document Input 的输入数据。",
+      "properties": {
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        },
+        "modules": {
+          "type": "array"
+        }
+      }
+    }
+  },
   "models": {
     "RuntimeDocumentInput": {
       "kind": "RuntimeDocumentInput",
@@ -58,23 +75,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.772Z",
-  "$defs": {
-    "RuntimeDocumentInput": {
-      "type": "object",
-      "title": "RuntimeDocumentInput",
-      "description": "Runtime Document Input 的输入数据。",
-      "properties": {
-        "$defs": {
-          "type": "object",
-          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
-        },
-        "modules": {
-          "type": "array"
-        }
-      }
     }
   }
 }

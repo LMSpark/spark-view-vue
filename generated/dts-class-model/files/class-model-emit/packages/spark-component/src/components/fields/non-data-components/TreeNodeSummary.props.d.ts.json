@@ -21,6 +21,49 @@
   "symbols": [
     "RTreeNodeSummaryProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.592Z",
+  "$defs": {
+    "RTreeNodeSummaryProps": {
+      "type": "object",
+      "title": "RTreeNodeSummaryProps",
+      "description": "RTree Node Summary Props 的属性契约。",
+      "properties": {
+        "nameField": {
+          "type": "string"
+        },
+        "typeField": {
+          "type": "string"
+        },
+        "statusField": {
+          "type": "string"
+        },
+        "ownerField": {
+          "type": "string"
+        },
+        "metaField": {
+          "type": "string"
+        },
+        "extraField": {
+          "type": "string"
+        },
+        "showType": {
+          "type": "boolean"
+        },
+        "showStatus": {
+          "type": "boolean"
+        },
+        "showOwner": {
+          "type": "boolean"
+        },
+        "showMeta": {
+          "type": "boolean"
+        },
+        "showExtra": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RTreeNodeSummaryProps": {
       "kind": "RTreeNodeSummaryProps",
@@ -152,49 +195,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.637Z",
-  "$defs": {
-    "RTreeNodeSummaryProps": {
-      "type": "object",
-      "title": "RTreeNodeSummaryProps",
-      "description": "RTree Node Summary Props 的属性契约。",
-      "properties": {
-        "nameField": {
-          "type": "string"
-        },
-        "typeField": {
-          "type": "string"
-        },
-        "statusField": {
-          "type": "string"
-        },
-        "ownerField": {
-          "type": "string"
-        },
-        "metaField": {
-          "type": "string"
-        },
-        "extraField": {
-          "type": "string"
-        },
-        "showType": {
-          "type": "boolean"
-        },
-        "showStatus": {
-          "type": "boolean"
-        },
-        "showOwner": {
-          "type": "boolean"
-        },
-        "showMeta": {
-          "type": "boolean"
-        },
-        "showExtra": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

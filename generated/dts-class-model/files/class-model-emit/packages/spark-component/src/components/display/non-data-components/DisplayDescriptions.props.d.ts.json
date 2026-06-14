@@ -21,6 +21,66 @@
   "symbols": [
     "RDescriptionsProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.501Z",
+  "$defs": {
+    "RDescriptionsProps": {
+      "type": "object",
+      "title": "RDescriptionsProps",
+      "description": "RDescriptions Props 的属性契约。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "extra": {
+          "type": "string"
+        },
+        "border": {
+          "type": "boolean"
+        },
+        "column": {
+          "type": "number"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            }
+          ]
+        },
+        "descriptionsSize": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "small"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RDescriptionsProps": {
       "kind": "RDescriptionsProps",
@@ -139,66 +199,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.429Z",
-  "$defs": {
-    "RDescriptionsProps": {
-      "type": "object",
-      "title": "RDescriptionsProps",
-      "description": "RDescriptions Props 的属性契约。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "extra": {
-          "type": "string"
-        },
-        "border": {
-          "type": "boolean"
-        },
-        "column": {
-          "type": "number"
-        },
-        "direction": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "horizontal"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "vertical"
-              ]
-            }
-          ]
-        },
-        "descriptionsSize": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "large"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "small"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

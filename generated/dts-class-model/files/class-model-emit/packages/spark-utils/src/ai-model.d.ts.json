@@ -16,6 +16,14 @@
   "symbols": [
     "SparkAIModel"
   ],
+  "generatedAt": "2026-06-11T12:48:51.058Z",
+  "$defs": {
+    "SparkAIModel": {
+      "type": "object",
+      "title": "SparkAIModel",
+      "description": "AI 可编辑模型协议基类。协议只强制 toJson；save/load/fromJson 由子类按需添加。"
+    }
+  },
   "models": {
     "SparkAIModel": {
       "kind": "SparkAIModel",
@@ -94,14 +102,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.293Z",
-  "$defs": {
-    "SparkAIModel": {
-      "type": "object",
-      "title": "SparkAIModel",
-      "description": "AI 可编辑模型协议基类。协议只强制 toJson；save/load/fromJson 由子类按需添加。"
     }
   }
 }

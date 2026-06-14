@@ -16,6 +16,14 @@
   "symbols": [
     "AuthService"
   ],
+  "generatedAt": "2026-06-11T12:48:50.933Z",
+  "$defs": {
+    "AuthService": {
+      "type": "object",
+      "title": "AuthService",
+      "description": "认证服务实现类\n架构特点：\n- 单例模式（通过工厂函数创建）\n- 支持 Mock 模式（开发环境）\n- 自动 Token 刷新\n- 完整的生命周期钩子\n- 错误处理和日志记录"
+    }
+  },
   "models": {
     "AuthService": {
       "kind": "AuthService",
@@ -321,14 +329,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.909Z",
-  "$defs": {
-    "AuthService": {
-      "type": "object",
-      "title": "AuthService",
-      "description": "认证服务实现类\n架构特点：\n- 单例模式（通过工厂函数创建）\n- 支持 Mock 模式（开发环境）\n- 自动 Token 刷新\n- 完整的生命周期钩子\n- 错误处理和日志记录"
     }
   }
 }

@@ -21,6 +21,53 @@
   "symbols": [
     "RTableProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.392Z",
+  "$defs": {
+    "RTableProps": {
+      "type": "object",
+      "title": "RTableProps",
+      "description": "r-table 组件公开属性接口。\n命名规范：组件 type `r-table` → 接口名 `RTableProps`。",
+      "properties": {
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "border": {
+          "type": "boolean"
+        },
+        "stripe": {
+          "type": "boolean"
+        },
+        "highlightCurrentRow": {
+          "type": "boolean"
+        },
+        "rowKey": {
+          "type": "string"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "autoColumns": {
+          "type": "boolean"
+        },
+        "showPagination": {
+          "type": "boolean"
+        },
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "filter": {
+          "type": "object",
+          "title": "RFilterProps"
+        },
+        "actions": {
+          "type": "object",
+          "title": "RToolbarProps"
+        }
+      }
+    }
+  },
   "models": {
     "RTableProps": {
       "kind": "RTableProps",
@@ -161,53 +208,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.090Z",
-  "$defs": {
-    "RTableProps": {
-      "type": "object",
-      "title": "RTableProps",
-      "description": "r-table 组件公开属性接口。\n命名规范：组件 type `r-table` → 接口名 `RTableProps`。",
-      "properties": {
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "border": {
-          "type": "boolean"
-        },
-        "stripe": {
-          "type": "boolean"
-        },
-        "highlightCurrentRow": {
-          "type": "boolean"
-        },
-        "rowKey": {
-          "type": "string"
-        },
-        "resizable": {
-          "type": "boolean"
-        },
-        "autoColumns": {
-          "type": "boolean"
-        },
-        "showPagination": {
-          "type": "boolean"
-        },
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "filter": {
-          "type": "object",
-          "title": "RFilterProps"
-        },
-        "actions": {
-          "type": "object",
-          "title": "RToolbarProps"
-        }
-      }
     }
   }
 }

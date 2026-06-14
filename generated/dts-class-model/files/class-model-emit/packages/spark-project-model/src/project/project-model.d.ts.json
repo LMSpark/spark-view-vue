@@ -16,6 +16,24 @@
   "symbols": [
     "ProjectModel"
   ],
+  "generatedAt": "2026-06-13T21:09:36.121Z",
+  "$defs": {
+    "ProjectModel": {
+      "type": "object",
+      "title": "ProjectModel",
+      "description": "项目模型根。",
+      "properties": {
+        "design": {
+          "type": "object",
+          "title": "ProjectDesign<TNode>"
+        },
+        "session": {
+          "type": "object",
+          "title": "ProjectSession"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectModel": {
       "kind": "ProjectModel",
@@ -1778,24 +1796,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.258Z",
-  "$defs": {
-    "ProjectModel": {
-      "type": "object",
-      "title": "ProjectModel",
-      "description": "项目模型根。",
-      "properties": {
-        "design": {
-          "type": "object",
-          "title": "ProjectDesign<TNode>"
-        },
-        "session": {
-          "type": "object",
-          "title": "ProjectSession"
-        }
-      }
     }
   }
 }

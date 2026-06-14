@@ -22,6 +22,86 @@
     "UseFilterPanelOptions",
     "FilterPanelState"
   ],
+  "generatedAt": "2026-06-11T12:48:50.959Z",
+  "$defs": {
+    "ErrorLoggerLike": {
+      "type": "object",
+      "title": "ErrorLoggerLike",
+      "description": "极简日志接口（最小化依赖）。"
+    },
+    "FilterPanelDataView": {
+      "type": "object",
+      "title": "FilterPanelDataView",
+      "description": "Filter Panel Data View 的语义模型。",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "columns": {
+          "type": "array"
+        },
+        "filterExpression": {
+          "type": "object",
+          "title": "FilterExpression"
+        },
+        "dataTable": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "UseFilterPanelOptions": {
+      "type": "object",
+      "title": "UseFilterPanelOptions",
+      "description": "Use Filter Panel Options 的调用配置。",
+      "properties": {
+        "filterChildren": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<SparkNode[]>"
+        },
+        "dataView": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<FilterPanelDataView | null>"
+        },
+        "logger": {
+          "$ref": "#/$defs/ErrorLoggerLike"
+        }
+      }
+    },
+    "FilterPanelState": {
+      "type": "object",
+      "title": "FilterPanelState",
+      "description": "`useFilterPanel` 返回状态。",
+      "properties": {
+        "filterModel": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "filterConfigs": {
+          "type": "object",
+          "title": "ComputedRef<SparkNode[]>"
+        },
+        "hasFilters": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "activeFilterCount": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        }
+      }
+    }
+  },
   "models": {
     "ErrorLoggerLike": {
       "kind": "ErrorLoggerLike",
@@ -429,86 +509,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.311Z",
-  "$defs": {
-    "ErrorLoggerLike": {
-      "type": "object",
-      "title": "ErrorLoggerLike",
-      "description": "极简日志接口（最小化依赖）。"
-    },
-    "FilterPanelDataView": {
-      "type": "object",
-      "title": "FilterPanelDataView",
-      "description": "Filter Panel Data View 的语义模型。",
-      "properties": {
-        "rows": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          }
-        },
-        "columns": {
-          "type": "array"
-        },
-        "filterExpression": {
-          "type": "object",
-          "title": "FilterExpression"
-        },
-        "dataTable": {
-          "anyOf": [
-            {
-              "type": "object"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "UseFilterPanelOptions": {
-      "type": "object",
-      "title": "UseFilterPanelOptions",
-      "description": "Use Filter Panel Options 的调用配置。",
-      "properties": {
-        "filterChildren": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<SparkNode[]>"
-        },
-        "dataView": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<FilterPanelDataView | null>"
-        },
-        "logger": {
-          "$ref": "#/$defs/ErrorLoggerLike"
-        }
-      }
-    },
-    "FilterPanelState": {
-      "type": "object",
-      "title": "FilterPanelState",
-      "description": "`useFilterPanel` 返回状态。",
-      "properties": {
-        "filterModel": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "filterConfigs": {
-          "type": "object",
-          "title": "ComputedRef<SparkNode[]>"
-        },
-        "hasFilters": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "activeFilterCount": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,22 @@
   "symbols": [
     "TenantProjectScope"
   ],
+  "generatedAt": "2026-06-11T12:38:13.663Z",
+  "$defs": {
+    "TenantProjectScope": {
+      "type": "object",
+      "title": "TenantProjectScope",
+      "description": "Tenant Project Scope 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "TenantProjectScope": {
       "kind": "TenantProjectScope",
@@ -50,22 +66,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.506Z",
-  "$defs": {
-    "TenantProjectScope": {
-      "type": "object",
-      "title": "TenantProjectScope",
-      "description": "Tenant Project Scope 的语义模型。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        }
-      }
     }
   }
 }

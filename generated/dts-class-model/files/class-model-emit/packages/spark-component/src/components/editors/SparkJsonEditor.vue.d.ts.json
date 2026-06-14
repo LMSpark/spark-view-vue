@@ -23,6 +23,93 @@
     "SparkJsonEditorMode",
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.519Z",
+  "$defs": {
+    "SparkJsonEditorMode": {
+      "type": "object",
+      "title": "SparkJsonEditorMode",
+      "description": "JSON 编辑器支持的展示模式。"
+    },
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。",
+      "properties": {
+        "modelValue": {
+          "type": "string"
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "mode": {
+          "$ref": "#/$defs/SparkJsonEditorMode"
+        },
+        "indentation": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "tabSize": {
+          "type": "number"
+        },
+        "mainMenuBar": {
+          "type": "boolean"
+        },
+        "navigationBar": {
+          "type": "boolean"
+        },
+        "statusBar": {
+          "type": "boolean"
+        },
+        "askToFormat": {
+          "type": "boolean"
+        },
+        "schema": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "JSONSchema"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schemaDefinitions": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "JSONSchemaDefinitions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "enableSchemaValidation": {
+          "type": "boolean"
+        },
+        "enableSchemaEnumRenderer": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "SparkJsonEditorMode": {
       "kind": "SparkJsonEditorMode",
@@ -234,93 +321,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.460Z",
-  "$defs": {
-    "SparkJsonEditorMode": {
-      "type": "object",
-      "title": "SparkJsonEditorMode",
-      "description": "JSON 编辑器支持的展示模式。"
-    },
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。",
-      "properties": {
-        "modelValue": {
-          "type": "string"
-        },
-        "readOnly": {
-          "type": "boolean"
-        },
-        "height": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "mode": {
-          "$ref": "#/$defs/SparkJsonEditorMode"
-        },
-        "indentation": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "tabSize": {
-          "type": "number"
-        },
-        "mainMenuBar": {
-          "type": "boolean"
-        },
-        "navigationBar": {
-          "type": "boolean"
-        },
-        "statusBar": {
-          "type": "boolean"
-        },
-        "askToFormat": {
-          "type": "boolean"
-        },
-        "schema": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "JSONSchema"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "schemaDefinitions": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "JSONSchemaDefinitions"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "enableSchemaValidation": {
-          "type": "boolean"
-        },
-        "enableSchemaEnumRenderer": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

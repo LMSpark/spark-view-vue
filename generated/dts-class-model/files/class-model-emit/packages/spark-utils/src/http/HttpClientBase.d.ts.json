@@ -16,6 +16,27 @@
   "symbols": [
     "HttpClientBase"
   ],
+  "generatedAt": "2026-06-11T12:48:51.064Z",
+  "$defs": {
+    "HttpClientBase": {
+      "type": "object",
+      "title": "HttpClientBase",
+      "description": "Http Client Base 的语义模型。",
+      "properties": {
+        "defaults": {
+          "type": "object",
+          "title": "Partial<RequestConfig>"
+        },
+        "logger": {
+          "type": "object",
+          "title": "ReturnType<typeof Logger>"
+        },
+        "interceptors": {
+          "type": "object"
+        }
+      }
+    }
+  },
   "models": {
     "HttpClientBase": {
       "kind": "HttpClientBase",
@@ -1048,27 +1069,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.325Z",
-  "$defs": {
-    "HttpClientBase": {
-      "type": "object",
-      "title": "HttpClientBase",
-      "description": "Http Client Base 的语义模型。",
-      "properties": {
-        "defaults": {
-          "type": "object",
-          "title": "Partial<RequestConfig>"
-        },
-        "logger": {
-          "type": "object",
-          "title": "ReturnType<typeof Logger>"
-        },
-        "interceptors": {
-          "type": "object"
-        }
-      }
     }
   }
 }

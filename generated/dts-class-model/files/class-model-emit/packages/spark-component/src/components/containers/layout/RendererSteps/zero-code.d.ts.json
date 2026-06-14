@@ -23,6 +23,40 @@
     "StepsEmit",
     "RendererStepsZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.449Z",
+  "$defs": {
+    "StepsEmit": {
+      "type": "object",
+      "title": "StepsEmit",
+      "description": "Steps Emit 的语义模型。"
+    },
+    "RendererStepsZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererStepsZeroCodeOptions",
+      "description": "Renderer Steps Zero Code Options 的调用配置。",
+      "properties": {
+        "emit": {
+          "$ref": "#/$defs/StepsEmit"
+        },
+        "stepConfigs": {
+          "type": "object",
+          "title": "ValueRef<SparkNode[]>"
+        },
+        "activeStepName": {
+          "type": "object",
+          "title": "ValueRef<string | number | undefined>"
+        },
+        "activeStepIndex": {
+          "type": "object",
+          "title": "ValueRef<number>"
+        },
+        "onStepChange": {
+          "type": "object",
+          "title": "(value: string | number, step: SparkNode, index: number) => void"
+        }
+      }
+    }
+  },
   "models": {
     "StepsEmit": {
       "kind": "StepsEmit",
@@ -171,40 +205,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.282Z",
-  "$defs": {
-    "StepsEmit": {
-      "type": "object",
-      "title": "StepsEmit",
-      "description": "Steps Emit 的语义模型。"
-    },
-    "RendererStepsZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererStepsZeroCodeOptions",
-      "description": "Renderer Steps Zero Code Options 的调用配置。",
-      "properties": {
-        "emit": {
-          "$ref": "#/$defs/StepsEmit"
-        },
-        "stepConfigs": {
-          "type": "object",
-          "title": "ValueRef<SparkNode[]>"
-        },
-        "activeStepName": {
-          "type": "object",
-          "title": "ValueRef<string | number | undefined>"
-        },
-        "activeStepIndex": {
-          "type": "object",
-          "title": "ValueRef<number>"
-        },
-        "onStepChange": {
-          "type": "object",
-          "title": "(value: string | number, step: SparkNode, index: number) => void"
-        }
-      }
     }
   }
 }

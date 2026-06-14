@@ -21,6 +21,45 @@
   "symbols": [
     "RHeaderProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.478Z",
+  "$defs": {
+    "RHeaderProps": {
+      "type": "object",
+      "title": "RHeaderProps",
+      "description": "`RendererHeader` 运行时公开属性。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "r-header"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "class": {
+          "type": "string"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RHeaderProps": {
       "kind": "RHeaderProps",
@@ -112,45 +151,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.372Z",
-  "$defs": {
-    "RHeaderProps": {
-      "type": "object",
-      "title": "RHeaderProps",
-      "description": "`RendererHeader` 运行时公开属性。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "r-header"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "class": {
-          "type": "string"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
     }
   }
 }

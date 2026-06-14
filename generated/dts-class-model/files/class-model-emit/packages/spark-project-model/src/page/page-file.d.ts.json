@@ -24,6 +24,98 @@
     "PageNodeFileVersionSummary",
     "PageFileCreateOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:51.053Z",
+  "$defs": {
+    "PageNodeFileName": {
+      "type": "object",
+      "title": "PageNodeFileName",
+      "description": "Page Node File Name 的语义模型。"
+    },
+    "PageNodeLoadOptions": {
+      "type": "object",
+      "title": "PageNodeLoadOptions",
+      "description": "Page Node Load Options 的调用配置。",
+      "properties": {
+        "forceReload": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageContentLoadResult": {
+      "type": "object",
+      "title": "PageContentLoadResult",
+      "description": "Page Content Load Result 的返回结果。",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "data": true,
+        "error": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "remote"
+          ]
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "sourceTimestamp": {
+          "type": "string"
+        },
+        "fromCache": {
+          "type": "boolean"
+        },
+        "notModified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageNodeFileVersionSummary": {
+      "type": "object",
+      "title": "PageNodeFileVersionSummary",
+      "description": "Page Node File Version Summary 的语义模型。",
+      "properties": {
+        "version": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "isCurrent": {
+          "type": "boolean"
+        },
+        "modifiedBy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "PageFileCreateOptions": {
+      "type": "object",
+      "title": "PageFileCreateOptions",
+      "description": "Page File Create Options 的调用配置。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "PageNodeFileName": {
       "kind": "PageNodeFileName",
@@ -255,98 +347,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.241Z",
-  "$defs": {
-    "PageNodeFileName": {
-      "type": "object",
-      "title": "PageNodeFileName",
-      "description": "Page Node File Name 的语义模型。"
-    },
-    "PageNodeLoadOptions": {
-      "type": "object",
-      "title": "PageNodeLoadOptions",
-      "description": "Page Node Load Options 的调用配置。",
-      "properties": {
-        "forceReload": {
-          "type": "boolean"
-        }
-      }
-    },
-    "PageContentLoadResult": {
-      "type": "object",
-      "title": "PageContentLoadResult",
-      "description": "Page Content Load Result 的返回结果。",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "data": true,
-        "error": {
-          "type": "string"
-        },
-        "reason": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "enum": [
-            "remote"
-          ]
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "sourceTimestamp": {
-          "type": "string"
-        },
-        "fromCache": {
-          "type": "boolean"
-        },
-        "notModified": {
-          "type": "boolean"
-        }
-      }
-    },
-    "PageNodeFileVersionSummary": {
-      "type": "object",
-      "title": "PageNodeFileVersionSummary",
-      "description": "Page Node File Version Summary 的语义模型。",
-      "properties": {
-        "version": {
-          "type": "number"
-        },
-        "createdAt": {
-          "type": "string"
-        },
-        "isCurrent": {
-          "type": "boolean"
-        },
-        "modifiedBy": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "PageFileCreateOptions": {
-      "type": "object",
-      "title": "PageFileCreateOptions",
-      "description": "Page File Create Options 的调用配置。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        }
-      }
     }
   }
 }

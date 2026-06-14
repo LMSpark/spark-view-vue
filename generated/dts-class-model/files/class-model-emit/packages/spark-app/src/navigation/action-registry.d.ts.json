@@ -20,6 +20,61 @@
     "NavigationActionHandler",
     "NavigationActionRegistry"
   ],
+  "generatedAt": "2026-06-11T12:38:13.348Z",
+  "$defs": {
+    "NavigationActionContext": {
+      "type": "object",
+      "title": "NavigationActionContext",
+      "description": "Navigation Action Context 的运行上下文。",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "node": {
+          "type": "object",
+          "title": "ProjectNodeData"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "navigation"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "toolbar"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "user-menu"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "app-shell"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "NavigationActionHandler": {
+      "type": "object",
+      "title": "NavigationActionHandler",
+      "description": "Navigation Action Handler 的回调函数契约。"
+    },
+    "NavigationActionRegistry": {
+      "type": "object",
+      "title": "NavigationActionRegistry",
+      "description": "Navigation Action Registry 的语义模型。"
+    }
+  },
   "models": {
     "NavigationActionContext": {
       "kind": "NavigationActionContext",
@@ -318,61 +373,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.963Z",
-  "$defs": {
-    "NavigationActionContext": {
-      "type": "object",
-      "title": "NavigationActionContext",
-      "description": "Navigation Action Context 的运行上下文。",
-      "properties": {
-        "command": {
-          "type": "string"
-        },
-        "node": {
-          "type": "object",
-          "title": "ProjectNodeData"
-        },
-        "source": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "navigation"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "toolbar"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "user-menu"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "app-shell"
-              ]
-            }
-          ]
-        }
-      }
-    },
-    "NavigationActionHandler": {
-      "type": "object",
-      "title": "NavigationActionHandler",
-      "description": "Navigation Action Handler 的回调函数契约。"
-    },
-    "NavigationActionRegistry": {
-      "type": "object",
-      "title": "NavigationActionRegistry",
-      "description": "Navigation Action Registry 的语义模型。"
     }
   }
 }

@@ -21,6 +21,50 @@
   "symbols": [
     "RResultProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.510Z",
+  "$defs": {
+    "RResultProps": {
+      "type": "object",
+      "title": "RResultProps",
+      "description": "RResult Props 的属性契约。",
+      "properties": {
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "subTitle": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RResultProps": {
       "kind": "RResultProps",
@@ -105,50 +149,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.437Z",
-  "$defs": {
-    "RResultProps": {
-      "type": "object",
-      "title": "RResultProps",
-      "description": "RResult Props 的属性契约。",
-      "properties": {
-        "icon": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "subTitle": {
-          "type": "string"
-        }
-      }
     }
   }
 }

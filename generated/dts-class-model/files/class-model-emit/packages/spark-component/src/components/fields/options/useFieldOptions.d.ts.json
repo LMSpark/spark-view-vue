@@ -24,6 +24,73 @@
     "UseFieldOptionsReturn",
     "UseOptionFieldOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.597Z",
+  "$defs": {
+    "FieldTransferOption": {
+      "type": "object",
+      "title": "FieldTransferOption",
+      "description": "Field Transfer Option 的语义模型。",
+      "properties": {
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "Optional With Undefined 的语义模型。"
+    },
+    "FieldOptionProps": {
+      "type": "object",
+      "title": "FieldOptionProps",
+      "description": "Field Option Props 的属性契约。"
+    },
+    "UseFieldOptionsReturn": {
+      "type": "object",
+      "title": "UseFieldOptionsReturn",
+      "description": "Use Field Options Return 的语义模型。",
+      "properties": {
+        "options": {
+          "type": "object",
+          "title": "ComputedRef<FieldOption[]>"
+        },
+        "flatOptions": {
+          "type": "object",
+          "title": "ComputedRef<FieldOption[]>"
+        },
+        "transferData": {
+          "type": "object",
+          "title": "ComputedRef<FieldTransferOption[]>"
+        }
+      }
+    },
+    "UseOptionFieldOptions": {
+      "type": "object",
+      "title": "UseOptionFieldOptions",
+      "description": "Use Option Field Options 的调用配置。",
+      "properties": {
+        "props": true,
+        "type": {
+          "type": "string"
+        },
+        "fallbackValue": true
+      }
+    }
+  },
   "models": {
     "FieldTransferOption": {
       "kind": "FieldTransferOption",
@@ -439,73 +506,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.649Z",
-  "$defs": {
-    "FieldTransferOption": {
-      "type": "object",
-      "title": "FieldTransferOption",
-      "description": "Field Transfer Option 的语义模型。",
-      "properties": {
-        "key": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "label": {
-          "type": "string"
-        },
-        "disabled": {
-          "type": "boolean"
-        }
-      }
-    },
-    "OptionalWithUndefined": {
-      "type": "object",
-      "title": "OptionalWithUndefined",
-      "description": "Optional With Undefined 的语义模型。"
-    },
-    "FieldOptionProps": {
-      "type": "object",
-      "title": "FieldOptionProps",
-      "description": "Field Option Props 的属性契约。"
-    },
-    "UseFieldOptionsReturn": {
-      "type": "object",
-      "title": "UseFieldOptionsReturn",
-      "description": "Use Field Options Return 的语义模型。",
-      "properties": {
-        "options": {
-          "type": "object",
-          "title": "ComputedRef<FieldOption[]>"
-        },
-        "flatOptions": {
-          "type": "object",
-          "title": "ComputedRef<FieldOption[]>"
-        },
-        "transferData": {
-          "type": "object",
-          "title": "ComputedRef<FieldTransferOption[]>"
-        }
-      }
-    },
-    "UseOptionFieldOptions": {
-      "type": "object",
-      "title": "UseOptionFieldOptions",
-      "description": "Use Option Field Options 的调用配置。",
-      "properties": {
-        "props": true,
-        "type": {
-          "type": "string"
-        },
-        "fallbackValue": true
-      }
     }
   }
 }

@@ -23,6 +23,35 @@
     "FieldValueUpdateEmits",
     "UseControlledFieldChangeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.534Z",
+  "$defs": {
+    "FieldValueUpdateEmitter": {
+      "type": "object",
+      "title": "FieldValueUpdateEmitter",
+      "description": "Field Value Update Emitter 的语义模型。"
+    },
+    "FieldValueUpdateEmits": {
+      "type": "object",
+      "title": "FieldValueUpdateEmits",
+      "description": "Field Value Update Emits 的语义模型。",
+      "properties": {
+        "update:modelValue": {
+          "type": "array"
+        }
+      }
+    },
+    "UseControlledFieldChangeOptions": {
+      "type": "object",
+      "title": "UseControlledFieldChangeOptions",
+      "description": "Use Controlled Field Change Options 的调用配置。",
+      "properties": {
+        "handlerSource": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        }
+      }
+    }
+  },
   "models": {
     "FieldValueUpdateEmitter": {
       "kind": "FieldValueUpdateEmitter",
@@ -224,35 +253,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.499Z",
-  "$defs": {
-    "FieldValueUpdateEmitter": {
-      "type": "object",
-      "title": "FieldValueUpdateEmitter",
-      "description": "Field Value Update Emitter 的语义模型。"
-    },
-    "FieldValueUpdateEmits": {
-      "type": "object",
-      "title": "FieldValueUpdateEmits",
-      "description": "Field Value Update Emits 的语义模型。",
-      "properties": {
-        "update:modelValue": {
-          "type": "array"
-        }
-      }
-    },
-    "UseControlledFieldChangeOptions": {
-      "type": "object",
-      "title": "UseControlledFieldChangeOptions",
-      "description": "Use Controlled Field Change Options 的调用配置。",
-      "properties": {
-        "handlerSource": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        }
-      }
     }
   }
 }

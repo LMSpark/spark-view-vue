@@ -24,6 +24,69 @@
     "DataSchema",
     "DataValidator"
   ],
+  "generatedAt": "2026-06-11T12:48:51.027Z",
+  "$defs": {
+    "ValidationError": {
+      "type": "object",
+      "title": "ValidationError",
+      "description": "校验错误",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "value": true
+      }
+    },
+    "ValidationResult": {
+      "type": "object",
+      "title": "ValidationResult",
+      "description": "校验结果",
+      "properties": {
+        "valid": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValidationError"
+          }
+        }
+      }
+    },
+    "RowValidator": {
+      "type": "object",
+      "title": "RowValidator",
+      "description": "行级校验函数"
+    },
+    "DataSchema": {
+      "type": "object",
+      "title": "DataSchema",
+      "description": "数据模式（包含列定义和校验规则）",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataColumn"
+          }
+        },
+        "validate": {
+          "$ref": "#/$defs/RowValidator"
+        }
+      }
+    },
+    "DataValidator": {
+      "type": "object",
+      "title": "DataValidator",
+      "description": "数据校验器\n基于数据模式（列定义 + 自定义规则）校验行数据"
+    }
+  },
   "models": {
     "ValidationError": {
       "kind": "ValidationError",
@@ -358,69 +421,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.114Z",
-  "$defs": {
-    "ValidationError": {
-      "type": "object",
-      "title": "ValidationError",
-      "description": "校验错误",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "code": {
-          "type": "string"
-        },
-        "value": true
-      }
-    },
-    "ValidationResult": {
-      "type": "object",
-      "title": "ValidationResult",
-      "description": "校验结果",
-      "properties": {
-        "valid": {
-          "type": "boolean"
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ValidationError"
-          }
-        }
-      }
-    },
-    "RowValidator": {
-      "type": "object",
-      "title": "RowValidator",
-      "description": "行级校验函数"
-    },
-    "DataSchema": {
-      "type": "object",
-      "title": "DataSchema",
-      "description": "数据模式（包含列定义和校验规则）",
-      "properties": {
-        "columns": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataColumn"
-          }
-        },
-        "validate": {
-          "$ref": "#/$defs/RowValidator"
-        }
-      }
-    },
-    "DataValidator": {
-      "type": "object",
-      "title": "DataValidator",
-      "description": "数据校验器\n基于数据模式（列定义 + 自定义规则）校验行数据"
     }
   }
 }

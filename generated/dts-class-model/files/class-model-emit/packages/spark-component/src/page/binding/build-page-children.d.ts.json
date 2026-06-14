@@ -18,6 +18,28 @@
     "PageScriptCaller",
     "BuildPageChildrenOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.983Z",
+  "$defs": {
+    "PageScriptCaller": {
+      "type": "object",
+      "title": "PageScriptCaller",
+      "description": "页面脚本函数调用签名。"
+    },
+    "BuildPageChildrenOptions": {
+      "type": "object",
+      "title": "BuildPageChildrenOptions",
+      "description": "buildPageChildren 运行时依赖。",
+      "properties": {
+        "callFunc": {
+          "$ref": "#/$defs/PageScriptCaller"
+        },
+        "actionCtx": {
+          "type": "object",
+          "title": "ActionExecutionContext"
+        }
+      }
+    }
+  },
   "models": {
     "PageScriptCaller": {
       "kind": "PageScriptCaller",
@@ -68,28 +90,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.730Z",
-  "$defs": {
-    "PageScriptCaller": {
-      "type": "object",
-      "title": "PageScriptCaller",
-      "description": "页面脚本函数调用签名。"
-    },
-    "BuildPageChildrenOptions": {
-      "type": "object",
-      "title": "BuildPageChildrenOptions",
-      "description": "buildPageChildren 运行时依赖。",
-      "properties": {
-        "callFunc": {
-          "$ref": "#/$defs/PageScriptCaller"
-        },
-        "actionCtx": {
-          "type": "object",
-          "title": "ActionExecutionContext"
-        }
-      }
     }
   }
 }

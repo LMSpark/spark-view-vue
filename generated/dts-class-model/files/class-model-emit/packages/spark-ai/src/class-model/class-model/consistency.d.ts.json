@@ -16,6 +16,25 @@
   "symbols": [
     "ClassModelBuildConsistencyIssue"
   ],
+  "generatedAt": "2026-06-11T22:00:24.841Z",
+  "$defs": {
+    "ClassModelBuildConsistencyIssue": {
+      "type": "object",
+      "title": "ClassModelBuildConsistencyIssue",
+      "description": "Class Model Build Consistency Issue 的语义模型。",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ClassModelBuildConsistencyIssue": {
       "kind": "ClassModelBuildConsistencyIssue",
@@ -66,25 +85,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.708Z",
-  "$defs": {
-    "ClassModelBuildConsistencyIssue": {
-      "type": "object",
-      "title": "ClassModelBuildConsistencyIssue",
-      "description": "Class Model Build Consistency Issue 的语义模型。",
-      "properties": {
-        "code": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
     }
   }
 }

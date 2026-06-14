@@ -23,6 +23,36 @@
     "TabsEmit",
     "RendererTabsZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.455Z",
+  "$defs": {
+    "TabsEmit": {
+      "type": "object",
+      "title": "TabsEmit",
+      "description": "Tabs Emit 的语义模型。"
+    },
+    "RendererTabsZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererTabsZeroCodeOptions",
+      "description": "Renderer Tabs Zero Code Options 的调用配置。",
+      "properties": {
+        "emit": {
+          "$ref": "#/$defs/TabsEmit"
+        },
+        "currentActiveName": {
+          "type": "object",
+          "title": "ValueRef<string | number | undefined>"
+        },
+        "paneConfigs": {
+          "type": "object",
+          "title": "ValueRef<SparkNode[]>"
+        },
+        "onTabChange": {
+          "type": "object",
+          "title": "(name: string | number) => void"
+        }
+      }
+    }
+  },
   "models": {
     "TabsEmit": {
       "kind": "TabsEmit",
@@ -161,36 +191,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.292Z",
-  "$defs": {
-    "TabsEmit": {
-      "type": "object",
-      "title": "TabsEmit",
-      "description": "Tabs Emit 的语义模型。"
-    },
-    "RendererTabsZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererTabsZeroCodeOptions",
-      "description": "Renderer Tabs Zero Code Options 的调用配置。",
-      "properties": {
-        "emit": {
-          "$ref": "#/$defs/TabsEmit"
-        },
-        "currentActiveName": {
-          "type": "object",
-          "title": "ValueRef<string | number | undefined>"
-        },
-        "paneConfigs": {
-          "type": "object",
-          "title": "ValueRef<SparkNode[]>"
-        },
-        "onTabChange": {
-          "type": "object",
-          "title": "(name: string | number) => void"
-        }
-      }
     }
   }
 }

@@ -80,6 +80,518 @@
     "DataSetCrudToolUpdateDependencyParams",
     "DataSetCrudTool"
   ],
+  "generatedAt": "2026-06-11T12:38:13.613Z",
+  "$defs": {
+    "DataSetCrudToolCreateTableOptions": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateTableOptions",
+      "description": "创建数据表时的输入参数。",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataColumn"
+          }
+        },
+        "api": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "CrudApi"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "crudConfig": {
+          "type": "object",
+          "title": "CrudOperationConfig"
+        },
+        "views": {
+          "type": "object",
+          "title": "Record<string, ViewMetadata>"
+        }
+      }
+    },
+    "DataSetCrudToolColumnUpdate": {
+      "type": "object",
+      "title": "DataSetCrudToolColumnUpdate",
+      "description": "字段更新项。",
+      "properties": {
+        "columnName": {
+          "type": "string"
+        },
+        "updates": {
+          "type": "object",
+          "title": "Partial<DataColumn>"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateTableOptions": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateTableOptions",
+      "description": "更新数据表时的输入参数。",
+      "properties": {
+        "columnsToAdd": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataColumn"
+          }
+        },
+        "columnUpdates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetCrudToolColumnUpdate"
+          }
+        },
+        "columnsToRemove": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "api": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "CrudApi"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "crudConfig": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "CrudOperationConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resourceType": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "TableResourceType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resourceId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "businessCategory": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "TableBusinessCategory"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultRows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        }
+      }
+    },
+    "RelationSelector": {
+      "type": "object",
+      "title": "RelationSelector",
+      "description": "关系选择器。\n默认可用 parentTable + childTable 定位；当同一父子表之间存在多条关系时，\n需要继续提供 parentField / childField 做字段级消歧。",
+      "properties": {
+        "parentTable": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        },
+        "parentField": {
+          "type": "string"
+        },
+        "childField": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolTableNameParams": {
+      "type": "object",
+      "title": "DataSetCrudToolTableNameParams",
+      "description": "表名参数对象。",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolReplaceFromJsonOptions": {
+      "type": "object",
+      "title": "DataSetCrudToolReplaceFromJsonOptions",
+      "description": "外部快照替换选项。",
+      "properties": {
+        "commitHistory": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DataSetCrudToolColumnSelectorParams": {
+      "type": "object",
+      "title": "DataSetCrudToolColumnSelectorParams",
+      "description": "表字段定位参数。",
+      "properties": {
+        "columnName": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolCreateColumnParams": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateColumnParams",
+      "description": "新增字段参数。",
+      "properties": {
+        "column": {
+          "type": "object",
+          "title": "DataColumn"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateColumnParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateColumnParams",
+      "description": "更新字段参数。",
+      "properties": {
+        "updates": {
+          "type": "object",
+          "title": "Partial<DataColumn>"
+        }
+      }
+    },
+    "DataSetCrudToolRenameColumnParams": {
+      "type": "object",
+      "title": "DataSetCrudToolRenameColumnParams",
+      "description": "重命名字段参数。",
+      "properties": {
+        "newColumnName": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateTableParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateTableParams",
+      "description": "更新表参数。"
+    },
+    "DataSetCrudToolRenameTableParams": {
+      "type": "object",
+      "title": "DataSetCrudToolRenameTableParams",
+      "description": "重命名表参数。",
+      "properties": {
+        "newTableName": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolViewSelectorParams": {
+      "type": "object",
+      "title": "DataSetCrudToolViewSelectorParams",
+      "description": "视图定位参数。",
+      "properties": {
+        "viewId": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolCreateViewParams": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateViewParams",
+      "description": "创建视图参数。",
+      "properties": {
+        "viewId": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object",
+          "title": "ViewMetadata"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateViewParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateViewParams",
+      "description": "更新视图参数。",
+      "properties": {
+        "updates": {
+          "type": "object",
+          "title": "Partial<ViewMetadata>"
+        }
+      }
+    },
+    "DataSetCrudToolDeleteViewParams": {
+      "type": "object",
+      "title": "DataSetCrudToolDeleteViewParams",
+      "description": "删除视图参数。",
+      "properties": {
+        "viewId": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolAggregateSelectorParams": {
+      "type": "object",
+      "title": "DataSetCrudToolAggregateSelectorParams",
+      "description": "聚合配置定位参数。",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolAddAggregateParams": {
+      "type": "object",
+      "title": "DataSetCrudToolAddAggregateParams",
+      "description": "新增聚合参数。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "AggregateColumnConfig"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateAggregateParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateAggregateParams",
+      "description": "更新聚合参数。",
+      "properties": {
+        "updates": {
+          "type": "object",
+          "title": "Partial<AggregateColumnConfig>"
+        }
+      }
+    },
+    "DataSetCrudToolSetComputeExpressionParams": {
+      "type": "object",
+      "title": "DataSetCrudToolSetComputeExpressionParams",
+      "description": "设置计算表达式参数。",
+      "properties": {
+        "expression": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolRowSelectorParams": {
+      "type": "object",
+      "title": "DataSetCrudToolRowSelectorParams",
+      "description": "行定位参数。",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "DataSetCrudToolCreateRowParams": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateRowParams",
+      "description": "新增行参数。",
+      "properties": {
+        "data": {
+          "type": "object",
+          "title": "Partial<DataRow>"
+        }
+      }
+    },
+    "DataSetCrudToolCreateRowsParams": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateRowsParams",
+      "description": "批量新增行参数。",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Partial<DataRow>"
+          }
+        }
+      }
+    },
+    "DataSetCrudToolUpdateRowParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateRowParams",
+      "description": "更新行参数。",
+      "properties": {
+        "data": {
+          "type": "object",
+          "title": "Partial<DataRow>"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateRowsItem": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateRowsItem",
+      "description": "批量更新行的单条输入。",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "data": {
+          "type": "object",
+          "title": "Partial<DataRow>"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateRowsParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateRowsParams",
+      "description": "批量更新行参数。",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetCrudToolUpdateRowsItem"
+          }
+        }
+      }
+    },
+    "DataSetCrudToolDeleteRowsParams": {
+      "type": "object",
+      "title": "DataSetCrudToolDeleteRowsParams",
+      "description": "批量删除行参数。",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "DataSetCrudToolCreateRelationParams": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateRelationParams",
+      "description": "创建表关系参数。",
+      "properties": {
+        "parentTable": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        },
+        "parentField": {
+          "type": "string"
+        },
+        "childField": {
+          "type": "string"
+        },
+        "relationName": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateRelationParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateRelationParams",
+      "description": "更新表关系参数。",
+      "properties": {
+        "selector": {
+          "$ref": "#/$defs/RelationSelector"
+        },
+        "updates": {
+          "type": "object",
+          "title": "Partial<TableRelation>"
+        }
+      }
+    },
+    "DataSetCrudToolDependencySelectorParams": {
+      "type": "object",
+      "title": "DataSetCrudToolDependencySelectorParams",
+      "description": "视图依赖定位参数。",
+      "properties": {
+        "parentTable": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetCrudToolCreateDependencyParams": {
+      "type": "object",
+      "title": "DataSetCrudToolCreateDependencyParams",
+      "description": "创建视图依赖参数。",
+      "properties": {
+        "dependency": {
+          "type": "object",
+          "title": "ViewDependency"
+        }
+      }
+    },
+    "DataSetCrudToolUpdateDependencyParams": {
+      "type": "object",
+      "title": "DataSetCrudToolUpdateDependencyParams",
+      "description": "更新视图依赖参数。",
+      "properties": {
+        "updates": {
+          "type": "object",
+          "title": "Partial<ViewDependency>"
+        }
+      }
+    },
+    "DataSetCrudTool": {
+      "type": "object",
+      "title": "DataSetCrudTool",
+      "description": "DataSet 级统一 CRUD facade。\n设计目标：\n1. 构造时只要求 dataSetName，外部无需先手动拼装 DataSet。\n2. 统一收口表、列、视图、行、关系、依赖这几类对象的常用操作。\n3. 全部复用现有 DataSet/DataTable/DataView 能力，避免再造第二套状态模型。\n4. 所有公开方法统一使用单一对象参数，便于 LLM / 动态调度直接传 JSON object。"
+    }
+  },
   "models": {
     "DataSetCrudToolCreateTableOptions": {
       "kind": "DataSetCrudToolCreateTableOptions",
@@ -3538,518 +4050,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.923Z",
-  "$defs": {
-    "DataSetCrudToolCreateTableOptions": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateTableOptions",
-      "description": "创建数据表时的输入参数。",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataColumn"
-          }
-        },
-        "api": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "CrudApi"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        },
-        "crudConfig": {
-          "type": "object",
-          "title": "CrudOperationConfig"
-        },
-        "views": {
-          "type": "object",
-          "title": "Record<string, ViewMetadata>"
-        }
-      }
-    },
-    "DataSetCrudToolColumnUpdate": {
-      "type": "object",
-      "title": "DataSetCrudToolColumnUpdate",
-      "description": "字段更新项。",
-      "properties": {
-        "columnName": {
-          "type": "string"
-        },
-        "updates": {
-          "type": "object",
-          "title": "Partial<DataColumn>"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateTableOptions": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateTableOptions",
-      "description": "更新数据表时的输入参数。",
-      "properties": {
-        "columnsToAdd": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataColumn"
-          }
-        },
-        "columnUpdates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataSetCrudToolColumnUpdate"
-          }
-        },
-        "columnsToRemove": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "api": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "CrudApi"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        },
-        "crudConfig": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "CrudOperationConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "resourceType": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "TableResourceType"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "resourceId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "businessCategory": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "TableBusinessCategory"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "defaultRows": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataRow"
-          }
-        }
-      }
-    },
-    "RelationSelector": {
-      "type": "object",
-      "title": "RelationSelector",
-      "description": "关系选择器。\n默认可用 parentTable + childTable 定位；当同一父子表之间存在多条关系时，\n需要继续提供 parentField / childField 做字段级消歧。",
-      "properties": {
-        "parentTable": {
-          "type": "string"
-        },
-        "childTable": {
-          "type": "string"
-        },
-        "parentField": {
-          "type": "string"
-        },
-        "childField": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolTableNameParams": {
-      "type": "object",
-      "title": "DataSetCrudToolTableNameParams",
-      "description": "表名参数对象。",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolReplaceFromJsonOptions": {
-      "type": "object",
-      "title": "DataSetCrudToolReplaceFromJsonOptions",
-      "description": "外部快照替换选项。",
-      "properties": {
-        "commitHistory": {
-          "type": "boolean"
-        }
-      }
-    },
-    "DataSetCrudToolColumnSelectorParams": {
-      "type": "object",
-      "title": "DataSetCrudToolColumnSelectorParams",
-      "description": "表字段定位参数。",
-      "properties": {
-        "columnName": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolCreateColumnParams": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateColumnParams",
-      "description": "新增字段参数。",
-      "properties": {
-        "column": {
-          "type": "object",
-          "title": "DataColumn"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateColumnParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateColumnParams",
-      "description": "更新字段参数。",
-      "properties": {
-        "updates": {
-          "type": "object",
-          "title": "Partial<DataColumn>"
-        }
-      }
-    },
-    "DataSetCrudToolRenameColumnParams": {
-      "type": "object",
-      "title": "DataSetCrudToolRenameColumnParams",
-      "description": "重命名字段参数。",
-      "properties": {
-        "newColumnName": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateTableParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateTableParams",
-      "description": "更新表参数。"
-    },
-    "DataSetCrudToolRenameTableParams": {
-      "type": "object",
-      "title": "DataSetCrudToolRenameTableParams",
-      "description": "重命名表参数。",
-      "properties": {
-        "newTableName": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolViewSelectorParams": {
-      "type": "object",
-      "title": "DataSetCrudToolViewSelectorParams",
-      "description": "视图定位参数。",
-      "properties": {
-        "viewId": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolCreateViewParams": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateViewParams",
-      "description": "创建视图参数。",
-      "properties": {
-        "viewId": {
-          "type": "string"
-        },
-        "config": {
-          "type": "object",
-          "title": "ViewMetadata"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateViewParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateViewParams",
-      "description": "更新视图参数。",
-      "properties": {
-        "updates": {
-          "type": "object",
-          "title": "Partial<ViewMetadata>"
-        }
-      }
-    },
-    "DataSetCrudToolDeleteViewParams": {
-      "type": "object",
-      "title": "DataSetCrudToolDeleteViewParams",
-      "description": "删除视图参数。",
-      "properties": {
-        "viewId": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolAggregateSelectorParams": {
-      "type": "object",
-      "title": "DataSetCrudToolAggregateSelectorParams",
-      "description": "聚合配置定位参数。",
-      "properties": {
-        "key": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolAddAggregateParams": {
-      "type": "object",
-      "title": "DataSetCrudToolAddAggregateParams",
-      "description": "新增聚合参数。",
-      "properties": {
-        "config": {
-          "type": "object",
-          "title": "AggregateColumnConfig"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateAggregateParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateAggregateParams",
-      "description": "更新聚合参数。",
-      "properties": {
-        "updates": {
-          "type": "object",
-          "title": "Partial<AggregateColumnConfig>"
-        }
-      }
-    },
-    "DataSetCrudToolSetComputeExpressionParams": {
-      "type": "object",
-      "title": "DataSetCrudToolSetComputeExpressionParams",
-      "description": "设置计算表达式参数。",
-      "properties": {
-        "expression": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolRowSelectorParams": {
-      "type": "object",
-      "title": "DataSetCrudToolRowSelectorParams",
-      "description": "行定位参数。",
-      "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
-    },
-    "DataSetCrudToolCreateRowParams": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateRowParams",
-      "description": "新增行参数。",
-      "properties": {
-        "data": {
-          "type": "object",
-          "title": "Partial<DataRow>"
-        }
-      }
-    },
-    "DataSetCrudToolCreateRowsParams": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateRowsParams",
-      "description": "批量新增行参数。",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "Partial<DataRow>"
-          }
-        }
-      }
-    },
-    "DataSetCrudToolUpdateRowParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateRowParams",
-      "description": "更新行参数。",
-      "properties": {
-        "data": {
-          "type": "object",
-          "title": "Partial<DataRow>"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateRowsItem": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateRowsItem",
-      "description": "批量更新行的单条输入。",
-      "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "data": {
-          "type": "object",
-          "title": "Partial<DataRow>"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateRowsParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateRowsParams",
-      "description": "批量更新行参数。",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataSetCrudToolUpdateRowsItem"
-          }
-        }
-      }
-    },
-    "DataSetCrudToolDeleteRowsParams": {
-      "type": "object",
-      "title": "DataSetCrudToolDeleteRowsParams",
-      "description": "批量删除行参数。",
-      "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        }
-      }
-    },
-    "DataSetCrudToolCreateRelationParams": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateRelationParams",
-      "description": "创建表关系参数。",
-      "properties": {
-        "parentTable": {
-          "type": "string"
-        },
-        "childTable": {
-          "type": "string"
-        },
-        "parentField": {
-          "type": "string"
-        },
-        "childField": {
-          "type": "string"
-        },
-        "relationName": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateRelationParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateRelationParams",
-      "description": "更新表关系参数。",
-      "properties": {
-        "selector": {
-          "$ref": "#/$defs/RelationSelector"
-        },
-        "updates": {
-          "type": "object",
-          "title": "Partial<TableRelation>"
-        }
-      }
-    },
-    "DataSetCrudToolDependencySelectorParams": {
-      "type": "object",
-      "title": "DataSetCrudToolDependencySelectorParams",
-      "description": "视图依赖定位参数。",
-      "properties": {
-        "parentTable": {
-          "type": "string"
-        },
-        "childTable": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetCrudToolCreateDependencyParams": {
-      "type": "object",
-      "title": "DataSetCrudToolCreateDependencyParams",
-      "description": "创建视图依赖参数。",
-      "properties": {
-        "dependency": {
-          "type": "object",
-          "title": "ViewDependency"
-        }
-      }
-    },
-    "DataSetCrudToolUpdateDependencyParams": {
-      "type": "object",
-      "title": "DataSetCrudToolUpdateDependencyParams",
-      "description": "更新视图依赖参数。",
-      "properties": {
-        "updates": {
-          "type": "object",
-          "title": "Partial<ViewDependency>"
-        }
-      }
-    },
-    "DataSetCrudTool": {
-      "type": "object",
-      "title": "DataSetCrudTool",
-      "description": "DataSet 级统一 CRUD facade。\n设计目标：\n1. 构造时只要求 dataSetName，外部无需先手动拼装 DataSet。\n2. 统一收口表、列、视图、行、关系、依赖这几类对象的常用操作。\n3. 全部复用现有 DataSet/DataTable/DataView 能力，避免再造第二套状态模型。\n4. 所有公开方法统一使用单一对象参数，便于 LLM / 动态调度直接传 JSON object。"
     }
   }
 }

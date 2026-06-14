@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -70,7 +70,10 @@ describe('readDtsClassModelBundleJson', () => {
     try {
       const sourcePath = 'class-model-emit/packages/spark-utils/src/ai-model.d.ts'
       const absolutePath = resolve(tempRoot, sourcePath)
+      const sourceTsPath = resolve(tempRoot, 'packages/spark-utils/src/ai-model.ts')
       const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+      mkdirSync(dirname(sourceTsPath), { recursive: true })
+      writeFileSync(sourceTsPath, '/** AI editable model base. */\n', 'utf8')
       mkdirSync(dirname(absolutePath), { recursive: true })
       writeFileSync(absolutePath, [
         '/** AI editable model base. */',
@@ -103,9 +106,10 @@ describe('readDtsClassModelBundleJson', () => {
         name: '@spark-appworks/spark-utils:ai-model',
         sourceFile: 'packages/spark-utils/src/ai-model.ts',
         modulePath: 'ai-model',
-        jsdocSource: 'inferred',
+        jsdocSource: 'source-file-jsdoc',
       })
       expect(projection.symbols).toContain('SparkAIModel')
+      expect(projection.generatedAt).toBe(statSync(sourceTsPath).mtime.toISOString())
       expect(projection.$defs?.['SparkAIModel']).toMatchObject({
         type: 'object',
         title: 'SparkAIModel',

@@ -22,6 +22,106 @@
     "AppFullConfig",
     "TenantConfig"
   ],
+  "generatedAt": "2026-06-11T12:48:50.940Z",
+  "$defs": {
+    "ConfigSourceOptions": {
+      "type": "object",
+      "title": "ConfigSourceOptions",
+      "description": "配置源类型",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "local"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "remote"
+              ]
+            }
+          ]
+        },
+        "api": {
+          "type": "object"
+        },
+        "local": {
+          "type": "object"
+        }
+      }
+    },
+    "FullTenantInfo": {
+      "type": "object",
+      "title": "FullTenantInfo",
+      "description": "租户信息（完整版，含 logo/theme 等展示字段）",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "tenantCode": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "theme": {
+          "type": "object"
+        }
+      }
+    },
+    "AppFullConfig": {
+      "type": "object",
+      "title": "AppFullConfig",
+      "description": "完整的应用配置",
+      "properties": {
+        "configSource": {
+          "$ref": "#/$defs/ConfigSourceOptions"
+        },
+        "tenant": {
+          "$ref": "#/$defs/FullTenantInfo"
+        },
+        "router": {
+          "type": "object"
+        },
+        "mountTarget": {
+          "type": "string"
+        },
+        "plugins": {
+          "type": "object",
+          "title": "Record<string, boolean | PluginConfigItem>"
+        },
+        "spark": {
+          "type": "object"
+        },
+        "pageNode": {
+          "type": "object"
+        },
+        "config": {
+          "type": "object"
+        },
+        "logger": {
+          "type": "object",
+          "title": "AppLoggerConfig"
+        }
+      }
+    },
+    "TenantConfig": {
+      "type": "object",
+      "title": "TenantConfig",
+      "description": "租户配置（可覆盖默认配置的部分）",
+      "properties": {
+        "tenant": {
+          "$ref": "#/$defs/FullTenantInfo"
+        }
+      }
+    }
+  },
   "models": {
     "ConfigSourceOptions": {
       "kind": "ConfigSourceOptions",
@@ -274,106 +374,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.925Z",
-  "$defs": {
-    "ConfigSourceOptions": {
-      "type": "object",
-      "title": "ConfigSourceOptions",
-      "description": "配置源类型",
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "local"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "remote"
-              ]
-            }
-          ]
-        },
-        "api": {
-          "type": "object"
-        },
-        "local": {
-          "type": "object"
-        }
-      }
-    },
-    "FullTenantInfo": {
-      "type": "object",
-      "title": "FullTenantInfo",
-      "description": "租户信息（完整版，含 logo/theme 等展示字段）",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "tenantName": {
-          "type": "string"
-        },
-        "tenantCode": {
-          "type": "string"
-        },
-        "logo": {
-          "type": "string"
-        },
-        "theme": {
-          "type": "object"
-        }
-      }
-    },
-    "AppFullConfig": {
-      "type": "object",
-      "title": "AppFullConfig",
-      "description": "完整的应用配置",
-      "properties": {
-        "configSource": {
-          "$ref": "#/$defs/ConfigSourceOptions"
-        },
-        "tenant": {
-          "$ref": "#/$defs/FullTenantInfo"
-        },
-        "router": {
-          "type": "object"
-        },
-        "mountTarget": {
-          "type": "string"
-        },
-        "plugins": {
-          "type": "object",
-          "title": "Record<string, boolean | PluginConfigItem>"
-        },
-        "spark": {
-          "type": "object"
-        },
-        "pageNode": {
-          "type": "object"
-        },
-        "config": {
-          "type": "object"
-        },
-        "logger": {
-          "type": "object",
-          "title": "AppLoggerConfig"
-        }
-      }
-    },
-    "TenantConfig": {
-      "type": "object",
-      "title": "TenantConfig",
-      "description": "租户配置（可覆盖默认配置的部分）",
-      "properties": {
-        "tenant": {
-          "$ref": "#/$defs/FullTenantInfo"
-        }
-      }
     }
   }
 }

@@ -20,6 +20,53 @@
     "ThemeServiceOptions",
     "ThemeServiceReactive"
   ],
+  "generatedAt": "2026-06-11T12:48:50.951Z",
+  "$defs": {
+    "ThemeCapability": {
+      "type": "object",
+      "title": "ThemeCapability",
+      "description": "Theme Capability 的语义模型。"
+    },
+    "ThemeServiceOptions": {
+      "type": "object",
+      "title": "ThemeServiceOptions",
+      "description": "主题服务配置",
+      "properties": {
+        "initialMode": {
+          "type": "object",
+          "title": "ThemeMode"
+        },
+        "storageKey": {
+          "type": "string"
+        },
+        "storageScope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ThemeServiceReactive": {
+      "type": "object",
+      "title": "ThemeServiceReactive",
+      "description": "响应式主题服务（内部使用，组件层可直接读 ref）",
+      "properties": {
+        "modeRef": {
+          "type": "object",
+          "title": "Ref<ThemeMode>"
+        },
+        "isDarkRef": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        }
+      }
+    }
+  },
   "models": {
     "ThemeCapability": {
       "kind": "ThemeCapability",
@@ -189,53 +236,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.024Z",
-  "$defs": {
-    "ThemeCapability": {
-      "type": "object",
-      "title": "ThemeCapability",
-      "description": "Theme Capability 的语义模型。"
-    },
-    "ThemeServiceOptions": {
-      "type": "object",
-      "title": "ThemeServiceOptions",
-      "description": "主题服务配置",
-      "properties": {
-        "initialMode": {
-          "type": "object",
-          "title": "ThemeMode"
-        },
-        "storageKey": {
-          "type": "string"
-        },
-        "storageScope": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "ThemeServiceReactive": {
-      "type": "object",
-      "title": "ThemeServiceReactive",
-      "description": "响应式主题服务（内部使用，组件层可直接读 ref）",
-      "properties": {
-        "modeRef": {
-          "type": "object",
-          "title": "Ref<ThemeMode>"
-        },
-        "isDarkRef": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        }
-      }
     }
   }
 }

@@ -18,6 +18,19 @@
     "ConfigLoader",
     "TenantResolver"
   ],
+  "generatedAt": "2026-06-12T20:26:57.885Z",
+  "$defs": {
+    "ConfigLoader": {
+      "type": "object",
+      "title": "ConfigLoader",
+      "description": "配置加载器"
+    },
+    "TenantResolver": {
+      "type": "object",
+      "title": "TenantResolver",
+      "description": "租户识别器"
+    }
+  },
   "models": {
     "ConfigLoader": {
       "kind": "ConfigLoader",
@@ -392,19 +405,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.923Z",
-  "$defs": {
-    "ConfigLoader": {
-      "type": "object",
-      "title": "ConfigLoader",
-      "description": "配置加载器"
-    },
-    "TenantResolver": {
-      "type": "object",
-      "title": "TenantResolver",
-      "description": "租户识别器"
     }
   }
 }

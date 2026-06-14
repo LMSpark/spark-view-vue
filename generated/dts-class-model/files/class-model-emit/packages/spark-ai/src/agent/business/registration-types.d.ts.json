@@ -22,6 +22,133 @@
     "AiAgentRegistrationOptions",
     "AiAgentRegistration"
   ],
+  "generatedAt": "2026-06-14T01:03:51.210Z",
+  "$defs": {
+    "AiAgentToolLoopNudgeReason": {
+      "type": "object",
+      "title": "AiAgentToolLoopNudgeReason",
+      "description": "Ai Agent Tool Loop Nudge Reason 的语义模型。"
+    },
+    "AiAgentToolLoopNudgeContext": {
+      "type": "object",
+      "title": "AiAgentToolLoopNudgeContext",
+      "description": "Ai Agent Tool Loop Nudge Context 的运行上下文。",
+      "properties": {
+        "reason": {
+          "$ref": "#/$defs/AiAgentToolLoopNudgeReason"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "runtimeContext": {
+          "type": "object",
+          "title": "AiAgentRuntimeContext"
+        }
+      }
+    },
+    "AiAgentRegistrationOptions": {
+      "type": "object",
+      "title": "AiAgentRegistrationOptions",
+      "description": "Ai Agent Registration Options 的调用配置。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "object",
+          "title": "AiAgentToolRuntime"
+        },
+        "inputContract": {
+          "type": "object",
+          "title": "AiAgentInputContract<TInput>"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentRegistration": {
+      "type": "object",
+      "title": "AiAgentRegistration",
+      "description": "Ai Agent Registration 的语义模型。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "object",
+          "title": "AiAgentToolRuntime"
+        },
+        "inputContract": {
+          "type": "object",
+          "title": "AiAgentInputContract<TInput>"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        },
+        "systemPrompt": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext) => string | undefined"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>"
+        },
+        "afterFunctionCall": {
+          "type": "object",
+          "title": "(options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>"
+        },
+        "onStartSession": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext) => void | Promise<void>"
+        },
+        "onEndBusinessInstance": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>"
+        },
+        "releaseModuleInstance": {
+          "type": "object",
+          "title": "(moduleInstanceId: string) => void"
+        },
+        "toolLoopNudge": {
+          "type": "object",
+          "title": "(context: AiAgentToolLoopNudgeContext) => string | undefined"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        },
+        "enrichRecoveryHints": {
+          "type": "object",
+          "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentToolLoopNudgeReason": {
       "kind": "AiAgentToolLoopNudgeReason",
@@ -747,133 +874,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.528Z",
-  "$defs": {
-    "AiAgentToolLoopNudgeReason": {
-      "type": "object",
-      "title": "AiAgentToolLoopNudgeReason",
-      "description": "Ai Agent Tool Loop Nudge Reason 的语义模型。"
-    },
-    "AiAgentToolLoopNudgeContext": {
-      "type": "object",
-      "title": "AiAgentToolLoopNudgeContext",
-      "description": "Ai Agent Tool Loop Nudge Context 的运行上下文。",
-      "properties": {
-        "reason": {
-          "$ref": "#/$defs/AiAgentToolLoopNudgeReason"
-        },
-        "moduleInstanceId": {
-          "type": "string"
-        },
-        "runtimeContext": {
-          "type": "object",
-          "title": "AiAgentRuntimeContext"
-        }
-      }
-    },
-    "AiAgentRegistrationOptions": {
-      "type": "object",
-      "title": "AiAgentRegistrationOptions",
-      "description": "Ai Agent Registration Options 的调用配置。",
-      "properties": {
-        "moduleId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "runtime": {
-          "type": "object",
-          "title": "AiAgentToolRuntime"
-        },
-        "inputContract": {
-          "type": "object",
-          "title": "AiAgentInputContract<TInput>"
-        },
-        "sessionStore": {
-          "type": "object",
-          "title": "AiAgentSessionStore"
-        },
-        "executionToolNames": {
-          "type": "object",
-          "title": "ReadonlySet<string>"
-        },
-        "planWithoutToolMarkers": {
-          "type": "array"
-        }
-      }
-    },
-    "AiAgentRegistration": {
-      "type": "object",
-      "title": "AiAgentRegistration",
-      "description": "Ai Agent Registration 的语义模型。",
-      "properties": {
-        "moduleId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "runtime": {
-          "type": "object",
-          "title": "AiAgentToolRuntime"
-        },
-        "inputContract": {
-          "type": "object",
-          "title": "AiAgentInputContract<TInput>"
-        },
-        "sessionStore": {
-          "type": "object",
-          "title": "AiAgentSessionStore"
-        },
-        "systemPrompt": {
-          "type": "object",
-          "title": "(context: AiAgentRuntimeContext) => string | undefined"
-        },
-        "beforeFunctionCall": {
-          "type": "object",
-          "title": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>"
-        },
-        "afterFunctionCall": {
-          "type": "object",
-          "title": "(options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>"
-        },
-        "onStartSession": {
-          "type": "object",
-          "title": "(context: AiAgentRuntimeContext) => void | Promise<void>"
-        },
-        "onEndBusinessInstance": {
-          "type": "object",
-          "title": "(context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>"
-        },
-        "releaseModuleInstance": {
-          "type": "object",
-          "title": "(moduleInstanceId: string) => void"
-        },
-        "toolLoopNudge": {
-          "type": "object",
-          "title": "(context: AiAgentToolLoopNudgeContext) => string | undefined"
-        },
-        "executionToolNames": {
-          "type": "object",
-          "title": "ReadonlySet<string>"
-        },
-        "planWithoutToolMarkers": {
-          "type": "array"
-        },
-        "enrichRecoveryHints": {
-          "type": "object",
-          "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]"
-        }
-      }
     }
   }
 }

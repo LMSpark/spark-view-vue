@@ -24,6 +24,83 @@
     "PluginRegistry",
     "PluginManager"
   ],
+  "generatedAt": "2026-06-11T12:48:50.948Z",
+  "$defs": {
+    "PluginConfigItem": {
+      "type": "object",
+      "title": "PluginConfigItem",
+      "description": "插件配置项",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "lazy": {
+          "type": "boolean"
+        },
+        "priority": {
+          "type": "number"
+        }
+      }
+    },
+    "PluginLoader": {
+      "type": "object",
+      "title": "PluginLoader",
+      "description": "插件加载器定义",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "defaultOptions": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "PluginInstance": {
+      "type": "object",
+      "title": "PluginInstance",
+      "description": "插件实例（加载后的结果）",
+      "properties": {
+        "plugin": {
+          "type": "object",
+          "title": "Plugin"
+        },
+        "options": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "loader": {
+          "$ref": "#/$defs/PluginLoader"
+        }
+      }
+    },
+    "PluginRegistry": {
+      "type": "object",
+      "title": "PluginRegistry",
+      "description": "Plugin Registry 的语义模型。"
+    },
+    "PluginManager": {
+      "type": "object",
+      "title": "PluginManager",
+      "description": "插件管理器 - 负责加载和管理插件生命周期"
+    }
+  },
   "models": {
     "PluginConfigItem": {
       "kind": "PluginConfigItem",
@@ -733,83 +810,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.003Z",
-  "$defs": {
-    "PluginConfigItem": {
-      "type": "object",
-      "title": "PluginConfigItem",
-      "description": "插件配置项",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "options": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "lazy": {
-          "type": "boolean"
-        },
-        "priority": {
-          "type": "number"
-        }
-      }
-    },
-    "PluginLoader": {
-      "type": "object",
-      "title": "PluginLoader",
-      "description": "插件加载器定义",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "module": {
-          "type": "string"
-        },
-        "defaultOptions": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "description": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        }
-      }
-    },
-    "PluginInstance": {
-      "type": "object",
-      "title": "PluginInstance",
-      "description": "插件实例（加载后的结果）",
-      "properties": {
-        "plugin": {
-          "type": "object",
-          "title": "Plugin"
-        },
-        "options": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "loader": {
-          "$ref": "#/$defs/PluginLoader"
-        }
-      }
-    },
-    "PluginRegistry": {
-      "type": "object",
-      "title": "PluginRegistry",
-      "description": "Plugin Registry 的语义模型。"
-    },
-    "PluginManager": {
-      "type": "object",
-      "title": "PluginManager",
-      "description": "插件管理器 - 负责加载和管理插件生命周期"
     }
   }
 }

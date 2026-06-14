@@ -22,6 +22,92 @@
     "ProjectPlanningAiRunCommand",
     "ProjectPlanningAiRunResult"
   ],
+  "generatedAt": "2026-06-12T04:50:58.275Z",
+  "$defs": {
+    "ProjectPlanningAiRunOptions": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunOptions",
+      "description": "Project Planning Ai Run Options 的调用配置。",
+      "properties": {
+        "saveNavigationAfterRun": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectPlanningAiRunEvents": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunEvents",
+      "description": "Project Planning Ai Run Events 的语义模型。"
+    },
+    "ProjectPlanningAiRunCommand": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunCommand",
+      "description": "Project Planning Ai Run Command 的命令参数。",
+      "properties": {
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "consumeCapability": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "SparkCapabilityConsumer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        },
+        "events": {
+          "$ref": "#/$defs/ProjectPlanningAiRunEvents"
+        },
+        "trace": {
+          "type": "object",
+          "title": "AiRunTraceSink"
+        },
+        "adapter": {
+          "type": "object",
+          "title": "AiRunAdapterState"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "AiRunBeforeFunctionCall"
+        },
+        "onAbort": {
+          "type": "object",
+          "title": "AiRunAbortHandler"
+        },
+        "userMessage": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectPlanningAiRunResult": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunResult",
+      "description": "Project Planning Ai Run Result 的返回结果。",
+      "properties": {
+        "sawToolCall": {
+          "type": "boolean"
+        },
+        "input": {
+          "type": "object",
+          "title": "ProjectPlanningAgentInput"
+        },
+        "navigationDirty": {
+          "type": "boolean"
+        },
+        "savedNavigation": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectPlanningAiRunOptions": {
       "kind": "ProjectPlanningAiRunOptions",
@@ -294,92 +380,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.478Z",
-  "$defs": {
-    "ProjectPlanningAiRunOptions": {
-      "type": "object",
-      "title": "ProjectPlanningAiRunOptions",
-      "description": "Project Planning Ai Run Options 的调用配置。",
-      "properties": {
-        "saveNavigationAfterRun": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ProjectPlanningAiRunEvents": {
-      "type": "object",
-      "title": "ProjectPlanningAiRunEvents",
-      "description": "Project Planning Ai Run Events 的语义模型。"
-    },
-    "ProjectPlanningAiRunCommand": {
-      "type": "object",
-      "title": "ProjectPlanningAiRunCommand",
-      "description": "Project Planning Ai Run Command 的命令参数。",
-      "properties": {
-        "editor": {
-          "type": "object",
-          "title": "ProjectWorkspace"
-        },
-        "consumeCapability": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "SparkCapabilityConsumer"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "host": {
-          "type": "object",
-          "title": "AiAgentHost"
-        },
-        "events": {
-          "$ref": "#/$defs/ProjectPlanningAiRunEvents"
-        },
-        "trace": {
-          "type": "object",
-          "title": "AiRunTraceSink"
-        },
-        "adapter": {
-          "type": "object",
-          "title": "AiRunAdapterState"
-        },
-        "beforeFunctionCall": {
-          "type": "object",
-          "title": "AiRunBeforeFunctionCall"
-        },
-        "onAbort": {
-          "type": "object",
-          "title": "AiRunAbortHandler"
-        },
-        "userMessage": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectPlanningAiRunResult": {
-      "type": "object",
-      "title": "ProjectPlanningAiRunResult",
-      "description": "Project Planning Ai Run Result 的返回结果。",
-      "properties": {
-        "sawToolCall": {
-          "type": "boolean"
-        },
-        "input": {
-          "type": "object",
-          "title": "ProjectPlanningAgentInput"
-        },
-        "navigationDirty": {
-          "type": "boolean"
-        },
-        "savedNavigation": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

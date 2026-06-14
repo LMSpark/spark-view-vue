@@ -21,6 +21,22 @@
   "symbols": [
     "RBreadcrumbProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.495Z",
+  "$defs": {
+    "RBreadcrumbProps": {
+      "type": "object",
+      "title": "RBreadcrumbProps",
+      "description": "RBreadcrumb Props 的属性契约。",
+      "properties": {
+        "separator": {
+          "type": "string"
+        },
+        "separatorIcon": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RBreadcrumbProps": {
       "kind": "RBreadcrumbProps",
@@ -71,22 +87,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.422Z",
-  "$defs": {
-    "RBreadcrumbProps": {
-      "type": "object",
-      "title": "RBreadcrumbProps",
-      "description": "RBreadcrumb Props 的属性契约。",
-      "properties": {
-        "separator": {
-          "type": "string"
-        },
-        "separatorIcon": {
-          "type": "string"
-        }
-      }
     }
   }
 }

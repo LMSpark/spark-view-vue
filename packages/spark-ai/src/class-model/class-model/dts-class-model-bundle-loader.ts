@@ -135,7 +135,6 @@ public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
       configPath,
       models,
       fileIndex,
-      generatedAt: new Date().toISOString(),
     }
   }
 

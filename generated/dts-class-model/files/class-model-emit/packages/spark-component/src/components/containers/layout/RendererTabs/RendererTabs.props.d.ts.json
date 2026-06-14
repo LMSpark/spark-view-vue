@@ -23,6 +23,47 @@
     "TabsClickEvent",
     "RTabsProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.452Z",
+  "$defs": {
+    "TabsClickEvent": {
+      "type": "object",
+      "title": "TabsClickEvent",
+      "description": "Tabs Click Event 的事件载荷。",
+      "properties": {
+        "paneName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "RTabsProps": {
+      "type": "object",
+      "title": "RTabsProps",
+      "description": "RTabs Props 的属性契约。",
+      "properties": {
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "modelValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "TabsClickEvent": {
       "kind": "TabsClickEvent",
@@ -203,47 +244,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.286Z",
-  "$defs": {
-    "TabsClickEvent": {
-      "type": "object",
-      "title": "TabsClickEvent",
-      "description": "Tabs Click Event 的事件载荷。",
-      "properties": {
-        "paneName": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
-    },
-    "RTabsProps": {
-      "type": "object",
-      "title": "RTabsProps",
-      "description": "RTabs Props 的属性契约。",
-      "properties": {
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "modelValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
     }
   }
 }

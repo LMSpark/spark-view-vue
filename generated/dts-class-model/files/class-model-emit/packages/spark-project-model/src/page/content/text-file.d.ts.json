@@ -16,6 +16,35 @@
   "symbols": [
     "PageTextFile"
   ],
+  "generatedAt": "2026-06-11T12:38:13.629Z",
+  "$defs": {
+    "PageTextFile": {
+      "type": "object",
+      "title": "PageTextFile",
+      "description": "Page Text File 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "fileName": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "script.js"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "style.css"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "PageTextFile": {
       "kind": "PageTextFile",
@@ -257,35 +286,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.229Z",
-  "$defs": {
-    "PageTextFile": {
-      "type": "object",
-      "title": "PageTextFile",
-      "description": "Page Text File 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "fileName": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "script.js"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "style.css"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

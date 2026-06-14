@@ -16,6 +16,20 @@
   "symbols": [
     "UseNavigationOptions"
   ],
+  "generatedAt": "2026-06-12T04:50:58.304Z",
+  "$defs": {
+    "UseNavigationOptions": {
+      "type": "object",
+      "title": "UseNavigationOptions",
+      "description": "Use Navigation Options 的调用配置。",
+      "properties": {
+        "actionRegistry": {
+          "type": "object",
+          "title": "NavigationActionRegistry"
+        }
+      }
+    }
+  },
   "models": {
     "UseNavigationOptions": {
       "kind": "UseNavigationOptions",
@@ -119,20 +133,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.981Z",
-  "$defs": {
-    "UseNavigationOptions": {
-      "type": "object",
-      "title": "UseNavigationOptions",
-      "description": "Use Navigation Options 的调用配置。",
-      "properties": {
-        "actionRegistry": {
-          "type": "object",
-          "title": "NavigationActionRegistry"
-        }
-      }
     }
   }
 }

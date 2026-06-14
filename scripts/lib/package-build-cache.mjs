@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { buildDebugBreak } from './build-debug.mjs'
 
 const STAMP_FILE = '.spark-build-stamp.json'
 const CONFIG_FILES = ['package.json', 'tsconfig.build.json', 'vite.config.ts', 'vite.config.mjs']
@@ -100,6 +101,12 @@ function mainOutputExists(pkgRoot, mainRelativePath) {
 export function isPackageBuildFresh(pkgRoot, fingerprint) {
   const meta = readPackageMeta(pkgRoot)
   const stamp = readBuildStamp(pkgRoot)
-  if (!stamp || stamp.fingerprint !== fingerprint) return false
-  return mainOutputExists(pkgRoot, meta.main)
+  const fresh = Boolean(stamp && stamp.fingerprint === fingerprint && mainOutputExists(pkgRoot, meta.main))
+  buildDebugBreak('package-build-cache:fresh-check', {
+    pkgRoot,
+    fresh,
+    fingerprint,
+    stampFingerprint: stamp?.fingerprint ?? null,
+  })
+  return fresh
 }

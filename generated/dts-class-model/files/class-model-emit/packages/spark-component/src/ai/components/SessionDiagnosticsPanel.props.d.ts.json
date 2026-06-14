@@ -16,6 +16,23 @@
   "symbols": [
     "SessionDiagnosticsPanelProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.369Z",
+  "$defs": {
+    "SessionDiagnosticsPanelProps": {
+      "type": "object",
+      "title": "SessionDiagnosticsPanelProps",
+      "description": "Session Diagnostics Panel Props 的属性契约。",
+      "properties": {
+        "data": {
+          "type": "object",
+          "title": "SessionDiagnosticsData"
+        },
+        "loading": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "SessionDiagnosticsPanelProps": {
       "kind": "SessionDiagnosticsPanelProps",
@@ -59,23 +76,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.048Z",
-  "$defs": {
-    "SessionDiagnosticsPanelProps": {
-      "type": "object",
-      "title": "SessionDiagnosticsPanelProps",
-      "description": "Session Diagnostics Panel Props 的属性契约。",
-      "properties": {
-        "data": {
-          "type": "object",
-          "title": "SessionDiagnosticsData"
-        },
-        "loading": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

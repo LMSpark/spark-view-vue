@@ -21,6 +21,22 @@
   "symbols": [
     "RSliderProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.574Z",
+  "$defs": {
+    "RSliderProps": {
+      "type": "object",
+      "title": "RSliderProps",
+      "description": "RSlider Props 的属性契约。",
+      "properties": {
+        "step": {
+          "type": "number"
+        },
+        "showInput": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RSliderProps": {
       "kind": "RSliderProps",
@@ -76,22 +92,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.584Z",
-  "$defs": {
-    "RSliderProps": {
-      "type": "object",
-      "title": "RSliderProps",
-      "description": "RSlider Props 的属性契约。",
-      "properties": {
-        "step": {
-          "type": "number"
-        },
-        "showInput": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

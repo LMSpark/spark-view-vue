@@ -20,6 +20,60 @@
     "AiAgentRunResult",
     "AiAgentSession"
   ],
+  "generatedAt": "2026-06-11T12:48:50.897Z",
+  "$defs": {
+    "AiAgentRunCommand": {
+      "type": "object",
+      "title": "AiAgentRunCommand",
+      "description": "Ai Agent Run Command 的命令参数。",
+      "properties": {
+        "options": {
+          "type": "object",
+          "title": "AiAgentOptions<TInput>"
+        },
+        "kindID": {
+          "type": "string"
+        },
+        "input": true,
+        "chat": {
+          "type": "object",
+          "title": "AiAgentTaskChatOptions"
+        }
+      }
+    },
+    "AiAgentRunResult": {
+      "type": "object",
+      "title": "AiAgentRunResult",
+      "description": "Ai Agent Run Result 的返回结果。",
+      "properties": {
+        "task": {
+          "type": "object",
+          "title": "AiAgentTask<TInput>"
+        },
+        "session": {
+          "$ref": "#/$defs/AiAgentSession"
+        }
+      }
+    },
+    "AiAgentSession": {
+      "type": "object",
+      "title": "AiAgentSession",
+      "description": "业务会话。\n业务层推荐通过 AiAgent.run[alias](input) 进入；本类承载 Host 内部 session 状态。\n属性：\ntarget     — 业务定位\nscope      — 业务作用域\nsessionId  — 后端会话 ID（kind + 顶层实例 ID）",
+      "properties": {
+        "target": {
+          "type": "object",
+          "title": "AiAgentTarget"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "sessionId": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentRunCommand": {
       "kind": "AiAgentRunCommand",
@@ -348,60 +402,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.454Z",
-  "$defs": {
-    "AiAgentRunCommand": {
-      "type": "object",
-      "title": "AiAgentRunCommand",
-      "description": "Ai Agent Run Command 的命令参数。",
-      "properties": {
-        "options": {
-          "type": "object",
-          "title": "AiAgentOptions<TInput>"
-        },
-        "kindID": {
-          "type": "string"
-        },
-        "input": true,
-        "chat": {
-          "type": "object",
-          "title": "AiAgentTaskChatOptions"
-        }
-      }
-    },
-    "AiAgentRunResult": {
-      "type": "object",
-      "title": "AiAgentRunResult",
-      "description": "Ai Agent Run Result 的返回结果。",
-      "properties": {
-        "task": {
-          "type": "object",
-          "title": "AiAgentTask<TInput>"
-        },
-        "session": {
-          "$ref": "#/$defs/AiAgentSession"
-        }
-      }
-    },
-    "AiAgentSession": {
-      "type": "object",
-      "title": "AiAgentSession",
-      "description": "业务会话。\n业务层推荐通过 AiAgent.run[alias](input) 进入；本类承载 Host 内部 session 状态。\n属性：\ntarget     — 业务定位\nscope      — 业务作用域\nsessionId  — 后端会话 ID（kind + 顶层实例 ID）",
-      "properties": {
-        "target": {
-          "type": "object",
-          "title": "AiAgentTarget"
-        },
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "sessionId": {
-          "type": "string"
-        }
-      }
     }
   }
 }

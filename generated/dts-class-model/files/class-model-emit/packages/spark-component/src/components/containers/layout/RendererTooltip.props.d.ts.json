@@ -21,6 +21,25 @@
   "symbols": [
     "RTooltipProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.459Z",
+  "$defs": {
+    "RTooltipProps": {
+      "type": "object",
+      "title": "RTooltipProps",
+      "description": "RTooltip Props 的属性契约。",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "enterable": {
+          "type": "boolean"
+        },
+        "rawContent": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RTooltipProps": {
       "kind": "RTooltipProps",
@@ -85,25 +104,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.295Z",
-  "$defs": {
-    "RTooltipProps": {
-      "type": "object",
-      "title": "RTooltipProps",
-      "description": "RTooltip Props 的属性契约。",
-      "properties": {
-        "content": {
-          "type": "string"
-        },
-        "enterable": {
-          "type": "boolean"
-        },
-        "rawContent": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

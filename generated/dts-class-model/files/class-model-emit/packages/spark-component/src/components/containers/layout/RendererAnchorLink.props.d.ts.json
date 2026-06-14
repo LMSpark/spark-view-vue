@@ -21,6 +21,22 @@
   "symbols": [
     "RAnchorLinkProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.414Z",
+  "$defs": {
+    "RAnchorLinkProps": {
+      "type": "object",
+      "title": "RAnchorLinkProps",
+      "description": "RAnchor Link Props 的属性契约。",
+      "properties": {
+        "href": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RAnchorLinkProps": {
       "kind": "RAnchorLinkProps",
@@ -71,22 +87,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.213Z",
-  "$defs": {
-    "RAnchorLinkProps": {
-      "type": "object",
-      "title": "RAnchorLinkProps",
-      "description": "RAnchor Link Props 的属性契约。",
-      "properties": {
-        "href": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        }
-      }
     }
   }
 }

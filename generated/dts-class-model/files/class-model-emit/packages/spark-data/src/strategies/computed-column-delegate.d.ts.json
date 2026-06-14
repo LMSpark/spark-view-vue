@@ -18,6 +18,19 @@
     "ComputedColumnContext",
     "ComputedColumnDelegate"
   ],
+  "generatedAt": "2026-06-11T12:48:51.018Z",
+  "$defs": {
+    "ComputedColumnContext": {
+      "type": "object",
+      "title": "ComputedColumnContext",
+      "description": "表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用）"
+    },
+    "ComputedColumnDelegate": {
+      "type": "object",
+      "title": "ComputedColumnDelegate",
+      "description": "计算列管理器——编译、求值、缓存的统一委托。\n通过 DataView 访问运行时状态，自身管理：\n- 已编译函数注册表（Map<name, fn>）\n- 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）\n- 聚合解析器构建（DataRelation → 子行解析）"
+    }
+  },
   "models": {
     "ComputedColumnContext": {
       "kind": "ComputedColumnContext",
@@ -295,19 +308,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.980Z",
-  "$defs": {
-    "ComputedColumnContext": {
-      "type": "object",
-      "title": "ComputedColumnContext",
-      "description": "表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用）"
-    },
-    "ComputedColumnDelegate": {
-      "type": "object",
-      "title": "ComputedColumnDelegate",
-      "description": "计算列管理器——编译、求值、缓存的统一委托。\n通过 DataView 访问运行时状态，自身管理：\n- 已编译函数注册表（Map<name, fn>）\n- 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）\n- 聚合解析器构建（DataRelation → 子行解析）"
     }
   }
 }

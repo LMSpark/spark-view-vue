@@ -32,6 +32,64 @@
     "EditRowHandler",
     "RemoveRowHandler"
   ],
+  "generatedAt": "2026-06-11T12:38:13.465Z",
+  "$defs": {
+    "CancellableControl": {
+      "type": "object",
+      "title": "CancellableControl",
+      "description": "Cancellable Control 的语义模型。",
+      "properties": {
+        "cancel": {
+          "type": "boolean"
+        }
+      }
+    },
+    "InteractionControl": {
+      "type": "object",
+      "title": "InteractionControl",
+      "description": "Interaction Control 的语义模型。",
+      "properties": {
+        "cancel": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CancelableHandler": {
+      "type": "object",
+      "title": "CancelableHandler",
+      "description": "Cancelable Handler 的回调函数契约。"
+    },
+    "RowClickHandler": {
+      "type": "object",
+      "title": "RowClickHandler",
+      "description": "Row Click Handler 的回调函数契约。"
+    },
+    "RowSelectionHandler": {
+      "type": "object",
+      "title": "RowSelectionHandler",
+      "description": "Row Selection Handler 的回调函数契约。"
+    },
+    "CurrentRowChangeHandler": {
+      "type": "object",
+      "title": "CurrentRowChangeHandler",
+      "description": "Current Row Change Handler 的回调函数契约。"
+    },
+    "AddRowHandler": {
+      "type": "object",
+      "title": "AddRowHandler",
+      "description": "Add Row Handler 的回调函数契约。"
+    },
+    "EditRowHandler": {
+      "type": "object",
+      "title": "EditRowHandler",
+      "description": "Edit Row Handler 的回调函数契约。"
+    },
+    "RemoveRowHandler": {
+      "type": "object",
+      "title": "RemoveRowHandler",
+      "description": "Remove Row Handler 的回调函数契约。"
+    }
+  },
   "models": {
     "CancellableControl": {
       "kind": "CancellableControl",
@@ -229,64 +287,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.356Z",
-  "$defs": {
-    "CancellableControl": {
-      "type": "object",
-      "title": "CancellableControl",
-      "description": "Cancellable Control 的语义模型。",
-      "properties": {
-        "cancel": {
-          "type": "boolean"
-        }
-      }
-    },
-    "InteractionControl": {
-      "type": "object",
-      "title": "InteractionControl",
-      "description": "Interaction Control 的语义模型。",
-      "properties": {
-        "cancel": {
-          "type": "boolean"
-        }
-      }
-    },
-    "CancelableHandler": {
-      "type": "object",
-      "title": "CancelableHandler",
-      "description": "Cancelable Handler 的回调函数契约。"
-    },
-    "RowClickHandler": {
-      "type": "object",
-      "title": "RowClickHandler",
-      "description": "Row Click Handler 的回调函数契约。"
-    },
-    "RowSelectionHandler": {
-      "type": "object",
-      "title": "RowSelectionHandler",
-      "description": "Row Selection Handler 的回调函数契约。"
-    },
-    "CurrentRowChangeHandler": {
-      "type": "object",
-      "title": "CurrentRowChangeHandler",
-      "description": "Current Row Change Handler 的回调函数契约。"
-    },
-    "AddRowHandler": {
-      "type": "object",
-      "title": "AddRowHandler",
-      "description": "Add Row Handler 的回调函数契约。"
-    },
-    "EditRowHandler": {
-      "type": "object",
-      "title": "EditRowHandler",
-      "description": "Edit Row Handler 的回调函数契约。"
-    },
-    "RemoveRowHandler": {
-      "type": "object",
-      "title": "RemoveRowHandler",
-      "description": "Remove Row Handler 的回调函数契约。"
     }
   }
 }

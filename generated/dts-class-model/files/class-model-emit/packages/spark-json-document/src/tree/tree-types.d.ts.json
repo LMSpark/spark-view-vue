@@ -34,6 +34,214 @@
     "AutoPopulateEntry",
     "FlatJsonTreeDocument"
   ],
+  "generatedAt": "2026-06-11T12:48:51.043Z",
+  "$defs": {
+    "JsonNodeType": {
+      "type": "object",
+      "title": "JsonNodeType",
+      "description": "Json Node Type 的语义模型。"
+    },
+    "TreeNode": {
+      "type": "object",
+      "title": "TreeNode",
+      "description": "Tree Node 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "segment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/JsonNodeType"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order": {
+          "type": "number"
+        }
+      }
+    },
+    "TreeDisplayNode": {
+      "type": "object",
+      "title": "TreeDisplayNode",
+      "description": "Tree Display Node 的语义模型。",
+      "properties": {
+        "depth": {
+          "type": "number"
+        },
+        "path": {
+          "type": "object",
+          "title": "JsonPath"
+        },
+        "childCount": {
+          "type": "number"
+        },
+        "keyEditable": {
+          "type": "boolean"
+        },
+        "typeEditable": {
+          "type": "boolean"
+        },
+        "deletable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "TreeModel": {
+      "type": "object",
+      "title": "TreeModel",
+      "description": "Tree Model 的语义模型。"
+    },
+    "MutationResult": {
+      "type": "object",
+      "title": "MutationResult",
+      "description": "Mutation Result 的返回结果。",
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/TreeModel"
+        },
+        "focusId": {
+          "type": "string"
+        },
+        "expandId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "RenameNodeKeyInput": {
+      "type": "object",
+      "title": "RenameNodeKeyInput",
+      "description": "Rename Node Key Input 的输入数据。",
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/TreeModel"
+        },
+        "uid": {
+          "type": "string"
+        },
+        "nextKeyInput": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "object",
+          "title": "Partial<JsonTreePolicy>"
+        }
+      }
+    },
+    "UpdateNodeTypeInput": {
+      "type": "object",
+      "title": "UpdateNodeTypeInput",
+      "description": "Update Node Type Input 的输入数据。",
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/TreeModel"
+        },
+        "uid": {
+          "type": "string"
+        },
+        "nextType": {
+          "$ref": "#/$defs/JsonNodeType"
+        },
+        "policy": {
+          "type": "object",
+          "title": "Partial<JsonTreePolicy>"
+        }
+      }
+    },
+    "JsonTreePolicy": {
+      "type": "object",
+      "title": "JsonTreePolicy",
+      "description": "Json Tree Policy 的语义模型。",
+      "properties": {
+        "rootLabel": {
+          "type": "string"
+        }
+      }
+    },
+    "AutoPopulateEntry": {
+      "type": "object",
+      "title": "AutoPopulateEntry",
+      "description": "自动填充条目：在 targetPath 指向的对象上合并 entries 键值对。\n- 若 targetPath 处不是 object，跳过\n- 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）\n- 若某 key 已存在且不都是 object，跳过（不覆盖）",
+      "properties": {
+        "targetPath": {
+          "type": "object",
+          "title": "JsonPath"
+        },
+        "entries": {
+          "type": "object",
+          "title": "Record<string, JsonValue>"
+        }
+      }
+    },
+    "FlatJsonTreeDocument": {
+      "type": "object",
+      "title": "FlatJsonTreeDocument",
+      "description": "Flat Json Tree Document 的语义模型。",
+      "properties": {
+        "rootType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "object"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "array"
+              ]
+            }
+          ]
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TreeNode"
+          }
+        }
+      }
+    }
+  },
   "models": {
     "JsonNodeType": {
       "kind": "JsonNodeType",
@@ -899,214 +1107,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.157Z",
-  "$defs": {
-    "JsonNodeType": {
-      "type": "object",
-      "title": "JsonNodeType",
-      "description": "Json Node Type 的语义模型。"
-    },
-    "TreeNode": {
-      "type": "object",
-      "title": "TreeNode",
-      "description": "Tree Node 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "parentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "segment": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "type": {
-          "$ref": "#/$defs/JsonNodeType"
-        },
-        "value": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "order": {
-          "type": "number"
-        }
-      }
-    },
-    "TreeDisplayNode": {
-      "type": "object",
-      "title": "TreeDisplayNode",
-      "description": "Tree Display Node 的语义模型。",
-      "properties": {
-        "depth": {
-          "type": "number"
-        },
-        "path": {
-          "type": "object",
-          "title": "JsonPath"
-        },
-        "childCount": {
-          "type": "number"
-        },
-        "keyEditable": {
-          "type": "boolean"
-        },
-        "typeEditable": {
-          "type": "boolean"
-        },
-        "deletable": {
-          "type": "boolean"
-        }
-      }
-    },
-    "TreeModel": {
-      "type": "object",
-      "title": "TreeModel",
-      "description": "Tree Model 的语义模型。"
-    },
-    "MutationResult": {
-      "type": "object",
-      "title": "MutationResult",
-      "description": "Mutation Result 的返回结果。",
-      "properties": {
-        "model": {
-          "$ref": "#/$defs/TreeModel"
-        },
-        "focusId": {
-          "type": "string"
-        },
-        "expandId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "RenameNodeKeyInput": {
-      "type": "object",
-      "title": "RenameNodeKeyInput",
-      "description": "Rename Node Key Input 的输入数据。",
-      "properties": {
-        "model": {
-          "$ref": "#/$defs/TreeModel"
-        },
-        "uid": {
-          "type": "string"
-        },
-        "nextKeyInput": {
-          "type": "string"
-        },
-        "policy": {
-          "type": "object",
-          "title": "Partial<JsonTreePolicy>"
-        }
-      }
-    },
-    "UpdateNodeTypeInput": {
-      "type": "object",
-      "title": "UpdateNodeTypeInput",
-      "description": "Update Node Type Input 的输入数据。",
-      "properties": {
-        "model": {
-          "$ref": "#/$defs/TreeModel"
-        },
-        "uid": {
-          "type": "string"
-        },
-        "nextType": {
-          "$ref": "#/$defs/JsonNodeType"
-        },
-        "policy": {
-          "type": "object",
-          "title": "Partial<JsonTreePolicy>"
-        }
-      }
-    },
-    "JsonTreePolicy": {
-      "type": "object",
-      "title": "JsonTreePolicy",
-      "description": "Json Tree Policy 的语义模型。",
-      "properties": {
-        "rootLabel": {
-          "type": "string"
-        }
-      }
-    },
-    "AutoPopulateEntry": {
-      "type": "object",
-      "title": "AutoPopulateEntry",
-      "description": "自动填充条目：在 targetPath 指向的对象上合并 entries 键值对。\n- 若 targetPath 处不是 object，跳过\n- 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）\n- 若某 key 已存在且不都是 object，跳过（不覆盖）",
-      "properties": {
-        "targetPath": {
-          "type": "object",
-          "title": "JsonPath"
-        },
-        "entries": {
-          "type": "object",
-          "title": "Record<string, JsonValue>"
-        }
-      }
-    },
-    "FlatJsonTreeDocument": {
-      "type": "object",
-      "title": "FlatJsonTreeDocument",
-      "description": "Flat Json Tree Document 的语义模型。",
-      "properties": {
-        "rootType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "object"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "array"
-              ]
-            }
-          ]
-        },
-        "rows": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/TreeNode"
-          }
-        }
-      }
     }
   }
 }

@@ -18,6 +18,40 @@
     "ClassModelFailureModeRecoveryCommand",
     "ClassModelFailureModeRecoveryContext"
   ],
+  "generatedAt": "2026-06-11T22:25:30.915Z",
+  "$defs": {
+    "ClassModelFailureModeRecoveryCommand": {
+      "type": "object",
+      "title": "ClassModelFailureModeRecoveryCommand",
+      "description": "Class Model Failure Mode Recovery Command 的命令参数。",
+      "properties": {
+        "callResult": {
+          "type": "object",
+          "title": "Readonly<{\n        code: string;\n        msg: string;\n    }>"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "ClassModelFailureModeRecoveryContext": {
+      "type": "object",
+      "title": "ClassModelFailureModeRecoveryContext",
+      "description": "Class Model Failure Mode Recovery Context 的运行上下文。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "actionName": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "object",
+          "title": "AiApiActionFailureMode"
+        }
+      }
+    }
+  },
   "models": {
     "ClassModelFailureModeRecoveryCommand": {
       "kind": "ClassModelFailureModeRecoveryCommand",
@@ -111,40 +145,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.884Z",
-  "$defs": {
-    "ClassModelFailureModeRecoveryCommand": {
-      "type": "object",
-      "title": "ClassModelFailureModeRecoveryCommand",
-      "description": "Class Model Failure Mode Recovery Command 的命令参数。",
-      "properties": {
-        "callResult": {
-          "type": "object",
-          "title": "Readonly<{\n        code: string;\n        msg: string;\n    }>"
-        },
-        "moduleInstanceId": {
-          "type": "string"
-        }
-      }
-    },
-    "ClassModelFailureModeRecoveryContext": {
-      "type": "object",
-      "title": "ClassModelFailureModeRecoveryContext",
-      "description": "Class Model Failure Mode Recovery Context 的运行上下文。",
-      "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "actionName": {
-          "type": "string"
-        },
-        "mode": {
-          "type": "object",
-          "title": "AiApiActionFailureMode"
-        }
-      }
     }
   }
 }

@@ -21,6 +21,36 @@
   "symbols": [
     "RendererFormZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.387Z",
+  "$defs": {
+    "RendererFormZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererFormZeroCodeOptions",
+      "description": "Renderer Form Zero Code Options 的调用配置。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "formModel": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "nativeFormRef": {
+          "type": "object",
+          "title": "ValueRef<unknown>"
+        },
+        "logger": {
+          "type": "object",
+          "title": "LoggerApi"
+        }
+      }
+    }
+  },
   "models": {
     "RendererFormZeroCodeOptions": {
       "kind": "RendererFormZeroCodeOptions",
@@ -92,36 +122,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.081Z",
-  "$defs": {
-    "RendererFormZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererFormZeroCodeOptions",
-      "description": "Renderer Form Zero Code Options 的调用配置。",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
-        },
-        "formModel": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "nativeFormRef": {
-          "type": "object",
-          "title": "ValueRef<unknown>"
-        },
-        "logger": {
-          "type": "object",
-          "title": "LoggerApi"
-        }
-      }
     }
   }
 }

@@ -28,6 +28,186 @@
     "AiHostRunResultStatus",
     "AiHostRunResultEvent"
   ],
+  "generatedAt": "2026-06-14T01:03:51.192Z",
+  "$defs": {
+    "FileChangeEvent": {
+      "type": "object",
+      "title": "FileChangeEvent",
+      "description": "File Change Event 的事件载荷。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "DataBatchJobEvent": {
+      "type": "object",
+      "title": "DataBatchJobEvent",
+      "description": "Data Batch Job Event 的事件载荷。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "jobId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "result": true,
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "DataChangeEvent": {
+      "type": "object",
+      "title": "DataChangeEvent",
+      "description": "Data Change Event 的事件载荷。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "jobId": {
+          "type": "string"
+        }
+      }
+    },
+    "ServerNotificationEvent": {
+      "type": "object",
+      "title": "ServerNotificationEvent",
+      "description": "Server Notification Event 的事件载荷。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "notificationId": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "actionUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "AiHostRunRequestEvent": {
+      "type": "object",
+      "title": "AiHostRunRequestEvent",
+      "description": "Ai Host Run Request Event 的事件载荷。",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "timeoutMs": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "AiHostRunResultStatus": {
+      "type": "object",
+      "title": "AiHostRunResultStatus",
+      "description": "Ai Host Run Result Status 的语义模型。"
+    },
+    "AiHostRunResultEvent": {
+      "type": "object",
+      "title": "AiHostRunResultEvent",
+      "description": "Ai Host Run Result Event 的事件载荷。",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/AiHostRunResultStatus"
+        },
+        "durationMs": {
+          "type": "number"
+        },
+        "clientTimestamp": {
+          "type": "number"
+        },
+        "serverTimestamp": {
+          "type": "number"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "businessRegistrationId": {
+          "type": "string"
+        },
+        "businessInstanceId": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "reasoning": {
+          "type": "string"
+        },
+        "toolCalls": true,
+        "error": true
+      }
+    }
+  },
   "models": {
     "FileChangeEvent": {
       "kind": "FileChangeEvent",
@@ -573,186 +753,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.506Z",
-  "$defs": {
-    "FileChangeEvent": {
-      "type": "object",
-      "title": "FileChangeEvent",
-      "description": "File Change Event 的事件载荷。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "file": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "number"
-        }
-      }
-    },
-    "DataBatchJobEvent": {
-      "type": "object",
-      "title": "DataBatchJobEvent",
-      "description": "Data Batch Job Event 的事件载荷。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "jobId": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "completed": {
-          "type": "number"
-        },
-        "total": {
-          "type": "number"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "result": true,
-        "error": {
-          "type": "string"
-        }
-      }
-    },
-    "DataChangeEvent": {
-      "type": "object",
-      "title": "DataChangeEvent",
-      "description": "Data Change Event 的事件载荷。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "tableName": {
-          "type": "string"
-        },
-        "operation": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "jobId": {
-          "type": "string"
-        }
-      }
-    },
-    "ServerNotificationEvent": {
-      "type": "object",
-      "title": "ServerNotificationEvent",
-      "description": "Server Notification Event 的事件载荷。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "notificationId": {
-          "type": "string"
-        },
-        "level": {
-          "type": "string"
-        },
-        "category": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        },
-        "actionUrl": {
-          "type": "string"
-        }
-      }
-    },
-    "AiHostRunRequestEvent": {
-      "type": "object",
-      "title": "AiHostRunRequestEvent",
-      "description": "Ai Host Run Request Event 的事件载荷。",
-      "properties": {
-        "requestId": {
-          "type": "string"
-        },
-        "alias": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "timeoutMs": {
-          "type": "number"
-        },
-        "reason": {
-          "type": "string"
-        }
-      }
-    },
-    "AiHostRunResultStatus": {
-      "type": "object",
-      "title": "AiHostRunResultStatus",
-      "description": "Ai Host Run Result Status 的语义模型。"
-    },
-    "AiHostRunResultEvent": {
-      "type": "object",
-      "title": "AiHostRunResultEvent",
-      "description": "Ai Host Run Result Event 的事件载荷。",
-      "properties": {
-        "requestId": {
-          "type": "string"
-        },
-        "alias": {
-          "type": "string"
-        },
-        "status": {
-          "$ref": "#/$defs/AiHostRunResultStatus"
-        },
-        "durationMs": {
-          "type": "number"
-        },
-        "clientTimestamp": {
-          "type": "number"
-        },
-        "serverTimestamp": {
-          "type": "number"
-        },
-        "sessionId": {
-          "type": "string"
-        },
-        "businessRegistrationId": {
-          "type": "string"
-        },
-        "businessInstanceId": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        },
-        "toolCalls": true,
-        "error": true
-      }
     }
   }
 }

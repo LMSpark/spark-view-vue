@@ -21,6 +21,43 @@
   "symbols": [
     "RCollapseProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.420Z",
+  "$defs": {
+    "RCollapseProps": {
+      "type": "object",
+      "title": "RCollapseProps",
+      "description": "RCollapse Props 的属性契约。",
+      "properties": {
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "modelValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RCollapseProps": {
       "kind": "RCollapseProps",
@@ -166,43 +203,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.239Z",
-  "$defs": {
-    "RCollapseProps": {
-      "type": "object",
-      "title": "RCollapseProps",
-      "description": "RCollapse Props 的属性契约。",
-      "properties": {
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "modelValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
     }
   }
 }

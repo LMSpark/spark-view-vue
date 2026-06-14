@@ -34,6 +34,233 @@
     "ClassModelAgentAdapterRegisterOptions",
     "ClassModelAgentAdapter"
   ],
+  "generatedAt": "2026-06-13T22:28:14.643Z",
+  "$defs": {
+    "ClassModelAgentAdapterConstructor": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterConstructor",
+      "description": "Class Model Agent Adapter Constructor 的语义模型。"
+    },
+    "ClassModelAgentCompleteActionOptions": {
+      "type": "object",
+      "title": "ClassModelAgentCompleteActionOptions",
+      "description": "agent_complete 调用领域完成方法时的输入。",
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        }
+      }
+    },
+    "ClassModelAgentCompleteCheck": {
+      "type": "object",
+      "title": "ClassModelAgentCompleteCheck",
+      "description": "agent_complete 领域完成方法可返回的检查项。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "ClassModelAgentCompleteAccepted": {
+      "type": "object",
+      "title": "ClassModelAgentCompleteAccepted",
+      "description": "agent_complete 领域完成方法通过时的返回形态。",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "finalAssistantMessage": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "checks": {
+          "type": "array"
+        }
+      }
+    },
+    "ClassModelAgentCompleteRejected": {
+      "type": "object",
+      "title": "ClassModelAgentCompleteRejected",
+      "description": "agent_complete 领域完成方法拒绝完成时的返回形态。",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        },
+        "checks": {
+          "type": "array"
+        },
+        "requiredCapabilities": {
+          "type": "array"
+        },
+        "missingFacts": {
+          "type": "array"
+        },
+        "nextStep": {
+          "type": "string"
+        }
+      }
+    },
+    "ClassModelAgentCompleteActionResult": {
+      "type": "object",
+      "title": "ClassModelAgentCompleteActionResult",
+      "description": "agent_complete 领域完成方法的返回结果。"
+    },
+    "ClassModelAgentAdapterRegisterCommand": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterRegisterCommand",
+      "description": "Class Model Agent Adapter Register Command 的命令参数。",
+      "properties": {
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "moduleClass": {
+          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
+          "title": "ClassModelAgentAdapterConstructor<T>"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "options": {
+          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
+          "title": "ClassModelAgentAdapterRegisterOptions<T>"
+        }
+      }
+    },
+    "ClassModelAgentAdapterRegistrationCommand": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterRegistrationCommand",
+      "description": "Class Model Agent Adapter Registration Command 的命令参数。",
+      "properties": {
+        "moduleClass": {
+          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
+          "title": "ClassModelAgentAdapterConstructor<T>"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "options": {
+          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
+          "title": "ClassModelAgentAdapterRegisterOptions<T>"
+        }
+      }
+    },
+    "ClassModelAgentAdapterRegisterOptions": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterRegisterOptions",
+      "description": "Class Model Agent Adapter Register Options 的调用配置。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "instance": true,
+        "constructArgs": {
+          "type": "array"
+        },
+        "jsonSchemaDefs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        },
+        "dtsClassModelManifestUrl": {
+          "type": "string"
+        },
+        "rootClassName": {
+          "type": "string"
+        },
+        "knowledge": {
+          "type": "object",
+          "title": "ClassModelKnowledgeProvider"
+        },
+        "inputContract": {
+          "type": "object",
+          "title": "AiAgentInputContract"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        },
+        "agentCompleteMethodName": {
+          "type": "string"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        }
+      }
+    },
+    "ClassModelAgentAdapter": {
+      "type": "object",
+      "title": "ClassModelAgentAdapter",
+      "description": "Class Model Agent Adapter 的语义模型。"
+    }
+  },
   "models": {
     "ClassModelAgentAdapterConstructor": {
       "kind": "ClassModelAgentAdapterConstructor",
@@ -1282,233 +1509,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.499Z",
-  "$defs": {
-    "ClassModelAgentAdapterConstructor": {
-      "type": "object",
-      "title": "ClassModelAgentAdapterConstructor",
-      "description": "Class Model Agent Adapter Constructor 的语义模型。"
-    },
-    "ClassModelAgentCompleteActionOptions": {
-      "type": "object",
-      "title": "ClassModelAgentCompleteActionOptions",
-      "description": "agent_complete 调用领域完成方法时的输入。",
-      "properties": {
-        "summary": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "AiJsonParams"
-        }
-      }
-    },
-    "ClassModelAgentCompleteCheck": {
-      "type": "object",
-      "title": "ClassModelAgentCompleteCheck",
-      "description": "agent_complete 领域完成方法可返回的检查项。",
-      "properties": {
-        "level": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warn"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
-          ]
-        },
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "hint": {
-          "type": "string"
-        }
-      }
-    },
-    "ClassModelAgentCompleteAccepted": {
-      "type": "object",
-      "title": "ClassModelAgentCompleteAccepted",
-      "description": "agent_complete 领域完成方法通过时的返回形态。",
-      "properties": {
-        "ok": {
-          "type": "boolean",
-          "enum": [
-            true
-          ]
-        },
-        "completed": {
-          "type": "boolean"
-        },
-        "summary": {
-          "type": "string"
-        },
-        "finalAssistantMessage": {
-          "type": "string"
-        },
-        "data": {
-          "type": "object",
-          "title": "AiJsonValue"
-        },
-        "checks": {
-          "type": "array"
-        }
-      }
-    },
-    "ClassModelAgentCompleteRejected": {
-      "type": "object",
-      "title": "ClassModelAgentCompleteRejected",
-      "description": "agent_complete 领域完成方法拒绝完成时的返回形态。",
-      "properties": {
-        "ok": {
-          "type": "boolean",
-          "enum": [
-            false
-          ]
-        },
-        "code": {
-          "type": "string"
-        },
-        "msg": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "fix": {
-          "type": "string"
-        },
-        "checks": {
-          "type": "array"
-        },
-        "requiredCapabilities": {
-          "type": "array"
-        },
-        "missingFacts": {
-          "type": "array"
-        },
-        "nextStep": {
-          "type": "string"
-        }
-      }
-    },
-    "ClassModelAgentCompleteActionResult": {
-      "type": "object",
-      "title": "ClassModelAgentCompleteActionResult",
-      "description": "agent_complete 领域完成方法的返回结果。"
-    },
-    "ClassModelAgentAdapterRegisterCommand": {
-      "type": "object",
-      "title": "ClassModelAgentAdapterRegisterCommand",
-      "description": "Class Model Agent Adapter Register Command 的命令参数。",
-      "properties": {
-        "host": {
-          "type": "object",
-          "title": "AiAgentHost"
-        },
-        "alias": {
-          "type": "string"
-        },
-        "moduleClass": {
-          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
-          "title": "ClassModelAgentAdapterConstructor<T>"
-        },
-        "metadata": {
-          "type": "object",
-          "title": "AiRuntimeApiMetadataJson"
-        },
-        "options": {
-          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
-          "title": "ClassModelAgentAdapterRegisterOptions<T>"
-        }
-      }
-    },
-    "ClassModelAgentAdapterRegistrationCommand": {
-      "type": "object",
-      "title": "ClassModelAgentAdapterRegistrationCommand",
-      "description": "Class Model Agent Adapter Registration Command 的命令参数。",
-      "properties": {
-        "moduleClass": {
-          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
-          "title": "ClassModelAgentAdapterConstructor<T>"
-        },
-        "metadata": {
-          "type": "object",
-          "title": "AiRuntimeApiMetadataJson"
-        },
-        "options": {
-          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
-          "title": "ClassModelAgentAdapterRegisterOptions<T>"
-        }
-      }
-    },
-    "ClassModelAgentAdapterRegisterOptions": {
-      "type": "object",
-      "title": "ClassModelAgentAdapterRegisterOptions",
-      "description": "Class Model Agent Adapter Register Options 的调用配置。",
-      "properties": {
-        "moduleId": {
-          "type": "string"
-        },
-        "instance": true,
-        "constructArgs": {
-          "type": "array"
-        },
-        "jsonSchemaDefs": {
-          "type": "object",
-          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
-        },
-        "dtsClassModelManifestUrl": {
-          "type": "string"
-        },
-        "rootClassName": {
-          "type": "string"
-        },
-        "knowledge": {
-          "type": "object",
-          "title": "ClassModelKnowledgeProvider"
-        },
-        "inputContract": {
-          "type": "object",
-          "title": "AiAgentInputContract"
-        },
-        "sessionStore": {
-          "type": "object",
-          "title": "AiAgentSessionStore"
-        },
-        "agentCompleteMethodName": {
-          "type": "string"
-        },
-        "executionToolNames": {
-          "type": "object",
-          "title": "ReadonlySet<string>"
-        },
-        "planWithoutToolMarkers": {
-          "type": "array"
-        }
-      }
-    },
-    "ClassModelAgentAdapter": {
-      "type": "object",
-      "title": "ClassModelAgentAdapter",
-      "description": "Class Model Agent Adapter 的语义模型。"
     }
   }
 }

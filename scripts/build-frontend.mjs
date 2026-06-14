@@ -9,8 +9,10 @@
 import process from 'node:process'
 import { spawnSync } from 'node:child_process'
 import { ROOT_DIR, runCommand } from './build-shared.mjs'
+import { buildDebugBreak } from './lib/build-debug.mjs'
 
 function ensureClassModelBundle() {
+  buildDebugBreak('build-frontend:ensure-class-model-bundle')
   const result = spawnSync(process.execPath, ['scripts/ensure-class-model-bundle.mjs'], {
     cwd: ROOT_DIR,
     stdio: 'inherit',
@@ -23,4 +25,6 @@ function ensureClassModelBundle() {
 ensureClassModelBundle()
 
 console.log('\n🧩 组件注册模式: 编译时注册（packages 走 Vite alias → src）')
+buildDebugBreak('build-frontend:before-vite-build')
 runCommand('pnpm exec vite build', { cwd: ROOT_DIR })
+buildDebugBreak('build-frontend:complete')

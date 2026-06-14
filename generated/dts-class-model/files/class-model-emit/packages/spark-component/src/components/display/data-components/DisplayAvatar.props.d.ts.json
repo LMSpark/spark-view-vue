@@ -21,6 +21,106 @@
   "symbols": [
     "RAvatarProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.481Z",
+  "$defs": {
+    "RAvatarProps": {
+      "type": "object",
+      "title": "RAvatarProps",
+      "description": "RAvatar Props 的属性契约。",
+      "properties": {
+        "avatarSize": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "small"
+              ]
+            }
+          ]
+        },
+        "shape": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "circle"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "square"
+              ]
+            }
+          ]
+        },
+        "src": {
+          "type": "string"
+        },
+        "srcSet": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "fit": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "fill"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "contain"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "cover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "scale-down"
+              ]
+            }
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RAvatarProps": {
       "kind": "RAvatarProps",
@@ -196,106 +296,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.393Z",
-  "$defs": {
-    "RAvatarProps": {
-      "type": "object",
-      "title": "RAvatarProps",
-      "description": "RAvatar Props 的属性契约。",
-      "properties": {
-        "avatarSize": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "enum": [
-                "large"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "small"
-              ]
-            }
-          ]
-        },
-        "shape": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "circle"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "square"
-              ]
-            }
-          ]
-        },
-        "src": {
-          "type": "string"
-        },
-        "srcSet": {
-          "type": "string"
-        },
-        "alt": {
-          "type": "string"
-        },
-        "fit": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "fill"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "contain"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "cover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "none"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "scale-down"
-              ]
-            }
-          ]
-        },
-        "text": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        }
-      }
     }
   }
 }

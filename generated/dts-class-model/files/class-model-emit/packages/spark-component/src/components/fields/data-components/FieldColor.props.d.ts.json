@@ -21,6 +21,14 @@
   "symbols": [
     "RColorProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.549Z",
+  "$defs": {
+    "RColorProps": {
+      "type": "object",
+      "title": "RColorProps",
+      "description": "RColor Props 的属性契约。"
+    }
+  },
   "models": {
     "RColorProps": {
       "kind": "RColorProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.540Z",
-  "$defs": {
-    "RColorProps": {
-      "type": "object",
-      "title": "RColorProps",
-      "description": "RColor Props 的属性契约。"
     }
   }
 }

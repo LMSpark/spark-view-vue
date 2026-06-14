@@ -18,10 +18,13 @@ import {
   resolveJavaHome,
   runCommand,
 } from './build-shared.mjs'
+import { buildDebugBreak } from './lib/build-debug.mjs'
 
 const args = process.argv.slice(2)
 const skipJava = process.env.SKIP_JAVA === 'true'
 const skipFe = args.includes('--skip-fe') || process.env.SKIP_FE === 'true'
+
+buildDebugBreak('build-all:start', { skipJava, skipFe })
 
 try {
   const { loadedFiles, env: mergedEnv } = loadMergedEnv()
@@ -41,20 +44,24 @@ try {
     }
 
     console.log('🔨 构建 Java 后端...')
+    buildDebugBreak('build-all:before-java-mvn')
     console.log(`   JAVA_HOME: ${javaHome}`)
     runCommand(`${mvnCommand()} package -DskipTests -q`, {
       cwd: SERVER_DIR,
       env: buildJavaProcessEnv(javaHome, mergedEnv),
     })
     console.log('✅ Java 后端构建完成')
+    buildDebugBreak('build-all:after-java-mvn')
   } else {
     console.log('\n⏭️  跳过 Java 构建')
   }
 
   if (!skipFe) {
     console.log('\n🔨 构建 Vite 前端...')
+    buildDebugBreak('build-all:before-frontend')
     runCommand('node scripts/build-frontend.mjs', { cwd: ROOT_DIR, env: mergedEnv })
     console.log('✅ Vite 前端构建完成')
+    buildDebugBreak('build-all:after-frontend')
   } else {
     console.log('\n⏭️  跳过前端构建')
   }

@@ -18,6 +18,41 @@
     "TurnEventCollectorInput",
     "TurnEventCollector"
   ],
+  "generatedAt": "2026-06-12T08:05:49.327Z",
+  "$defs": {
+    "TurnEventCollectorInput": {
+      "type": "object",
+      "title": "TurnEventCollectorInput",
+      "description": "收集器的构造输入",
+      "properties": {
+        "input": {
+          "type": "object",
+          "title": "AiAgentStreamTurnInput"
+        },
+        "source": {
+          "type": "object",
+          "title": "AiAgentAppSseEventSource"
+        },
+        "timeoutMs": {
+          "type": "number"
+        },
+        "idleTimeoutMs": {
+          "type": "number"
+        }
+      }
+    },
+    "TurnEventCollector": {
+      "type": "object",
+      "title": "TurnEventCollector",
+      "description": "AI turn 事件收集器接口",
+      "properties": {
+        "result": {
+          "type": "object",
+          "title": "Promise<AiAgentStreamTurnResult>"
+        }
+      }
+    }
+  },
   "models": {
     "TurnEventCollectorInput": {
       "kind": "TurnEventCollectorInput",
@@ -129,41 +164,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.616Z",
-  "$defs": {
-    "TurnEventCollectorInput": {
-      "type": "object",
-      "title": "TurnEventCollectorInput",
-      "description": "收集器的构造输入",
-      "properties": {
-        "input": {
-          "type": "object",
-          "title": "AiAgentStreamTurnInput"
-        },
-        "source": {
-          "type": "object",
-          "title": "AiAgentAppSseEventSource"
-        },
-        "timeoutMs": {
-          "type": "number"
-        },
-        "idleTimeoutMs": {
-          "type": "number"
-        }
-      }
-    },
-    "TurnEventCollector": {
-      "type": "object",
-      "title": "TurnEventCollector",
-      "description": "AI turn 事件收集器接口",
-      "properties": {
-        "result": {
-          "type": "object",
-          "title": "Promise<AiAgentStreamTurnResult>"
-        }
-      }
     }
   }
 }

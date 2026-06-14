@@ -21,6 +21,78 @@
   "symbols": [
     "RSectionProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.443Z",
+  "$defs": {
+    "RSectionProps": {
+      "type": "object",
+      "title": "RSectionProps",
+      "description": "RSection Props 的属性契约。",
+      "properties": {
+        "header": {
+          "type": "object",
+          "title": "RHeaderProps"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "collapsible": {
+          "type": "boolean"
+        },
+        "defaultCollapsed": {
+          "type": "boolean"
+        },
+        "bordered": {
+          "type": "boolean"
+        },
+        "useCard": {
+          "type": "boolean"
+        },
+        "cardShadow": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "always"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "never"
+              ]
+            }
+          ]
+        },
+        "bodyClass": {
+          "type": "string"
+        },
+        "expandText": {
+          "type": "string"
+        },
+        "collapseText": {
+          "type": "string"
+        },
+        "showToggleIcon": {
+          "type": "boolean"
+        },
+        "expandIconText": {
+          "type": "string"
+        },
+        "collapseIconText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RSectionProps": {
       "kind": "RSectionProps",
@@ -204,78 +276,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.269Z",
-  "$defs": {
-    "RSectionProps": {
-      "type": "object",
-      "title": "RSectionProps",
-      "description": "RSection Props 的属性契约。",
-      "properties": {
-        "header": {
-          "type": "object",
-          "title": "RHeaderProps"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "collapsible": {
-          "type": "boolean"
-        },
-        "defaultCollapsed": {
-          "type": "boolean"
-        },
-        "bordered": {
-          "type": "boolean"
-        },
-        "useCard": {
-          "type": "boolean"
-        },
-        "cardShadow": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "always"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "hover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "never"
-              ]
-            }
-          ]
-        },
-        "bodyClass": {
-          "type": "string"
-        },
-        "expandText": {
-          "type": "string"
-        },
-        "collapseText": {
-          "type": "string"
-        },
-        "showToggleIcon": {
-          "type": "boolean"
-        },
-        "expandIconText": {
-          "type": "string"
-        },
-        "collapseIconText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

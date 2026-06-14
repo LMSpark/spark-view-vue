@@ -21,6 +21,14 @@
   "symbols": [
     "RFilePathProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.556Z",
+  "$defs": {
+    "RFilePathProps": {
+      "type": "object",
+      "title": "RFilePathProps",
+      "description": "RFile Path Props 的属性契约。"
+    }
+  },
   "models": {
     "RFilePathProps": {
       "kind": "RFilePathProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.547Z",
-  "$defs": {
-    "RFilePathProps": {
-      "type": "object",
-      "title": "RFilePathProps",
-      "description": "RFile Path Props 的属性契约。"
     }
   }
 }

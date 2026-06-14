@@ -16,6 +16,20 @@
   "symbols": [
     "SparkPluginOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:51.000Z",
+  "$defs": {
+    "SparkPluginOptions": {
+      "type": "object",
+      "title": "SparkPluginOptions",
+      "description": "Spark Plugin Options 的调用配置。",
+      "properties": {
+        "registry": {
+          "type": "object",
+          "title": "ComponentRegistry"
+        }
+      }
+    }
+  },
   "models": {
     "SparkPluginOptions": {
       "kind": "SparkPluginOptions",
@@ -42,20 +56,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.797Z",
-  "$defs": {
-    "SparkPluginOptions": {
-      "type": "object",
-      "title": "SparkPluginOptions",
-      "description": "Spark Plugin Options 的调用配置。",
-      "properties": {
-        "registry": {
-          "type": "object",
-          "title": "ComponentRegistry"
-        }
-      }
     }
   }
 }

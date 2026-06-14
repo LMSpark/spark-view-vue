@@ -22,6 +22,236 @@
     "DataViewServerRowsPayload",
     "DataView"
   ],
+  "generatedAt": "2026-06-11T12:48:51.009Z",
+  "$defs": {
+    "DataViewEventMap": {
+      "type": "object",
+      "title": "DataViewEventMap",
+      "description": "DataView 事件映射",
+      "properties": {
+        "currentRowChanged": {
+          "type": "array"
+        },
+        "selectedRowsChanged": {
+          "type": "array"
+        },
+        "rowsChanged": {
+          "type": "array"
+        },
+        "editingFieldChanged": {
+          "type": "array"
+        },
+        "editingChanged": {
+          "type": "array"
+        },
+        "cleared": {
+          "type": "array"
+        },
+        "configChanged": {
+          "type": "array"
+        },
+        "requestStateChanged": {
+          "type": "array"
+        },
+        "mutatingChanged": {
+          "type": "array"
+        },
+        "summaryChanged": {
+          "type": "array"
+        },
+        "selectionSummaryChanged": {
+          "type": "array"
+        },
+        "crud:before": {
+          "type": "array"
+        },
+        "crud:after": {
+          "type": "array"
+        }
+      }
+    },
+    "DataViewRecomputeColumnsOptions": {
+      "type": "object",
+      "title": "DataViewRecomputeColumnsOptions",
+      "description": "手动重算计算列时的通知选项。",
+      "properties": {
+        "emit": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DataViewServerRowsPayload": {
+      "type": "object",
+      "title": "DataViewServerRowsPayload",
+      "description": "服务端行数据响应载荷。",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        },
+        "total": {
+          "type": "number"
+        },
+        "page": {
+          "type": "number"
+        },
+        "pageSize": {
+          "type": "number"
+        }
+      }
+    },
+    "DataView": {
+      "type": "object",
+      "title": "DataView",
+      "description": "DataView - 单个表视图的数据操作子模块。",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        },
+        "_currentRowId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "_selectedRowIds": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "valueField": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "labelField": {
+          "type": "string"
+        },
+        "selectionDelimiter": {
+          "type": "string"
+        },
+        "total": {
+          "type": "number"
+        },
+        "page": {
+          "type": "number"
+        },
+        "pageSize": {
+          "type": "number"
+        },
+        "loadingError": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Error"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requestState": {
+          "type": "object",
+          "title": "RequestState"
+        },
+        "mutating": {
+          "type": "boolean"
+        },
+        "mutatingError": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Error"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filterExpression": {
+          "type": "object",
+          "title": "FilterExpression"
+        },
+        "sortExpression": {
+          "type": "object",
+          "title": "SortExpression"
+        },
+        "autoCurrentFirst": {
+          "type": "boolean"
+        },
+        "autoSelectFirst": {
+          "type": "boolean"
+        },
+        "treeConfig": {
+          "type": "object",
+          "title": "TreeConfig"
+        },
+        "autoLoad": {
+          "type": "boolean"
+        },
+        "autoLoadConfigured": {
+          "type": "boolean"
+        },
+        "commitMode": {
+          "type": "object",
+          "title": "CommitMode"
+        },
+        "aggregates": {
+          "type": "object",
+          "title": "Record<string, AggregateColumnConfig>"
+        },
+        "treeManager": {
+          "type": "object",
+          "title": "TreeManager"
+        },
+        "rowIndexMap": {
+          "type": "object",
+          "title": "Map<DataRow, number>"
+        },
+        "events": {
+          "type": "object",
+          "title": "SparkEventEmitter<DataViewEventMap>"
+        },
+        "logger": true
+      }
+    }
+  },
   "models": {
     "DataViewEventMap": {
       "kind": "DataViewEventMap",
@@ -3385,236 +3615,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.887Z",
-  "$defs": {
-    "DataViewEventMap": {
-      "type": "object",
-      "title": "DataViewEventMap",
-      "description": "DataView 事件映射",
-      "properties": {
-        "currentRowChanged": {
-          "type": "array"
-        },
-        "selectedRowsChanged": {
-          "type": "array"
-        },
-        "rowsChanged": {
-          "type": "array"
-        },
-        "editingFieldChanged": {
-          "type": "array"
-        },
-        "editingChanged": {
-          "type": "array"
-        },
-        "cleared": {
-          "type": "array"
-        },
-        "configChanged": {
-          "type": "array"
-        },
-        "requestStateChanged": {
-          "type": "array"
-        },
-        "mutatingChanged": {
-          "type": "array"
-        },
-        "summaryChanged": {
-          "type": "array"
-        },
-        "selectionSummaryChanged": {
-          "type": "array"
-        },
-        "crud:before": {
-          "type": "array"
-        },
-        "crud:after": {
-          "type": "array"
-        }
-      }
-    },
-    "DataViewRecomputeColumnsOptions": {
-      "type": "object",
-      "title": "DataViewRecomputeColumnsOptions",
-      "description": "手动重算计算列时的通知选项。",
-      "properties": {
-        "emit": {
-          "type": "boolean"
-        }
-      }
-    },
-    "DataViewServerRowsPayload": {
-      "type": "object",
-      "title": "DataViewServerRowsPayload",
-      "description": "服务端行数据响应载荷。",
-      "properties": {
-        "rows": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataRow"
-          }
-        },
-        "total": {
-          "type": "number"
-        },
-        "page": {
-          "type": "number"
-        },
-        "pageSize": {
-          "type": "number"
-        }
-      }
-    },
-    "DataView": {
-      "type": "object",
-      "title": "DataView",
-      "description": "DataView - 单个表视图的数据操作子模块。",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "viewId": {
-          "type": "string"
-        },
-        "rows": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataRow"
-          }
-        },
-        "_currentRowId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "_selectedRowIds": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        "valueField": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "labelField": {
-          "type": "string"
-        },
-        "selectionDelimiter": {
-          "type": "string"
-        },
-        "total": {
-          "type": "number"
-        },
-        "page": {
-          "type": "number"
-        },
-        "pageSize": {
-          "type": "number"
-        },
-        "loadingError": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Error"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "requestState": {
-          "type": "object",
-          "title": "RequestState"
-        },
-        "mutating": {
-          "type": "boolean"
-        },
-        "mutatingError": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Error"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "filterExpression": {
-          "type": "object",
-          "title": "FilterExpression"
-        },
-        "sortExpression": {
-          "type": "object",
-          "title": "SortExpression"
-        },
-        "autoCurrentFirst": {
-          "type": "boolean"
-        },
-        "autoSelectFirst": {
-          "type": "boolean"
-        },
-        "treeConfig": {
-          "type": "object",
-          "title": "TreeConfig"
-        },
-        "autoLoad": {
-          "type": "boolean"
-        },
-        "autoLoadConfigured": {
-          "type": "boolean"
-        },
-        "commitMode": {
-          "type": "object",
-          "title": "CommitMode"
-        },
-        "aggregates": {
-          "type": "object",
-          "title": "Record<string, AggregateColumnConfig>"
-        },
-        "treeManager": {
-          "type": "object",
-          "title": "TreeManager"
-        },
-        "rowIndexMap": {
-          "type": "object",
-          "title": "Map<DataRow, number>"
-        },
-        "events": {
-          "type": "object",
-          "title": "SparkEventEmitter<DataViewEventMap>"
-        },
-        "logger": true
-      }
     }
   }
 }

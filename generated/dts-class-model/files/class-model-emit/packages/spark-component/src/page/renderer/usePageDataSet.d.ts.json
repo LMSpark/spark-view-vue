@@ -18,6 +18,37 @@
     "UsePageDataSetOptions",
     "UsePageDataSetReturn"
   ],
+  "generatedAt": "2026-06-11T12:48:50.988Z",
+  "$defs": {
+    "UsePageDataSetOptions": {
+      "type": "object",
+      "title": "UsePageDataSetOptions",
+      "description": "DataSet 管理选项接口",
+      "properties": {
+        "enableDataSet": {
+          "type": "boolean"
+        }
+      }
+    },
+    "UsePageDataSetReturn": {
+      "type": "object",
+      "title": "UsePageDataSetReturn",
+      "description": "DataSet 管理返回值接口",
+      "properties": {
+        "dataSet": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "UsePageDataSetOptions": {
       "kind": "UsePageDataSetOptions",
@@ -122,37 +153,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.743Z",
-  "$defs": {
-    "UsePageDataSetOptions": {
-      "type": "object",
-      "title": "UsePageDataSetOptions",
-      "description": "DataSet 管理选项接口",
-      "properties": {
-        "enableDataSet": {
-          "type": "boolean"
-        }
-      }
-    },
-    "UsePageDataSetReturn": {
-      "type": "object",
-      "title": "UsePageDataSetReturn",
-      "description": "DataSet 管理返回值接口",
-      "properties": {
-        "dataSet": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataSet"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
     }
   }
 }

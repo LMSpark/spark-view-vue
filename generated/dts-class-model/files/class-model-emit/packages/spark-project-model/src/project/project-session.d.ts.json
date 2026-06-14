@@ -20,6 +20,60 @@
     "ProjectSessionOwner",
     "ProjectSession"
   ],
+  "generatedAt": "2026-06-11T12:38:13.629Z",
+  "$defs": {
+    "ProjectSessionState": {
+      "type": "object",
+      "title": "ProjectSessionState",
+      "description": "Project Session State 的运行状态。",
+      "properties": {
+        "selectedNodeId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "activePageId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "navigationDirty": {
+          "type": "boolean"
+        },
+        "navigationDirtyScope": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ProjectNavigationDirtyScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ProjectSessionOwner": {
+      "type": "object",
+      "title": "ProjectSessionOwner",
+      "description": "Project Session Owner 的语义模型。"
+    },
+    "ProjectSession": {
+      "type": "object",
+      "title": "ProjectSession",
+      "description": "ProjectModel 持有的设计过程态：选中、活动页、dirty 与导航草稿（不落盘）。"
+    }
+  },
   "models": {
     "ProjectSessionState": {
       "kind": "ProjectSessionState",
@@ -506,60 +560,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.263Z",
-  "$defs": {
-    "ProjectSessionState": {
-      "type": "object",
-      "title": "ProjectSessionState",
-      "description": "Project Session State 的运行状态。",
-      "properties": {
-        "selectedNodeId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "activePageId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "navigationDirty": {
-          "type": "boolean"
-        },
-        "navigationDirtyScope": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "ProjectNavigationDirtyScope"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "ProjectSessionOwner": {
-      "type": "object",
-      "title": "ProjectSessionOwner",
-      "description": "Project Session Owner 的语义模型。"
-    },
-    "ProjectSession": {
-      "type": "object",
-      "title": "ProjectSession",
-      "description": "ProjectModel 持有的设计过程态：选中、活动页、dirty 与导航草稿（不落盘）。"
     }
   }
 }

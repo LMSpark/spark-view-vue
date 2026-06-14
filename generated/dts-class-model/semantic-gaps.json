@@ -1,5 +1,4 @@
 {
-  "generatedAt": "2026-06-14T02:45:08.137Z",
   "gapCount": 0,
   "notes": [
     ".d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。",

@@ -21,6 +21,43 @@
   "symbols": [
     "RDisplayCountdownProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.499Z",
+  "$defs": {
+    "RDisplayCountdownProps": {
+      "type": "object",
+      "title": "RDisplayCountdownProps",
+      "description": "RDisplay Countdown Props 的属性契约。",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "title": "Date"
+            }
+          ]
+        },
+        "format": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "valueStyle": {
+          "type": "object",
+          "title": "CSSProperties"
+        }
+      }
+    }
+  },
   "models": {
     "RDisplayCountdownProps": {
       "kind": "RDisplayCountdownProps",
@@ -116,43 +153,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.426Z",
-  "$defs": {
-    "RDisplayCountdownProps": {
-      "type": "object",
-      "title": "RDisplayCountdownProps",
-      "description": "RDisplay Countdown Props 的属性契约。",
-      "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "object",
-              "title": "Date"
-            }
-          ]
-        },
-        "format": {
-          "type": "string"
-        },
-        "prefix": {
-          "type": "string"
-        },
-        "suffix": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "valueStyle": {
-          "type": "object",
-          "title": "CSSProperties"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,35 @@
   "symbols": [
     "AiSessionTracePanelProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.361Z",
+  "$defs": {
+    "AiSessionTracePanelProps": {
+      "type": "object",
+      "title": "AiSessionTracePanelProps",
+      "description": "AiSessionTracePanel 根组件 Props。\nentries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\nisStreaming   — 是否正在接收流式增量。\nisReasoning   — 是否正在接收推理文本。\ndiagnostics   — 外部诊断投影。永远有值（含空摘要）。\nheight        — 面板高度 CSS 值，默认 '100%'。\nemptyText     — 无 live entries 且诊断投影为空时的占位文本。",
+      "properties": {
+        "entries": {
+          "type": "array"
+        },
+        "isStreaming": {
+          "type": "boolean"
+        },
+        "isReasoning": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "object",
+          "title": "SessionDiagnosticsData"
+        },
+        "height": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "AiSessionTracePanelProps": {
       "kind": "AiSessionTracePanelProps",
@@ -95,35 +124,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.035Z",
-  "$defs": {
-    "AiSessionTracePanelProps": {
-      "type": "object",
-      "title": "AiSessionTracePanelProps",
-      "description": "AiSessionTracePanel 根组件 Props。\nentries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\nisStreaming   — 是否正在接收流式增量。\nisReasoning   — 是否正在接收推理文本。\ndiagnostics   — 外部诊断投影。永远有值（含空摘要）。\nheight        — 面板高度 CSS 值，默认 '100%'。\nemptyText     — 无 live entries 且诊断投影为空时的占位文本。",
-      "properties": {
-        "entries": {
-          "type": "array"
-        },
-        "isStreaming": {
-          "type": "boolean"
-        },
-        "isReasoning": {
-          "type": "boolean"
-        },
-        "diagnostics": {
-          "type": "object",
-          "title": "SessionDiagnosticsData"
-        },
-        "height": {
-          "type": "string"
-        },
-        "emptyText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

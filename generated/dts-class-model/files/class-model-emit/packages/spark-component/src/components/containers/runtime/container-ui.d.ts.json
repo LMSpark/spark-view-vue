@@ -24,6 +24,86 @@
     "ContainerToolbarState",
     "DataViewSyncGuardState"
   ],
+  "generatedAt": "2026-06-11T12:48:50.963Z",
+  "$defs": {
+    "ToolbarPosition": {
+      "type": "object",
+      "title": "ToolbarPosition",
+      "description": "工具栏位置枚举。"
+    },
+    "ToolbarLike": {
+      "type": "object",
+      "title": "ToolbarLike",
+      "description": "工具栏节点所需的最小属性形状（与 RToolbarProps 结构对齐）。",
+      "properties": {
+        "children": {
+          "type": "object",
+          "title": "SparkNodeChildren"
+        },
+        "position": {
+          "type": "string"
+        },
+        "class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "UseContainerToolbarOptions": {
+      "type": "object",
+      "title": "UseContainerToolbarOptions",
+      "description": "Use Container Toolbar Options 的调用配置。",
+      "properties": {
+        "toolbarNode": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<ToolbarLike | null | undefined>"
+        },
+        "defaultClass": {
+          "type": "string"
+        },
+        "defaultPosition": {
+          "$ref": "#/$defs/ToolbarPosition"
+        }
+      }
+    },
+    "ContainerToolbarState": {
+      "type": "object",
+      "title": "ContainerToolbarState",
+      "description": "`useContainerToolbar` 返回状态。",
+      "properties": {
+        "visibleToolbarConfigs": {
+          "type": "object",
+          "title": "ComputedRef<SparkNode[]>"
+        },
+        "toolbarPositionValue": {
+          "type": "object",
+          "title": "ComputedRef<ToolbarPosition>"
+        },
+        "toolbarClassValue": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "showToolbar": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        }
+      }
+    },
+    "DataViewSyncGuardState": {
+      "type": "object",
+      "title": "DataViewSyncGuardState",
+      "description": "`useDataViewSyncGuard` 返回状态。"
+    }
+  },
   "models": {
     "ToolbarPosition": {
       "kind": "ToolbarPosition",
@@ -360,86 +440,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.324Z",
-  "$defs": {
-    "ToolbarPosition": {
-      "type": "object",
-      "title": "ToolbarPosition",
-      "description": "工具栏位置枚举。"
-    },
-    "ToolbarLike": {
-      "type": "object",
-      "title": "ToolbarLike",
-      "description": "工具栏节点所需的最小属性形状（与 RToolbarProps 结构对齐）。",
-      "properties": {
-        "children": {
-          "type": "object",
-          "title": "SparkNodeChildren"
-        },
-        "position": {
-          "type": "string"
-        },
-        "class": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        }
-      }
-    },
-    "UseContainerToolbarOptions": {
-      "type": "object",
-      "title": "UseContainerToolbarOptions",
-      "description": "Use Container Toolbar Options 的调用配置。",
-      "properties": {
-        "toolbarNode": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<ToolbarLike | null | undefined>"
-        },
-        "defaultClass": {
-          "type": "string"
-        },
-        "defaultPosition": {
-          "$ref": "#/$defs/ToolbarPosition"
-        }
-      }
-    },
-    "ContainerToolbarState": {
-      "type": "object",
-      "title": "ContainerToolbarState",
-      "description": "`useContainerToolbar` 返回状态。",
-      "properties": {
-        "visibleToolbarConfigs": {
-          "type": "object",
-          "title": "ComputedRef<SparkNode[]>"
-        },
-        "toolbarPositionValue": {
-          "type": "object",
-          "title": "ComputedRef<ToolbarPosition>"
-        },
-        "toolbarClassValue": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "showToolbar": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        }
-      }
-    },
-    "DataViewSyncGuardState": {
-      "type": "object",
-      "title": "DataViewSyncGuardState",
-      "description": "`useDataViewSyncGuard` 返回状态。"
     }
   }
 }

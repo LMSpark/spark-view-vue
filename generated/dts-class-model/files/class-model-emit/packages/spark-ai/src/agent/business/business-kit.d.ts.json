@@ -20,6 +20,70 @@
     "AiBusinessInputOptions",
     "CreateSimpleInputContractOptions"
   ],
+  "generatedAt": "2026-06-14T02:24:09.386Z",
+  "$defs": {
+    "AiBusinessIdOptions": {
+      "type": "object",
+      "title": "AiBusinessIdOptions",
+      "description": "Ai Business Id Options 的调用配置。",
+      "properties": {
+        "businessId": {
+          "type": "string"
+        }
+      }
+    },
+    "AiBusinessInputOptions": {
+      "type": "object",
+      "title": "AiBusinessInputOptions",
+      "description": "Ai Business Input Options 的调用配置。",
+      "properties": {
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "identityField": true,
+        "messageField": true,
+        "systemPrompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "(input: TInput) => string"
+            }
+          ]
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "(input: TInput) => string | undefined"
+            }
+          ]
+        },
+        "readonlySteps": {
+          "anyOf": [
+            {
+              "type": "array"
+            },
+            {
+              "type": "object",
+              "title": "(input: TInput) => readonly string[] | undefined"
+            }
+          ]
+        }
+      }
+    },
+    "CreateSimpleInputContractOptions": {
+      "type": "object",
+      "title": "CreateSimpleInputContractOptions",
+      "description": "Create Simple Input Contract Options 的调用配置。"
+    }
+  },
   "models": {
     "AiBusinessIdOptions": {
       "kind": "AiBusinessIdOptions",
@@ -208,70 +272,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.432Z",
-  "$defs": {
-    "AiBusinessIdOptions": {
-      "type": "object",
-      "title": "AiBusinessIdOptions",
-      "description": "Ai Business Id Options 的调用配置。",
-      "properties": {
-        "businessId": {
-          "type": "string"
-        }
-      }
-    },
-    "AiBusinessInputOptions": {
-      "type": "object",
-      "title": "AiBusinessInputOptions",
-      "description": "Ai Business Input Options 的调用配置。",
-      "properties": {
-        "paramsSchema": {
-          "type": "object",
-          "title": "AiJsonSchemaObject"
-        },
-        "identityField": true,
-        "messageField": true,
-        "systemPrompt": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "object",
-              "title": "(input: TInput) => string"
-            }
-          ]
-        },
-        "title": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "object",
-              "title": "(input: TInput) => string | undefined"
-            }
-          ]
-        },
-        "readonlySteps": {
-          "anyOf": [
-            {
-              "type": "array"
-            },
-            {
-              "type": "object",
-              "title": "(input: TInput) => readonly string[] | undefined"
-            }
-          ]
-        }
-      }
-    },
-    "CreateSimpleInputContractOptions": {
-      "type": "object",
-      "title": "CreateSimpleInputContractOptions",
-      "description": "Create Simple Input Contract Options 的调用配置。"
     }
   }
 }

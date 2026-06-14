@@ -21,6 +21,88 @@
   "symbols": [
     "RBadgeProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.482Z",
+  "$defs": {
+    "RBadgeProps": {
+      "type": "object",
+      "title": "RBadgeProps",
+      "description": "RBadge Props 的属性契约。",
+      "properties": {
+        "badgeValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "max": {
+          "type": "number"
+        },
+        "isDot": {
+          "type": "boolean"
+        },
+        "hiddenBadge": {
+          "type": "boolean"
+        },
+        "badgeType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                ""
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            }
+          ]
+        },
+        "showZero": {
+          "type": "boolean"
+        },
+        "color": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "array"
+        },
+        "badgeStyle": true,
+        "badgeClass": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RBadgeProps": {
       "kind": "RBadgeProps",
@@ -190,88 +272,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.396Z",
-  "$defs": {
-    "RBadgeProps": {
-      "type": "object",
-      "title": "RBadgeProps",
-      "description": "RBadge Props 的属性契约。",
-      "properties": {
-        "badgeValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "max": {
-          "type": "number"
-        },
-        "isDot": {
-          "type": "boolean"
-        },
-        "hiddenBadge": {
-          "type": "boolean"
-        },
-        "badgeType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            }
-          ]
-        },
-        "showZero": {
-          "type": "boolean"
-        },
-        "color": {
-          "type": "string"
-        },
-        "offset": {
-          "type": "array"
-        },
-        "badgeStyle": true,
-        "badgeClass": {
-          "type": "string"
-        }
-      }
     }
   }
 }

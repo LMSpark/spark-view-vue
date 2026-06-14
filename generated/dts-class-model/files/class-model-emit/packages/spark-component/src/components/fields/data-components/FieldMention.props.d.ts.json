@@ -23,6 +23,101 @@
     "RMentionOption",
     "RMentionProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.563Z",
+  "$defs": {
+    "RMentionOption": {
+      "type": "object",
+      "title": "RMentionOption",
+      "description": "Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "persistedValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "RMentionProps": {
+      "type": "object",
+      "title": "RMentionProps",
+      "description": "RMention Props 的属性契约。",
+      "properties": {
+        "mentionTriggers": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RMentionOption"
+          }
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "top"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "bottom"
+              ]
+            }
+          ]
+        },
+        "showArrow": {
+          "type": "boolean"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "whole": {
+          "type": "boolean"
+        },
+        "loading": {
+          "type": "boolean"
+        },
+        "inputType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "text"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "textarea"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RMentionOption": {
       "kind": "RMentionOption",
@@ -272,101 +367,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.557Z",
-  "$defs": {
-    "RMentionOption": {
-      "type": "object",
-      "title": "RMentionOption",
-      "description": "Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。",
-      "properties": {
-        "value": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "persistedValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        }
-      }
-    },
-    "RMentionProps": {
-      "type": "object",
-      "title": "RMentionProps",
-      "description": "RMention Props 的属性契约。",
-      "properties": {
-        "mentionTriggers": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        },
-        "options": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RMentionOption"
-          }
-        },
-        "placement": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "top"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "bottom"
-              ]
-            }
-          ]
-        },
-        "showArrow": {
-          "type": "boolean"
-        },
-        "offset": {
-          "type": "number"
-        },
-        "whole": {
-          "type": "boolean"
-        },
-        "loading": {
-          "type": "boolean"
-        },
-        "inputType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "text"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "textarea"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

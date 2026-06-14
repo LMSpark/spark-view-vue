@@ -20,6 +20,35 @@
     "PrimaryKeyGeneratorConfig",
     "PrimaryKeyGenerator"
   ],
+  "generatedAt": "2026-06-11T12:48:51.004Z",
+  "$defs": {
+    "PrimaryKeyStrategy": {
+      "type": "object",
+      "title": "PrimaryKeyStrategy",
+      "description": "主键生成策略类型"
+    },
+    "PrimaryKeyGeneratorConfig": {
+      "type": "object",
+      "title": "PrimaryKeyGeneratorConfig",
+      "description": "主键生成器配置",
+      "properties": {
+        "strategy": {
+          "$ref": "#/$defs/PrimaryKeyStrategy"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "startValue": {
+          "type": "number"
+        }
+      }
+    },
+    "PrimaryKeyGenerator": {
+      "type": "object",
+      "title": "PrimaryKeyGenerator",
+      "description": "主键生成器\n支持多种生成策略，可为新记录自动生成主键值。"
+    }
+  },
   "models": {
     "PrimaryKeyStrategy": {
       "kind": "PrimaryKeyStrategy",
@@ -360,35 +389,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.827Z",
-  "$defs": {
-    "PrimaryKeyStrategy": {
-      "type": "object",
-      "title": "PrimaryKeyStrategy",
-      "description": "主键生成策略类型"
-    },
-    "PrimaryKeyGeneratorConfig": {
-      "type": "object",
-      "title": "PrimaryKeyGeneratorConfig",
-      "description": "主键生成器配置",
-      "properties": {
-        "strategy": {
-          "$ref": "#/$defs/PrimaryKeyStrategy"
-        },
-        "fields": {
-          "type": "string"
-        },
-        "startValue": {
-          "type": "number"
-        }
-      }
-    },
-    "PrimaryKeyGenerator": {
-      "type": "object",
-      "title": "PrimaryKeyGenerator",
-      "description": "主键生成器\n支持多种生成策略，可为新记录自动生成主键值。"
     }
   }
 }

@@ -24,6 +24,64 @@
     "ListProjectReferencesOptions",
     "ProjectReferenceClient"
   ],
+  "generatedAt": "2026-06-11T12:38:13.624Z",
+  "$defs": {
+    "ProjectReferenceClientOptions": {
+      "type": "object",
+      "title": "ProjectReferenceClientOptions",
+      "description": "Project Reference Client Options 的调用配置。",
+      "properties": {
+        "http": {
+          "type": "object",
+          "title": "HttpClientBase"
+        }
+      }
+    },
+    "ProjectSummary": {
+      "type": "object",
+      "title": "ProjectSummary",
+      "description": "Project Summary 的语义模型。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectPageReference": {
+      "type": "object",
+      "title": "ProjectPageReference",
+      "description": "Project Page Reference 的语义模型。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      }
+    },
+    "ListProjectReferencesOptions": {
+      "type": "object",
+      "title": "ListProjectReferencesOptions",
+      "description": "List Project References Options 的调用配置。",
+      "properties": {
+        "excludeProjectId": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectReferenceClient": {
+      "type": "object",
+      "title": "ProjectReferenceClient",
+      "description": "Project Reference Client 的语义模型。"
+    }
+  },
   "models": {
     "ProjectReferenceClientOptions": {
       "kind": "ProjectReferenceClientOptions",
@@ -337,64 +395,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.175Z",
-  "$defs": {
-    "ProjectReferenceClientOptions": {
-      "type": "object",
-      "title": "ProjectReferenceClientOptions",
-      "description": "Project Reference Client Options 的调用配置。",
-      "properties": {
-        "http": {
-          "type": "object",
-          "title": "HttpClientBase"
-        }
-      }
-    },
-    "ProjectSummary": {
-      "type": "object",
-      "title": "ProjectSummary",
-      "description": "Project Summary 的语义模型。",
-      "properties": {
-        "projectId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectPageReference": {
-      "type": "object",
-      "title": "ProjectPageReference",
-      "description": "Project Page Reference 的语义模型。",
-      "properties": {
-        "projectId": {
-          "type": "string"
-        }
-      }
-    },
-    "ListProjectReferencesOptions": {
-      "type": "object",
-      "title": "ListProjectReferencesOptions",
-      "description": "List Project References Options 的调用配置。",
-      "properties": {
-        "excludeProjectId": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectReferenceClient": {
-      "type": "object",
-      "title": "ProjectReferenceClient",
-      "description": "Project Reference Client 的语义模型。"
     }
   }
 }

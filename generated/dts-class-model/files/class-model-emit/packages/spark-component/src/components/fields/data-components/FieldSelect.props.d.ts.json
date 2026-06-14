@@ -21,6 +21,14 @@
   "symbols": [
     "RSelectProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.572Z",
+  "$defs": {
+    "RSelectProps": {
+      "type": "object",
+      "title": "RSelectProps",
+      "description": "RSelect Props 的属性契约。"
+    }
+  },
   "models": {
     "RSelectProps": {
       "kind": "RSelectProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.581Z",
-  "$defs": {
-    "RSelectProps": {
-      "type": "object",
-      "title": "RSelectProps",
-      "description": "RSelect Props 的属性契约。"
     }
   }
 }

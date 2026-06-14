@@ -21,6 +21,61 @@
   "symbols": [
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.425Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "r-collapse-item 内部面板项属性，继承 SparkNode 通用节点属性。",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        },
+        "gridColumns": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "Props": {
       "kind": "Props",
@@ -146,61 +201,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.246Z",
-  "$defs": {
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "r-collapse-item 内部面板项属性，继承 SparkNode 通用节点属性。",
-      "properties": {
-        "name": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "bodyClass": {
-          "type": "string"
-        },
-        "gridColumns": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "gridAutoRows": {
-          "type": "string"
-        },
-        "gridGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "index": {
-          "type": "number"
-        }
-      }
     }
   }
 }

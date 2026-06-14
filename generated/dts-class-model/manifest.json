@@ -1,7 +1,6 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "generatedAt": "2026-06-14T02:45:08.137Z",
   "scannedFileCount": 660,
   "files": {
     "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts": {
@@ -640,8 +639,8 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/class-model-emit-path",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path\n职责：ClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。\n边界：只做路径字符串规则，不访问文件系统或 TypeScript Program。\nAI用途：判断 bundle 键是否为 class-model-emit 虚拟源或映射 repo 路径时，用本模块统一约定。",
-        "jsdocSource": "leading-jsdoc",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path\n职责：ClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。\n边界：路径字符串规则与源文件 mtime 读取；不创建 TypeScript Program。\nAI用途：判断 bundle 键是否为 class-model-emit 虚拟源或映射 repo 路径时，用本模块统一约定。",
+        "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "ClassModelEmitSource"
         ]

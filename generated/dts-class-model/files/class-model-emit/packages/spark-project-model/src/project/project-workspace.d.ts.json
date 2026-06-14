@@ -32,6 +32,162 @@
     "ProjectWorkspaceOptions",
     "ProjectWorkspace"
   ],
+  "generatedAt": "2026-06-11T12:48:51.057Z",
+  "$defs": {
+    "ProjectPageLoadOptions": {
+      "type": "object",
+      "title": "ProjectPageLoadOptions",
+      "description": "Project Page Load Options 的调用配置。",
+      "properties": {
+        "forceReload": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CreatePageForSelectedNodeParams": {
+      "type": "object",
+      "title": "CreatePageForSelectedNodeParams",
+      "description": "Create Page For Selected Node Params 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateMountedPageParams": {
+      "type": "object",
+      "title": "CreateMountedPageParams",
+      "description": "Create Mounted Page Params 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "node": {
+          "type": "object",
+          "title": "ProjectNodeData"
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        },
+        "rollbackPageOnNavigationFailure": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CreatePageFilesParams": {
+      "type": "object",
+      "title": "CreatePageFilesParams",
+      "description": "Create Page Files Params 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        }
+      }
+    },
+    "PageNodeCreateMountedResult": {
+      "type": "object",
+      "title": "PageNodeCreateMountedResult",
+      "description": "Page Node Create Mounted Result 的返回结果。",
+      "properties": {
+        "page": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "node": {
+          "type": "object",
+          "title": "ProjectNodeData"
+        }
+      }
+    },
+    "PageNodeRemoveMountedResult": {
+      "type": "object",
+      "title": "PageNodeRemoveMountedResult",
+      "description": "Page Node Remove Mounted Result 的返回结果。",
+      "properties": {
+        "deletedNode": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ProjectNodeData"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deletedFiles": {
+          "type": "boolean"
+        }
+      }
+    },
+    "RemoveMountedPageParams": {
+      "type": "object",
+      "title": "RemoveMountedPageParams",
+      "description": "Remove Mounted Page Params 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "deleteFiles": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectWorkspaceOptions": {
+      "type": "object",
+      "title": "ProjectWorkspaceOptions",
+      "description": "Project Workspace Options 的调用配置。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "http": {
+          "type": "object",
+          "title": "HttpClientBase"
+        },
+        "fileStorage": {
+          "type": "object",
+          "title": "NonNullable<PageContentLoaderOptions['fileStorage']>"
+        }
+      }
+    },
+    "ProjectWorkspace": {
+      "type": "object",
+      "title": "ProjectWorkspace",
+      "description": "项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。",
+      "properties": {
+        "project": {
+          "type": "object",
+          "title": "ProjectModel"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectPageLoadOptions": {
       "kind": "ProjectPageLoadOptions",
@@ -1727,162 +1883,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.291Z",
-  "$defs": {
-    "ProjectPageLoadOptions": {
-      "type": "object",
-      "title": "ProjectPageLoadOptions",
-      "description": "Project Page Load Options 的调用配置。",
-      "properties": {
-        "forceReload": {
-          "type": "boolean"
-        }
-      }
-    },
-    "CreatePageForSelectedNodeParams": {
-      "type": "object",
-      "title": "CreatePageForSelectedNodeParams",
-      "description": "Create Page For Selected Node Params 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        }
-      }
-    },
-    "CreateMountedPageParams": {
-      "type": "object",
-      "title": "CreateMountedPageParams",
-      "description": "Create Mounted Page Params 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "node": {
-          "type": "object",
-          "title": "ProjectNodeData"
-        },
-        "parentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "index": {
-          "type": "number"
-        },
-        "rollbackPageOnNavigationFailure": {
-          "type": "boolean"
-        }
-      }
-    },
-    "CreatePageFilesParams": {
-      "type": "object",
-      "title": "CreatePageFilesParams",
-      "description": "Create Page Files Params 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        }
-      }
-    },
-    "PageNodeCreateMountedResult": {
-      "type": "object",
-      "title": "PageNodeCreateMountedResult",
-      "description": "Page Node Create Mounted Result 的返回结果。",
-      "properties": {
-        "page": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "node": {
-          "type": "object",
-          "title": "ProjectNodeData"
-        }
-      }
-    },
-    "PageNodeRemoveMountedResult": {
-      "type": "object",
-      "title": "PageNodeRemoveMountedResult",
-      "description": "Page Node Remove Mounted Result 的返回结果。",
-      "properties": {
-        "deletedNode": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "ProjectNodeData"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "deletedFiles": {
-          "type": "boolean"
-        }
-      }
-    },
-    "RemoveMountedPageParams": {
-      "type": "object",
-      "title": "RemoveMountedPageParams",
-      "description": "Remove Mounted Page Params 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "nodeId": {
-          "type": "string"
-        },
-        "deleteFiles": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ProjectWorkspaceOptions": {
-      "type": "object",
-      "title": "ProjectWorkspaceOptions",
-      "description": "Project Workspace Options 的调用配置。",
-      "properties": {
-        "projectId": {
-          "type": "string"
-        },
-        "http": {
-          "type": "object",
-          "title": "HttpClientBase"
-        },
-        "fileStorage": {
-          "type": "object",
-          "title": "NonNullable<PageContentLoaderOptions['fileStorage']>"
-        }
-      }
-    },
-    "ProjectWorkspace": {
-      "type": "object",
-      "title": "ProjectWorkspace",
-      "description": "项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。",
-      "properties": {
-        "project": {
-          "type": "object",
-          "title": "ProjectModel"
-        }
-      }
     }
   }
 }

@@ -28,6 +28,121 @@
     "LayoutForNewTable",
     "DesignerTableUiStateReconcileInput"
   ],
+  "generatedAt": "2026-06-11T12:48:51.082Z",
+  "$defs": {
+    "PageDataEditorMode": {
+      "type": "object",
+      "title": "PageDataEditorMode",
+      "description": "Page Data Editor Mode 的语义模型。"
+    },
+    "DesignerColumnProjection": {
+      "type": "object",
+      "title": "DesignerColumnProjection",
+      "description": "Designer Column Projection 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "DesignerTableProjection": {
+      "type": "object",
+      "title": "DesignerTableProjection",
+      "description": "Designer Table Projection 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DesignerColumnProjection"
+          }
+        }
+      }
+    },
+    "DesignerRelationProjection": {
+      "type": "object",
+      "title": "DesignerRelationProjection",
+      "description": "Designer Relation Projection 的语义模型。",
+      "properties": {
+        "relationType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "one-to-many"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "one-to-one"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "many-to-many"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "DesignerTableUiState": {
+      "type": "object",
+      "title": "DesignerTableUiState",
+      "description": "Designer Table Ui State 的运行状态。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "columnIds": {
+          "type": "object",
+          "title": "Record<string, string>"
+        }
+      }
+    },
+    "LayoutForNewTable": {
+      "type": "object",
+      "title": "LayoutForNewTable",
+      "description": "Layout For New Table 的语义模型。"
+    },
+    "DesignerTableUiStateReconcileInput": {
+      "type": "object",
+      "title": "DesignerTableUiStateReconcileInput",
+      "description": "Designer Table Ui State Reconcile Input 的输入数据。",
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "title": "DataSetMetadata"
+        },
+        "currentTables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>"
+          }
+        },
+        "layoutForNewTable": {
+          "$ref": "#/$defs/LayoutForNewTable"
+        }
+      }
+    }
+  },
   "models": {
     "PageDataEditorMode": {
       "kind": "PageDataEditorMode",
@@ -356,121 +471,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.465Z",
-  "$defs": {
-    "PageDataEditorMode": {
-      "type": "object",
-      "title": "PageDataEditorMode",
-      "description": "Page Data Editor Mode 的语义模型。"
-    },
-    "DesignerColumnProjection": {
-      "type": "object",
-      "title": "DesignerColumnProjection",
-      "description": "Designer Column Projection 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "DesignerTableProjection": {
-      "type": "object",
-      "title": "DesignerTableProjection",
-      "description": "Designer Table Projection 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "x": {
-          "type": "number"
-        },
-        "y": {
-          "type": "number"
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DesignerColumnProjection"
-          }
-        }
-      }
-    },
-    "DesignerRelationProjection": {
-      "type": "object",
-      "title": "DesignerRelationProjection",
-      "description": "Designer Relation Projection 的语义模型。",
-      "properties": {
-        "relationType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "one-to-many"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "one-to-one"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "many-to-many"
-              ]
-            }
-          ]
-        }
-      }
-    },
-    "DesignerTableUiState": {
-      "type": "object",
-      "title": "DesignerTableUiState",
-      "description": "Designer Table Ui State 的运行状态。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "x": {
-          "type": "number"
-        },
-        "y": {
-          "type": "number"
-        },
-        "columnIds": {
-          "type": "object",
-          "title": "Record<string, string>"
-        }
-      }
-    },
-    "LayoutForNewTable": {
-      "type": "object",
-      "title": "LayoutForNewTable",
-      "description": "Layout For New Table 的语义模型。"
-    },
-    "DesignerTableUiStateReconcileInput": {
-      "type": "object",
-      "title": "DesignerTableUiStateReconcileInput",
-      "description": "Designer Table Ui State Reconcile Input 的输入数据。",
-      "properties": {
-        "metadata": {
-          "type": "object",
-          "title": "DataSetMetadata"
-        },
-        "currentTables": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>"
-          }
-        },
-        "layoutForNewTable": {
-          "$ref": "#/$defs/LayoutForNewTable"
-        }
-      }
     }
   }
 }

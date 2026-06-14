@@ -92,7 +92,8 @@ spark-utils
 ```text
 tsconfig.class-model-emit.json
   → emitDeclarationsToMemory (compiler-api 默认 / vue-tsc 可选)
-  → buildDtsClassModelBundle (TS AST 投影)
+  → planIncrementalBundleBuild（对照 .dts-manifest.json + shard mtime）
+  → buildDtsClassModelBundle（仅变化项投影落盘；依赖闭包仍进 Program）
   → generated/dts-class-model/manifest.json + files/**  （guide SSOT；默认无 runtime/）
   → Vite 插件：dev 静态映射 / build 拷贝至 dist/dts-class-model/
 ```
@@ -100,17 +101,29 @@ tsconfig.class-model-emit.json
 | 事实 | 说明 |
 |------|------|
 | 不落盘 `.d.ts` | 默认全程内存 emit；bundle 内虚拟键前缀 `class-model-emit/` |
+| **增量投影** | 全量 generate 时对照 `.dts-manifest.json` 中 `sourceModifiedAt` 与源文件 mtime；shard 未变则跳过投影写盘（内存 emit 仍全仓） |
+| **`.dts-manifest.json`** | 构建辅助索引（`schemaVersion: 1` + `entries`）；记录 emit 键 → `sourceFile` / `shardFile` / `sourceModifiedAt`；旧版纯路径数组触发一次全量重建 |
+| **`--full`** | 强制清空 `generated/dts-class-model/` 后全量重建 |
 | **不使用 ajv** | 编译链仅依赖 `typescript` / `vue-tsc`；见下文「ajv 范围」 |
 | 产出含 JSON Schema 形状 | `paramsSchema` 等由 `dts-type-schema.ts`（TypeChecker）静态投影，非运行时校验 |
-| 定向重建 | `--model RootClassName`；refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs` |
+| 定向重建 | `--model RootClassName` / `--source path`；refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs` |
 | 运行时加载 | Web Worker + `DtsClassModelBundleLoader` 按 HTTP fetch `/dts-class-model/**` |
 | **单源架构** | 仅 `generated/dts-class-model/` 一处真源（**入库，可人工评审**）；无 `public/` 镜像；无 `runtime/manifest.json` 生产读路径 |
+
+**产物文件分工**：
+
+| 文件 | 角色 | 运行时 | CI |
+|------|------|--------|-----|
+| `manifest.json` | guide 目录 + `classIndex` 路由 | ✅ | `assertClassModelBundleComplete` |
+| `files/**/*.d.ts.json` | 单文件 ClassModel shard（`generatedAt` = 源 mtime） | ✅ 懒加载 | shard 完整性 |
+| `semantic-gaps.json` | module/model/constructor JSDoc 审计 | ❌ | `gapCount === 0` |
+| `.dts-manifest.json` | 增量构建 mtime 索引 | ❌ | `class-model-incremental-build.test.ts` |
 
 **守卫**: `scripts/ensure-class-model-bundle.mjs` — manifest 缺失时 generate，随后 `assertClassModelBundleComplete`（shard 完整性）。
 
 **静态发布**: `tools/vite-plugin-class-model-static.ts` — dev 中间件 + build 拷贝至 `dist/`。
 
-**门禁**: `verify:class-model:full` = generate → `verify-class-model-guide-params-schema.mjs` → `verify-class-model-semantic-gaps.mjs`（gapCount=0）→ verify:class-model → typecheck。
+**门禁**: `verify:class-model:full` = generate → `verify-class-model-guide-params-schema.mjs` → `verify-class-model-semantic-gaps.mjs`（gapCount=0）→ verify:class-model（含 incremental 单测）→ typecheck。
 
 ---
 
@@ -240,6 +253,7 @@ Worker fetch('/dts-class-model/manifest.json')
 | `artifact-urls.ts` 运行时求值 | ✅ | `getDtsClassModelManifestUrl()` + env |
 | `assertClassModelBundleComplete` | ✅ | build / ensure 前校验 manifest + shard |
 | `assertClassModelGuideParamsSchema` | ✅ | `verify:class-model:full` 校验 paramsSchema |
+| `class-model-incremental-build` | ✅ | `.dts-manifest.json` mtime 增量；`verify:class-model` 单测 |
 
 ### 遗留问题（低优先级）
 
@@ -248,6 +262,7 @@ Worker fetch('/dts-class-model/manifest.json')
 | **33** | 🟢 | `vite.config.ts` fs.allow | ✔️ **已移除** |
 | **34** | ~~`ensure-class-model-bundle.mjs`~~ | ~~未调用 assert~~ | ✔️ **已修复**（见 #40） |
 | **41** | `class-model-bundle-assert.test.ts` | ~~可选扩展 manifest 缺失用例~~ | ✔️ **已修复** |
+| **42** | emit 阶段增量 | 内存 `.d.ts` emit 仍全仓 | 🟢 P3；投影落盘已增量 |
 
 ---
 
@@ -271,6 +286,7 @@ Worker fetch('/dts-class-model/manifest.json')
 
 1. **P3** — `class-model-bundle-assert.test.ts` 扩展更多 semantic-gaps 失败样例（可选）
 2. **P3** — 逐步为 attribute/method 补 JSDoc（不计入 CI 门禁，仅改善 semantic-gaps.log 信息密度）
+3. **P3** — 增量 emit：在内存 `.d.ts` emit 阶段也按 mtime 跳过未变文件（当前仅投影落盘增量）
 
 ---
 
@@ -283,4 +299,7 @@ pnpm --filter @spark-appworks/spark-json-document run build
 pnpm run verify          # 无 dist
 pnpm run verify:dist     # 含 build:packages
 ls generated/dts-class-model/manifest.json  # SSOT（入库，可评审）
+pnpm exec vitest run tests/scripts/class-model-incremental-build.test.ts  # 增量 mtime 契约
+# 二次全量 generate 应出现：unchanged=N changed=0（仅刷新 .dts-manifest.json）
+pnpm run generate:class-model-surface
 ```

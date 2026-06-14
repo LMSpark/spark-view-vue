@@ -23,6 +23,30 @@
     "MultiValue",
     "RMultiSelectProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.565Z",
+  "$defs": {
+    "MultiValue": {
+      "type": "object",
+      "title": "MultiValue",
+      "description": "多选字段值数组；每一项是最终写入业务字段的候选值。"
+    },
+    "RMultiSelectProps": {
+      "type": "object",
+      "title": "RMultiSelectProps",
+      "description": "RMulti Select Props 的属性契约。",
+      "properties": {
+        "collapseTags": {
+          "type": "boolean"
+        },
+        "collapseTagsTooltip": {
+          "type": "boolean"
+        },
+        "maxCollapseTags": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "MultiValue": {
       "kind": "MultiValue",
@@ -114,30 +138,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.558Z",
-  "$defs": {
-    "MultiValue": {
-      "type": "object",
-      "title": "MultiValue",
-      "description": "多选字段值数组；每一项是最终写入业务字段的候选值。"
-    },
-    "RMultiSelectProps": {
-      "type": "object",
-      "title": "RMultiSelectProps",
-      "description": "RMulti Select Props 的属性契约。",
-      "properties": {
-        "collapseTags": {
-          "type": "boolean"
-        },
-        "collapseTagsTooltip": {
-          "type": "boolean"
-        },
-        "maxCollapseTags": {
-          "type": "number"
-        }
-      }
     }
   }
 }

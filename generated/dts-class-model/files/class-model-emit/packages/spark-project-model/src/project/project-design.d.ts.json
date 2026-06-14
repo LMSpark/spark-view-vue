@@ -18,6 +18,26 @@
     "ProjectDesignNodeEditResult",
     "ProjectDesign"
   ],
+  "generatedAt": "2026-06-12T04:50:58.207Z",
+  "$defs": {
+    "ProjectDesignNodeEditResult": {
+      "type": "object",
+      "title": "ProjectDesignNodeEditResult",
+      "description": "Project Design Node Edit Result 的返回结果。",
+      "properties": {
+        "node": true,
+        "result": {
+          "type": "object",
+          "title": "NavigationNodeDraftApplyResult"
+        }
+      }
+    },
+    "ProjectDesign": {
+      "type": "object",
+      "title": "ProjectDesign",
+      "description": "项目设计根：项目元数据、导航节点树与配置页缓存。"
+    }
+  },
   "models": {
     "ProjectDesignNodeEditResult": {
       "kind": "ProjectDesignNodeEditResult",
@@ -736,26 +756,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.245Z",
-  "$defs": {
-    "ProjectDesignNodeEditResult": {
-      "type": "object",
-      "title": "ProjectDesignNodeEditResult",
-      "description": "Project Design Node Edit Result 的返回结果。",
-      "properties": {
-        "node": true,
-        "result": {
-          "type": "object",
-          "title": "NavigationNodeDraftApplyResult"
-        }
-      }
-    },
-    "ProjectDesign": {
-      "type": "object",
-      "title": "ProjectDesign",
-      "description": "项目设计根：项目元数据、导航节点树与配置页缓存。"
     }
   }
 }

@@ -21,6 +21,45 @@
   "symbols": [
     "RFooterProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.477Z",
+  "$defs": {
+    "RFooterProps": {
+      "type": "object",
+      "title": "RFooterProps",
+      "description": "`RendererFooter` 运行时公开属性。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "r-footer"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "class": {
+          "type": "string"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RFooterProps": {
       "kind": "RFooterProps",
@@ -112,45 +151,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.370Z",
-  "$defs": {
-    "RFooterProps": {
-      "type": "object",
-      "title": "RFooterProps",
-      "description": "`RendererFooter` 运行时公开属性。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "r-footer"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "class": {
-          "type": "string"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
     }
   }
 }

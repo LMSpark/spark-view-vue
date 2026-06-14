@@ -21,6 +21,25 @@
   "symbols": [
     "REmptyProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.505Z",
+  "$defs": {
+    "REmptyProps": {
+      "type": "object",
+      "title": "REmptyProps",
+      "description": "REmpty Props 的属性契约。",
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "imageSize": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "REmptyProps": {
       "kind": "REmptyProps",
@@ -80,25 +99,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.435Z",
-  "$defs": {
-    "REmptyProps": {
-      "type": "object",
-      "title": "REmptyProps",
-      "description": "REmpty Props 的属性契约。",
-      "properties": {
-        "image": {
-          "type": "string"
-        },
-        "imageSize": {
-          "type": "number"
-        },
-        "description": {
-          "type": "string"
-        }
-      }
     }
   }
 }

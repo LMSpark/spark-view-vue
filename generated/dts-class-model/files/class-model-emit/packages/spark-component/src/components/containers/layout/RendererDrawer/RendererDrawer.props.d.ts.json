@@ -21,6 +21,33 @@
   "symbols": [
     "RDrawerProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.430Z",
+  "$defs": {
+    "RDrawerProps": {
+      "type": "object",
+      "title": "RDrawerProps",
+      "description": "RDrawer Props 的属性契约。",
+      "properties": {
+        "header": {
+          "type": "object",
+          "title": "RHeaderProps"
+        },
+        "footer": {
+          "type": "object",
+          "title": "RFooterProps"
+        },
+        "title": {
+          "type": "string"
+        },
+        "modelValue": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RDrawerProps": {
       "kind": "RDrawerProps",
@@ -110,33 +137,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.251Z",
-  "$defs": {
-    "RDrawerProps": {
-      "type": "object",
-      "title": "RDrawerProps",
-      "description": "RDrawer Props 的属性契约。",
-      "properties": {
-        "header": {
-          "type": "object",
-          "title": "RHeaderProps"
-        },
-        "footer": {
-          "type": "object",
-          "title": "RFooterProps"
-        },
-        "title": {
-          "type": "string"
-        },
-        "modelValue": {
-          "type": "boolean"
-        },
-        "bodyClass": {
-          "type": "string"
-        }
-      }
     }
   }
 }

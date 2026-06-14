@@ -16,6 +16,30 @@
   "symbols": [
     "DtsNativeScriptRunCommand"
   ],
+  "generatedAt": "2026-06-14T01:09:41.824Z",
+  "$defs": {
+    "DtsNativeScriptRunCommand": {
+      "type": "object",
+      "title": "DtsNativeScriptRunCommand",
+      "description": "Dts Native Script Run Command 的命令参数。",
+      "properties": {
+        "instance": true,
+        "manifestUrl": {
+          "type": "string"
+        },
+        "rootClassName": {
+          "type": "string"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        },
+        "script": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "DtsNativeScriptRunCommand": {
       "kind": "DtsNativeScriptRunCommand",
@@ -121,30 +145,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.539Z",
-  "$defs": {
-    "DtsNativeScriptRunCommand": {
-      "type": "object",
-      "title": "DtsNativeScriptRunCommand",
-      "description": "Dts Native Script Run Command 的命令参数。",
-      "properties": {
-        "instance": true,
-        "manifestUrl": {
-          "type": "string"
-        },
-        "rootClassName": {
-          "type": "string"
-        },
-        "host": {
-          "type": "object",
-          "title": "AiAgentRuntimeHostContext"
-        },
-        "script": {
-          "type": "string"
-        }
-      }
     }
   }
 }

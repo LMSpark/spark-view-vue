@@ -34,6 +34,140 @@
     "PageComponentRegistry",
     "PageCssScopeCapability"
   ],
+  "generatedAt": "2026-06-11T12:48:50.973Z",
+  "$defs": {
+    "SubtreeFieldPolicy": {
+      "type": "object",
+      "title": "SubtreeFieldPolicy",
+      "description": "子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。"
+    },
+    "ThemeMode": {
+      "type": "object",
+      "title": "ThemeMode",
+      "description": "主题模式"
+    },
+    "ThemeCapability": {
+      "type": "object",
+      "title": "ThemeCapability",
+      "description": "主题服务能力接口（最小契约，不含 Vue 响应式）",
+      "properties": {
+        "current": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "light"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dark"
+              ]
+            }
+          ]
+        },
+        "mode": {
+          "$ref": "#/$defs/ThemeMode"
+        },
+        "isDark": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ModuleContextItem": {
+      "type": "object",
+      "title": "ModuleContextItem",
+      "description": "模块列表项",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "ModuleContext": {
+      "type": "object",
+      "title": "ModuleContext",
+      "description": "当前模块上下文快照",
+      "properties": {
+        "selected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array"
+        },
+        "nodeId": {
+          "type": "string"
+        }
+      }
+    },
+    "ModuleContextCapability": {
+      "type": "object",
+      "title": "ModuleContextCapability",
+      "description": "MODULE_CONTEXT 能力接口"
+    },
+    "PageComponentInstanceEntry": {
+      "type": "object",
+      "title": "PageComponentInstanceEntry",
+      "description": "Page Component Instance Entry 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "PageComponentApiEntry": {
+      "type": "object",
+      "title": "PageComponentApiEntry",
+      "description": "Page Component Api Entry 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "api": true
+      }
+    },
+    "PageComponentRegistry": {
+      "type": "object",
+      "title": "PageComponentRegistry",
+      "description": "页面内组件实例/API 注册表能力接口"
+    },
+    "PageCssScopeCapability": {
+      "type": "object",
+      "title": "PageCssScopeCapability",
+      "description": "页面作用域 CSS 注入能力（由 SparkPageRenderer 提供）"
+    }
+  },
   "models": {
     "SubtreeFieldPolicy": {
       "kind": "SubtreeFieldPolicy",
@@ -871,140 +1005,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.692Z",
-  "$defs": {
-    "SubtreeFieldPolicy": {
-      "type": "object",
-      "title": "SubtreeFieldPolicy",
-      "description": "子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。"
-    },
-    "ThemeMode": {
-      "type": "object",
-      "title": "ThemeMode",
-      "description": "主题模式"
-    },
-    "ThemeCapability": {
-      "type": "object",
-      "title": "ThemeCapability",
-      "description": "主题服务能力接口（最小契约，不含 Vue 响应式）",
-      "properties": {
-        "current": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "light"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dark"
-              ]
-            }
-          ]
-        },
-        "mode": {
-          "$ref": "#/$defs/ThemeMode"
-        },
-        "isDark": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ModuleContextItem": {
-      "type": "object",
-      "title": "ModuleContextItem",
-      "description": "模块列表项",
-      "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "title": {
-          "type": "string"
-        }
-      }
-    },
-    "ModuleContext": {
-      "type": "object",
-      "title": "ModuleContext",
-      "description": "当前模块上下文快照",
-      "properties": {
-        "selected": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "items": {
-          "type": "array"
-        },
-        "nodeId": {
-          "type": "string"
-        }
-      }
-    },
-    "ModuleContextCapability": {
-      "type": "object",
-      "title": "ModuleContextCapability",
-      "description": "MODULE_CONTEXT 能力接口"
-    },
-    "PageComponentInstanceEntry": {
-      "type": "object",
-      "title": "PageComponentInstanceEntry",
-      "description": "Page Component Instance Entry 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
-    },
-    "PageComponentApiEntry": {
-      "type": "object",
-      "title": "PageComponentApiEntry",
-      "description": "Page Component Api Entry 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "api": true
-      }
-    },
-    "PageComponentRegistry": {
-      "type": "object",
-      "title": "PageComponentRegistry",
-      "description": "页面内组件实例/API 注册表能力接口"
-    },
-    "PageCssScopeCapability": {
-      "type": "object",
-      "title": "PageCssScopeCapability",
-      "description": "页面作用域 CSS 注入能力（由 SparkPageRenderer 提供）"
     }
   }
 }

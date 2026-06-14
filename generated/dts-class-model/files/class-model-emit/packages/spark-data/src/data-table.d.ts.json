@@ -18,6 +18,83 @@
     "DataTableAddColumnsResult",
     "DataTable"
   ],
+  "generatedAt": "2026-06-11T12:48:51.007Z",
+  "$defs": {
+    "DataTableAddColumnsResult": {
+      "type": "object",
+      "title": "DataTableAddColumnsResult",
+      "description": "DataTable.addColumns 的执行结果摘要。",
+      "properties": {
+        "added": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skipped": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "DataTable": {
+      "type": "object",
+      "title": "DataTable",
+      "description": "DataTable - 管理单表的结构定义与配置\n说明：管理表结构（columns）、资源语义（resourceType/resourceId/businessCategory）、\n视图集合（DataView）、CRUD 配置（api, crudConfig）；\n其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。\n数据操作由 DataView 负责。",
+      "properties": {
+        "dataSet": {
+          "type": "object",
+          "title": "DataSet"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataColumn"
+          }
+        },
+        "resourceType": {
+          "type": "object",
+          "title": "TableResourceType"
+        },
+        "resourceId": {
+          "type": "string"
+        },
+        "businessCategory": {
+          "type": "object",
+          "title": "TableBusinessCategory"
+        },
+        "api": {
+          "type": "object",
+          "title": "CrudApi"
+        },
+        "crudConfig": {
+          "type": "object",
+          "title": "CrudOperationConfig"
+        },
+        "validator": {
+          "type": "object",
+          "title": "DataValidator"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        },
+        "views": {
+          "type": "object",
+          "title": "Record<string, DataView>"
+        }
+      }
+    }
+  },
   "models": {
     "DataTableAddColumnsResult": {
       "kind": "DataTableAddColumnsResult",
@@ -785,83 +862,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.860Z",
-  "$defs": {
-    "DataTableAddColumnsResult": {
-      "type": "object",
-      "title": "DataTableAddColumnsResult",
-      "description": "DataTable.addColumns 的执行结果摘要。",
-      "properties": {
-        "added": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "skipped": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "DataTable": {
-      "type": "object",
-      "title": "DataTable",
-      "description": "DataTable - 管理单表的结构定义与配置\n说明：管理表结构（columns）、资源语义（resourceType/resourceId/businessCategory）、\n视图集合（DataView）、CRUD 配置（api, crudConfig）；\n其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。\n数据操作由 DataView 负责。",
-      "properties": {
-        "dataSet": {
-          "type": "object",
-          "title": "DataSet"
-        },
-        "tableName": {
-          "type": "string"
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataColumn"
-          }
-        },
-        "resourceType": {
-          "type": "object",
-          "title": "TableResourceType"
-        },
-        "resourceId": {
-          "type": "string"
-        },
-        "businessCategory": {
-          "type": "object",
-          "title": "TableBusinessCategory"
-        },
-        "api": {
-          "type": "object",
-          "title": "CrudApi"
-        },
-        "crudConfig": {
-          "type": "object",
-          "title": "CrudOperationConfig"
-        },
-        "validator": {
-          "type": "object",
-          "title": "DataValidator"
-        },
-        "rows": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataRow"
-          }
-        },
-        "views": {
-          "type": "object",
-          "title": "Record<string, DataView>"
-        }
-      }
     }
   }
 }

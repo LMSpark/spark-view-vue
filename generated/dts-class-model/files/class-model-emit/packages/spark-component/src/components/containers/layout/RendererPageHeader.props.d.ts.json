@@ -21,6 +21,19 @@
   "symbols": [
     "RPageHeaderProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.435Z",
+  "$defs": {
+    "RPageHeaderProps": {
+      "type": "object",
+      "title": "RPageHeaderProps",
+      "description": "RPage Header Props 的属性契约。",
+      "properties": {
+        "icon": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RPageHeaderProps": {
       "kind": "RPageHeaderProps",
@@ -67,19 +80,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.261Z",
-  "$defs": {
-    "RPageHeaderProps": {
-      "type": "object",
-      "title": "RPageHeaderProps",
-      "description": "RPage Header Props 的属性契约。",
-      "properties": {
-        "icon": {
-          "type": "string"
-        }
-      }
     }
   }
 }

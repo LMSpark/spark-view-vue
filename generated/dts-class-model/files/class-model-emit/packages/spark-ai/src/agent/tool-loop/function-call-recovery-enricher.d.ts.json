@@ -18,6 +18,35 @@
     "EnrichFunctionCallFailureCommand",
     "EnrichFunctionCallResultOptions"
   ],
+  "generatedAt": "2026-06-13T21:09:36.160Z",
+  "$defs": {
+    "EnrichFunctionCallFailureCommand": {
+      "type": "object",
+      "title": "EnrichFunctionCallFailureCommand",
+      "description": "Enrich Function Call Failure Command 的命令参数。",
+      "properties": {
+        "protocolToolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        },
+        "callResult": {
+          "type": "object",
+          "title": "AiAgentFunctionCallFailure"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "EnrichFunctionCallResultOptions": {
+      "type": "object",
+      "title": "EnrichFunctionCallResultOptions",
+      "description": "Enrich Function Call Result Options 的调用配置。"
+    }
+  },
   "models": {
     "EnrichFunctionCallFailureCommand": {
       "kind": "EnrichFunctionCallFailureCommand",
@@ -133,35 +162,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.600Z",
-  "$defs": {
-    "EnrichFunctionCallFailureCommand": {
-      "type": "object",
-      "title": "EnrichFunctionCallFailureCommand",
-      "description": "Enrich Function Call Failure Command 的命令参数。",
-      "properties": {
-        "protocolToolName": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "AiJsonParams"
-        },
-        "callResult": {
-          "type": "object",
-          "title": "AiAgentFunctionCallFailure"
-        },
-        "moduleInstanceId": {
-          "type": "string"
-        }
-      }
-    },
-    "EnrichFunctionCallResultOptions": {
-      "type": "object",
-      "title": "EnrichFunctionCallResultOptions",
-      "description": "Enrich Function Call Result Options 的调用配置。"
     }
   }
 }

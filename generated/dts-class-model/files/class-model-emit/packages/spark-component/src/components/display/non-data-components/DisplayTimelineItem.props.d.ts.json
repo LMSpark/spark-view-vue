@@ -21,6 +21,100 @@
   "symbols": [
     "RTimelineItemProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.514Z",
+  "$defs": {
+    "RTimelineItemProps": {
+      "type": "object",
+      "title": "RTimelineItemProps",
+      "description": "RTimeline Item Props 的属性契约。",
+      "properties": {
+        "timestamp": {
+          "type": "string"
+        },
+        "hideTimestamp": {
+          "type": "boolean"
+        },
+        "center": {
+          "type": "boolean"
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "top"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "bottom"
+              ]
+            }
+          ]
+        },
+        "itemType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "color": {
+          "type": "string"
+        },
+        "itemSize": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "normal"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            }
+          ]
+        },
+        "hollow": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RTimelineItemProps": {
       "kind": "RTimelineItemProps",
@@ -191,100 +285,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.444Z",
-  "$defs": {
-    "RTimelineItemProps": {
-      "type": "object",
-      "title": "RTimelineItemProps",
-      "description": "RTimeline Item Props 的属性契约。",
-      "properties": {
-        "timestamp": {
-          "type": "string"
-        },
-        "hideTimestamp": {
-          "type": "boolean"
-        },
-        "center": {
-          "type": "boolean"
-        },
-        "placement": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "top"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "bottom"
-              ]
-            }
-          ]
-        },
-        "itemType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
-          ]
-        },
-        "color": {
-          "type": "string"
-        },
-        "itemSize": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "normal"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "large"
-              ]
-            }
-          ]
-        },
-        "hollow": {
-          "type": "boolean"
-        },
-        "content": {
-          "type": "string"
-        }
-      }
     }
   }
 }

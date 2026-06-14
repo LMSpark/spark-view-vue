@@ -19,6 +19,28 @@
   "symbols": [
     "UseHtmlEditorStateOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.537Z",
+  "$defs": {
+    "UseHtmlEditorStateOptions": {
+      "type": "object",
+      "title": "UseHtmlEditorStateOptions",
+      "description": "Use Html Editor State Options 的调用配置。",
+      "properties": {
+        "editorRef": {
+          "type": "object",
+          "title": "Ref<HTMLElement | null>"
+        },
+        "fieldValue": {
+          "type": "object",
+          "title": "ValueRef<unknown>"
+        },
+        "isCurrentFieldEditable": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        }
+      }
+    }
+  },
   "models": {
     "UseHtmlEditorStateOptions": {
       "kind": "UseHtmlEditorStateOptions",
@@ -154,28 +176,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.517Z",
-  "$defs": {
-    "UseHtmlEditorStateOptions": {
-      "type": "object",
-      "title": "UseHtmlEditorStateOptions",
-      "description": "Use Html Editor State Options 的调用配置。",
-      "properties": {
-        "editorRef": {
-          "type": "object",
-          "title": "Ref<HTMLElement | null>"
-        },
-        "fieldValue": {
-          "type": "object",
-          "title": "ValueRef<unknown>"
-        },
-        "isCurrentFieldEditable": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        }
-      }
     }
   }
 }

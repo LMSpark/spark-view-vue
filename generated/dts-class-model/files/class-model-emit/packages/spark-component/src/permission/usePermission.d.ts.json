@@ -16,6 +16,24 @@
   "symbols": [
     "UsePermissionReturn"
   ],
+  "generatedAt": "2026-06-11T12:48:50.998Z",
+  "$defs": {
+    "UsePermissionReturn": {
+      "type": "object",
+      "title": "UsePermissionReturn",
+      "description": "Use Permission Return 的语义模型。",
+      "properties": {
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        },
+        "subtreeFieldPolicy": {
+          "type": "object",
+          "title": "SubtreeFieldPolicy"
+        }
+      }
+    }
+  },
   "models": {
     "UsePermissionReturn": {
       "kind": "UsePermissionReturn",
@@ -306,24 +324,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.754Z",
-  "$defs": {
-    "UsePermissionReturn": {
-      "type": "object",
-      "title": "UsePermissionReturn",
-      "description": "Use Permission Return 的语义模型。",
-      "properties": {
-        "permissionMode": {
-          "type": "object",
-          "title": "NavPermissionMode"
-        },
-        "subtreeFieldPolicy": {
-          "type": "object",
-          "title": "SubtreeFieldPolicy"
-        }
-      }
     }
   }
 }

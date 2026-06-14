@@ -20,6 +20,29 @@
     "AggregateRecomputeOptions",
     "AggregateDelegate"
   ],
+  "generatedAt": "2026-06-11T12:48:51.016Z",
+  "$defs": {
+    "AggregateDelegateOptions": {
+      "type": "object",
+      "title": "AggregateDelegateOptions",
+      "description": "Aggregate Delegate Options 的调用配置。"
+    },
+    "AggregateRecomputeOptions": {
+      "type": "object",
+      "title": "AggregateRecomputeOptions",
+      "description": "Aggregate Recompute Options 的调用配置。",
+      "properties": {
+        "emit": {
+          "type": "boolean"
+        }
+      }
+    },
+    "AggregateDelegate": {
+      "type": "object",
+      "title": "AggregateDelegate",
+      "description": "视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。\n- `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged\n- `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged"
+    }
+  },
   "models": {
     "AggregateDelegateOptions": {
       "kind": "AggregateDelegateOptions",
@@ -276,29 +299,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.978Z",
-  "$defs": {
-    "AggregateDelegateOptions": {
-      "type": "object",
-      "title": "AggregateDelegateOptions",
-      "description": "Aggregate Delegate Options 的调用配置。"
-    },
-    "AggregateRecomputeOptions": {
-      "type": "object",
-      "title": "AggregateRecomputeOptions",
-      "description": "Aggregate Recompute Options 的调用配置。",
-      "properties": {
-        "emit": {
-          "type": "boolean"
-        }
-      }
-    },
-    "AggregateDelegate": {
-      "type": "object",
-      "title": "AggregateDelegate",
-      "description": "视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。\n- `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged\n- `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged"
     }
   }
 }

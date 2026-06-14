@@ -22,6 +22,169 @@
     "OptionalWithUndefined",
     "FieldContextInputProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.528Z",
+  "$defs": {
+    "FieldContextProps": {
+      "type": "object",
+      "title": "FieldContextProps",
+      "description": "Field Context Props 的属性契约。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "displayLabel": {
+          "type": "string"
+        },
+        "fieldName": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "titleAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "valueAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "custom"
+              ]
+            }
+          ]
+        },
+        "mergedChildren": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "isCurrentFieldHidden": {
+          "type": "boolean"
+        },
+        "shouldRenderCurrentField": {
+          "type": "boolean"
+        },
+        "currentDisplayValue": {
+          "type": "string"
+        },
+        "validationRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "FormItemRule"
+          }
+        }
+      }
+    },
+    "FieldPermissionForContext": {
+      "type": "object",
+      "title": "FieldPermissionForContext",
+      "description": "Field Permission For Context 的运行上下文。",
+      "properties": {
+        "fieldName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "displayLabel": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isCurrentFieldHidden": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "shouldRenderCurrentField": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "currentDisplayValue": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "validationRules": {
+          "type": "object",
+          "title": "ComputedRef<FormItemRule[]>"
+        }
+      }
+    },
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "Optional With Undefined 的语义模型。"
+    },
+    "FieldContextInputProps": {
+      "type": "object",
+      "title": "FieldContextInputProps",
+      "description": "Field Context Input Props 的属性契约。",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "FieldContextProps": {
       "kind": "FieldContextProps",
@@ -505,169 +668,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.481Z",
-  "$defs": {
-    "FieldContextProps": {
-      "type": "object",
-      "title": "FieldContextProps",
-      "description": "Field Context Props 的属性契约。",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "displayLabel": {
-          "type": "string"
-        },
-        "fieldName": {
-          "type": "string"
-        },
-        "width": {
-          "type": "number"
-        },
-        "resizable": {
-          "type": "boolean"
-        },
-        "titleAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "valueAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "headerCellClassName": {
-          "type": "string"
-        },
-        "cellClassName": {
-          "type": "string"
-        },
-        "titleClassName": {
-          "type": "string"
-        },
-        "valueClassName": {
-          "type": "string"
-        },
-        "sortable": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "enum": [
-                "custom"
-              ]
-            }
-          ]
-        },
-        "mergedChildren": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "isCurrentFieldHidden": {
-          "type": "boolean"
-        },
-        "shouldRenderCurrentField": {
-          "type": "boolean"
-        },
-        "currentDisplayValue": {
-          "type": "string"
-        },
-        "validationRules": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "FormItemRule"
-          }
-        }
-      }
-    },
-    "FieldPermissionForContext": {
-      "type": "object",
-      "title": "FieldPermissionForContext",
-      "description": "Field Permission For Context 的运行上下文。",
-      "properties": {
-        "fieldName": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "displayLabel": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "isCurrentFieldHidden": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "shouldRenderCurrentField": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "currentDisplayValue": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "validationRules": {
-          "type": "object",
-          "title": "ComputedRef<FormItemRule[]>"
-        }
-      }
-    },
-    "OptionalWithUndefined": {
-      "type": "object",
-      "title": "OptionalWithUndefined",
-      "description": "Optional With Undefined 的语义模型。"
-    },
-    "FieldContextInputProps": {
-      "type": "object",
-      "title": "FieldContextInputProps",
-      "description": "Field Context Input Props 的属性契约。",
-      "properties": {
-        "type": {
-          "type": "string"
-        }
-      }
     }
   }
 }

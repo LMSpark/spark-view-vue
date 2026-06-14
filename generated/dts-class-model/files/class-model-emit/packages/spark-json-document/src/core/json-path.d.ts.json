@@ -16,6 +16,14 @@
   "symbols": [
     "JsonPath"
   ],
+  "generatedAt": "2026-06-11T12:48:51.030Z",
+  "$defs": {
+    "JsonPath": {
+      "type": "object",
+      "title": "JsonPath",
+      "description": "JSONPath：路径段数组（string = 对象键，number = 数组索引）"
+    }
+  },
   "models": {
     "JsonPath": {
       "kind": "JsonPath",
@@ -38,14 +46,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.115Z",
-  "$defs": {
-    "JsonPath": {
-      "type": "object",
-      "title": "JsonPath",
-      "description": "JSONPath：路径段数组（string = 对象键，number = 数组索引）"
     }
   }
 }

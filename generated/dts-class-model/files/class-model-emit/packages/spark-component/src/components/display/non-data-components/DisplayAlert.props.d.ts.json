@@ -21,6 +21,78 @@
   "symbols": [
     "RAlertProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.494Z",
+  "$defs": {
+    "RAlertProps": {
+      "type": "object",
+      "title": "RAlertProps",
+      "description": "RAlert Props 的属性契约。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "alertType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "closable": {
+          "type": "boolean"
+        },
+        "closeText": {
+          "type": "string"
+        },
+        "center": {
+          "type": "boolean"
+        },
+        "showIcon": {
+          "type": "boolean"
+        },
+        "effect": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "light"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dark"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RAlertProps": {
       "kind": "RAlertProps",
@@ -163,78 +235,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.420Z",
-  "$defs": {
-    "RAlertProps": {
-      "type": "object",
-      "title": "RAlertProps",
-      "description": "RAlert Props 的属性契约。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "alertType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
-          ]
-        },
-        "closable": {
-          "type": "boolean"
-        },
-        "closeText": {
-          "type": "string"
-        },
-        "center": {
-          "type": "boolean"
-        },
-        "showIcon": {
-          "type": "boolean"
-        },
-        "effect": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "light"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dark"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

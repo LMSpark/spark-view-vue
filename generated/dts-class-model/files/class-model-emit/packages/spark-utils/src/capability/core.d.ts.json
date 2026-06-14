@@ -26,6 +26,60 @@
     "CapabilityTypeMap",
     "CapabilityContext"
   ],
+  "generatedAt": "2026-06-11T12:48:51.059Z",
+  "$defs": {
+    "CapabilityReader": {
+      "type": "object",
+      "title": "CapabilityReader",
+      "description": "能力值读取器：把运行时 unknown 显式校验为能力类型。"
+    },
+    "CapabilityKey": {
+      "type": "object",
+      "title": "CapabilityKey",
+      "description": "带运行时校验的能力键。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "token": true
+      }
+    },
+    "CapabilityName": {
+      "type": "object",
+      "title": "CapabilityName",
+      "description": "未具体化类型的能力名（用于 Map 的 key）。"
+    },
+    "SparkCapabilityConsumer": {
+      "type": "object",
+      "title": "SparkCapabilityConsumer",
+      "description": "能力消费函数签名：给定键返回实现或 null。"
+    },
+    "CapabilityTypeMap": {
+      "type": "object",
+      "title": "CapabilityTypeMap",
+      "description": "能力类型映射表（模块增强入口）。\n各包通过 TypeScript module augmentation 扩展此映射，实现编译期的能力类型安全。\n扩展此接口，实现编译期的能力类型安全。"
+    },
+    "CapabilityContext": {
+      "type": "object",
+      "title": "CapabilityContext",
+      "description": "能力树节点：持有本地能力 Map，以及指向父节点的可选链。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "parent": {
+          "$ref": "#/$defs/CapabilityContext"
+        },
+        "capabilities": {
+          "type": "object",
+          "title": "Map<CapabilityName, unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "CapabilityReader": {
       "kind": "CapabilityReader",
@@ -273,60 +327,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.304Z",
-  "$defs": {
-    "CapabilityReader": {
-      "type": "object",
-      "title": "CapabilityReader",
-      "description": "能力值读取器：把运行时 unknown 显式校验为能力类型。"
-    },
-    "CapabilityKey": {
-      "type": "object",
-      "title": "CapabilityKey",
-      "description": "带运行时校验的能力键。",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "token": true
-      }
-    },
-    "CapabilityName": {
-      "type": "object",
-      "title": "CapabilityName",
-      "description": "未具体化类型的能力名（用于 Map 的 key）。"
-    },
-    "SparkCapabilityConsumer": {
-      "type": "object",
-      "title": "SparkCapabilityConsumer",
-      "description": "能力消费函数签名：给定键返回实现或 null。"
-    },
-    "CapabilityTypeMap": {
-      "type": "object",
-      "title": "CapabilityTypeMap",
-      "description": "能力类型映射表（模块增强入口）。\n各包通过 TypeScript module augmentation 扩展此映射，实现编译期的能力类型安全。\n扩展此接口，实现编译期的能力类型安全。"
-    },
-    "CapabilityContext": {
-      "type": "object",
-      "title": "CapabilityContext",
-      "description": "能力树节点：持有本地能力 Map，以及指向父节点的可选链。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "parent": {
-          "$ref": "#/$defs/CapabilityContext"
-        },
-        "capabilities": {
-          "type": "object",
-          "title": "Map<CapabilityName, unknown>"
-        }
-      }
     }
   }
 }

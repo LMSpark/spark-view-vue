@@ -20,6 +20,73 @@
     "ResolvePageDesignPlanningContextOptions",
     "EnsurePageDesignBusinessOptions"
   ],
+  "generatedAt": "2026-06-13T23:11:15.498Z",
+  "$defs": {
+    "PageDesignRunInput": {
+      "type": "object",
+      "title": "PageDesignRunInput",
+      "description": "Page Design Run Input 的输入数据。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "effectiveDescription": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "planningTitle": {
+          "type": "string"
+        },
+        "planningPath": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "object",
+          "title": "PageDesignRunMode"
+        },
+        "allowedOperations": {
+          "type": "object",
+          "title": "PageDesignAllowedOperations"
+        },
+        "preserveExistingInteractions": {
+          "type": "boolean"
+        },
+        "strictImplGate": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ResolvePageDesignPlanningContextOptions": {
+      "type": "object",
+      "title": "ResolvePageDesignPlanningContextOptions",
+      "description": "Resolve Page Design Planning Context Options 的调用配置。",
+      "properties": {
+        "fallbackDescription": {
+          "type": "string"
+        }
+      }
+    },
+    "EnsurePageDesignBusinessOptions": {
+      "type": "object",
+      "title": "EnsurePageDesignBusinessOptions",
+      "description": "Ensure Page Design Business Options 的调用配置。",
+      "properties": {
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        },
+        "knowledge": {
+          "type": "object",
+          "title": "ClassModelKnowledgeProvider"
+        }
+      }
+    }
+  },
   "models": {
     "PageDesignRunInput": {
       "kind": "PageDesignRunInput",
@@ -221,73 +288,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.451Z",
-  "$defs": {
-    "PageDesignRunInput": {
-      "type": "object",
-      "title": "PageDesignRunInput",
-      "description": "Page Design Run Input 的输入数据。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "effectiveDescription": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "planningTitle": {
-          "type": "string"
-        },
-        "planningPath": {
-          "type": "string"
-        },
-        "mode": {
-          "type": "object",
-          "title": "PageDesignRunMode"
-        },
-        "allowedOperations": {
-          "type": "object",
-          "title": "PageDesignAllowedOperations"
-        },
-        "preserveExistingInteractions": {
-          "type": "boolean"
-        },
-        "strictImplGate": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ResolvePageDesignPlanningContextOptions": {
-      "type": "object",
-      "title": "ResolvePageDesignPlanningContextOptions",
-      "description": "Resolve Page Design Planning Context Options 的调用配置。",
-      "properties": {
-        "fallbackDescription": {
-          "type": "string"
-        }
-      }
-    },
-    "EnsurePageDesignBusinessOptions": {
-      "type": "object",
-      "title": "EnsurePageDesignBusinessOptions",
-      "description": "Ensure Page Design Business Options 的调用配置。",
-      "properties": {
-        "host": {
-          "type": "object",
-          "title": "AiAgentHost"
-        },
-        "knowledge": {
-          "type": "object",
-          "title": "ClassModelKnowledgeProvider"
-        }
-      }
     }
   }
 }

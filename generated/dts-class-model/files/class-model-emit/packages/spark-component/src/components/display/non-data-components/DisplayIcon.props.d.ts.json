@@ -21,6 +21,32 @@
   "symbols": [
     "RDisplayIconProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.508Z",
+  "$defs": {
+    "RDisplayIconProps": {
+      "type": "object",
+      "title": "RDisplayIconProps",
+      "description": "RDisplay Icon Props 的属性契约。",
+      "properties": {
+        "icon": {
+          "type": "string"
+        },
+        "iconSize": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RDisplayIconProps": {
       "kind": "RDisplayIconProps",
@@ -87,32 +113,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.436Z",
-  "$defs": {
-    "RDisplayIconProps": {
-      "type": "object",
-      "title": "RDisplayIconProps",
-      "description": "RDisplay Icon Props 的属性契约。",
-      "properties": {
-        "icon": {
-          "type": "string"
-        },
-        "iconSize": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "color": {
-          "type": "string"
-        }
-      }
     }
   }
 }

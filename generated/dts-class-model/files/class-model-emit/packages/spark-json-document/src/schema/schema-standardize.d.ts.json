@@ -18,6 +18,76 @@
     "StandardJsonSchema",
     "StandardJsonSchemaObject"
   ],
+  "generatedAt": "2026-06-11T12:38:13.616Z",
+  "$defs": {
+    "StandardJsonSchema": {
+      "type": "object",
+      "title": "StandardJsonSchema",
+      "description": "Standard Json Schema 的语义模型。"
+    },
+    "StandardJsonSchemaObject": {
+      "type": "object",
+      "title": "StandardJsonSchemaObject",
+      "description": "Standard Json Schema Object 的语义模型。",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "title": "Readonly<Record<string, StandardJsonSchema>>"
+        },
+        "required": {
+          "type": "array"
+        },
+        "items": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "prefixItems": {
+          "type": "array"
+        },
+        "additionalProperties": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "enum": {
+          "type": "array"
+        },
+        "const": true,
+        "anyOf": {
+          "type": "array"
+        },
+        "oneOf": {
+          "type": "array"
+        },
+        "allOf": {
+          "type": "array"
+        },
+        "not": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, StandardJsonSchema>>"
+        }
+      }
+    }
+  },
   "models": {
     "StandardJsonSchema": {
       "kind": "StandardJsonSchema",
@@ -211,76 +281,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.137Z",
-  "$defs": {
-    "StandardJsonSchema": {
-      "type": "object",
-      "title": "StandardJsonSchema",
-      "description": "Standard Json Schema 的语义模型。"
-    },
-    "StandardJsonSchemaObject": {
-      "type": "object",
-      "title": "StandardJsonSchemaObject",
-      "description": "Standard Json Schema Object 的语义模型。",
-      "properties": {
-        "$ref": {
-          "type": "string"
-        },
-        "type": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array"
-            }
-          ]
-        },
-        "properties": {
-          "type": "object",
-          "title": "Readonly<Record<string, StandardJsonSchema>>"
-        },
-        "required": {
-          "type": "array"
-        },
-        "items": {
-          "$ref": "#/$defs/StandardJsonSchema"
-        },
-        "prefixItems": {
-          "type": "array"
-        },
-        "additionalProperties": {
-          "$ref": "#/$defs/StandardJsonSchema"
-        },
-        "enum": {
-          "type": "array"
-        },
-        "const": true,
-        "anyOf": {
-          "type": "array"
-        },
-        "oneOf": {
-          "type": "array"
-        },
-        "allOf": {
-          "type": "array"
-        },
-        "not": {
-          "$ref": "#/$defs/StandardJsonSchema"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "$defs": {
-          "type": "object",
-          "title": "Readonly<Record<string, StandardJsonSchema>>"
-        }
-      }
     }
   }
 }

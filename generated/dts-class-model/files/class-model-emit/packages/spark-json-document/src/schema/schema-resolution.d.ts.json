@@ -16,6 +16,31 @@
   "symbols": [
     "JsonSchemaInfo"
   ],
+  "generatedAt": "2026-06-11T12:48:51.036Z",
+  "$defs": {
+    "JsonSchemaInfo": {
+      "type": "object",
+      "title": "JsonSchemaInfo",
+      "description": "Schema 路径解析结果",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "enumValues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
   "models": {
     "JsonSchemaInfo": {
       "kind": "JsonSchemaInfo",
@@ -71,31 +96,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.134Z",
-  "$defs": {
-    "JsonSchemaInfo": {
-      "type": "object",
-      "title": "JsonSchemaInfo",
-      "description": "Schema 路径解析结果",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "required": {
-          "type": "boolean"
-        },
-        "enumValues": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
     }
   }
 }

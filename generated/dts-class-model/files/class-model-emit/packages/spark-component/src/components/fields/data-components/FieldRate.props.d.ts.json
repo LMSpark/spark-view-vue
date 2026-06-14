@@ -21,6 +21,19 @@
   "symbols": [
     "RRateProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.569Z",
+  "$defs": {
+    "RRateProps": {
+      "type": "object",
+      "title": "RRateProps",
+      "description": "RRate Props 的属性契约。",
+      "properties": {
+        "allowHalf": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RRateProps": {
       "kind": "RRateProps",
@@ -67,19 +80,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.563Z",
-  "$defs": {
-    "RRateProps": {
-      "type": "object",
-      "title": "RRateProps",
-      "description": "RRate Props 的属性契约。",
-      "properties": {
-        "allowHalf": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,22 @@
   "symbols": [
     "CssScopeOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.987Z",
+  "$defs": {
+    "CssScopeOptions": {
+      "type": "object",
+      "title": "CssScopeOptions",
+      "description": "CSS 作用域选项",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "css": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "CssScopeOptions": {
       "kind": "CssScopeOptions",
@@ -50,22 +66,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.738Z",
-  "$defs": {
-    "CssScopeOptions": {
-      "type": "object",
-      "title": "CssScopeOptions",
-      "description": "CSS 作用域选项",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "css": {
-          "type": "string"
-        }
-      }
     }
   }
 }

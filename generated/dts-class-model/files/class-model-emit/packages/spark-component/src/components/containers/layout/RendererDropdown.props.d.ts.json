@@ -23,6 +23,88 @@
     "DropdownItem",
     "RDropdownProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.432Z",
+  "$defs": {
+    "DropdownItem": {
+      "type": "object",
+      "title": "DropdownItem",
+      "description": "Dropdown Item 的语义模型。",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "divided": {
+          "type": "boolean"
+        },
+        "icon": {
+          "type": "string"
+        }
+      }
+    },
+    "RDropdownProps": {
+      "type": "object",
+      "title": "RDropdownProps",
+      "description": "RDropdown Props 的属性契约。",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DropdownItem"
+          }
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "hover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "click"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "contextmenu"
+              ]
+            }
+          ]
+        },
+        "hideOnClick": {
+          "type": "boolean"
+        },
+        "showTimeout": {
+          "type": "number"
+        },
+        "hideTimeout": {
+          "type": "number"
+        },
+        "splitButton": {
+          "type": "boolean"
+        },
+        "maxHeight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "DropdownItem": {
       "kind": "DropdownItem",
@@ -218,88 +300,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.253Z",
-  "$defs": {
-    "DropdownItem": {
-      "type": "object",
-      "title": "DropdownItem",
-      "description": "Dropdown Item 的语义模型。",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "command": {
-          "type": "string"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "divided": {
-          "type": "boolean"
-        },
-        "icon": {
-          "type": "string"
-        }
-      }
-    },
-    "RDropdownProps": {
-      "type": "object",
-      "title": "RDropdownProps",
-      "description": "RDropdown Props 的属性契约。",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DropdownItem"
-          }
-        },
-        "trigger": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "hover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "click"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "contextmenu"
-              ]
-            }
-          ]
-        },
-        "hideOnClick": {
-          "type": "boolean"
-        },
-        "showTimeout": {
-          "type": "number"
-        },
-        "hideTimeout": {
-          "type": "number"
-        },
-        "splitButton": {
-          "type": "boolean"
-        },
-        "maxHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        }
-      }
     }
   }
 }

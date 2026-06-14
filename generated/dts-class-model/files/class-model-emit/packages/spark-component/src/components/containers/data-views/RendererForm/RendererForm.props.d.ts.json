@@ -21,6 +21,88 @@
   "symbols": [
     "RFormProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.384Z",
+  "$defs": {
+    "RFormProps": {
+      "type": "object",
+      "title": "RFormProps",
+      "description": "r-form 组件公开属性接口。\n命名规范：组件 type `r-form` → 接口名 `RFormProps`。",
+      "properties": {
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "contextDataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "contextDataField": {
+          "type": "string"
+        },
+        "autoColumns": {
+          "type": "boolean"
+        },
+        "labelWidth": {
+          "type": "string"
+        },
+        "formProps": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "RFormProps": {
       "kind": "RFormProps",
@@ -177,88 +259,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.078Z",
-  "$defs": {
-    "RFormProps": {
-      "type": "object",
-      "title": "RFormProps",
-      "description": "r-form 组件公开属性接口。\n命名规范：组件 type `r-form` → 接口名 `RFormProps`。",
-      "properties": {
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "contextDataMember": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataMember"
-            },
-            {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          ]
-        },
-        "contextDataField": {
-          "type": "string"
-        },
-        "autoColumns": {
-          "type": "boolean"
-        },
-        "labelWidth": {
-          "type": "string"
-        },
-        "formProps": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
     }
   }
 }

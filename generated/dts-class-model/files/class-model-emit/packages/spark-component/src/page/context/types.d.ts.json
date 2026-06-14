@@ -18,6 +18,43 @@
     "PageComponentAccessApi",
     "PageContext"
   ],
+  "generatedAt": "2026-06-11T12:48:50.984Z",
+  "$defs": {
+    "PageComponentAccessApi": {
+      "type": "object",
+      "title": "PageComponentAccessApi",
+      "description": "页面脚本组件访问 API（由渲染器根节点注入）"
+    },
+    "PageContext": {
+      "type": "object",
+      "title": "PageContext",
+      "description": "页面脚本运行时上下文。\n继承 `ScriptContext`（spark-project-model，框架无关契约），\n在此基础上添加 spark-component 层具体注入字段：\n- `$dataSet` — DataSet 实例（具体类型）\n- `$components` — 覆盖为更完整的 `PageComponentAccessApi`\n- `SparkData` — 数据工具命名空间\n- `h` — 渲染函数（Render* 专用）\n- Timer API — 沙箱白名单",
+      "properties": {
+        "$dataSet": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataSetContract"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "$components": {
+          "$ref": "#/$defs/PageComponentAccessApi"
+        },
+        "SparkData": {
+          "type": "object",
+          "title": "typeof SparkData"
+        },
+        "h": {
+          "type": "object",
+          "title": "typeof h"
+        }
+      }
+    }
+  },
   "models": {
     "PageComponentAccessApi": {
       "kind": "PageComponentAccessApi",
@@ -466,43 +503,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.736Z",
-  "$defs": {
-    "PageComponentAccessApi": {
-      "type": "object",
-      "title": "PageComponentAccessApi",
-      "description": "页面脚本组件访问 API（由渲染器根节点注入）"
-    },
-    "PageContext": {
-      "type": "object",
-      "title": "PageContext",
-      "description": "页面脚本运行时上下文。\n继承 `ScriptContext`（spark-project-model，框架无关契约），\n在此基础上添加 spark-component 层具体注入字段：\n- `$dataSet` — DataSet 实例（具体类型）\n- `$components` — 覆盖为更完整的 `PageComponentAccessApi`\n- `SparkData` — 数据工具命名空间\n- `h` — 渲染函数（Render* 专用）\n- Timer API — 沙箱白名单",
-      "properties": {
-        "$dataSet": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataSetContract"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "$components": {
-          "$ref": "#/$defs/PageComponentAccessApi"
-        },
-        "SparkData": {
-          "type": "object",
-          "title": "typeof SparkData"
-        },
-        "h": {
-          "type": "object",
-          "title": "typeof h"
-        }
-      }
     }
   }
 }

@@ -21,6 +21,122 @@
     "UploadBrowseFieldStateOptions",
     "FileBrowserFieldStateOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.536Z",
+  "$defs": {
+    "UploadBrowseFieldStateOptions": {
+      "type": "object",
+      "title": "UploadBrowseFieldStateOptions",
+      "description": "同时支持本地浏览和远端上传的文件字段运行态输入。",
+      "properties": {
+        "displayLabel": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "fieldName": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "currentRawStringValue": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "isCurrentFieldEditable": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "hasBrowseCapability": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "hasUploadCapability": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "primaryAction": {
+          "type": "object",
+          "title": "ValueRef<'upload' | 'browse'>"
+        },
+        "buttonText": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>"
+        },
+        "readonlyButtonText": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>"
+        },
+        "canClear": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
+        },
+        "action": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFileUploadActionProps['action']>>"
+        },
+        "accept": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>"
+        },
+        "multiple": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>"
+        },
+        "separator": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
+        },
+        "browseWritesValue": {
+          "type": "boolean"
+        },
+        "getBrowseValue": {
+          "type": "object",
+          "title": "(file: PageSelectedFile) => string"
+        },
+        "getUploadValue": {
+          "type": "object",
+          "title": "(file: PageUploadedFile) => string"
+        }
+      }
+    },
+    "FileBrowserFieldStateOptions": {
+      "type": "object",
+      "title": "FileBrowserFieldStateOptions",
+      "description": "只浏览本地文件、不执行上传的文件字段运行态输入。",
+      "properties": {
+        "displayLabel": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "currentRawStringValue": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "isCurrentFieldEditable": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "hasBrowseCapability": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "accept": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>"
+        },
+        "multiple": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>"
+        },
+        "separator": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
+        },
+        "canClear": {
+          "type": "object",
+          "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
+        }
+      }
+    }
+  },
   "models": {
     "UploadBrowseFieldStateOptions": {
       "kind": "UploadBrowseFieldStateOptions",
@@ -522,122 +638,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.515Z",
-  "$defs": {
-    "UploadBrowseFieldStateOptions": {
-      "type": "object",
-      "title": "UploadBrowseFieldStateOptions",
-      "description": "同时支持本地浏览和远端上传的文件字段运行态输入。",
-      "properties": {
-        "displayLabel": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "fieldName": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "currentRawStringValue": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "isCurrentFieldEditable": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "hasBrowseCapability": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "hasUploadCapability": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "primaryAction": {
-          "type": "object",
-          "title": "ValueRef<'upload' | 'browse'>"
-        },
-        "buttonText": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>"
-        },
-        "readonlyButtonText": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>"
-        },
-        "canClear": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
-        },
-        "action": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFileUploadActionProps['action']>>"
-        },
-        "accept": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>"
-        },
-        "multiple": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>"
-        },
-        "separator": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
-        },
-        "browseWritesValue": {
-          "type": "boolean"
-        },
-        "getBrowseValue": {
-          "type": "object",
-          "title": "(file: PageSelectedFile) => string"
-        },
-        "getUploadValue": {
-          "type": "object",
-          "title": "(file: PageUploadedFile) => string"
-        }
-      }
-    },
-    "FileBrowserFieldStateOptions": {
-      "type": "object",
-      "title": "FileBrowserFieldStateOptions",
-      "description": "只浏览本地文件、不执行上传的文件字段运行态输入。",
-      "properties": {
-        "displayLabel": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "currentRawStringValue": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "isCurrentFieldEditable": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "hasBrowseCapability": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "accept": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>"
-        },
-        "multiple": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>"
-        },
-        "separator": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
-        },
-        "canClear": {
-          "type": "object",
-          "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
-        }
-      }
     }
   }
 }

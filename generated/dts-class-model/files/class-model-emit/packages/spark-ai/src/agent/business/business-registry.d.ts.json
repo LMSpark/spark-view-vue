@@ -16,6 +16,14 @@
   "symbols": [
     "AiAgentRegistry"
   ],
+  "generatedAt": "2026-06-11T14:05:05.918Z",
+  "$defs": {
+    "AiAgentRegistry": {
+      "type": "object",
+      "title": "AiAgentRegistry",
+      "description": "Host 内部业务注册表，按 moduleId 保存 AI 业务定义并保护注册期不变量。"
+    }
+  },
   "models": {
     "AiAgentRegistry": {
       "kind": "AiAgentRegistry",
@@ -170,14 +178,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.436Z",
-  "$defs": {
-    "AiAgentRegistry": {
-      "type": "object",
-      "title": "AiAgentRegistry",
-      "description": "Host 内部业务注册表，按 moduleId 保存 AI 业务定义并保护注册期不变量。"
     }
   }
 }

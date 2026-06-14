@@ -16,6 +16,28 @@
   "symbols": [
     "SessionStreamViewProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.373Z",
+  "$defs": {
+    "SessionStreamViewProps": {
+      "type": "object",
+      "title": "SessionStreamViewProps",
+      "description": "Session Stream View Props 的属性契约。",
+      "properties": {
+        "entries": {
+          "type": "array"
+        },
+        "isStreaming": {
+          "type": "boolean"
+        },
+        "isReasoning": {
+          "type": "boolean"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "SessionStreamViewProps": {
       "kind": "SessionStreamViewProps",
@@ -76,28 +98,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.052Z",
-  "$defs": {
-    "SessionStreamViewProps": {
-      "type": "object",
-      "title": "SessionStreamViewProps",
-      "description": "Session Stream View Props 的属性契约。",
-      "properties": {
-        "entries": {
-          "type": "array"
-        },
-        "isStreaming": {
-          "type": "boolean"
-        },
-        "isReasoning": {
-          "type": "boolean"
-        },
-        "emptyText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,28 @@
   "symbols": [
     "ActionExecutionOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.978Z",
+  "$defs": {
+    "ActionExecutionOptions": {
+      "type": "object",
+      "title": "ActionExecutionOptions",
+      "description": "Action Execution Options 的调用配置。",
+      "properties": {
+        "eventArgs": {
+          "type": "array",
+          "items": true
+        },
+        "control": {
+          "type": "object",
+          "title": "ActionExecutionControl"
+        },
+        "scope": {
+          "type": "object",
+          "title": "ActionExecutionScope"
+        }
+      }
+    }
+  },
   "models": {
     "ActionExecutionOptions": {
       "kind": "ActionExecutionOptions",
@@ -62,28 +84,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.703Z",
-  "$defs": {
-    "ActionExecutionOptions": {
-      "type": "object",
-      "title": "ActionExecutionOptions",
-      "description": "Action Execution Options 的调用配置。",
-      "properties": {
-        "eventArgs": {
-          "type": "array",
-          "items": true
-        },
-        "control": {
-          "type": "object",
-          "title": "ActionExecutionControl"
-        },
-        "scope": {
-          "type": "object",
-          "title": "ActionExecutionScope"
-        }
-      }
     }
   }
 }

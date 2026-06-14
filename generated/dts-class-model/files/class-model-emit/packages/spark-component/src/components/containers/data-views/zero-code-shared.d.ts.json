@@ -19,6 +19,25 @@
   "symbols": [
     "CreateContainerCrudContextOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.411Z",
+  "$defs": {
+    "CreateContainerCrudContextOptions": {
+      "type": "object",
+      "title": "CreateContainerCrudContextOptions",
+      "description": "Create Container Crud Context Options 的调用配置。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "eventDefaults": true
+      }
+    }
+  },
   "models": {
     "CreateContainerCrudContextOptions": {
       "kind": "CreateContainerCrudContextOptions",
@@ -65,25 +84,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.210Z",
-  "$defs": {
-    "CreateContainerCrudContextOptions": {
-      "type": "object",
-      "title": "CreateContainerCrudContextOptions",
-      "description": "Create Container Crud Context Options 的调用配置。",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
-        },
-        "eventDefaults": true
-      }
     }
   }
 }

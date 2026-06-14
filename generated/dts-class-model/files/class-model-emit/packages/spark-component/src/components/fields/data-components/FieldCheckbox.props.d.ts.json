@@ -21,6 +21,25 @@
   "symbols": [
     "RCheckboxProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.545Z",
+  "$defs": {
+    "RCheckboxProps": {
+      "type": "object",
+      "title": "RCheckboxProps",
+      "description": "RCheckbox Props 的属性契约。",
+      "properties": {
+        "checkedText": {
+          "type": "string"
+        },
+        "uncheckedText": {
+          "type": "string"
+        },
+        "checkboxText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RCheckboxProps": {
       "kind": "RCheckboxProps",
@@ -85,25 +104,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.535Z",
-  "$defs": {
-    "RCheckboxProps": {
-      "type": "object",
-      "title": "RCheckboxProps",
-      "description": "RCheckbox Props 的属性契约。",
-      "properties": {
-        "checkedText": {
-          "type": "string"
-        },
-        "uncheckedText": {
-          "type": "string"
-        },
-        "checkboxText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

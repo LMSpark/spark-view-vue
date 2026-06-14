@@ -16,6 +16,19 @@
   "symbols": [
     "UseCssScopeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.604Z",
+  "$defs": {
+    "UseCssScopeOptions": {
+      "type": "object",
+      "title": "UseCssScopeOptions",
+      "description": "CSS 作用域 Composable",
+      "properties": {
+        "enableScope": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "UseCssScopeOptions": {
       "kind": "UseCssScopeOptions",
@@ -41,19 +54,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.742Z",
-  "$defs": {
-    "UseCssScopeOptions": {
-      "type": "object",
-      "title": "UseCssScopeOptions",
-      "description": "CSS 作用域 Composable",
-      "properties": {
-        "enableScope": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

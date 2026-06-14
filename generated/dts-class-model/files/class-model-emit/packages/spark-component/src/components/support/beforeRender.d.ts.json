@@ -23,6 +23,87 @@
     "BeforeRenderState",
     "MergeBeforeRenderOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.599Z",
+  "$defs": {
+    "BeforeRenderContext": {
+      "type": "object",
+      "title": "BeforeRenderContext",
+      "description": "onBeforeRender 同步钩子接收到的节点渲染上下文。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "children": {
+          "type": "object",
+          "title": "SparkNodeChildren"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data": true,
+        "index": {
+          "type": "number"
+        },
+        "dataSource": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modelPermission": {
+          "type": "object",
+          "title": "ModelPermission"
+        },
+        "host": {
+          "type": "object"
+        }
+      }
+    },
+    "BeforeRenderState": {
+      "type": "object",
+      "title": "BeforeRenderState",
+      "description": "onBeforeRender 解析后的渲染决策。",
+      "properties": {
+        "visible": {
+          "type": "boolean"
+        },
+        "propsPatch": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "MergeBeforeRenderOptions": {
+      "type": "object",
+      "title": "MergeBeforeRenderOptions",
+      "description": "合并 beforeRender 补丁时的控制选项。",
+      "properties": {
+        "markResolved": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "BeforeRenderContext": {
       "kind": "BeforeRenderContext",
@@ -215,87 +296,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.683Z",
-  "$defs": {
-    "BeforeRenderContext": {
-      "type": "object",
-      "title": "BeforeRenderContext",
-      "description": "onBeforeRender 同步钩子接收到的节点渲染上下文。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "children": {
-          "type": "object",
-          "title": "SparkNodeChildren"
-        },
-        "row": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "data": true,
-        "index": {
-          "type": "number"
-        },
-        "dataSource": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataView"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "modelPermission": {
-          "type": "object",
-          "title": "ModelPermission"
-        },
-        "host": {
-          "type": "object"
-        }
-      }
-    },
-    "BeforeRenderState": {
-      "type": "object",
-      "title": "BeforeRenderState",
-      "description": "onBeforeRender 解析后的渲染决策。",
-      "properties": {
-        "visible": {
-          "type": "boolean"
-        },
-        "propsPatch": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
-    },
-    "MergeBeforeRenderOptions": {
-      "type": "object",
-      "title": "MergeBeforeRenderOptions",
-      "description": "合并 beforeRender 补丁时的控制选项。",
-      "properties": {
-        "markResolved": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

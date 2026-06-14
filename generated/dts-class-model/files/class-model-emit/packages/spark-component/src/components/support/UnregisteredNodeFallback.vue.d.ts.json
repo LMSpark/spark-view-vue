@@ -20,6 +20,26 @@
   "symbols": [
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.600Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "未注册节点兜底渲染属性。",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "Props": {
       "kind": "Props",
@@ -68,26 +88,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.685Z",
-  "$defs": {
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "未注册节点兜底渲染属性。",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      }
     }
   }
 }

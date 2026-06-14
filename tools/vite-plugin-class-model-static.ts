@@ -5,6 +5,7 @@ import type { Plugin } from 'vite'
 
 const requireModule = createRequire(import.meta.url)
 const { assertClassModelBundleComplete } = requireModule('../scripts/lib/class-model-bundle-assert.mjs')
+const { buildDebugBreak } = requireModule('../scripts/lib/build-debug.mjs')
 
 /** HTTP 前缀；与 src/class-model-artifacts/artifact-urls.ts 中 DTS_CLASS_MODEL_MANIFEST_PATH 对齐。 */
 export const CLASS_MODEL_HTTP_PREFIX = '/dts-class-model'
@@ -35,9 +36,12 @@ export function classModelStaticPlugin(options: ClassModelStaticPluginOptions = 
     },
     closeBundle() {
       const sourceDir = resolve(repoRoot, options.generatedDir ?? CLASS_MODEL_GENERATED_DIR)
+      buildDebugBreak('vite-plugin-class-model:closeBundle-before-assert', { sourceDir, distDir })
       assertClassModelBundleComplete(sourceDir)
       const targetDir = join(distDir, httpPrefix.slice(1))
+      buildDebugBreak('vite-plugin-class-model:closeBundle-before-cpSync', { sourceDir, targetDir })
       cpSync(sourceDir, targetDir, { recursive: true })
+      buildDebugBreak('vite-plugin-class-model:closeBundle-complete', { targetDir })
     },
   }
 }

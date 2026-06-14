@@ -38,6 +38,290 @@
     "PageRouterService",
     "PageRuntimeServicesCapability"
   ],
+  "generatedAt": "2026-06-11T12:48:50.999Z",
+  "$defs": {
+    "PageMessageType": {
+      "type": "object",
+      "title": "PageMessageType",
+      "description": "消息类型：成功 / 错误 / 警告 / 信息"
+    },
+    "PageDialogResult": {
+      "type": "object",
+      "title": "PageDialogResult",
+      "description": "对话框操作结果：确认 / 取消 / 关闭"
+    },
+    "PageDialogOptions": {
+      "type": "object",
+      "title": "PageDialogOptions",
+      "description": "对话框配置选项",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "confirmText": {
+          "type": "string"
+        },
+        "cancelText": {
+          "type": "string"
+        },
+        "showCancelButton": {
+          "type": "boolean"
+        },
+        "dangerouslyUseHTMLString": {
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/PageMessageType"
+        },
+        "width": {
+          "type": "string"
+        }
+      }
+    },
+    "PageBrowseFilesOptions": {
+      "type": "object",
+      "title": "PageBrowseFilesOptions",
+      "description": "文件浏览配置",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "accept": {
+          "type": "string"
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "currentValue": {
+          "type": "string"
+        }
+      }
+    },
+    "PageSelectedFile": {
+      "type": "object",
+      "title": "PageSelectedFile",
+      "description": "已选择的文件信息",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "size": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "lastModified": {
+          "type": "number"
+        },
+        "file": {
+          "type": "object",
+          "title": "File"
+        }
+      }
+    },
+    "PageUploadFilesOptions": {
+      "type": "object",
+      "title": "PageUploadFilesOptions",
+      "description": "文件上传配置（在浏览选项基础上增加上传端点信息）",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "POST"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "PUT"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "PATCH"
+              ]
+            }
+          ]
+        },
+        "fieldName": {
+          "type": "string"
+        },
+        "headers": {
+          "type": "object",
+          "title": "Record<string, string>"
+        },
+        "data": {
+          "type": "object",
+          "title": "Record<string, string | Blob>"
+        },
+        "withCredentials": {
+          "type": "boolean"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "File"
+          }
+        }
+      }
+    },
+    "PageUploadedFile": {
+      "type": "object",
+      "title": "PageUploadedFile",
+      "description": "已上传的文件：在选择文件基础上增加服务端响应",
+      "properties": {
+        "response": true,
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "PageSelectorOption": {
+      "type": "object",
+      "title": "PageSelectorOption",
+      "description": "选择器候选项",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "raw": true
+      }
+    },
+    "PageSelectEntitiesOptions": {
+      "type": "object",
+      "title": "PageSelectEntitiesOptions",
+      "description": "实体选择器配置",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "entityName": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "searchable": {
+          "type": "boolean"
+        },
+        "confirmText": {
+          "type": "string"
+        },
+        "cancelText": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        },
+        "currentValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PageSelectorOption"
+          }
+        }
+      }
+    },
+    "PageServiceCapability": {
+      "type": "object",
+      "title": "PageServiceCapability",
+      "description": "页面服务：消息提示、对话框、文件操作、实体选择、导航等。\n所有方法由宿主（如 Vue Router、Element Plus 等）实现，\n页面通过 ScriptContext 调用。"
+    },
+    "PageRouterService": {
+      "type": "object",
+      "title": "PageRouterService",
+      "description": "路由服务：SPA 内的 push / replace / back 操作",
+      "properties": {
+        "currentRoute": true
+      }
+    },
+    "PageRuntimeServicesCapability": {
+      "type": "object",
+      "title": "PageRuntimeServicesCapability",
+      "description": "页面运行时能力集合。\n由宿主环境提供，ScriptContext 中通过 capability 查询获取。\n各字段均为可选，由消费方在使用前判断是否存在。",
+      "properties": {
+        "router": {
+          "$ref": "#/$defs/PageRouterService"
+        },
+        "logger": {
+          "type": "object",
+          "title": "LoggerApi"
+        },
+        "tenant": {
+          "type": "object"
+        },
+        "authService": true,
+        "pageService": {
+          "type": "object",
+          "title": "Partial<PageServiceCapability>"
+        }
+      }
+    }
+  },
   "models": {
     "PageMessageType": {
       "kind": "PageMessageType",
@@ -1397,290 +1681,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.787Z",
-  "$defs": {
-    "PageMessageType": {
-      "type": "object",
-      "title": "PageMessageType",
-      "description": "消息类型：成功 / 错误 / 警告 / 信息"
-    },
-    "PageDialogResult": {
-      "type": "object",
-      "title": "PageDialogResult",
-      "description": "对话框操作结果：确认 / 取消 / 关闭"
-    },
-    "PageDialogOptions": {
-      "type": "object",
-      "title": "PageDialogOptions",
-      "description": "对话框配置选项",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "content": {
-          "type": "string"
-        },
-        "confirmText": {
-          "type": "string"
-        },
-        "cancelText": {
-          "type": "string"
-        },
-        "showCancelButton": {
-          "type": "boolean"
-        },
-        "dangerouslyUseHTMLString": {
-          "type": "boolean"
-        },
-        "type": {
-          "$ref": "#/$defs/PageMessageType"
-        },
-        "width": {
-          "type": "string"
-        }
-      }
-    },
-    "PageBrowseFilesOptions": {
-      "type": "object",
-      "title": "PageBrowseFilesOptions",
-      "description": "文件浏览配置",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "accept": {
-          "type": "string"
-        },
-        "multiple": {
-          "type": "boolean"
-        },
-        "currentValue": {
-          "type": "string"
-        }
-      }
-    },
-    "PageSelectedFile": {
-      "type": "object",
-      "title": "PageSelectedFile",
-      "description": "已选择的文件信息",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "size": {
-          "type": "number"
-        },
-        "type": {
-          "type": "string"
-        },
-        "lastModified": {
-          "type": "number"
-        },
-        "file": {
-          "type": "object",
-          "title": "File"
-        }
-      }
-    },
-    "PageUploadFilesOptions": {
-      "type": "object",
-      "title": "PageUploadFilesOptions",
-      "description": "文件上传配置（在浏览选项基础上增加上传端点信息）",
-      "properties": {
-        "action": {
-          "type": "string"
-        },
-        "method": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "POST"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "PUT"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "PATCH"
-              ]
-            }
-          ]
-        },
-        "fieldName": {
-          "type": "string"
-        },
-        "headers": {
-          "type": "object",
-          "title": "Record<string, string>"
-        },
-        "data": {
-          "type": "object",
-          "title": "Record<string, string | Blob>"
-        },
-        "withCredentials": {
-          "type": "boolean"
-        },
-        "files": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "File"
-          }
-        }
-      }
-    },
-    "PageUploadedFile": {
-      "type": "object",
-      "title": "PageUploadedFile",
-      "description": "已上传的文件：在选择文件基础上增加服务端响应",
-      "properties": {
-        "response": true,
-        "url": {
-          "type": "string"
-        }
-      }
-    },
-    "PageSelectorOption": {
-      "type": "object",
-      "title": "PageSelectorOption",
-      "description": "选择器候选项",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "value": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        },
-        "description": {
-          "type": "string"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "raw": true
-      }
-    },
-    "PageSelectEntitiesOptions": {
-      "type": "object",
-      "title": "PageSelectEntitiesOptions",
-      "description": "实体选择器配置",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "entityName": {
-          "type": "string"
-        },
-        "placeholder": {
-          "type": "string"
-        },
-        "multiple": {
-          "type": "boolean"
-        },
-        "searchable": {
-          "type": "boolean"
-        },
-        "confirmText": {
-          "type": "string"
-        },
-        "cancelText": {
-          "type": "string"
-        },
-        "emptyText": {
-          "type": "string"
-        },
-        "currentValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "boolean"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "options": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PageSelectorOption"
-          }
-        }
-      }
-    },
-    "PageServiceCapability": {
-      "type": "object",
-      "title": "PageServiceCapability",
-      "description": "页面服务：消息提示、对话框、文件操作、实体选择、导航等。\n所有方法由宿主（如 Vue Router、Element Plus 等）实现，\n页面通过 ScriptContext 调用。"
-    },
-    "PageRouterService": {
-      "type": "object",
-      "title": "PageRouterService",
-      "description": "路由服务：SPA 内的 push / replace / back 操作",
-      "properties": {
-        "currentRoute": true
-      }
-    },
-    "PageRuntimeServicesCapability": {
-      "type": "object",
-      "title": "PageRuntimeServicesCapability",
-      "description": "页面运行时能力集合。\n由宿主环境提供，ScriptContext 中通过 capability 查询获取。\n各字段均为可选，由消费方在使用前判断是否存在。",
-      "properties": {
-        "router": {
-          "$ref": "#/$defs/PageRouterService"
-        },
-        "logger": {
-          "type": "object",
-          "title": "LoggerApi"
-        },
-        "tenant": {
-          "type": "object"
-        },
-        "authService": true,
-        "pageService": {
-          "type": "object",
-          "title": "Partial<PageServiceCapability>"
-        }
-      }
     }
   }
 }

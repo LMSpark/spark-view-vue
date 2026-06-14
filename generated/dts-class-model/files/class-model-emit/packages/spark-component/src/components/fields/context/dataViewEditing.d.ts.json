@@ -22,6 +22,52 @@
     "DataViewEditingSource",
     "DataViewEditingWriteInput"
   ],
+  "generatedAt": "2026-06-11T12:38:13.524Z",
+  "$defs": {
+    "DataViewEditingEventName": {
+      "type": "object",
+      "title": "DataViewEditingEventName",
+      "description": "Data View Editing Event Name 的语义模型。"
+    },
+    "DataViewEditingEvents": {
+      "type": "object",
+      "title": "DataViewEditingEvents",
+      "description": "Data View Editing Events 的语义模型。"
+    },
+    "DataViewEditingSource": {
+      "type": "object",
+      "title": "DataViewEditingSource",
+      "description": "Data View Editing Source 的语义模型。",
+      "properties": {
+        "events": {
+          "$ref": "#/$defs/DataViewEditingEvents"
+        }
+      }
+    },
+    "DataViewEditingWriteInput": {
+      "type": "object",
+      "title": "DataViewEditingWriteInput",
+      "description": "Data View Editing Write Input 的输入数据。",
+      "properties": {
+        "source": true,
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "value": true
+      }
+    }
+  },
   "models": {
     "DataViewEditingEventName": {
       "kind": "DataViewEditingEventName",
@@ -496,52 +542,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.472Z",
-  "$defs": {
-    "DataViewEditingEventName": {
-      "type": "object",
-      "title": "DataViewEditingEventName",
-      "description": "Data View Editing Event Name 的语义模型。"
-    },
-    "DataViewEditingEvents": {
-      "type": "object",
-      "title": "DataViewEditingEvents",
-      "description": "Data View Editing Events 的语义模型。"
-    },
-    "DataViewEditingSource": {
-      "type": "object",
-      "title": "DataViewEditingSource",
-      "description": "Data View Editing Source 的语义模型。",
-      "properties": {
-        "events": {
-          "$ref": "#/$defs/DataViewEditingEvents"
-        }
-      }
-    },
-    "DataViewEditingWriteInput": {
-      "type": "object",
-      "title": "DataViewEditingWriteInput",
-      "description": "Data View Editing Write Input 的输入数据。",
-      "properties": {
-        "source": true,
-        "row": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "field": {
-          "type": "string"
-        },
-        "value": true
-      }
     }
   }
 }

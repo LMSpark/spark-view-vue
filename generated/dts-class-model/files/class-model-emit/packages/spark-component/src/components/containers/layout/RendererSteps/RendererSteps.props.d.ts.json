@@ -21,6 +21,30 @@
   "symbols": [
     "RStepsProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.447Z",
+  "$defs": {
+    "RStepsProps": {
+      "type": "object",
+      "title": "RStepsProps",
+      "description": "RSteps Props 的属性契约。",
+      "properties": {
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "modelValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RStepsProps": {
       "kind": "RStepsProps",
@@ -145,30 +169,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.277Z",
-  "$defs": {
-    "RStepsProps": {
-      "type": "object",
-      "title": "RStepsProps",
-      "description": "RSteps Props 的属性契约。",
-      "properties": {
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "modelValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
     }
   }
 }

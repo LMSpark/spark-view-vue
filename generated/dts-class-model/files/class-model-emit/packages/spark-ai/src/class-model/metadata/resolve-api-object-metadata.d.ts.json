@@ -18,6 +18,28 @@
     "JsonSchemaObject",
     "ResolveRuntimeApiMetadataJsonOptions"
   ],
+  "generatedAt": "2026-06-11T22:43:46.877Z",
+  "$defs": {
+    "JsonSchemaObject": {
+      "type": "object",
+      "title": "JsonSchemaObject",
+      "description": "Json Schema Object 的语义模型。"
+    },
+    "ResolveRuntimeApiMetadataJsonOptions": {
+      "type": "object",
+      "title": "ResolveRuntimeApiMetadataJsonOptions",
+      "description": "Resolve Runtime API Metadata Json Options 的调用配置。",
+      "properties": {
+        "schemaDefs": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchemaObject>>"
+        },
+        "inlineSchemaRefs": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "JsonSchemaObject": {
       "kind": "JsonSchemaObject",
@@ -82,28 +104,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.875Z",
-  "$defs": {
-    "JsonSchemaObject": {
-      "type": "object",
-      "title": "JsonSchemaObject",
-      "description": "Json Schema Object 的语义模型。"
-    },
-    "ResolveRuntimeApiMetadataJsonOptions": {
-      "type": "object",
-      "title": "ResolveRuntimeApiMetadataJsonOptions",
-      "description": "Resolve Runtime API Metadata Json Options 的调用配置。",
-      "properties": {
-        "schemaDefs": {
-          "type": "object",
-          "title": "Readonly<Record<string, JsonSchemaObject>>"
-        },
-        "inlineSchemaRefs": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

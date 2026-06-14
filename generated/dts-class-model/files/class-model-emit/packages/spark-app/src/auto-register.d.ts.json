@@ -16,6 +16,22 @@
   "symbols": [
     "AutoRegisterOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.935Z",
+  "$defs": {
+    "AutoRegisterOptions": {
+      "type": "object",
+      "title": "AutoRegisterOptions",
+      "description": "通用的运行时组件自动注册工具\n此模块属于 spark-app 包，可在任意项目中直接安装使用，\n并支持通过参数配置 glob 模式与排除项。\n注意：spark-app 已明确依赖 spark-component，\n此处直接静态导入 Spark，避免无效动态导入告警。",
+      "properties": {
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
   "models": {
     "AutoRegisterOptions": {
       "kind": "AutoRegisterOptions",
@@ -44,22 +60,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.920Z",
-  "$defs": {
-    "AutoRegisterOptions": {
-      "type": "object",
-      "title": "AutoRegisterOptions",
-      "description": "通用的运行时组件自动注册工具\n此模块属于 spark-app 包，可在任意项目中直接安装使用，\n并支持通过参数配置 glob 模式与排除项。\n注意：spark-app 已明确依赖 spark-component，\n此处直接静态导入 Spark，避免无效动态导入告警。",
-      "properties": {
-        "exclude": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
     }
   }
 }

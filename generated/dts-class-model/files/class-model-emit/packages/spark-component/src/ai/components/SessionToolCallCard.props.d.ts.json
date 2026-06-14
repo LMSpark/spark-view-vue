@@ -16,6 +16,20 @@
   "symbols": [
     "SessionToolCallCardProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.374Z",
+  "$defs": {
+    "SessionToolCallCardProps": {
+      "type": "object",
+      "title": "SessionToolCallCardProps",
+      "description": "Session Tool Call Card Props 的属性契约。",
+      "properties": {
+        "toolCall": {
+          "type": "object",
+          "title": "ToolCallDisplayItem"
+        }
+      }
+    }
+  },
   "models": {
     "SessionToolCallCardProps": {
       "kind": "SessionToolCallCardProps",
@@ -50,20 +64,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.053Z",
-  "$defs": {
-    "SessionToolCallCardProps": {
-      "type": "object",
-      "title": "SessionToolCallCardProps",
-      "description": "Session Tool Call Card Props 的属性契约。",
-      "properties": {
-        "toolCall": {
-          "type": "object",
-          "title": "ToolCallDisplayItem"
-        }
-      }
     }
   }
 }

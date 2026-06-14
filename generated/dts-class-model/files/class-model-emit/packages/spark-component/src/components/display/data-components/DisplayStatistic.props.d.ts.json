@@ -21,6 +21,45 @@
   "symbols": [
     "RStatisticProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.488Z",
+  "$defs": {
+    "RStatisticProps": {
+      "type": "object",
+      "title": "RStatisticProps",
+      "description": "RStatistic Props 的属性契约。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "precision": {
+          "type": "number"
+        },
+        "decimalSeparator": {
+          "type": "string"
+        },
+        "groupSeparator": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "valueStyle": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RStatisticProps": {
       "kind": "RStatisticProps",
@@ -129,45 +168,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.408Z",
-  "$defs": {
-    "RStatisticProps": {
-      "type": "object",
-      "title": "RStatisticProps",
-      "description": "RStatistic Props 的属性契约。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "precision": {
-          "type": "number"
-        },
-        "decimalSeparator": {
-          "type": "string"
-        },
-        "groupSeparator": {
-          "type": "string"
-        },
-        "prefix": {
-          "type": "string"
-        },
-        "suffix": {
-          "type": "string"
-        },
-        "valueStyle": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Record<string, unknown>"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        }
-      }
     }
   }
 }

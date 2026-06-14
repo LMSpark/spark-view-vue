@@ -21,6 +21,73 @@
   "symbols": [
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.446Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "r-steps 内部步骤项属性，兼容步骤头部和步骤内容区。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        },
+        "gridColumns": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "header"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "content"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "Props": {
       "kind": "Props",
@@ -170,73 +237,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.276Z",
-  "$defs": {
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "r-steps 内部步骤项属性，兼容步骤头部和步骤内容区。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "bodyClass": {
-          "type": "string"
-        },
-        "gridColumns": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "gridAutoRows": {
-          "type": "string"
-        },
-        "gridGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "index": {
-          "type": "number"
-        },
-        "mode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "header"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "content"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

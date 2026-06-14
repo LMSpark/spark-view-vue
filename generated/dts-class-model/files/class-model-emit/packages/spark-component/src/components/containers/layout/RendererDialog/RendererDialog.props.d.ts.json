@@ -21,6 +21,33 @@
   "symbols": [
     "RDialogProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.426Z",
+  "$defs": {
+    "RDialogProps": {
+      "type": "object",
+      "title": "RDialogProps",
+      "description": "RDialog Props 的属性契约。",
+      "properties": {
+        "header": {
+          "type": "object",
+          "title": "RHeaderProps"
+        },
+        "footer": {
+          "type": "object",
+          "title": "RFooterProps"
+        },
+        "title": {
+          "type": "string"
+        },
+        "modelValue": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RDialogProps": {
       "kind": "RDialogProps",
@@ -110,33 +137,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.247Z",
-  "$defs": {
-    "RDialogProps": {
-      "type": "object",
-      "title": "RDialogProps",
-      "description": "RDialog Props 的属性契约。",
-      "properties": {
-        "header": {
-          "type": "object",
-          "title": "RHeaderProps"
-        },
-        "footer": {
-          "type": "object",
-          "title": "RFooterProps"
-        },
-        "title": {
-          "type": "string"
-        },
-        "modelValue": {
-          "type": "boolean"
-        },
-        "bodyClass": {
-          "type": "string"
-        }
-      }
     }
   }
 }

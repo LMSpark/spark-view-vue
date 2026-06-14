@@ -21,6 +21,19 @@
   "symbols": [
     "RNumberProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.566Z",
+  "$defs": {
+    "RNumberProps": {
+      "type": "object",
+      "title": "RNumberProps",
+      "description": "RNumber Props 的属性契约。",
+      "properties": {
+        "precision": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "RNumberProps": {
       "kind": "RNumberProps",
@@ -67,19 +80,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.560Z",
-  "$defs": {
-    "RNumberProps": {
-      "type": "object",
-      "title": "RNumberProps",
-      "description": "RNumber Props 的属性契约。",
-      "properties": {
-        "precision": {
-          "type": "number"
-        }
-      }
     }
   }
 }

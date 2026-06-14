@@ -20,6 +20,82 @@
     "FetchNestedInput",
     "TreeManager"
   ],
+  "generatedAt": "2026-06-11T12:48:51.024Z",
+  "$defs": {
+    "TreeManagerOptions": {
+      "type": "object",
+      "title": "TreeManagerOptions",
+      "description": "Tree Manager Options 的调用配置。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "TreeConfig"
+        },
+        "api": {
+          "type": "object",
+          "title": "TreeApi"
+        },
+        "initialNodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "FlatTreeNode"
+          }
+        },
+        "httpClient": {
+          "type": "object",
+          "title": "HttpClientBase"
+        }
+      }
+    },
+    "FetchNestedInput": {
+      "type": "object",
+      "title": "FetchNestedInput",
+      "description": "Fetch Nested Input 的输入数据。",
+      "properties": {
+        "rootId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "type": "number"
+        },
+        "depthLimit": {
+          "type": "number"
+        },
+        "treeMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "flat"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "nested"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "TreeManager": {
+      "type": "object",
+      "title": "TreeManager",
+      "description": "树管理器类\n管理 DataView 中的树形数据视图"
+    }
+  },
   "models": {
     "TreeManagerOptions": {
       "kind": "TreeManagerOptions",
@@ -1277,82 +1353,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.015Z",
-  "$defs": {
-    "TreeManagerOptions": {
-      "type": "object",
-      "title": "TreeManagerOptions",
-      "description": "Tree Manager Options 的调用配置。",
-      "properties": {
-        "config": {
-          "type": "object",
-          "title": "TreeConfig"
-        },
-        "api": {
-          "type": "object",
-          "title": "TreeApi"
-        },
-        "initialNodes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "FlatTreeNode"
-          }
-        },
-        "httpClient": {
-          "type": "object",
-          "title": "HttpClientBase"
-        }
-      }
-    },
-    "FetchNestedInput": {
-      "type": "object",
-      "title": "FetchNestedInput",
-      "description": "Fetch Nested Input 的输入数据。",
-      "properties": {
-        "rootId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "limit": {
-          "type": "number"
-        },
-        "depthLimit": {
-          "type": "number"
-        },
-        "treeMode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "flat"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "nested"
-              ]
-            }
-          ]
-        }
-      }
-    },
-    "TreeManager": {
-      "type": "object",
-      "title": "TreeManager",
-      "description": "树管理器类\n管理 DataView 中的树形数据视图"
     }
   }
 }

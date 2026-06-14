@@ -32,6 +32,171 @@
     "EnsureProjectPlanningBusinessOptions",
     "ProjectPlanningGateValidationResult"
   ],
+  "generatedAt": "2026-06-13T23:11:15.497Z",
+  "$defs": {
+    "ProjectPlanningRunInput": {
+      "type": "object",
+      "title": "ProjectPlanningRunInput",
+      "description": "Project Planning Run Input 的输入数据。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        },
+        "navigationNodes": {
+          "type": "array"
+        }
+      }
+    },
+    "ProjectPlanningAgentInput": {
+      "type": "object",
+      "title": "ProjectPlanningAgentInput",
+      "description": "Host inputContract 用可变数组，满足 AiJsonParams。",
+      "properties": {
+        "projectScopeKey": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        },
+        "navigationNodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NavigationPlanningAgentInput"
+          }
+        }
+      }
+    },
+    "NavigationPlanningAgentInput": {
+      "type": "object",
+      "title": "NavigationPlanningAgentInput",
+      "description": "Navigation Planning Agent Input 的输入数据。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        }
+      }
+    },
+    "NavigationPlanningRunInput": {
+      "type": "object",
+      "title": "NavigationPlanningRunInput",
+      "description": "Navigation Planning Run Input 的输入数据。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        }
+      }
+    },
+    "ResolveProjectPlanningRunInputOptions": {
+      "type": "object",
+      "title": "ResolveProjectPlanningRunInputOptions",
+      "description": "Resolve Project Planning Run Input Options 的调用配置。",
+      "properties": {
+        "requirementOverride": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        },
+        "navigationAttachmentTextByNodeId": {
+          "type": "object",
+          "title": "Readonly<Record<string, string>>"
+        }
+      }
+    },
+    "FilterNavigationPlanningNodesOptions": {
+      "type": "object",
+      "title": "FilterNavigationPlanningNodesOptions",
+      "description": "Filter Navigation Planning Nodes Options 的调用配置。",
+      "properties": {
+        "scopeNodeIds": {
+          "type": "array"
+        },
+        "includeEmptyRequirement": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ResolveScopedProjectPlanningRunInputOptions": {
+      "type": "object",
+      "title": "ResolveScopedProjectPlanningRunInputOptions",
+      "description": "Resolve Scoped Project Planning Run Input Options 的调用配置。"
+    },
+    "EnsureProjectPlanningBusinessOptions": {
+      "type": "object",
+      "title": "EnsureProjectPlanningBusinessOptions",
+      "description": "Ensure Project Planning Business Options 的调用配置。",
+      "properties": {
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        }
+      }
+    },
+    "ProjectPlanningGateValidationResult": {
+      "type": "object",
+      "title": "ProjectPlanningGateValidationResult",
+      "description": "Project Planning Gate Validation Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectPlanningRunInput": {
       "kind": "ProjectPlanningRunInput",
@@ -568,171 +733,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.493Z",
-  "$defs": {
-    "ProjectPlanningRunInput": {
-      "type": "object",
-      "title": "ProjectPlanningRunInput",
-      "description": "Project Planning Run Input 的输入数据。",
-      "properties": {
-        "projectId": {
-          "type": "string"
-        },
-        "requirement": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "planningAttachmentText": {
-          "type": "string"
-        },
-        "navigationNodes": {
-          "type": "array"
-        }
-      }
-    },
-    "ProjectPlanningAgentInput": {
-      "type": "object",
-      "title": "ProjectPlanningAgentInput",
-      "description": "Host inputContract 用可变数组，满足 AiJsonParams。",
-      "properties": {
-        "projectScopeKey": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "requirement": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "planningAttachmentText": {
-          "type": "string"
-        },
-        "navigationNodes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/NavigationPlanningAgentInput"
-          }
-        }
-      }
-    },
-    "NavigationPlanningAgentInput": {
-      "type": "object",
-      "title": "NavigationPlanningAgentInput",
-      "description": "Navigation Planning Agent Input 的输入数据。",
-      "properties": {
-        "nodeId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "type": "string"
-        },
-        "requirement": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "planningAttachmentText": {
-          "type": "string"
-        }
-      }
-    },
-    "NavigationPlanningRunInput": {
-      "type": "object",
-      "title": "NavigationPlanningRunInput",
-      "description": "Navigation Planning Run Input 的输入数据。",
-      "properties": {
-        "nodeId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "type": "string"
-        },
-        "requirement": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "planningAttachmentText": {
-          "type": "string"
-        }
-      }
-    },
-    "ResolveProjectPlanningRunInputOptions": {
-      "type": "object",
-      "title": "ResolveProjectPlanningRunInputOptions",
-      "description": "Resolve Project Planning Run Input Options 的调用配置。",
-      "properties": {
-        "requirementOverride": {
-          "type": "string"
-        },
-        "planningAttachmentText": {
-          "type": "string"
-        },
-        "navigationAttachmentTextByNodeId": {
-          "type": "object",
-          "title": "Readonly<Record<string, string>>"
-        }
-      }
-    },
-    "FilterNavigationPlanningNodesOptions": {
-      "type": "object",
-      "title": "FilterNavigationPlanningNodesOptions",
-      "description": "Filter Navigation Planning Nodes Options 的调用配置。",
-      "properties": {
-        "scopeNodeIds": {
-          "type": "array"
-        },
-        "includeEmptyRequirement": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ResolveScopedProjectPlanningRunInputOptions": {
-      "type": "object",
-      "title": "ResolveScopedProjectPlanningRunInputOptions",
-      "description": "Resolve Scoped Project Planning Run Input Options 的调用配置。"
-    },
-    "EnsureProjectPlanningBusinessOptions": {
-      "type": "object",
-      "title": "EnsureProjectPlanningBusinessOptions",
-      "description": "Ensure Project Planning Business Options 的调用配置。",
-      "properties": {
-        "host": {
-          "type": "object",
-          "title": "AiAgentHost"
-        }
-      }
-    },
-    "ProjectPlanningGateValidationResult": {
-      "type": "object",
-      "title": "ProjectPlanningGateValidationResult",
-      "description": "Project Planning Gate Validation Result 的返回结果。",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "reason": {
-          "type": "string"
-        },
-        "fix": {
-          "type": "string"
-        }
-      }
     }
   }
 }

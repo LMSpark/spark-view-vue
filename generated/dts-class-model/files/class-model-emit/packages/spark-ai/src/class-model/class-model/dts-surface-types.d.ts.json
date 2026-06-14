@@ -18,6 +18,56 @@
     "DtsClassModelSurfaceDocument",
     "ProjectDtsClassModelSurfaceOptions"
   ],
+  "generatedAt": "2026-06-13T22:28:08.309Z",
+  "$defs": {
+    "DtsClassModelSurfaceDocument": {
+      "type": "object",
+      "title": "DtsClassModelSurfaceDocument",
+      "description": "Dts Class Model Surface Document 的语义模型。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "source": {
+          "type": "object",
+          "title": "ClassModelEmitSource"
+        },
+        "configPath": {
+          "type": "string"
+        },
+        "models": {
+          "type": "object",
+          "title": "Readonly<Record<string, ClassModel>>"
+        },
+        "fileIndex": {
+          "type": "object",
+          "title": "Readonly<Record<string, readonly string[]>>"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectDtsClassModelSurfaceOptions": {
+      "type": "object",
+      "title": "ProjectDtsClassModelSurfaceOptions",
+      "description": "Project Dts Class Model Surface Options 的调用配置。",
+      "properties": {
+        "configPath": {
+          "type": "string"
+        },
+        "skipVueComponentDts": {
+          "type": "boolean"
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        },
+        "failOnDuplicate": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "DtsClassModelSurfaceDocument": {
       "kind": "DtsClassModelSurfaceDocument",
@@ -157,56 +207,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.770Z",
-  "$defs": {
-    "DtsClassModelSurfaceDocument": {
-      "type": "object",
-      "title": "DtsClassModelSurfaceDocument",
-      "description": "Dts Class Model Surface Document 的语义模型。",
-      "properties": {
-        "schemaVersion": {
-          "type": "number"
-        },
-        "source": {
-          "type": "object",
-          "title": "ClassModelEmitSource"
-        },
-        "configPath": {
-          "type": "string"
-        },
-        "models": {
-          "type": "object",
-          "title": "Readonly<Record<string, ClassModel>>"
-        },
-        "fileIndex": {
-          "type": "object",
-          "title": "Readonly<Record<string, readonly string[]>>"
-        },
-        "generatedAt": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectDtsClassModelSurfaceOptions": {
-      "type": "object",
-      "title": "ProjectDtsClassModelSurfaceOptions",
-      "description": "Project Dts Class Model Surface Options 的调用配置。",
-      "properties": {
-        "configPath": {
-          "type": "string"
-        },
-        "skipVueComponentDts": {
-          "type": "boolean"
-        },
-        "exportedOnly": {
-          "type": "boolean"
-        },
-        "failOnDuplicate": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

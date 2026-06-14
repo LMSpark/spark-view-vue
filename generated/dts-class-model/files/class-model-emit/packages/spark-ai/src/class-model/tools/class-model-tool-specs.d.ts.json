@@ -16,6 +16,25 @@
   "symbols": [
     "ClassModelToolSpec"
   ],
+  "generatedAt": "2026-06-13T12:34:12.589Z",
+  "$defs": {
+    "ClassModelToolSpec": {
+      "type": "object",
+      "title": "ClassModelToolSpec",
+      "description": "Class Model Tool Spec 的语义模型。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
+    }
+  },
   "models": {
     "ClassModelToolSpec": {
       "kind": "ClassModelToolSpec",
@@ -60,25 +79,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.894Z",
-  "$defs": {
-    "ClassModelToolSpec": {
-      "type": "object",
-      "title": "ClassModelToolSpec",
-      "description": "Class Model Tool Spec 的语义模型。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "function"
-          ]
-        },
-        "function": {
-          "type": "object"
-        }
-      }
     }
   }
 }

@@ -21,6 +21,14 @@
   "symbols": [
     "SuggestionItem"
   ],
+  "generatedAt": "2026-06-11T12:38:13.543Z",
+  "$defs": {
+    "SuggestionItem": {
+      "type": "object",
+      "title": "SuggestionItem",
+      "description": "自动补全候选项的通用数据结构。"
+    }
+  },
   "models": {
     "SuggestionItem": {
       "kind": "SuggestionItem",
@@ -41,14 +49,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.533Z",
-  "$defs": {
-    "SuggestionItem": {
-      "type": "object",
-      "title": "SuggestionItem",
-      "description": "自动补全候选项的通用数据结构。"
     }
   }
 }

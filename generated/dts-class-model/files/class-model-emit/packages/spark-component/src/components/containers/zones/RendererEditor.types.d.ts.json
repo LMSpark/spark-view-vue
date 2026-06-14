@@ -21,6 +21,49 @@
   "symbols": [
     "REditorProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.473Z",
+  "$defs": {
+    "REditorProps": {
+      "type": "object",
+      "title": "REditorProps",
+      "description": "`RendererEditor` 运行时公开属性。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "r-editor"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "position": {
+          "type": "object",
+          "title": "ToolbarPosition"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "REditorProps": {
       "kind": "REditorProps",
@@ -122,49 +165,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.366Z",
-  "$defs": {
-    "REditorProps": {
-      "type": "object",
-      "title": "REditorProps",
-      "description": "`RendererEditor` 运行时公开属性。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "r-editor"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "position": {
-          "type": "object",
-          "title": "ToolbarPosition"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "class": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -20,6 +20,118 @@
     "PageNodeOptions",
     "StartOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.951Z",
+  "$defs": {
+    "SparkOptions": {
+      "type": "object",
+      "title": "SparkOptions",
+      "description": "SPARK 组件系统配置",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "autoRegister": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageNodeOptions": {
+      "type": "object",
+      "title": "PageNodeOptions",
+      "description": "PageNode 运行配置",
+      "properties": {
+        "apiBaseUrl": {
+          "type": "string"
+        },
+        "pagesConfigBaseUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "() => string"
+            }
+          ]
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "pageComponent": {
+          "type": "object",
+          "title": "Component"
+        },
+        "componentMap": {
+          "type": "object",
+          "title": "Record<string, Component>"
+        },
+        "tenantPathPrefix": {
+          "type": "string"
+        },
+        "platformPathPrefix": {
+          "type": "string"
+        },
+        "preAuthNavTree": {
+          "type": "object",
+          "title": "ProjectModelData"
+        }
+      }
+    },
+    "StartOptions": {
+      "type": "object",
+      "title": "StartOptions",
+      "description": "启动配置（扩展自 BootstrapOptions）",
+      "properties": {
+        "rootComponent": {
+          "type": "object",
+          "title": "Component"
+        },
+        "routerMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "history"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hash"
+              ]
+            }
+          ]
+        },
+        "mountTarget": {
+          "type": "string"
+        },
+        "spark": {
+          "$ref": "#/$defs/SparkOptions"
+        },
+        "pageNode": {
+          "$ref": "#/$defs/PageNodeOptions"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Plugin"
+          }
+        },
+        "theme": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "title": "ThemeServiceOptions"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "SparkOptions": {
       "kind": "SparkOptions",
@@ -467,118 +579,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.021Z",
-  "$defs": {
-    "SparkOptions": {
-      "type": "object",
-      "title": "SparkOptions",
-      "description": "SPARK 组件系统配置",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "autoRegister": {
-          "type": "boolean"
-        }
-      }
-    },
-    "PageNodeOptions": {
-      "type": "object",
-      "title": "PageNodeOptions",
-      "description": "PageNode 运行配置",
-      "properties": {
-        "apiBaseUrl": {
-          "type": "string"
-        },
-        "pagesConfigBaseUrl": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "object",
-              "title": "() => string"
-            }
-          ]
-        },
-        "timeout": {
-          "type": "number"
-        },
-        "pageComponent": {
-          "type": "object",
-          "title": "Component"
-        },
-        "componentMap": {
-          "type": "object",
-          "title": "Record<string, Component>"
-        },
-        "tenantPathPrefix": {
-          "type": "string"
-        },
-        "platformPathPrefix": {
-          "type": "string"
-        },
-        "preAuthNavTree": {
-          "type": "object",
-          "title": "ProjectModelData"
-        }
-      }
-    },
-    "StartOptions": {
-      "type": "object",
-      "title": "StartOptions",
-      "description": "启动配置（扩展自 BootstrapOptions）",
-      "properties": {
-        "rootComponent": {
-          "type": "object",
-          "title": "Component"
-        },
-        "routerMode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "history"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "hash"
-              ]
-            }
-          ]
-        },
-        "mountTarget": {
-          "type": "string"
-        },
-        "spark": {
-          "$ref": "#/$defs/SparkOptions"
-        },
-        "pageNode": {
-          "$ref": "#/$defs/PageNodeOptions"
-        },
-        "plugins": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "Plugin"
-          }
-        },
-        "theme": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "object",
-              "title": "ThemeServiceOptions"
-            }
-          ]
-        }
-      }
     }
   }
 }

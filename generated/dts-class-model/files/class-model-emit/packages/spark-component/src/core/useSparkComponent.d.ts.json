@@ -36,6 +36,140 @@
     "ResolvedHostType",
     "SparkNodeInput"
   ],
+  "generatedAt": "2026-06-11T12:38:13.601Z",
+  "$defs": {
+    "CapabilityKey": {
+      "type": "object",
+      "title": "CapabilityKey",
+      "description": "Capability Key 的语义模型。"
+    },
+    "CapabilityContext": {
+      "type": "object",
+      "title": "CapabilityContext",
+      "description": "Capability Context 的运行上下文。"
+    },
+    "LoggerApi": {
+      "type": "object",
+      "title": "LoggerApi",
+      "description": "Logger Api 的语义模型。"
+    },
+    "SparkCapabilityConsumer": {
+      "type": "object",
+      "title": "SparkCapabilityConsumer",
+      "description": "Spark Capability Consumer 的语义模型。"
+    },
+    "UseSparkComponentReturn": {
+      "type": "object",
+      "title": "UseSparkComponentReturn",
+      "description": "组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。\n`provider` — provider 查询接口：\n- `nearestCapabilityProvider(key)` — 按能力键查最近 provider context\n- `nearestCapabilityProviderByKeys(keys)` — 按能力键集合查最近 provider context\n容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。\n子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。",
+      "properties": {
+        "provider": {
+          "type": "object"
+        },
+        "isVisible": {
+          "type": "object"
+        },
+        "isDisabled": {
+          "type": "object"
+        },
+        "resolvedProps": {
+          "type": "object"
+        },
+        "sparkProvide": {
+          "type": "object"
+        },
+        "sparkConsume": {
+          "$ref": "#/$defs/SparkCapabilityConsumer"
+        },
+        "logger": {
+          "$ref": "#/$defs/LoggerApi"
+        }
+      }
+    },
+    "UseSparkPageComponentReturn": {
+      "type": "object",
+      "title": "UseSparkPageComponentReturn",
+      "description": "Use Spark Page Component Return 的语义模型。"
+    },
+    "UseSparkCapabilityReaderReturn": {
+      "type": "object",
+      "title": "UseSparkCapabilityReaderReturn",
+      "description": "轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。\n由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。",
+      "properties": {
+        "provider": {
+          "type": "object"
+        },
+        "sparkConsume": {
+          "$ref": "#/$defs/SparkCapabilityConsumer"
+        }
+      }
+    },
+    "UseSparkComponentOptions": {
+      "type": "object",
+      "title": "UseSparkComponentOptions",
+      "description": "Use Spark Component Options 的调用配置。",
+      "properties": {
+        "parentContext": {
+          "$ref": "#/$defs/CapabilityContext"
+        }
+      }
+    },
+    "HostTypeResolverOptions": {
+      "type": "object",
+      "title": "HostTypeResolverOptions",
+      "description": "Host Type Resolver Options 的调用配置。",
+      "properties": {
+        "hostTypes": {
+          "type": "array"
+        }
+      }
+    },
+    "ResolvedHostType": {
+      "type": "object",
+      "title": "ResolvedHostType",
+      "description": "Resolved Host Type 的语义模型。",
+      "properties": {
+        "hostType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parentContext": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CapabilityContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SparkNodeInput": {
+      "type": "object",
+      "title": "SparkNodeInput",
+      "description": "Spark Node Input 的输入数据。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "children": true,
+        "id": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "CapabilityKey": {
       "kind": "CapabilityKey",
@@ -477,140 +611,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.701Z",
-  "$defs": {
-    "CapabilityKey": {
-      "type": "object",
-      "title": "CapabilityKey",
-      "description": "Capability Key 的语义模型。"
-    },
-    "CapabilityContext": {
-      "type": "object",
-      "title": "CapabilityContext",
-      "description": "Capability Context 的运行上下文。"
-    },
-    "LoggerApi": {
-      "type": "object",
-      "title": "LoggerApi",
-      "description": "Logger Api 的语义模型。"
-    },
-    "SparkCapabilityConsumer": {
-      "type": "object",
-      "title": "SparkCapabilityConsumer",
-      "description": "Spark Capability Consumer 的语义模型。"
-    },
-    "UseSparkComponentReturn": {
-      "type": "object",
-      "title": "UseSparkComponentReturn",
-      "description": "组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。\n`provider` — provider 查询接口：\n- `nearestCapabilityProvider(key)` — 按能力键查最近 provider context\n- `nearestCapabilityProviderByKeys(keys)` — 按能力键集合查最近 provider context\n容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。\n子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。",
-      "properties": {
-        "provider": {
-          "type": "object"
-        },
-        "isVisible": {
-          "type": "object"
-        },
-        "isDisabled": {
-          "type": "object"
-        },
-        "resolvedProps": {
-          "type": "object"
-        },
-        "sparkProvide": {
-          "type": "object"
-        },
-        "sparkConsume": {
-          "$ref": "#/$defs/SparkCapabilityConsumer"
-        },
-        "logger": {
-          "$ref": "#/$defs/LoggerApi"
-        }
-      }
-    },
-    "UseSparkPageComponentReturn": {
-      "type": "object",
-      "title": "UseSparkPageComponentReturn",
-      "description": "Use Spark Page Component Return 的语义模型。"
-    },
-    "UseSparkCapabilityReaderReturn": {
-      "type": "object",
-      "title": "UseSparkCapabilityReaderReturn",
-      "description": "轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。\n由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。",
-      "properties": {
-        "provider": {
-          "type": "object"
-        },
-        "sparkConsume": {
-          "$ref": "#/$defs/SparkCapabilityConsumer"
-        }
-      }
-    },
-    "UseSparkComponentOptions": {
-      "type": "object",
-      "title": "UseSparkComponentOptions",
-      "description": "Use Spark Component Options 的调用配置。",
-      "properties": {
-        "parentContext": {
-          "$ref": "#/$defs/CapabilityContext"
-        }
-      }
-    },
-    "HostTypeResolverOptions": {
-      "type": "object",
-      "title": "HostTypeResolverOptions",
-      "description": "Host Type Resolver Options 的调用配置。",
-      "properties": {
-        "hostTypes": {
-          "type": "array"
-        }
-      }
-    },
-    "ResolvedHostType": {
-      "type": "object",
-      "title": "ResolvedHostType",
-      "description": "Resolved Host Type 的语义模型。",
-      "properties": {
-        "hostType": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "parentContext": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/CapabilityContext"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "SparkNodeInput": {
-      "type": "object",
-      "title": "SparkNodeInput",
-      "description": "Spark Node Input 的输入数据。",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "children": true,
-        "id": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -21,6 +21,47 @@
   "symbols": [
     "RUploadProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.585Z",
+  "$defs": {
+    "RUploadProps": {
+      "type": "object",
+      "title": "RUploadProps",
+      "description": "RUpload Props 的属性契约。",
+      "properties": {
+        "autoUpload": {
+          "type": "boolean"
+        },
+        "showFileList": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "listType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "text"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "picture"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "picture-card"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RUploadProps": {
       "kind": "RUploadProps",
@@ -113,47 +154,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.620Z",
-  "$defs": {
-    "RUploadProps": {
-      "type": "object",
-      "title": "RUploadProps",
-      "description": "RUpload Props 的属性契约。",
-      "properties": {
-        "autoUpload": {
-          "type": "boolean"
-        },
-        "showFileList": {
-          "type": "boolean"
-        },
-        "limit": {
-          "type": "number"
-        },
-        "listType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "text"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "picture"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "picture-card"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

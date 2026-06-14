@@ -26,6 +26,111 @@
     "MethodGuideRenderInput",
     "MethodGuide"
   ],
+  "generatedAt": "2026-06-12T05:39:09.362Z",
+  "$defs": {
+    "ModelGuideRenderInput": {
+      "type": "object",
+      "title": "ModelGuideRenderInput",
+      "description": "Model Guide Render Input 的输入数据。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "kind": {
+          "type": "string"
+        }
+      }
+    },
+    "ModelGuide": {
+      "type": "object",
+      "title": "ModelGuide",
+      "description": "Model Guide 的语义模型。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "declaration": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "AttributeGuideRenderInput": {
+      "type": "object",
+      "title": "AttributeGuideRenderInput",
+      "description": "Attribute Guide Render Input 的输入数据。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "attributeName": {
+          "type": "string"
+        }
+      }
+    },
+    "AttributeGuide": {
+      "type": "object",
+      "title": "AttributeGuide",
+      "description": "Attribute Guide 的语义模型。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "attributeName": {
+          "type": "string"
+        },
+        "declaration": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "MethodGuideRenderInput": {
+      "type": "object",
+      "title": "MethodGuideRenderInput",
+      "description": "Method Guide Render Input 的输入数据。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        }
+      }
+    },
+    "MethodGuide": {
+      "type": "object",
+      "title": "MethodGuide",
+      "description": "Method Guide 的语义模型。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        },
+        "declaration": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ModelGuideRenderInput": {
       "kind": "ModelGuideRenderInput",
@@ -338,111 +443,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.880Z",
-  "$defs": {
-    "ModelGuideRenderInput": {
-      "type": "object",
-      "title": "ModelGuideRenderInput",
-      "description": "Model Guide Render Input 的输入数据。",
-      "properties": {
-        "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
-        },
-        "kind": {
-          "type": "string"
-        }
-      }
-    },
-    "ModelGuide": {
-      "type": "object",
-      "title": "ModelGuide",
-      "description": "Model Guide 的语义模型。",
-      "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "declaration": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        }
-      }
-    },
-    "AttributeGuideRenderInput": {
-      "type": "object",
-      "title": "AttributeGuideRenderInput",
-      "description": "Attribute Guide Render Input 的输入数据。",
-      "properties": {
-        "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
-        },
-        "kind": {
-          "type": "string"
-        },
-        "attributeName": {
-          "type": "string"
-        }
-      }
-    },
-    "AttributeGuide": {
-      "type": "object",
-      "title": "AttributeGuide",
-      "description": "Attribute Guide 的语义模型。",
-      "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "attributeName": {
-          "type": "string"
-        },
-        "declaration": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        }
-      }
-    },
-    "MethodGuideRenderInput": {
-      "type": "object",
-      "title": "MethodGuideRenderInput",
-      "description": "Method Guide Render Input 的输入数据。",
-      "properties": {
-        "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
-        },
-        "kind": {
-          "type": "string"
-        },
-        "methodName": {
-          "type": "string"
-        }
-      }
-    },
-    "MethodGuide": {
-      "type": "object",
-      "title": "MethodGuide",
-      "description": "Method Guide 的语义模型。",
-      "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "methodName": {
-          "type": "string"
-        },
-        "declaration": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        }
-      }
     }
   }
 }

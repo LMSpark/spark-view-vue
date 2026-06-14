@@ -21,6 +21,22 @@
   "symbols": [
     "RSwitchProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.577Z",
+  "$defs": {
+    "RSwitchProps": {
+      "type": "object",
+      "title": "RSwitchProps",
+      "description": "RSwitch Props 的属性契约。",
+      "properties": {
+        "activeText": {
+          "type": "string"
+        },
+        "inactiveText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RSwitchProps": {
       "kind": "RSwitchProps",
@@ -76,22 +92,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.586Z",
-  "$defs": {
-    "RSwitchProps": {
-      "type": "object",
-      "title": "RSwitchProps",
-      "description": "RSwitch Props 的属性契约。",
-      "properties": {
-        "activeText": {
-          "type": "string"
-        },
-        "inactiveText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

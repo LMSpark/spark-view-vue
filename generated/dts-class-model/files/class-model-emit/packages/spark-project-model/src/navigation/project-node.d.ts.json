@@ -50,6 +50,585 @@
     "ProjectNodeModelOptions",
     "ProjectNode"
   ],
+  "generatedAt": "2026-06-13T21:09:36.160Z",
+  "$defs": {
+    "ChildPlacement": {
+      "type": "object",
+      "title": "ChildPlacement",
+      "description": "子节点布局位置：决定子节点在 UI 中的渲染区域。"
+    },
+    "NavNodeKind": {
+      "type": "object",
+      "title": "NavNodeKind",
+      "description": "项目节点类型。"
+    },
+    "NavPermissionMode": {
+      "type": "object",
+      "title": "NavPermissionMode",
+      "description": "权限未匹配时的展示模式。"
+    },
+    "ProjectNodeFamily": {
+      "type": "object",
+      "title": "ProjectNodeFamily",
+      "description": "Project Node Family 的语义模型。"
+    },
+    "ProjectDescriptionContext": {
+      "type": "object",
+      "title": "ProjectDescriptionContext",
+      "description": "Project Description Context 的运行上下文。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "NavContextItem": {
+      "type": "object",
+      "title": "NavContextItem",
+      "description": "上下文下拉选项项。",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "NavContextConfig": {
+      "type": "object",
+      "title": "NavContextConfig",
+      "description": "动态上下文配置：描述 ProjectNode 上下文的来源和交互行为。",
+      "properties": {
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/NavContextItem"
+              }
+            }
+          ]
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "paramName": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectNodeData": {
+      "type": "object",
+      "title": "ProjectNodeData",
+      "description": "项目树节点的可序列化数据形状。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "$ref": "#/$defs/NavNodeKind"
+        },
+        "childPlacement": {
+          "$ref": "#/$defs/ChildPlacement"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/NavContextItem"
+              }
+            },
+            {
+              "$ref": "#/$defs/NavContextConfig"
+            }
+          ]
+        },
+        "order": {
+          "type": "number"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "dividerAfter": {
+          "type": "boolean"
+        },
+        "permissionMode": {
+          "$ref": "#/$defs/NavPermissionMode"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectNodeData"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "linkTarget": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "iframe"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "new-tab"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "self"
+              ]
+            }
+          ]
+        },
+        "redirect": {
+          "type": "string"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "refPath": {
+          "type": "string"
+        },
+        "refProjectId": {
+          "type": "string"
+        },
+        "refBroken": {
+          "type": "boolean"
+        },
+        "implGate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "closed"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "open"
+              ]
+            }
+          ]
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectNodeNavigationPatch": {
+      "type": "object",
+      "title": "ProjectNodeNavigationPatch",
+      "description": "Project Node Navigation Patch 的语义模型。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "$ref": "#/$defs/NavNodeKind"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "dividerAfter": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "linkTarget": {
+          "type": "string"
+        },
+        "childPlacement": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "permissionMode": {
+          "$ref": "#/$defs/NavPermissionMode"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/NavContextItem"
+              }
+            },
+            {
+              "$ref": "#/$defs/NavContextConfig"
+            }
+          ]
+        },
+        "implGate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "closed"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "open"
+              ]
+            }
+          ]
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectNodeLocation": {
+      "type": "object",
+      "title": "ProjectNodeLocation",
+      "description": "Project Node Location 的语义模型。",
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/ProjectNodeData"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProjectNodeData"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "ProjectModelData": {
+      "type": "object",
+      "title": "ProjectModelData",
+      "description": "项目模型的可序列化根数据。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "module"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system-directory"
+              ]
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "childPlacement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "header"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "sidebar"
+              ]
+            }
+          ]
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectNodeData"
+          }
+        },
+        "homePath": {
+          "type": "string"
+        }
+      }
+    },
+    "RegionItems": {
+      "type": "object",
+      "title": "RegionItems",
+      "description": "按区域分组的导航节点列表。",
+      "properties": {
+        "header": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectNodeData"
+          }
+        },
+        "sidebar": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectNodeData"
+          }
+        },
+        "toolbar": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectNodeData"
+          }
+        },
+        "userMenu": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectNodeData"
+          }
+        }
+      }
+    },
+    "RegionVisibility": {
+      "type": "object",
+      "title": "RegionVisibility",
+      "description": "各区域是否可见。",
+      "properties": {
+        "header": {
+          "type": "boolean"
+        },
+        "sidebar": {
+          "type": "boolean"
+        },
+        "toolbar": {
+          "type": "boolean"
+        },
+        "userMenu": {
+          "type": "boolean"
+        }
+      }
+    },
+    "NavContextState": {
+      "type": "object",
+      "title": "NavContextState",
+      "description": "导航上下文运行时状态。",
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/NavContextConfig"
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "selected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NavContextItem"
+          }
+        },
+        "loading": {
+          "type": "boolean"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ProjectPageSurface": {
+      "type": "object",
+      "title": "ProjectPageSurface",
+      "description": "导航页在模型侧的页面表面（不携带应用框架实现细节）。"
+    },
+    "ProjectPageNodeSummary": {
+      "type": "object",
+      "title": "ProjectPageNodeSummary",
+      "description": "Project Page Node Summary 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "$ref": "#/$defs/NavNodeKind"
+        },
+        "designSurface": {
+          "$ref": "#/$defs/ProjectPageSurface"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "descriptionContext": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProjectDescriptionContext"
+          }
+        },
+        "effectiveDescription": {
+          "type": "string"
+        },
+        "implGate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "closed"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "open"
+              ]
+            }
+          ]
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
+        },
+        "icon": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectNodeModelOptions": {
+      "type": "object",
+      "title": "ProjectNodeModelOptions",
+      "description": "Project Node Model Options 的调用配置。",
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/ProjectNodeData"
+        },
+        "pid": {
+          "type": "string"
+        },
+        "descriptionContext": {
+          "type": "array"
+        }
+      }
+    },
+    "ProjectNode": {
+      "type": "object",
+      "title": "ProjectNode",
+      "description": "导航节点基类。"
+    }
+  },
   "models": {
     "ChildPlacement": {
       "kind": "ChildPlacement",
@@ -1601,585 +2180,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.213Z",
-  "$defs": {
-    "ChildPlacement": {
-      "type": "object",
-      "title": "ChildPlacement",
-      "description": "子节点布局位置：决定子节点在 UI 中的渲染区域。"
-    },
-    "NavNodeKind": {
-      "type": "object",
-      "title": "NavNodeKind",
-      "description": "项目节点类型。"
-    },
-    "NavPermissionMode": {
-      "type": "object",
-      "title": "NavPermissionMode",
-      "description": "权限未匹配时的展示模式。"
-    },
-    "ProjectNodeFamily": {
-      "type": "object",
-      "title": "ProjectNodeFamily",
-      "description": "Project Node Family 的语义模型。"
-    },
-    "ProjectDescriptionContext": {
-      "type": "object",
-      "title": "ProjectDescriptionContext",
-      "description": "Project Description Context 的运行上下文。",
-      "properties": {
-        "nodeId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      }
-    },
-    "NavContextItem": {
-      "type": "object",
-      "title": "NavContextItem",
-      "description": "上下文下拉选项项。",
-      "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "title": {
-          "type": "string"
-        }
-      }
-    },
-    "NavContextConfig": {
-      "type": "object",
-      "title": "NavContextConfig",
-      "description": "动态上下文配置：描述 ProjectNode 上下文的来源和交互行为。",
-      "properties": {
-        "source": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/NavContextItem"
-              }
-            }
-          ]
-        },
-        "placeholder": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "paramName": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectNodeData": {
-      "type": "object",
-      "title": "ProjectNodeData",
-      "description": "项目树节点的可序列化数据形状。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "$ref": "#/$defs/NavNodeKind"
-        },
-        "childPlacement": {
-          "$ref": "#/$defs/ChildPlacement"
-        },
-        "context": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/NavContextItem"
-              }
-            },
-            {
-              "$ref": "#/$defs/NavContextConfig"
-            }
-          ]
-        },
-        "order": {
-          "type": "number"
-        },
-        "hidden": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "dividerAfter": {
-          "type": "boolean"
-        },
-        "permissionMode": {
-          "$ref": "#/$defs/NavPermissionMode"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectNodeData"
-          }
-        },
-        "path": {
-          "type": "string"
-        },
-        "linkTarget": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "iframe"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "new-tab"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "self"
-              ]
-            }
-          ]
-        },
-        "redirect": {
-          "type": "string"
-        },
-        "refId": {
-          "type": "string"
-        },
-        "refPath": {
-          "type": "string"
-        },
-        "refProjectId": {
-          "type": "string"
-        },
-        "refBroken": {
-          "type": "boolean"
-        },
-        "implGate": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "closed"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "open"
-              ]
-            }
-          ]
-        },
-        "upstreamContractsSatisfied": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ProjectNodeNavigationPatch": {
-      "type": "object",
-      "title": "ProjectNodeNavigationPatch",
-      "description": "Project Node Navigation Patch 的语义模型。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "$ref": "#/$defs/NavNodeKind"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "dividerAfter": {
-          "type": "boolean"
-        },
-        "description": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "linkTarget": {
-          "type": "string"
-        },
-        "childPlacement": {
-          "type": "string"
-        },
-        "order": {
-          "type": "number"
-        },
-        "hidden": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "refId": {
-          "type": "string"
-        },
-        "permissionMode": {
-          "$ref": "#/$defs/NavPermissionMode"
-        },
-        "context": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/NavContextItem"
-              }
-            },
-            {
-              "$ref": "#/$defs/NavContextConfig"
-            }
-          ]
-        },
-        "implGate": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "closed"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "open"
-              ]
-            }
-          ]
-        },
-        "upstreamContractsSatisfied": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ProjectNodeLocation": {
-      "type": "object",
-      "title": "ProjectNodeLocation",
-      "description": "Project Node Location 的语义模型。",
-      "properties": {
-        "node": {
-          "$ref": "#/$defs/ProjectNodeData"
-        },
-        "parent": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ProjectNodeData"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "parentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "ProjectModelData": {
-      "type": "object",
-      "title": "ProjectModelData",
-      "description": "项目模型的可序列化根数据。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "module"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "system-directory"
-              ]
-            }
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "childPlacement": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "header"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "sidebar"
-              ]
-            }
-          ]
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectNodeData"
-          }
-        },
-        "homePath": {
-          "type": "string"
-        }
-      }
-    },
-    "RegionItems": {
-      "type": "object",
-      "title": "RegionItems",
-      "description": "按区域分组的导航节点列表。",
-      "properties": {
-        "header": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectNodeData"
-          }
-        },
-        "sidebar": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectNodeData"
-          }
-        },
-        "toolbar": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectNodeData"
-          }
-        },
-        "userMenu": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectNodeData"
-          }
-        }
-      }
-    },
-    "RegionVisibility": {
-      "type": "object",
-      "title": "RegionVisibility",
-      "description": "各区域是否可见。",
-      "properties": {
-        "header": {
-          "type": "boolean"
-        },
-        "sidebar": {
-          "type": "boolean"
-        },
-        "toolbar": {
-          "type": "boolean"
-        },
-        "userMenu": {
-          "type": "boolean"
-        }
-      }
-    },
-    "NavContextState": {
-      "type": "object",
-      "title": "NavContextState",
-      "description": "导航上下文运行时状态。",
-      "properties": {
-        "config": {
-          "$ref": "#/$defs/NavContextConfig"
-        },
-        "nodeId": {
-          "type": "string"
-        },
-        "selected": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/NavContextItem"
-          }
-        },
-        "loading": {
-          "type": "boolean"
-        },
-        "error": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "ProjectPageSurface": {
-      "type": "object",
-      "title": "ProjectPageSurface",
-      "description": "导航页在模型侧的页面表面（不携带应用框架实现细节）。"
-    },
-    "ProjectPageNodeSummary": {
-      "type": "object",
-      "title": "ProjectPageNodeSummary",
-      "description": "Project Page Node Summary 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "nodeId": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "$ref": "#/$defs/NavNodeKind"
-        },
-        "designSurface": {
-          "$ref": "#/$defs/ProjectPageSurface"
-        },
-        "description": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "descriptionContext": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ProjectDescriptionContext"
-          }
-        },
-        "effectiveDescription": {
-          "type": "string"
-        },
-        "implGate": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "closed"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "open"
-              ]
-            }
-          ]
-        },
-        "upstreamContractsSatisfied": {
-          "type": "boolean"
-        },
-        "icon": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectNodeModelOptions": {
-      "type": "object",
-      "title": "ProjectNodeModelOptions",
-      "description": "Project Node Model Options 的调用配置。",
-      "properties": {
-        "node": {
-          "$ref": "#/$defs/ProjectNodeData"
-        },
-        "pid": {
-          "type": "string"
-        },
-        "descriptionContext": {
-          "type": "array"
-        }
-      }
-    },
-    "ProjectNode": {
-      "type": "object",
-      "title": "ProjectNode",
-      "description": "导航节点基类。"
     }
   }
 }

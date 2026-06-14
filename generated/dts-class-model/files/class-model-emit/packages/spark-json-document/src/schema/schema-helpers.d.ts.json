@@ -24,6 +24,85 @@
     "EnumSchemaOptions",
     "ObjectSchemaOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:51.035Z",
+  "$defs": {
+    "StringSchemaOptions": {
+      "type": "object",
+      "title": "StringSchemaOptions",
+      "description": "String Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        },
+        "minLength": {
+          "type": "number"
+        }
+      }
+    },
+    "NumberSchemaOptions": {
+      "type": "object",
+      "title": "NumberSchemaOptions",
+      "description": "Number Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "BooleanSchemaOptions": {
+      "type": "object",
+      "title": "BooleanSchemaOptions",
+      "description": "Boolean Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "EnumSchemaOptions": {
+      "type": "object",
+      "title": "EnumSchemaOptions",
+      "description": "Enum Schema Options 的调用配置。",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "string"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "number"
+              ]
+            }
+          ]
+        },
+        "nullable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ObjectSchemaOptions": {
+      "type": "object",
+      "title": "ObjectSchemaOptions",
+      "description": "Object Schema Options 的调用配置。",
+      "properties": {
+        "required": {
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "title": "JsonSchema"
+        }
+      }
+    }
+  },
   "models": {
     "StringSchemaOptions": {
       "kind": "StringSchemaOptions",
@@ -234,85 +313,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.133Z",
-  "$defs": {
-    "StringSchemaOptions": {
-      "type": "object",
-      "title": "StringSchemaOptions",
-      "description": "String Schema Options 的调用配置。",
-      "properties": {
-        "nullable": {
-          "type": "boolean"
-        },
-        "minLength": {
-          "type": "number"
-        }
-      }
-    },
-    "NumberSchemaOptions": {
-      "type": "object",
-      "title": "NumberSchemaOptions",
-      "description": "Number Schema Options 的调用配置。",
-      "properties": {
-        "nullable": {
-          "type": "boolean"
-        }
-      }
-    },
-    "BooleanSchemaOptions": {
-      "type": "object",
-      "title": "BooleanSchemaOptions",
-      "description": "Boolean Schema Options 的调用配置。",
-      "properties": {
-        "nullable": {
-          "type": "boolean"
-        }
-      }
-    },
-    "EnumSchemaOptions": {
-      "type": "object",
-      "title": "EnumSchemaOptions",
-      "description": "Enum Schema Options 的调用配置。",
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "string"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "number"
-              ]
-            }
-          ]
-        },
-        "nullable": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ObjectSchemaOptions": {
-      "type": "object",
-      "title": "ObjectSchemaOptions",
-      "description": "Object Schema Options 的调用配置。",
-      "properties": {
-        "required": {
-          "type": "array"
-        },
-        "description": {
-          "type": "string"
-        },
-        "additionalProperties": {
-          "type": "object",
-          "title": "JsonSchema"
-        }
-      }
     }
   }
 }

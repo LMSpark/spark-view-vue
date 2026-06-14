@@ -19,6 +19,24 @@
   "symbols": [
     "UseChoiceFieldStateOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.533Z",
+  "$defs": {
+    "UseChoiceFieldStateOptions": {
+      "type": "object",
+      "title": "UseChoiceFieldStateOptions",
+      "description": "Use Choice Field State Options 的调用配置。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "OptionFieldStateProps<TValue>"
+        },
+        "fieldType": {
+          "type": "string"
+        },
+        "fallbackValue": true
+      }
+    }
+  },
   "models": {
     "UseChoiceFieldStateOptions": {
       "kind": "UseChoiceFieldStateOptions",
@@ -119,24 +137,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.495Z",
-  "$defs": {
-    "UseChoiceFieldStateOptions": {
-      "type": "object",
-      "title": "UseChoiceFieldStateOptions",
-      "description": "Use Choice Field State Options 的调用配置。",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "OptionFieldStateProps<TValue>"
-        },
-        "fieldType": {
-          "type": "string"
-        },
-        "fallbackValue": true
-      }
     }
   }
 }

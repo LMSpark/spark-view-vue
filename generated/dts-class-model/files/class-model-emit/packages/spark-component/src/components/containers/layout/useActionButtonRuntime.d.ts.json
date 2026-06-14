@@ -21,6 +21,39 @@
     "ActionButtonRuntimeOptions",
     "ActionButtonRuntime"
   ],
+  "generatedAt": "2026-06-11T12:48:50.958Z",
+  "$defs": {
+    "ActionButtonRuntimeOptions": {
+      "type": "object",
+      "title": "ActionButtonRuntimeOptions",
+      "description": "Action Button Runtime Options 的调用配置。",
+      "properties": {
+        "currentNode": {
+          "type": "object",
+          "title": "ComputedRef<SparkNode>"
+        }
+      }
+    },
+    "ActionButtonRuntime": {
+      "type": "object",
+      "title": "ActionButtonRuntime",
+      "description": "Action Button Runtime 的语义模型。",
+      "properties": {
+        "hasBuiltinAction": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "actionDescriptor": {
+          "type": "object",
+          "title": "ComputedRef<ActionDescriptor | null>"
+        },
+        "hostActionDisabled": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        }
+      }
+    }
+  },
   "models": {
     "ActionButtonRuntimeOptions": {
       "kind": "ActionButtonRuntimeOptions",
@@ -230,39 +263,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.306Z",
-  "$defs": {
-    "ActionButtonRuntimeOptions": {
-      "type": "object",
-      "title": "ActionButtonRuntimeOptions",
-      "description": "Action Button Runtime Options 的调用配置。",
-      "properties": {
-        "currentNode": {
-          "type": "object",
-          "title": "ComputedRef<SparkNode>"
-        }
-      }
-    },
-    "ActionButtonRuntime": {
-      "type": "object",
-      "title": "ActionButtonRuntime",
-      "description": "Action Button Runtime 的语义模型。",
-      "properties": {
-        "hasBuiltinAction": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "actionDescriptor": {
-          "type": "object",
-          "title": "ComputedRef<ActionDescriptor | null>"
-        },
-        "hostActionDisabled": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        }
-      }
     }
   }
 }

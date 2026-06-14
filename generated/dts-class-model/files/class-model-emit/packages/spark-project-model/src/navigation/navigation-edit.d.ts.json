@@ -28,6 +28,165 @@
     "NavigationNodeDraftApplyResult",
     "NavigationNodePatchTarget"
   ],
+  "generatedAt": "2026-06-12T04:50:58.318Z",
+  "$defs": {
+    "NavigationNodeDraftNode": {
+      "type": "object",
+      "title": "NavigationNodeDraftNode",
+      "description": "Navigation Node Draft Node 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "object",
+          "title": "NavNodeKind"
+        },
+        "dividerAfter": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "linkTarget": {
+          "type": "object",
+          "title": "NonNullable<ProjectNodeData['linkTarget']>"
+        },
+        "childPlacement": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        },
+        "implGate": true,
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
+        }
+      }
+    },
+    "NavigationNodePatch": {
+      "type": "object",
+      "title": "NavigationNodePatch",
+      "description": "Navigation Node Patch 的语义模型。",
+      "properties": {
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "NavContextItem"
+              }
+            },
+            {
+              "type": "object",
+              "title": "NavContextConfig"
+            }
+          ]
+        }
+      }
+    },
+    "NavigationContextEditConfigDto": {
+      "type": "object",
+      "title": "NavigationContextEditConfigDto",
+      "description": "Navigation Context Edit Config Dto 的语义模型。",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        },
+        "paramName": {
+          "type": "string"
+        }
+      }
+    },
+    "NavigationContextEditDto": {
+      "type": "object",
+      "title": "NavigationContextEditDto",
+      "description": "Navigation Context Edit Dto 的语义模型。",
+      "properties": {
+        "hasContext": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "config": {
+          "$ref": "#/$defs/NavigationContextEditConfigDto"
+        }
+      }
+    },
+    "NavigationNodeDraft": {
+      "type": "object",
+      "title": "NavigationNodeDraft",
+      "description": "Navigation Node Draft 的语义模型。",
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/NavigationNodeDraftNode"
+        },
+        "context": {
+          "$ref": "#/$defs/NavigationContextEditDto"
+        }
+      }
+    },
+    "NavigationNodeDraftApplyResult": {
+      "type": "object",
+      "title": "NavigationNodeDraftApplyResult",
+      "description": "Navigation Node Draft Apply Result 的返回结果。",
+      "properties": {
+        "patch": true,
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "NavigationNodePatchTarget": {
+      "type": "object",
+      "title": "NavigationNodePatchTarget",
+      "description": "Navigation Node Patch Target 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "NavigationNodeDraftNode": {
       "kind": "NavigationNodeDraftNode",
@@ -462,165 +621,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.181Z",
-  "$defs": {
-    "NavigationNodeDraftNode": {
-      "type": "object",
-      "title": "NavigationNodeDraftNode",
-      "description": "Navigation Node Draft Node 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "type": "object",
-          "title": "NavNodeKind"
-        },
-        "dividerAfter": {
-          "type": "boolean"
-        },
-        "description": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "linkTarget": {
-          "type": "object",
-          "title": "NonNullable<ProjectNodeData['linkTarget']>"
-        },
-        "childPlacement": {
-          "type": "string"
-        },
-        "order": {
-          "type": "number"
-        },
-        "hidden": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "refId": {
-          "type": "string"
-        },
-        "permissionMode": {
-          "type": "object",
-          "title": "NavPermissionMode"
-        },
-        "implGate": true,
-        "upstreamContractsSatisfied": {
-          "type": "boolean"
-        }
-      }
-    },
-    "NavigationNodePatch": {
-      "type": "object",
-      "title": "NavigationNodePatch",
-      "description": "Navigation Node Patch 的语义模型。",
-      "properties": {
-        "context": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "title": "NavContextItem"
-              }
-            },
-            {
-              "type": "object",
-              "title": "NavContextConfig"
-            }
-          ]
-        }
-      }
-    },
-    "NavigationContextEditConfigDto": {
-      "type": "object",
-      "title": "NavigationContextEditConfigDto",
-      "description": "Navigation Context Edit Config Dto 的语义模型。",
-      "properties": {
-        "placeholder": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "type": "string"
-        },
-        "paramName": {
-          "type": "string"
-        }
-      }
-    },
-    "NavigationContextEditDto": {
-      "type": "object",
-      "title": "NavigationContextEditDto",
-      "description": "Navigation Context Edit Dto 的语义模型。",
-      "properties": {
-        "hasContext": {
-          "type": "boolean"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        },
-        "config": {
-          "$ref": "#/$defs/NavigationContextEditConfigDto"
-        }
-      }
-    },
-    "NavigationNodeDraft": {
-      "type": "object",
-      "title": "NavigationNodeDraft",
-      "description": "Navigation Node Draft 的语义模型。",
-      "properties": {
-        "node": {
-          "$ref": "#/$defs/NavigationNodeDraftNode"
-        },
-        "context": {
-          "$ref": "#/$defs/NavigationContextEditDto"
-        }
-      }
-    },
-    "NavigationNodeDraftApplyResult": {
-      "type": "object",
-      "title": "NavigationNodeDraftApplyResult",
-      "description": "Navigation Node Draft Apply Result 的返回结果。",
-      "properties": {
-        "patch": true,
-        "warnings": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "NavigationNodePatchTarget": {
-      "type": "object",
-      "title": "NavigationNodePatchTarget",
-      "description": "Navigation Node Patch Target 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
     }
   }
 }

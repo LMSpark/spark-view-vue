@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { buildDebugBreak } from './build-debug.mjs'
 
 /**
  * Fail-fast：manifest 存在但 shard 缺失时抛错（generate 中断或拷贝前校验）。
@@ -9,6 +10,7 @@ import { join, resolve } from 'node:path'
 export function assertClassModelBundleComplete(bundleRoot, options = {}) {
   const root = resolve(bundleRoot)
   const manifestPath = join(root, 'manifest.json')
+  buildDebugBreak('class-model-assert:start', { bundleRoot: root, manifestPath })
   if (!existsSync(manifestPath)) {
     throw new Error(
       `Missing ${manifestPath}. Run pnpm run generate:class-model-surface before build.`,
@@ -31,6 +33,10 @@ export function assertClassModelBundleComplete(bundleRoot, options = {}) {
       ...missing.slice(0, 10).map((sourcePath) => `- ${sourcePath}`),
     ].join('\n'))
   }
+
+  buildDebugBreak('class-model-assert:shards-ok', {
+    fileCount: Object.keys(manifest.files ?? {}).length,
+  })
 
   if (options.requireParamsSchema === true) {
     assertGuideShardParamsSchema(root, manifest)

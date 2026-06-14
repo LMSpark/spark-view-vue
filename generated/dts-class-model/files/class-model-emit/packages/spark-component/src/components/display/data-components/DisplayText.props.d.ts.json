@@ -21,6 +21,73 @@
   "symbols": [
     "RTextDisplayProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.492Z",
+  "$defs": {
+    "RTextDisplayProps": {
+      "type": "object",
+      "title": "RTextDisplayProps",
+      "description": "RText Display Props 的属性契约。",
+      "properties": {
+        "tag": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "number"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "currency"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "percent"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "date"
+              ]
+            }
+          ]
+        },
+        "precision": {
+          "type": "number"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "textClass": {
+          "type": "string"
+        },
+        "textStyle": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RTextDisplayProps": {
       "kind": "RTextDisplayProps",
@@ -163,73 +230,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.418Z",
-  "$defs": {
-    "RTextDisplayProps": {
-      "type": "object",
-      "title": "RTextDisplayProps",
-      "description": "RText Display Props 的属性契约。",
-      "properties": {
-        "tag": {
-          "type": "string"
-        },
-        "prefix": {
-          "type": "string"
-        },
-        "suffix": {
-          "type": "string"
-        },
-        "format": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "number"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "currency"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "percent"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "date"
-              ]
-            }
-          ]
-        },
-        "precision": {
-          "type": "number"
-        },
-        "placeholder": {
-          "type": "string"
-        },
-        "textClass": {
-          "type": "string"
-        },
-        "textStyle": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Record<string, unknown>"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        }
-      }
     }
   }
 }

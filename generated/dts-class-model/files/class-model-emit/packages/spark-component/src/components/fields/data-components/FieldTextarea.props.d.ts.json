@@ -21,6 +21,32 @@
   "symbols": [
     "RTextareaProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.579Z",
+  "$defs": {
+    "RTextareaProps": {
+      "type": "object",
+      "title": "RTextareaProps",
+      "description": "RTextarea Props 的属性契约。",
+      "properties": {
+        "autosize": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "maxlength": {
+          "type": "number"
+        },
+        "showWordLimit": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RTextareaProps": {
       "kind": "RTextareaProps",
@@ -92,32 +118,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.589Z",
-  "$defs": {
-    "RTextareaProps": {
-      "type": "object",
-      "title": "RTextareaProps",
-      "description": "RTextarea Props 的属性契约。",
-      "properties": {
-        "autosize": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "object"
-            }
-          ]
-        },
-        "maxlength": {
-          "type": "number"
-        },
-        "showWordLimit": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

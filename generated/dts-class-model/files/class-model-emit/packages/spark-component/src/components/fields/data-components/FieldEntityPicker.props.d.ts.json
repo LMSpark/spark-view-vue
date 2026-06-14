@@ -21,6 +21,22 @@
   "symbols": [
     "REntityPickerProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.553Z",
+  "$defs": {
+    "REntityPickerProps": {
+      "type": "object",
+      "title": "REntityPickerProps",
+      "description": "REntity Picker Props 的属性契约。",
+      "properties": {
+        "searchable": {
+          "type": "boolean"
+        },
+        "entityName": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "REntityPickerProps": {
       "kind": "REntityPickerProps",
@@ -86,22 +102,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.545Z",
-  "$defs": {
-    "REntityPickerProps": {
-      "type": "object",
-      "title": "REntityPickerProps",
-      "description": "REntity Picker Props 的属性契约。",
-      "properties": {
-        "searchable": {
-          "type": "boolean"
-        },
-        "entityName": {
-          "type": "string"
-        }
-      }
     }
   }
 }

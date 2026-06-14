@@ -25,6 +25,63 @@
     "InlineJustify",
     "RToolbarProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.456Z",
+  "$defs": {
+    "InlineAlign": {
+      "type": "object",
+      "title": "InlineAlign",
+      "description": "工具栏交叉轴对齐方式。"
+    },
+    "InlineJustify": {
+      "type": "object",
+      "title": "InlineJustify",
+      "description": "工具栏主轴分布方式。"
+    },
+    "RToolbarProps": {
+      "type": "object",
+      "title": "RToolbarProps",
+      "description": "`RendererToolbar` Vue 组件公开属性。",
+      "properties": {
+        "tail": {
+          "type": "object",
+          "title": "RTailProps"
+        },
+        "position": {
+          "type": "object",
+          "title": "ToolbarPosition"
+        },
+        "class": {
+          "type": "string"
+        },
+        "gap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "zoneGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "align": {
+          "$ref": "#/$defs/InlineAlign"
+        },
+        "justify": {
+          "$ref": "#/$defs/InlineJustify"
+        }
+      }
+    }
+  },
   "models": {
     "InlineAlign": {
       "kind": "InlineAlign",
@@ -217,63 +274,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.294Z",
-  "$defs": {
-    "InlineAlign": {
-      "type": "object",
-      "title": "InlineAlign",
-      "description": "工具栏交叉轴对齐方式。"
-    },
-    "InlineJustify": {
-      "type": "object",
-      "title": "InlineJustify",
-      "description": "工具栏主轴分布方式。"
-    },
-    "RToolbarProps": {
-      "type": "object",
-      "title": "RToolbarProps",
-      "description": "`RendererToolbar` Vue 组件公开属性。",
-      "properties": {
-        "tail": {
-          "type": "object",
-          "title": "RTailProps"
-        },
-        "position": {
-          "type": "object",
-          "title": "ToolbarPosition"
-        },
-        "class": {
-          "type": "string"
-        },
-        "gap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "zoneGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "align": {
-          "$ref": "#/$defs/InlineAlign"
-        },
-        "justify": {
-          "$ref": "#/$defs/InlineJustify"
-        }
-      }
     }
   }
 }

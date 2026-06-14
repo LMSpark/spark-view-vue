@@ -20,6 +20,24 @@
     "MutatingFn",
     "CrudDelegate"
   ],
+  "generatedAt": "2026-06-11T12:48:51.018Z",
+  "$defs": {
+    "EmitCrudLifecycleFn": {
+      "type": "object",
+      "title": "EmitCrudLifecycleFn",
+      "description": "Emit Crud Lifecycle Fn 的语义模型。"
+    },
+    "MutatingFn": {
+      "type": "object",
+      "title": "MutatingFn",
+      "description": "Mutating Fn 的语义模型。"
+    },
+    "CrudDelegate": {
+      "type": "object",
+      "title": "CrudDelegate",
+      "description": "CRUD 委托\n封装所有 CRUD 相关逻辑，包括数据校验、单条 & 批量操作、导入导出。\nCrudService 由 DataTable 持有，本委托通过 host.dataTable 获取。\n每个操作前后发射 crud:before / crud:after 事件，供业务脚本层拦截和联动。"
+    }
+  },
   "models": {
     "EmitCrudLifecycleFn": {
       "kind": "EmitCrudLifecycleFn",
@@ -764,24 +782,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.986Z",
-  "$defs": {
-    "EmitCrudLifecycleFn": {
-      "type": "object",
-      "title": "EmitCrudLifecycleFn",
-      "description": "Emit Crud Lifecycle Fn 的语义模型。"
-    },
-    "MutatingFn": {
-      "type": "object",
-      "title": "MutatingFn",
-      "description": "Mutating Fn 的语义模型。"
-    },
-    "CrudDelegate": {
-      "type": "object",
-      "title": "CrudDelegate",
-      "description": "CRUD 委托\n封装所有 CRUD 相关逻辑，包括数据校验、单条 & 批量操作、导入导出。\nCrudService 由 DataTable 持有，本委托通过 host.dataTable 获取。\n每个操作前后发射 crud:before / crud:after 事件，供业务脚本层拦截和联动。"
     }
   }
 }

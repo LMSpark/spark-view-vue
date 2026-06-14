@@ -23,6 +23,30 @@
     "FetchSuggestionsCallback",
     "RAutocompleteProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.542Z",
+  "$defs": {
+    "FetchSuggestionsCallback": {
+      "type": "object",
+      "title": "FetchSuggestionsCallback",
+      "description": "Fetch Suggestions Callback 的语义模型。"
+    },
+    "RAutocompleteProps": {
+      "type": "object",
+      "title": "RAutocompleteProps",
+      "description": "RAutocomplete Props 的属性契约。",
+      "properties": {
+        "triggerOnFocus": {
+          "type": "boolean"
+        },
+        "highlightFirstItem": {
+          "type": "boolean"
+        },
+        "valueKey": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "FetchSuggestionsCallback": {
       "kind": "FetchSuggestionsCallback",
@@ -147,30 +171,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.532Z",
-  "$defs": {
-    "FetchSuggestionsCallback": {
-      "type": "object",
-      "title": "FetchSuggestionsCallback",
-      "description": "Fetch Suggestions Callback 的语义模型。"
-    },
-    "RAutocompleteProps": {
-      "type": "object",
-      "title": "RAutocompleteProps",
-      "description": "RAutocomplete Props 的属性契约。",
-      "properties": {
-        "triggerOnFocus": {
-          "type": "boolean"
-        },
-        "highlightFirstItem": {
-          "type": "boolean"
-        },
-        "valueKey": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,19 @@
   "symbols": [
     "PageDesignEditorResolveContext"
   ],
+  "generatedAt": "2026-06-14T02:26:34.272Z",
+  "$defs": {
+    "PageDesignEditorResolveContext": {
+      "type": "object",
+      "title": "PageDesignEditorResolveContext",
+      "description": "Page Design Editor Resolve Context 的运行上下文。",
+      "properties": {
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "PageDesignEditorResolveContext": {
       "kind": "PageDesignEditorResolveContext",
@@ -41,19 +54,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.459Z",
-  "$defs": {
-    "PageDesignEditorResolveContext": {
-      "type": "object",
-      "title": "PageDesignEditorResolveContext",
-      "description": "Page Design Editor Resolve Context 的运行上下文。",
-      "properties": {
-        "moduleInstanceId": {
-          "type": "string"
-        }
-      }
     }
   }
 }

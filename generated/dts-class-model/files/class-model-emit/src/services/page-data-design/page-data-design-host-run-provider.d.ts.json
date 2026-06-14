@@ -16,6 +16,37 @@
   "symbols": [
     "PageDataDesignHostInput"
   ],
+  "generatedAt": "2026-06-12T01:06:49.056Z",
+  "$defs": {
+    "PageDataDesignHostInput": {
+      "type": "object",
+      "title": "PageDataDesignHostInput",
+      "description": "Page Data Design Host Input 的输入数据。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "effectiveDescription": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "planningTitle": {
+          "type": "string"
+        },
+        "planningPath": {
+          "type": "string"
+        },
+        "dataRequirement": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "PageDataDesignHostInput": {
       "kind": "PageDataDesignHostInput",
@@ -102,37 +133,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.440Z",
-  "$defs": {
-    "PageDataDesignHostInput": {
-      "type": "object",
-      "title": "PageDataDesignHostInput",
-      "description": "Page Data Design Host Input 的输入数据。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "effectiveDescription": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "planningTitle": {
-          "type": "string"
-        },
-        "planningPath": {
-          "type": "string"
-        },
-        "dataRequirement": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,26 @@
   "symbols": [
     "AiAgentOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.306Z",
+  "$defs": {
+    "AiAgentOptions": {
+      "type": "object",
+      "title": "AiAgentOptions",
+      "description": "Ai Agent Options 的调用配置。",
+      "properties": {
+        "registry": {
+          "type": "object"
+        },
+        "turnCallbacks": {
+          "type": "object",
+          "title": "AiAgentTurnCallbacks"
+        },
+        "maxToolRounds": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentOptions": {
       "kind": "AiAgentOptions",
@@ -67,26 +87,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.502Z",
-  "$defs": {
-    "AiAgentOptions": {
-      "type": "object",
-      "title": "AiAgentOptions",
-      "description": "Ai Agent Options 的调用配置。",
-      "properties": {
-        "registry": {
-          "type": "object"
-        },
-        "turnCallbacks": {
-          "type": "object",
-          "title": "AiAgentTurnCallbacks"
-        },
-        "maxToolRounds": {
-          "type": "number"
-        }
-      }
     }
   }
 }

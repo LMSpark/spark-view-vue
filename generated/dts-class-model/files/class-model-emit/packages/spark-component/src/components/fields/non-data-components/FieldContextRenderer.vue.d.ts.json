@@ -21,6 +21,211 @@
   "symbols": [
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.590Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "字段上下文渲染器属性，统一描述字段在表格、表单、详情中的展示状态。",
+      "properties": {
+        "displayLabel": {
+          "type": "string"
+        },
+        "fieldName": {
+          "type": "string"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "custom"
+              ]
+            }
+          ]
+        },
+        "filterable": {
+          "type": "boolean"
+        },
+        "minWidth": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "fixed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "align": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "headerAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "mergedChildren": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "isCurrentFieldHidden": {
+          "type": "boolean"
+        },
+        "shouldRenderCurrentField": {
+          "type": "boolean"
+        },
+        "currentDisplayValue": {
+          "type": "string"
+        },
+        "isTableCellHidden": {
+          "type": "object",
+          "title": "(row: DataRow) => boolean"
+        },
+        "getTableCellDisplayValue": {
+          "type": "object",
+          "title": "(row: DataRow) => string"
+        },
+        "validationRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "FormItemRule"
+          }
+        },
+        "titleAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "valueAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "Props": {
       "kind": "Props",
@@ -386,211 +591,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.635Z",
-  "$defs": {
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "字段上下文渲染器属性，统一描述字段在表格、表单、详情中的展示状态。",
-      "properties": {
-        "displayLabel": {
-          "type": "string"
-        },
-        "fieldName": {
-          "type": "string"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "resizable": {
-          "type": "boolean"
-        },
-        "sortable": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "enum": [
-                "custom"
-              ]
-            }
-          ]
-        },
-        "filterable": {
-          "type": "boolean"
-        },
-        "minWidth": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "fixed": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "align": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "headerAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "mergedChildren": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "isCurrentFieldHidden": {
-          "type": "boolean"
-        },
-        "shouldRenderCurrentField": {
-          "type": "boolean"
-        },
-        "currentDisplayValue": {
-          "type": "string"
-        },
-        "isTableCellHidden": {
-          "type": "object",
-          "title": "(row: DataRow) => boolean"
-        },
-        "getTableCellDisplayValue": {
-          "type": "object",
-          "title": "(row: DataRow) => string"
-        },
-        "validationRules": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "FormItemRule"
-          }
-        },
-        "titleAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "valueAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "headerCellClassName": {
-          "type": "string"
-        },
-        "cellClassName": {
-          "type": "string"
-        },
-        "titleClassName": {
-          "type": "string"
-        },
-        "valueClassName": {
-          "type": "string"
-        }
-      }
     }
   }
 }

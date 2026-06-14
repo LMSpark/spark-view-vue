@@ -18,6 +18,63 @@
     "DynamicRouterOptions",
     "DynamicRouter"
   ],
+  "generatedAt": "2026-06-11T12:48:50.949Z",
+  "$defs": {
+    "DynamicRouterOptions": {
+      "type": "object",
+      "title": "DynamicRouterOptions",
+      "description": "动态路由注册选项",
+      "properties": {
+        "router": {
+          "type": "object",
+          "title": "Router"
+        },
+        "pageContentLoader": {
+          "type": "object",
+          "title": "PageContentLoader"
+        },
+        "pageComponent": {
+          "type": "object",
+          "title": "Component"
+        },
+        "componentMap": {
+          "type": "object",
+          "title": "Record<string, Component>"
+        },
+        "tenantPathPrefix": {
+          "type": "string"
+        },
+        "loadNavigation": {
+          "type": "object",
+          "title": "() => Promise<ProjectModelData>"
+        },
+        "loadPlatformNavigation": {
+          "type": "object",
+          "title": "() => Promise<ProjectModelData>"
+        },
+        "platformPathPrefix": {
+          "type": "string"
+        },
+        "isPlatformNavigationEnabled": {
+          "type": "object",
+          "title": "() => boolean"
+        },
+        "preAuthNavTree": {
+          "type": "object",
+          "title": "ProjectModelData"
+        },
+        "isAuthenticated": {
+          "type": "object",
+          "title": "() => boolean"
+        }
+      }
+    },
+    "DynamicRouter": {
+      "type": "object",
+      "title": "DynamicRouter",
+      "description": "动态路由管理器"
+    }
+  },
   "models": {
     "DynamicRouterOptions": {
       "kind": "DynamicRouterOptions",
@@ -327,63 +384,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.012Z",
-  "$defs": {
-    "DynamicRouterOptions": {
-      "type": "object",
-      "title": "DynamicRouterOptions",
-      "description": "动态路由注册选项",
-      "properties": {
-        "router": {
-          "type": "object",
-          "title": "Router"
-        },
-        "pageContentLoader": {
-          "type": "object",
-          "title": "PageContentLoader"
-        },
-        "pageComponent": {
-          "type": "object",
-          "title": "Component"
-        },
-        "componentMap": {
-          "type": "object",
-          "title": "Record<string, Component>"
-        },
-        "tenantPathPrefix": {
-          "type": "string"
-        },
-        "loadNavigation": {
-          "type": "object",
-          "title": "() => Promise<ProjectModelData>"
-        },
-        "loadPlatformNavigation": {
-          "type": "object",
-          "title": "() => Promise<ProjectModelData>"
-        },
-        "platformPathPrefix": {
-          "type": "string"
-        },
-        "isPlatformNavigationEnabled": {
-          "type": "object",
-          "title": "() => boolean"
-        },
-        "preAuthNavTree": {
-          "type": "object",
-          "title": "ProjectModelData"
-        },
-        "isAuthenticated": {
-          "type": "object",
-          "title": "() => boolean"
-        }
-      }
-    },
-    "DynamicRouter": {
-      "type": "object",
-      "title": "DynamicRouter",
-      "description": "动态路由管理器"
     }
   }
 }

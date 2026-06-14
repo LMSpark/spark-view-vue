@@ -20,6 +20,44 @@
     "PageMode",
     "UseTabPagesOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.354Z",
+  "$defs": {
+    "TabPage": {
+      "type": "object",
+      "title": "TabPage",
+      "description": "Tab Page 的语义模型。",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "closable": {
+          "type": "boolean"
+        },
+        "fullPath": {
+          "type": "string"
+        }
+      }
+    },
+    "PageMode": {
+      "type": "object",
+      "title": "PageMode",
+      "description": "Page Mode 的语义模型。"
+    },
+    "UseTabPagesOptions": {
+      "type": "object",
+      "title": "UseTabPagesOptions",
+      "description": "Use Tab Pages Options 的调用配置。"
+    }
+  },
   "models": {
     "TabPage": {
       "kind": "TabPage",
@@ -177,44 +215,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.985Z",
-  "$defs": {
-    "TabPage": {
-      "type": "object",
-      "title": "TabPage",
-      "description": "Tab Page 的语义模型。",
-      "properties": {
-        "path": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "closable": {
-          "type": "boolean"
-        },
-        "fullPath": {
-          "type": "string"
-        }
-      }
-    },
-    "PageMode": {
-      "type": "object",
-      "title": "PageMode",
-      "description": "Page Mode 的语义模型。"
-    },
-    "UseTabPagesOptions": {
-      "type": "object",
-      "title": "UseTabPagesOptions",
-      "description": "Use Tab Pages Options 的调用配置。"
     }
   }
 }

@@ -21,6 +21,41 @@
   "symbols": [
     "RSegmentedProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.570Z",
+  "$defs": {
+    "RSegmentedProps": {
+      "type": "object",
+      "title": "RSegmentedProps",
+      "description": "分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。",
+      "properties": {
+        "size": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "small"
+              ]
+            }
+          ]
+        },
+        "block": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RSegmentedProps": {
       "kind": "RSegmentedProps",
@@ -95,41 +130,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.579Z",
-  "$defs": {
-    "RSegmentedProps": {
-      "type": "object",
-      "title": "RSegmentedProps",
-      "description": "分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。",
-      "properties": {
-        "size": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "large"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "small"
-              ]
-            }
-          ]
-        },
-        "block": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

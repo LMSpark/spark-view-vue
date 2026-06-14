@@ -16,6 +16,32 @@
   "symbols": [
     "BaseScopeContext"
   ],
+  "generatedAt": "2026-06-11T12:38:13.470Z",
+  "$defs": {
+    "BaseScopeContext": {
+      "type": "object",
+      "title": "BaseScopeContext",
+      "description": "Base Scope Context 的运行上下文。",
+      "properties": {
+        "dataSource": true,
+        "modelPermission": {
+          "type": "object",
+          "title": "ModelPermission"
+        },
+        "moduleContext": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ModuleContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "BaseScopeContext": {
       "kind": "BaseScopeContext",
@@ -66,32 +92,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.361Z",
-  "$defs": {
-    "BaseScopeContext": {
-      "type": "object",
-      "title": "BaseScopeContext",
-      "description": "Base Scope Context 的运行上下文。",
-      "properties": {
-        "dataSource": true,
-        "modelPermission": {
-          "type": "object",
-          "title": "ModelPermission"
-        },
-        "moduleContext": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "ModuleContext"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
     }
   }
 }

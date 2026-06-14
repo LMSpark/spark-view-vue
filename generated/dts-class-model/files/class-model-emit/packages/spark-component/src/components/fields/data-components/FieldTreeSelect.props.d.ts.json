@@ -21,6 +21,22 @@
   "symbols": [
     "RTreeSelectProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.584Z",
+  "$defs": {
+    "RTreeSelectProps": {
+      "type": "object",
+      "title": "RTreeSelectProps",
+      "description": "RTree Select Props 的属性契约。",
+      "properties": {
+        "defaultExpandAll": {
+          "type": "boolean"
+        },
+        "renderAfterExpand": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RTreeSelectProps": {
       "kind": "RTreeSelectProps",
@@ -76,22 +92,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.615Z",
-  "$defs": {
-    "RTreeSelectProps": {
-      "type": "object",
-      "title": "RTreeSelectProps",
-      "description": "RTree Select Props 的属性契约。",
-      "properties": {
-        "defaultExpandAll": {
-          "type": "boolean"
-        },
-        "renderAfterExpand": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

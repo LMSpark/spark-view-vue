@@ -16,6 +16,14 @@
   "symbols": [
     "CallFunc"
   ],
+  "generatedAt": "2026-06-11T12:48:50.982Z",
+  "$defs": {
+    "CallFunc": {
+      "type": "object",
+      "title": "CallFunc",
+      "description": "沙箱函数调用签名"
+    }
+  },
   "models": {
     "CallFunc": {
       "kind": "CallFunc",
@@ -31,14 +39,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.730Z",
-  "$defs": {
-    "CallFunc": {
-      "type": "object",
-      "title": "CallFunc",
-      "description": "沙箱函数调用签名"
     }
   }
 }

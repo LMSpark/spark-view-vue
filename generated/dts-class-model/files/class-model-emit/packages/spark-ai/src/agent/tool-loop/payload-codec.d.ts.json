@@ -16,6 +16,35 @@
   "symbols": [
     "ToolArgsParseError"
   ],
+  "generatedAt": "2026-06-11T12:48:50.913Z",
+  "$defs": {
+    "ToolArgsParseError": {
+      "type": "object",
+      "title": "ToolArgsParseError",
+      "description": "Tool Args Parse Error 的错误信息。",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "TOOL_ARGS_INVALID_JSON"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "TOOL_ARGS_NOT_OBJECT"
+              ]
+            }
+          ]
+        },
+        "raw": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ToolArgsParseError": {
       "kind": "ToolArgsParseError",
@@ -134,35 +163,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.602Z",
-  "$defs": {
-    "ToolArgsParseError": {
-      "type": "object",
-      "title": "ToolArgsParseError",
-      "description": "Tool Args Parse Error 的错误信息。",
-      "properties": {
-        "code": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "TOOL_ARGS_INVALID_JSON"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "TOOL_ARGS_NOT_OBJECT"
-              ]
-            }
-          ]
-        },
-        "raw": {
-          "type": "string"
-        }
-      }
     }
   }
 }

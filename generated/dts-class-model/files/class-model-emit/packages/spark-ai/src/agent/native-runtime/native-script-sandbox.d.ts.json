@@ -16,6 +16,14 @@
   "symbols": [
     "AiNativeScriptSandboxContext"
   ],
+  "generatedAt": "2026-06-14T01:03:51.210Z",
+  "$defs": {
+    "AiNativeScriptSandboxContext": {
+      "type": "object",
+      "title": "AiNativeScriptSandboxContext",
+      "description": "Ai Native Script Sandbox Context 的运行上下文。"
+    }
+  },
   "models": {
     "AiNativeScriptSandboxContext": {
       "kind": "AiNativeScriptSandboxContext",
@@ -38,14 +46,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.556Z",
-  "$defs": {
-    "AiNativeScriptSandboxContext": {
-      "type": "object",
-      "title": "AiNativeScriptSandboxContext",
-      "description": "Ai Native Script Sandbox Context 的运行上下文。"
     }
   }
 }

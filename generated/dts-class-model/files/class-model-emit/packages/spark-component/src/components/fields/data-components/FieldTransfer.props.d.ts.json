@@ -23,6 +23,49 @@
     "TransferValue",
     "RTransferProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.583Z",
+  "$defs": {
+    "TransferValue": {
+      "type": "object",
+      "title": "TransferValue",
+      "description": "Transfer 已选值数组；每一项对应穿梭框选项的 value。"
+    },
+    "RTransferProps": {
+      "type": "object",
+      "title": "RTransferProps",
+      "description": "RTransfer Props 的属性契约。",
+      "properties": {
+        "titles": {
+          "type": "array"
+        },
+        "filterPlaceholder": {
+          "type": "string"
+        },
+        "targetOrder": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "original"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "push"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "unshift"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "TransferValue": {
       "kind": "TransferValue",
@@ -133,49 +176,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.595Z",
-  "$defs": {
-    "TransferValue": {
-      "type": "object",
-      "title": "TransferValue",
-      "description": "Transfer 已选值数组；每一项对应穿梭框选项的 value。"
-    },
-    "RTransferProps": {
-      "type": "object",
-      "title": "RTransferProps",
-      "description": "RTransfer Props 的属性契约。",
-      "properties": {
-        "titles": {
-          "type": "array"
-        },
-        "filterPlaceholder": {
-          "type": "string"
-        },
-        "targetOrder": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "original"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "push"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "unshift"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

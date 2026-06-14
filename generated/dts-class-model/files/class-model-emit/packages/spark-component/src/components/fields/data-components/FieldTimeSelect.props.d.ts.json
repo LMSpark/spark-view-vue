@@ -21,6 +21,31 @@
   "symbols": [
     "RTimeSelectProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.581Z",
+  "$defs": {
+    "RTimeSelectProps": {
+      "type": "object",
+      "title": "RTimeSelectProps",
+      "description": "RTime Select Props 的属性契约。",
+      "properties": {
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        },
+        "step": {
+          "type": "string"
+        },
+        "minTime": {
+          "type": "string"
+        },
+        "maxTime": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RTimeSelectProps": {
       "kind": "RTimeSelectProps",
@@ -103,31 +128,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.593Z",
-  "$defs": {
-    "RTimeSelectProps": {
-      "type": "object",
-      "title": "RTimeSelectProps",
-      "description": "RTime Select Props 的属性契约。",
-      "properties": {
-        "start": {
-          "type": "string"
-        },
-        "end": {
-          "type": "string"
-        },
-        "step": {
-          "type": "string"
-        },
-        "minTime": {
-          "type": "string"
-        },
-        "maxTime": {
-          "type": "string"
-        }
-      }
     }
   }
 }

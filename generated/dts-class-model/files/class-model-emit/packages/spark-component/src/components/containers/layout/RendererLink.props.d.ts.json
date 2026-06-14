@@ -21,6 +21,99 @@
   "symbols": [
     "RLinkProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.434Z",
+  "$defs": {
+    "RLinkProps": {
+      "type": "object",
+      "title": "RLinkProps",
+      "description": "RLink Props 的属性契约。",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "linkType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                ""
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            }
+          ]
+        },
+        "underline": {
+          "type": "boolean"
+        },
+        "href": {
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "_blank"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "_self"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "_parent"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "_top"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RLinkProps": {
       "kind": "RLinkProps",
@@ -166,99 +259,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.255Z",
-  "$defs": {
-    "RLinkProps": {
-      "type": "object",
-      "title": "RLinkProps",
-      "description": "RLink Props 的属性契约。",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "linkType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            }
-          ]
-        },
-        "underline": {
-          "type": "boolean"
-        },
-        "href": {
-          "type": "string"
-        },
-        "target": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "_blank"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "_self"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "_parent"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "_top"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

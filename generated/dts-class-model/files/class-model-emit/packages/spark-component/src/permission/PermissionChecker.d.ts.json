@@ -16,6 +16,28 @@
   "symbols": [
     "FieldMaskInput"
   ],
+  "generatedAt": "2026-06-11T12:48:50.996Z",
+  "$defs": {
+    "FieldMaskInput": {
+      "type": "object",
+      "title": "FieldMaskInput",
+      "description": "Field Mask Input 的输入数据。",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "value": true,
+        "row": {
+          "type": "object",
+          "title": "DataRow"
+        },
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
+    }
+  },
   "models": {
     "FieldMaskInput": {
       "kind": "FieldMaskInput",
@@ -75,28 +97,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.748Z",
-  "$defs": {
-    "FieldMaskInput": {
-      "type": "object",
-      "title": "FieldMaskInput",
-      "description": "Field Mask Input 的输入数据。",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "value": true,
-        "row": {
-          "type": "object",
-          "title": "DataRow"
-        },
-        "permissionMode": {
-          "type": "object",
-          "title": "NavPermissionMode"
-        }
-      }
     }
   }
 }

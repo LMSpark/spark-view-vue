@@ -26,6 +26,162 @@
     "SessionDiagnosticsData",
     "ToolApprovalDisplayItem"
   ],
+  "generatedAt": "2026-06-11T12:48:50.955Z",
+  "$defs": {
+    "ToolCallDisplayItem": {
+      "type": "object",
+      "title": "ToolCallDisplayItem",
+      "description": "Tool Call Display Item 的语义模型。",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "argsPreview": {
+          "type": "string"
+        },
+        "turnId": {
+          "type": "string"
+        },
+        "round": {
+          "type": "number"
+        },
+        "callId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "resultSummary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "durationMs": {
+          "type": "number"
+        }
+      }
+    },
+    "ReasoningDisplayItem": {
+      "type": "object",
+      "title": "ReasoningDisplayItem",
+      "description": "Reasoning Display Item 的语义模型。",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "turnId": {
+          "type": "string"
+        },
+        "collapsed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "StreamDisplayEntry": {
+      "type": "object",
+      "title": "StreamDisplayEntry",
+      "description": "流视图中的一条渲染条目。\n真正的状态机在 spark-ai，UI 只消费这个简版投影。"
+    },
+    "SessionDiagnosticIssue": {
+      "type": "object",
+      "title": "SessionDiagnosticIssue",
+      "description": "Session Diagnostic Issue 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "SessionDiagnosticsData": {
+      "type": "object",
+      "title": "SessionDiagnosticsData",
+      "description": "诊断数据——永远有值（非 null）。\n由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。",
+      "properties": {
+        "summary": {
+          "type": "object",
+          "title": "AiAgentSessionSummary"
+        },
+        "transcript": {
+          "type": "array"
+        },
+        "issues": {
+          "type": "array"
+        }
+      }
+    },
+    "ToolApprovalDisplayItem": {
+      "type": "object",
+      "title": "ToolApprovalDisplayItem",
+      "description": "待审批工具调用的展示条目。\n只包含调用方映射后的展示字段，不依赖上游包类型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "argsPreview": {
+          "type": "string"
+        },
+        "moduleId": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ToolCallDisplayItem": {
       "kind": "ToolCallDisplayItem",
@@ -438,162 +594,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.056Z",
-  "$defs": {
-    "ToolCallDisplayItem": {
-      "type": "object",
-      "title": "ToolCallDisplayItem",
-      "description": "Tool Call Display Item 的语义模型。",
-      "properties": {
-        "toolName": {
-          "type": "string"
-        },
-        "argsPreview": {
-          "type": "string"
-        },
-        "turnId": {
-          "type": "string"
-        },
-        "round": {
-          "type": "number"
-        },
-        "callId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "status": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
-          ]
-        },
-        "resultSummary": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "durationMs": {
-          "type": "number"
-        }
-      }
-    },
-    "ReasoningDisplayItem": {
-      "type": "object",
-      "title": "ReasoningDisplayItem",
-      "description": "Reasoning Display Item 的语义模型。",
-      "properties": {
-        "text": {
-          "type": "string"
-        },
-        "turnId": {
-          "type": "string"
-        },
-        "collapsed": {
-          "type": "boolean"
-        }
-      }
-    },
-    "StreamDisplayEntry": {
-      "type": "object",
-      "title": "StreamDisplayEntry",
-      "description": "流视图中的一条渲染条目。\n真正的状态机在 spark-ai，UI 只消费这个简版投影。"
-    },
-    "SessionDiagnosticIssue": {
-      "type": "object",
-      "title": "SessionDiagnosticIssue",
-      "description": "Session Diagnostic Issue 的语义模型。",
-      "properties": {
-        "level": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warn"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
-          ]
-        },
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "hint": {
-          "type": "string"
-        }
-      }
-    },
-    "SessionDiagnosticsData": {
-      "type": "object",
-      "title": "SessionDiagnosticsData",
-      "description": "诊断数据——永远有值（非 null）。\n由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。",
-      "properties": {
-        "summary": {
-          "type": "object",
-          "title": "AiAgentSessionSummary"
-        },
-        "transcript": {
-          "type": "array"
-        },
-        "issues": {
-          "type": "array"
-        }
-      }
-    },
-    "ToolApprovalDisplayItem": {
-      "type": "object",
-      "title": "ToolApprovalDisplayItem",
-      "description": "待审批工具调用的展示条目。\n只包含调用方映射后的展示字段，不依赖上游包类型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "toolName": {
-          "type": "string"
-        },
-        "argsPreview": {
-          "type": "string"
-        },
-        "moduleId": {
-          "type": "string"
-        }
-      }
     }
   }
 }

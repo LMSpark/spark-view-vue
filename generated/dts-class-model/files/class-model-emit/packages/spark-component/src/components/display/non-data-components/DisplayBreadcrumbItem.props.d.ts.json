@@ -21,6 +21,23 @@
   "symbols": [
     "RBreadcrumbItemProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.496Z",
+  "$defs": {
+    "RBreadcrumbItemProps": {
+      "type": "object",
+      "title": "RBreadcrumbItemProps",
+      "description": "RBreadcrumb Item Props 的属性契约。",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "to": true,
+        "replace": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RBreadcrumbItemProps": {
       "kind": "RBreadcrumbItemProps",
@@ -78,23 +95,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.423Z",
-  "$defs": {
-    "RBreadcrumbItemProps": {
-      "type": "object",
-      "title": "RBreadcrumbItemProps",
-      "description": "RBreadcrumb Item Props 的属性契约。",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "to": true,
-        "replace": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

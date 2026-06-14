@@ -21,6 +21,82 @@
   "symbols": [
     "RSpaceProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.445Z",
+  "$defs": {
+    "RSpaceProps": {
+      "type": "object",
+      "title": "RSpaceProps",
+      "description": "RSpace Props 的属性契约。",
+      "properties": {
+        "direction": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            }
+          ]
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "wrap": {
+          "type": "boolean"
+        },
+        "fill": {
+          "type": "boolean"
+        },
+        "alignment": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "stretch"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "flex-start"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "flex-end"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "baseline"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RSpaceProps": {
       "kind": "RSpaceProps",
@@ -149,82 +225,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.274Z",
-  "$defs": {
-    "RSpaceProps": {
-      "type": "object",
-      "title": "RSpaceProps",
-      "description": "RSpace Props 的属性契约。",
-      "properties": {
-        "direction": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "horizontal"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "vertical"
-              ]
-            }
-          ]
-        },
-        "size": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "wrap": {
-          "type": "boolean"
-        },
-        "fill": {
-          "type": "boolean"
-        },
-        "alignment": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "stretch"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "flex-start"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "flex-end"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "baseline"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

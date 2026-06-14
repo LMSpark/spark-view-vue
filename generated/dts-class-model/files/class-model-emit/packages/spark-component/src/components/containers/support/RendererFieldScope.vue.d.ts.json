@@ -16,6 +16,92 @@
   "symbols": [
     "RendererFieldScopeProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.466Z",
+  "$defs": {
+    "RendererFieldScopeProps": {
+      "type": "object",
+      "title": "RendererFieldScopeProps",
+      "description": "r-field-scope 字段宿主容器属性，负责提供行上下文和表单布局。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "r-field-scope"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "model": {
+          "type": "object",
+          "title": "DataRow"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "gridColumns": {
+          "type": "number"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        },
+        "autoFitMinWidth": {
+          "type": "string"
+        },
+        "defaultColSpan": {
+          "type": "number"
+        },
+        "autoFillLastRow": {
+          "type": "boolean"
+        },
+        "labelPosition": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "top"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "labelWidth": {
+          "type": "string"
+        },
+        "inline": {
+          "type": "boolean"
+        },
+        "compact": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RendererFieldScopeProps": {
       "kind": "RendererFieldScopeProps",
@@ -192,92 +278,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.359Z",
-  "$defs": {
-    "RendererFieldScopeProps": {
-      "type": "object",
-      "title": "RendererFieldScopeProps",
-      "description": "r-field-scope 字段宿主容器属性，负责提供行上下文和表单布局。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "r-field-scope"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "model": {
-          "type": "object",
-          "title": "DataRow"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "gridColumns": {
-          "type": "number"
-        },
-        "gridGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "gridAutoRows": {
-          "type": "string"
-        },
-        "autoFitMinWidth": {
-          "type": "string"
-        },
-        "defaultColSpan": {
-          "type": "number"
-        },
-        "autoFillLastRow": {
-          "type": "boolean"
-        },
-        "labelPosition": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "top"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "labelWidth": {
-          "type": "string"
-        },
-        "inline": {
-          "type": "boolean"
-        },
-        "compact": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

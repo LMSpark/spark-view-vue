@@ -20,6 +20,61 @@
     "PageRuntimeErrorPayload",
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.603Z",
+  "$defs": {
+    "PageRuntimeErrorPhase": {
+      "type": "object",
+      "title": "PageRuntimeErrorPhase",
+      "description": "页面运行时错误发生阶段。"
+    },
+    "PageRuntimeErrorPayload": {
+      "type": "object",
+      "title": "PageRuntimeErrorPayload",
+      "description": "页面运行时错误上报载荷。",
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/PageRuntimeErrorPhase"
+        },
+        "message": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
+      }
+    },
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "SparkPageRenderer props — 对齐 h(type, props, children) 三段式。\n- type     = 'spark-page'（withDefaults 设定默认值）\n- props    = pageNode / pageId / enable* / 钩子等（本接口所有字段）\n- children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "pageNode": {
+          "type": "object",
+          "title": "PageNodeLike"
+        },
+        "pageNodeRevision": {
+          "type": "number"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "enableCssScope": {
+          "type": "boolean"
+        },
+        "enableDataSet": {
+          "type": "boolean"
+        },
+        "messageService": true,
+        "confirmService": true
+      }
+    }
+  },
   "models": {
     "PageRuntimeErrorPhase": {
       "kind": "PageRuntimeErrorPhase",
@@ -357,61 +412,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.742Z",
-  "$defs": {
-    "PageRuntimeErrorPhase": {
-      "type": "object",
-      "title": "PageRuntimeErrorPhase",
-      "description": "页面运行时错误发生阶段。"
-    },
-    "PageRuntimeErrorPayload": {
-      "type": "object",
-      "title": "PageRuntimeErrorPayload",
-      "description": "页面运行时错误上报载荷。",
-      "properties": {
-        "phase": {
-          "$ref": "#/$defs/PageRuntimeErrorPhase"
-        },
-        "message": {
-          "type": "string"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "at": {
-          "type": "string"
-        }
-      }
-    },
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "SparkPageRenderer props — 对齐 h(type, props, children) 三段式。\n- type     = 'spark-page'（withDefaults 设定默认值）\n- props    = pageNode / pageId / enable* / 钩子等（本接口所有字段）\n- children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "pageNode": {
-          "type": "object",
-          "title": "PageNodeLike"
-        },
-        "pageNodeRevision": {
-          "type": "number"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "enableCssScope": {
-          "type": "boolean"
-        },
-        "enableDataSet": {
-          "type": "boolean"
-        },
-        "messageService": true,
-        "confirmService": true
-      }
     }
   }
 }

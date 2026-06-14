@@ -18,6 +18,24 @@
     "DynamicRouterAccess",
     "NavAccessOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.946Z",
+  "$defs": {
+    "DynamicRouterAccess": {
+      "type": "object",
+      "title": "DynamicRouterAccess",
+      "description": "DynamicRouter 公共 API 子集（仅导航相关）"
+    },
+    "NavAccessOptions": {
+      "type": "object",
+      "title": "NavAccessOptions",
+      "description": "初始化选项",
+      "properties": {
+        "defaultHomePath": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "DynamicRouterAccess": {
       "kind": "DynamicRouterAccess",
@@ -128,24 +146,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.966Z",
-  "$defs": {
-    "DynamicRouterAccess": {
-      "type": "object",
-      "title": "DynamicRouterAccess",
-      "description": "DynamicRouter 公共 API 子集（仅导航相关）"
-    },
-    "NavAccessOptions": {
-      "type": "object",
-      "title": "NavAccessOptions",
-      "description": "初始化选项",
-      "properties": {
-        "defaultHomePath": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,28 @@
   "symbols": [
     "PageContextDeps"
   ],
+  "generatedAt": "2026-06-11T12:48:50.984Z",
+  "$defs": {
+    "PageContextDeps": {
+      "type": "object",
+      "title": "PageContextDeps",
+      "description": "buildPageContext 所需的依赖引用",
+      "properties": {
+        "pageRoute": {
+          "type": "object",
+          "title": "PageRoute"
+        },
+        "pageContainer": {
+          "type": "object",
+          "title": "Ref<HTMLElement | null>"
+        },
+        "pageService": {
+          "type": "object",
+          "title": "PageServiceCapability"
+        }
+      }
+    }
+  },
   "models": {
     "PageContextDeps": {
       "kind": "PageContextDeps",
@@ -168,28 +190,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.733Z",
-  "$defs": {
-    "PageContextDeps": {
-      "type": "object",
-      "title": "PageContextDeps",
-      "description": "buildPageContext 所需的依赖引用",
-      "properties": {
-        "pageRoute": {
-          "type": "object",
-          "title": "PageRoute"
-        },
-        "pageContainer": {
-          "type": "object",
-          "title": "Ref<HTMLElement | null>"
-        },
-        "pageService": {
-          "type": "object",
-          "title": "PageServiceCapability"
-        }
-      }
     }
   }
 }

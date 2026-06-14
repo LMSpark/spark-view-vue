@@ -21,6 +21,22 @@
   "symbols": [
     "RTimePickerProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.580Z",
+  "$defs": {
+    "RTimePickerProps": {
+      "type": "object",
+      "title": "RTimePickerProps",
+      "description": "RTime Picker Props 的属性契约。",
+      "properties": {
+        "isRange": {
+          "type": "boolean"
+        },
+        "arrowControl": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RTimePickerProps": {
       "kind": "RTimePickerProps",
@@ -76,22 +92,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.590Z",
-  "$defs": {
-    "RTimePickerProps": {
-      "type": "object",
-      "title": "RTimePickerProps",
-      "description": "RTime Picker Props 的属性契约。",
-      "properties": {
-        "isRange": {
-          "type": "boolean"
-        },
-        "arrowControl": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

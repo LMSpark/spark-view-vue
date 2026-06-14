@@ -23,6 +23,43 @@
     "NativeTableLike",
     "RendererTableZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.396Z",
+  "$defs": {
+    "NativeTableLike": {
+      "type": "object",
+      "title": "NativeTableLike",
+      "description": "r-table 运行时需要调用的 Element Plus table 原生能力集合。"
+    },
+    "RendererTableZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererTableZeroCodeOptions",
+      "description": "创建 r-table zero-code API 和事件桥接所需的运行时输入。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "nativeTableRef": {
+          "type": "object",
+          "title": "ValueRef<NativeTableLike | null>"
+        },
+        "currentRowOriginatorId": {
+          "type": "string"
+        },
+        "selectedRowsOriginatorId": {
+          "type": "string"
+        },
+        "logger": {
+          "type": "object",
+          "title": "LoggerApi"
+        }
+      }
+    }
+  },
   "models": {
     "NativeTableLike": {
       "kind": "NativeTableLike",
@@ -242,43 +279,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.110Z",
-  "$defs": {
-    "NativeTableLike": {
-      "type": "object",
-      "title": "NativeTableLike",
-      "description": "r-table 运行时需要调用的 Element Plus table 原生能力集合。"
-    },
-    "RendererTableZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererTableZeroCodeOptions",
-      "description": "创建 r-table zero-code API 和事件桥接所需的运行时输入。",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
-        },
-        "nativeTableRef": {
-          "type": "object",
-          "title": "ValueRef<NativeTableLike | null>"
-        },
-        "currentRowOriginatorId": {
-          "type": "string"
-        },
-        "selectedRowsOriginatorId": {
-          "type": "string"
-        },
-        "logger": {
-          "type": "object",
-          "title": "LoggerApi"
-        }
-      }
     }
   }
 }

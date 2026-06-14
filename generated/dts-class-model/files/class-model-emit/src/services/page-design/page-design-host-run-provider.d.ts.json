@@ -18,6 +18,56 @@
     "PageDesignDeliveryContext",
     "CreatePageDesignDeliveryPortOptions"
   ],
+  "generatedAt": "2026-06-14T02:26:49.574Z",
+  "$defs": {
+    "PageDesignDeliveryContext": {
+      "type": "object",
+      "title": "PageDesignDeliveryContext",
+      "description": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
+      "properties": {
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "pageId": {
+          "type": "string"
+        }
+      }
+    },
+    "CreatePageDesignDeliveryPortOptions": {
+      "type": "object",
+      "title": "CreatePageDesignDeliveryPortOptions",
+      "description": "Create Page Design Delivery Port Options 的调用配置。",
+      "properties": {
+        "mode": {
+          "type": "object",
+          "title": "AiDeliveryMode"
+        },
+        "shouldSave": {
+          "type": "boolean"
+        },
+        "rollbackStatus": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "skipped"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "rolledBack"
+              ]
+            }
+          ]
+        },
+        "saveFileNames": {
+          "type": "array"
+        }
+      }
+    }
+  },
   "models": {
     "PageDesignDeliveryContext": {
       "kind": "PageDesignDeliveryContext",
@@ -133,56 +183,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.460Z",
-  "$defs": {
-    "PageDesignDeliveryContext": {
-      "type": "object",
-      "title": "PageDesignDeliveryContext",
-      "description": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
-      "properties": {
-        "editor": {
-          "type": "object",
-          "title": "ProjectWorkspace"
-        },
-        "pageId": {
-          "type": "string"
-        }
-      }
-    },
-    "CreatePageDesignDeliveryPortOptions": {
-      "type": "object",
-      "title": "CreatePageDesignDeliveryPortOptions",
-      "description": "Create Page Design Delivery Port Options 的调用配置。",
-      "properties": {
-        "mode": {
-          "type": "object",
-          "title": "AiDeliveryMode"
-        },
-        "shouldSave": {
-          "type": "boolean"
-        },
-        "rollbackStatus": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "skipped"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "rolledBack"
-              ]
-            }
-          ]
-        },
-        "saveFileNames": {
-          "type": "array"
-        }
-      }
     }
   }
 }

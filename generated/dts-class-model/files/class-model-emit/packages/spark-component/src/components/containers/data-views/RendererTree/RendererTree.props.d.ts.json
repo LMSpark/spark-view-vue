@@ -21,6 +21,80 @@
   "symbols": [
     "RTreeProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.398Z",
+  "$defs": {
+    "RTreeProps": {
+      "type": "object",
+      "title": "RTreeProps",
+      "description": "r-tree 组件公开属性接口。\n命名规范：组件 type `r-tree` → 接口名 `RTreeProps`。",
+      "properties": {
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "actions": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "editor": {
+          "type": "object",
+          "title": "REditorProps"
+        },
+        "nodeKey": {
+          "type": "string"
+        },
+        "currentKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expandToKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expandLevel": {
+          "type": "number"
+        },
+        "onNodeClick": {
+          "type": "object",
+          "title": "TreeEventHandler"
+        },
+        "onNodeExpand": {
+          "type": "object",
+          "title": "TreeEventHandler"
+        },
+        "onNodeCollapse": {
+          "type": "object",
+          "title": "TreeEventHandler"
+        },
+        "treeProps": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "RTreeProps": {
       "kind": "RTreeProps",
@@ -194,80 +268,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.125Z",
-  "$defs": {
-    "RTreeProps": {
-      "type": "object",
-      "title": "RTreeProps",
-      "description": "r-tree 组件公开属性接口。\n命名规范：组件 type `r-tree` → 接口名 `RTreeProps`。",
-      "properties": {
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "actions": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "editor": {
-          "type": "object",
-          "title": "REditorProps"
-        },
-        "nodeKey": {
-          "type": "string"
-        },
-        "currentKey": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "expandToKey": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "expandLevel": {
-          "type": "number"
-        },
-        "onNodeClick": {
-          "type": "object",
-          "title": "TreeEventHandler"
-        },
-        "onNodeExpand": {
-          "type": "object",
-          "title": "TreeEventHandler"
-        },
-        "onNodeCollapse": {
-          "type": "object",
-          "title": "TreeEventHandler"
-        },
-        "treeProps": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
     }
   }
 }

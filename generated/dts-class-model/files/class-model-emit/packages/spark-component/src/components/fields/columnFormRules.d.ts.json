@@ -16,6 +16,48 @@
   "symbols": [
     "FormItemRule"
   ],
+  "generatedAt": "2026-06-11T12:48:50.969Z",
+  "$defs": {
+    "FormItemRule": {
+      "type": "object",
+      "title": "FormItemRule",
+      "description": "渲染层 FormItemRule 最小子集（避免引入具体实现类型依赖）",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "pattern": {
+          "type": "object",
+          "title": "RegExp"
+        }
+      }
+    }
+  },
   "models": {
     "FormItemRule": {
       "kind": "FormItemRule",
@@ -173,48 +215,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.470Z",
-  "$defs": {
-    "FormItemRule": {
-      "type": "object",
-      "title": "FormItemRule",
-      "description": "渲染层 FormItemRule 最小子集（避免引入具体实现类型依赖）",
-      "properties": {
-        "required": {
-          "type": "boolean"
-        },
-        "message": {
-          "type": "string"
-        },
-        "trigger": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "type": {
-          "type": "string"
-        },
-        "min": {
-          "type": "number"
-        },
-        "max": {
-          "type": "number"
-        },
-        "pattern": {
-          "type": "object",
-          "title": "RegExp"
-        }
-      }
     }
   }
 }

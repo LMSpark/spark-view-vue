@@ -32,6 +32,193 @@
     "AiAgentAppSseEventSource",
     "AiAgentTurnCallbacks"
   ],
+  "generatedAt": "2026-06-11T12:48:50.919Z",
+  "$defs": {
+    "AiAgentTransportToolSpec": {
+      "type": "object",
+      "title": "AiAgentTransportToolSpec",
+      "description": "传输层工具规约（对齐 OpenAI function tool spec）",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
+    },
+    "AiAgentTransportMessage": {
+      "type": "object",
+      "title": "AiAgentTransportMessage",
+      "description": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）",
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "user"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "assistant"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "tool"
+              ]
+            }
+          ]
+        },
+        "content": {
+          "type": "string"
+        },
+        "tool_call_id": {
+          "type": "string"
+        },
+        "tool_calls": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentTransportToolCall": {
+      "type": "object",
+      "title": "AiAgentTransportToolCall",
+      "description": "传输层工具调用",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
+    },
+    "AiAgentStreamTurnInput": {
+      "type": "object",
+      "title": "AiAgentStreamTurnInput",
+      "description": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "messages": {
+          "type": "array"
+        },
+        "signal": {
+          "type": "object",
+          "title": "AbortSignal"
+        }
+      }
+    },
+    "AiAgentPrepareSessionInput": {
+      "type": "object",
+      "title": "AiAgentPrepareSessionInput",
+      "description": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "signal": {
+          "type": "object",
+          "title": "AbortSignal"
+        }
+      }
+    },
+    "AiAgentStreamTurnResult": {
+      "type": "object",
+      "title": "AiAgentStreamTurnResult",
+      "description": "AI turn 汇总结果",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "reasoning": {
+          "type": "string"
+        },
+        "toolCalls": {
+          "type": "array"
+        },
+        "assistantMessagePersisted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "AiAgentAppendMessagesInput": {
+      "type": "object",
+      "title": "AiAgentAppendMessagesInput",
+      "description": "追加消息请求输入",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "messages": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentAppSseEventSource": {
+      "type": "object",
+      "title": "AiAgentAppSseEventSource",
+      "description": "Ai Agent App Sse Event Source 的语义模型。"
+    },
+    "AiAgentTurnCallbacks": {
+      "type": "object",
+      "title": "AiAgentTurnCallbacks",
+      "description": "APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。"
+    }
+  },
   "models": {
     "AiAgentTransportToolSpec": {
       "kind": "AiAgentTransportToolSpec",
@@ -849,193 +1036,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.680Z",
-  "$defs": {
-    "AiAgentTransportToolSpec": {
-      "type": "object",
-      "title": "AiAgentTransportToolSpec",
-      "description": "传输层工具规约（对齐 OpenAI function tool spec）",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "function"
-          ]
-        },
-        "function": {
-          "type": "object"
-        }
-      }
-    },
-    "AiAgentTransportMessage": {
-      "type": "object",
-      "title": "AiAgentTransportMessage",
-      "description": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）",
-      "properties": {
-        "role": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "user"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "assistant"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "system"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "tool"
-              ]
-            }
-          ]
-        },
-        "content": {
-          "type": "string"
-        },
-        "tool_call_id": {
-          "type": "string"
-        },
-        "tool_calls": {
-          "type": "array"
-        }
-      }
-    },
-    "AiAgentTransportToolCall": {
-      "type": "object",
-      "title": "AiAgentTransportToolCall",
-      "description": "传输层工具调用",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "function"
-          ]
-        },
-        "function": {
-          "type": "object"
-        }
-      }
-    },
-    "AiAgentStreamTurnInput": {
-      "type": "object",
-      "title": "AiAgentStreamTurnInput",
-      "description": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）",
-      "properties": {
-        "sessionId": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
-        },
-        "systemPrompt": {
-          "type": "string"
-        },
-        "tools": {
-          "type": "array"
-        },
-        "messages": {
-          "type": "array"
-        },
-        "signal": {
-          "type": "object",
-          "title": "AbortSignal"
-        }
-      }
-    },
-    "AiAgentPrepareSessionInput": {
-      "type": "object",
-      "title": "AiAgentPrepareSessionInput",
-      "description": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。",
-      "properties": {
-        "sessionId": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "systemPrompt": {
-          "type": "string"
-        },
-        "tools": {
-          "type": "array"
-        },
-        "signal": {
-          "type": "object",
-          "title": "AbortSignal"
-        }
-      }
-    },
-    "AiAgentStreamTurnResult": {
-      "type": "object",
-      "title": "AiAgentStreamTurnResult",
-      "description": "AI turn 汇总结果",
-      "properties": {
-        "text": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        },
-        "toolCalls": {
-          "type": "array"
-        },
-        "assistantMessagePersisted": {
-          "type": "boolean"
-        }
-      }
-    },
-    "AiAgentAppendMessagesInput": {
-      "type": "object",
-      "title": "AiAgentAppendMessagesInput",
-      "description": "追加消息请求输入",
-      "properties": {
-        "sessionId": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
-        },
-        "messages": {
-          "type": "array"
-        }
-      }
-    },
-    "AiAgentAppSseEventSource": {
-      "type": "object",
-      "title": "AiAgentAppSseEventSource",
-      "description": "Ai Agent App Sse Event Source 的语义模型。"
-    },
-    "AiAgentTurnCallbacks": {
-      "type": "object",
-      "title": "AiAgentTurnCallbacks",
-      "description": "APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。"
     }
   }
 }

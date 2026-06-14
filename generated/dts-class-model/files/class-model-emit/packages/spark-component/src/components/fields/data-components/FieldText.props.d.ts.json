@@ -21,6 +21,14 @@
   "symbols": [
     "RTextProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.578Z",
+  "$defs": {
+    "RTextProps": {
+      "type": "object",
+      "title": "RTextProps",
+      "description": "RText Props 的属性契约。"
+    }
+  },
   "models": {
     "RTextProps": {
       "kind": "RTextProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.587Z",
-  "$defs": {
-    "RTextProps": {
-      "type": "object",
-      "title": "RTextProps",
-      "description": "RText Props 的属性契约。"
     }
   }
 }

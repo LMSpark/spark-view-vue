@@ -18,6 +18,194 @@
     "FormDetailContainerProps",
     "FormDetailContainerConsumerProps"
   ],
+  "generatedAt": "2026-06-11T12:48:50.961Z",
+  "$defs": {
+    "FormDetailContainerProps": {
+      "type": "object",
+      "title": "FormDetailContainerProps",
+      "description": "容器内部完整属性形状（包括私有布局字段）。",
+      "properties": {
+        "dataViewKey": {
+          "type": "string"
+        },
+        "contextDataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "contextDataField": {
+          "type": "string"
+        },
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "autoColumns": {
+          "type": "boolean"
+        },
+        "gridColumns": {
+          "type": "number"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        }
+      }
+    },
+    "FormDetailContainerConsumerProps": {
+      "type": "object",
+      "title": "FormDetailContainerConsumerProps",
+      "description": "r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。\n目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。",
+      "properties": {
+        "type": true,
+        "id": true,
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "children": true,
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "dataViewKey": {
+          "type": "string"
+        },
+        "contextDataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "contextDataField": {
+          "type": "string"
+        },
+        "autoColumns": {
+          "type": "boolean"
+        },
+        "gridColumns": {
+          "type": "number"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "FormDetailContainerProps": {
       "kind": "FormDetailContainerProps",
@@ -358,194 +546,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.315Z",
-  "$defs": {
-    "FormDetailContainerProps": {
-      "type": "object",
-      "title": "FormDetailContainerProps",
-      "description": "容器内部完整属性形状（包括私有布局字段）。",
-      "properties": {
-        "dataViewKey": {
-          "type": "string"
-        },
-        "contextDataMember": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataMember"
-            },
-            {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          ]
-        },
-        "contextDataField": {
-          "type": "string"
-        },
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "autoColumns": {
-          "type": "boolean"
-        },
-        "gridColumns": {
-          "type": "number"
-        },
-        "gridGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "gridAutoRows": {
-          "type": "string"
-        }
-      }
-    },
-    "FormDetailContainerConsumerProps": {
-      "type": "object",
-      "title": "FormDetailContainerConsumerProps",
-      "description": "r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。\n目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。",
-      "properties": {
-        "type": true,
-        "id": true,
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "children": true,
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "dataViewKey": {
-          "type": "string"
-        },
-        "contextDataMember": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataMember"
-            },
-            {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          ]
-        },
-        "contextDataField": {
-          "type": "string"
-        },
-        "autoColumns": {
-          "type": "boolean"
-        },
-        "gridColumns": {
-          "type": "number"
-        },
-        "gridGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "gridAutoRows": {
-          "type": "string"
-        }
-      }
     }
   }
 }

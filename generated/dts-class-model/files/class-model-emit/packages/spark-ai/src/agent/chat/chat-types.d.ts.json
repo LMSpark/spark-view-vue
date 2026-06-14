@@ -24,6 +24,122 @@
     "AiAgentToolCallRecord",
     "AiAgentTurnMeta"
   ],
+  "generatedAt": "2026-06-11T12:48:50.902Z",
+  "$defs": {
+    "AiAgentChatMessage": {
+      "type": "object",
+      "title": "AiAgentChatMessage",
+      "description": "单条聊天消息（对齐 OpenAI message 格式），判别联合：role='tool' 必须有 tool_call_id"
+    },
+    "AiAgentChatRequest": {
+      "type": "object",
+      "title": "AiAgentChatRequest",
+      "description": "聊天请求。\n必填：\nhistoryMsgs — 历史消息列表（包含当前用户输入）\n可选回调（流式传输）：\nonReasoning — 推理过程增量回调\nonDelta     — 文本增量回调\nonUsage     — token 用量回调\nonStreamEvent — 原始 AI turn 事件回调\nonToolCall  — 工具调用记录回调\nbeforeFunctionCall — 本次请求级工具执行前置裁决\n可选控制：\nturn        — 轮次元数据（未提供时自动生成）\nsystemPrompt — 额外的系统提示词\nsignal      — AbortSignal（取消请求）",
+      "properties": {
+        "historyMsgs": {
+          "type": "array"
+        },
+        "turn": {
+          "$ref": "#/$defs/AiAgentTurnMeta"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "signal": {
+          "type": "object",
+          "title": "AbortSignal"
+        }
+      }
+    },
+    "AiAgentStreamEvent": {
+      "type": "object",
+      "title": "AiAgentStreamEvent",
+      "description": "AI turn 事件（一次模型 turn 在 APP 公共 SSE 中的事件单元）。\ntype      — 事件类型（delta / reasoning / usage / result / error / tool-result 等）\ndata      — 事件数据（字符串）\nturnKey   — turn 隔离键（kind + 顶层 instanceId + turnId）\nstreamKey — turn 内流键（turnKey + streamId）\nscope     — 事件作用域（含 kind / 顶层 instanceId / eventModuleId / turnId）",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "data": true,
+        "turnKey": {
+          "type": "string"
+        },
+        "streamKey": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object"
+        }
+      }
+    },
+    "AiAgentToolCallRecord": {
+      "type": "object",
+      "title": "AiAgentToolCallRecord",
+      "description": "工具调用记录（用于前端展示和调试）。\n每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onToolCall 回调\n将本记录传给业务方。",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "args": true,
+        "turnId": {
+          "type": "string"
+        },
+        "round": {
+          "type": "number"
+        },
+        "callId": {
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "title": "AiAgentFunctionCallResult<unknown>"
+        },
+        "durationMs": {
+          "type": "number"
+        }
+      }
+    },
+    "AiAgentTurnMeta": {
+      "type": "object",
+      "title": "AiAgentTurnMeta",
+      "description": "轮次元数据。\nturnId          — 轮次 ID（UUID）\nseq             — 序号\nbaseRevision    — 基础版本号（历史消息数 - 1）\nqueuedAt        — 排队时间（ISO 字符串）\nstartedAt       — 开始时间（ISO 字符串）\nmaxParallelTurns — 最大并行轮次（当前固定为 1）",
+      "properties": {
+        "turnId": {
+          "type": "string"
+        },
+        "seq": {
+          "type": "number"
+        },
+        "baseRevision": {
+          "type": "number"
+        },
+        "queuedAt": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string"
+        },
+        "maxParallelTurns": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentChatMessage": {
       "kind": "AiAgentChatMessage",
@@ -570,122 +686,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.538Z",
-  "$defs": {
-    "AiAgentChatMessage": {
-      "type": "object",
-      "title": "AiAgentChatMessage",
-      "description": "单条聊天消息（对齐 OpenAI message 格式），判别联合：role='tool' 必须有 tool_call_id"
-    },
-    "AiAgentChatRequest": {
-      "type": "object",
-      "title": "AiAgentChatRequest",
-      "description": "聊天请求。\n必填：\nhistoryMsgs — 历史消息列表（包含当前用户输入）\n可选回调（流式传输）：\nonReasoning — 推理过程增量回调\nonDelta     — 文本增量回调\nonUsage     — token 用量回调\nonStreamEvent — 原始 AI turn 事件回调\nonToolCall  — 工具调用记录回调\nbeforeFunctionCall — 本次请求级工具执行前置裁决\n可选控制：\nturn        — 轮次元数据（未提供时自动生成）\nsystemPrompt — 额外的系统提示词\nsignal      — AbortSignal（取消请求）",
-      "properties": {
-        "historyMsgs": {
-          "type": "array"
-        },
-        "turn": {
-          "$ref": "#/$defs/AiAgentTurnMeta"
-        },
-        "systemPrompt": {
-          "type": "string"
-        },
-        "signal": {
-          "type": "object",
-          "title": "AbortSignal"
-        }
-      }
-    },
-    "AiAgentStreamEvent": {
-      "type": "object",
-      "title": "AiAgentStreamEvent",
-      "description": "AI turn 事件（一次模型 turn 在 APP 公共 SSE 中的事件单元）。\ntype      — 事件类型（delta / reasoning / usage / result / error / tool-result 等）\ndata      — 事件数据（字符串）\nturnKey   — turn 隔离键（kind + 顶层 instanceId + turnId）\nstreamKey — turn 内流键（turnKey + streamId）\nscope     — 事件作用域（含 kind / 顶层 instanceId / eventModuleId / turnId）",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "data": true,
-        "turnKey": {
-          "type": "string"
-        },
-        "streamKey": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "object"
-        }
-      }
-    },
-    "AiAgentToolCallRecord": {
-      "type": "object",
-      "title": "AiAgentToolCallRecord",
-      "description": "工具调用记录（用于前端展示和调试）。\n每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onToolCall 回调\n将本记录传给业务方。",
-      "properties": {
-        "toolName": {
-          "type": "string"
-        },
-        "args": true,
-        "turnId": {
-          "type": "string"
-        },
-        "round": {
-          "type": "number"
-        },
-        "callId": {
-          "type": "string"
-        },
-        "status": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
-          ]
-        },
-        "result": {
-          "type": "object",
-          "title": "AiAgentFunctionCallResult<unknown>"
-        },
-        "durationMs": {
-          "type": "number"
-        }
-      }
-    },
-    "AiAgentTurnMeta": {
-      "type": "object",
-      "title": "AiAgentTurnMeta",
-      "description": "轮次元数据。\nturnId          — 轮次 ID（UUID）\nseq             — 序号\nbaseRevision    — 基础版本号（历史消息数 - 1）\nqueuedAt        — 排队时间（ISO 字符串）\nstartedAt       — 开始时间（ISO 字符串）\nmaxParallelTurns — 最大并行轮次（当前固定为 1）",
-      "properties": {
-        "turnId": {
-          "type": "string"
-        },
-        "seq": {
-          "type": "number"
-        },
-        "baseRevision": {
-          "type": "number"
-        },
-        "queuedAt": {
-          "type": "string"
-        },
-        "startedAt": {
-          "type": "string"
-        },
-        "maxParallelTurns": {
-          "type": "number"
-        }
-      }
     }
   }
 }

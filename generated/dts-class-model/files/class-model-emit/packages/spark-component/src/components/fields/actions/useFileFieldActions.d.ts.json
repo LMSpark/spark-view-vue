@@ -16,6 +16,31 @@
   "symbols": [
     "UseFileFieldActionsOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.521Z",
+  "$defs": {
+    "UseFileFieldActionsOptions": {
+      "type": "object",
+      "title": "UseFileFieldActionsOptions",
+      "description": "Use File Field Actions Options 的调用配置。",
+      "properties": {
+        "pageService": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "PageServiceCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "isEditable": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        }
+      }
+    }
+  },
   "models": {
     "UseFileFieldActionsOptions": {
       "kind": "UseFileFieldActionsOptions",
@@ -59,31 +84,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.466Z",
-  "$defs": {
-    "UseFileFieldActionsOptions": {
-      "type": "object",
-      "title": "UseFileFieldActionsOptions",
-      "description": "Use File Field Actions Options 的调用配置。",
-      "properties": {
-        "pageService": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "PageServiceCapability"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "isEditable": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        }
-      }
     }
   }
 }

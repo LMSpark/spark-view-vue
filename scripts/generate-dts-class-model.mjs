@@ -4,6 +4,7 @@
 // 2. 每个 .d.ts 生成一个同路径 .d.ts.json（guide SSOT，生产 guide + script 共用）
 // 3. 写入 generated/dts-class-model/manifest.json
 // 4. 写入缺 JSDoc 语义补充日志 semantic-gaps.log / semantic-gaps.json
+// 5. 增量：对照 .dts-manifest.json 源文件 mtime + shard 是否存在，仅变化项重投影落盘（--full 强制全量）
 
 import {
   copyFileSync,
@@ -29,6 +30,14 @@ import {
   isClassModelEmitPath,
   toClassModelEmitPath,
 } from '../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
+import {
+  finalizeBundleWithoutProjection,
+  planIncrementalBundleBuild,
+  readDtsManifestSnapshot,
+  removeObsoleteBundleShards,
+  writeDtsManifestSnapshot,
+} from './lib/class-model-incremental-build.mjs'
+import { buildDebugBreak } from './lib/build-debug.mjs'
 
 const require = createRequire(import.meta.url)
 const vueTscRequire = createRequire(require.resolve('vue-tsc'))
@@ -49,6 +58,12 @@ const targetedSeed = targetedBuildRequested
     })
   : undefined
 const timings = createTimings()
+
+buildDebugBreak('class-model-generate:start', {
+  emitBackend,
+  targetedBuildRequested,
+  forceFullRebuild: cliOptions.forceFullRebuild,
+})
 
 let dtsFiles
 let declarationCompilerHost
@@ -74,6 +89,7 @@ if (dtsFiles.length === 0) {
   throw new Error('No in-memory ClassModel emit outputs were produced.')
 }
 console.log(`Collected DTS files: ${String(dtsFiles.length)}`)
+buildDebugBreak('class-model-generate:after-memory-emit', { dtsFileCount: dtsFiles.length })
 
 const targetedBuild = targetedBuildRequested
   ? prepareTargetedBuild({
@@ -87,7 +103,32 @@ const targetedBuild = targetedBuildRequested
       useEmittedDtsClosure: targetedSeed !== undefined,
     })
   : undefined
-const buildRootFiles = targetedBuild?.rootFiles ?? dtsFiles
+const emitSourcePaths = dtsFiles.map(fileName => normalizeRepoPath(fileName, repoRoot))
+const existingManifestPath = resolve(outputDir, 'manifest.json')
+const existingSemanticJsonPath = resolve(outputDir, 'semantic-gaps.json')
+const existingManifest = existsSync(existingManifestPath) ? readJsonFile(existingManifestPath) : undefined
+const existingSemanticReport = existsSync(existingSemanticJsonPath) ? readJsonFile(existingSemanticJsonPath) : undefined
+const existingDtsManifest = readDtsManifestSnapshot(dtsManifestPath)
+
+const incrementalPlan = targetedBuild === undefined
+  ? planIncrementalBundleBuild({
+      repoRoot,
+      outputDir,
+      emitSourcePaths,
+      dtsFiles,
+      compilerHost: declarationCompilerHost,
+      existingManifest,
+      existingDtsManifest,
+      forceFullRebuild: cliOptions.forceFullRebuild,
+      resolveProgramRootFiles: changedSourcePaths => collectDtsDependencyClosure({
+        repoRoot,
+        dtsFiles,
+        compilerHost: declarationCompilerHost,
+        targetSourcePaths: changedSourcePaths,
+      }),
+    })
+  : undefined
+const buildRootFiles = targetedBuild?.rootFiles ?? incrementalPlan?.programRootFiles ?? dtsFiles
 const buildOutputDir = targetedBuild?.tempOutputDir ?? outputDir
 if (targetedBuild !== undefined) {
   console.log([
@@ -97,50 +138,145 @@ if (targetedBuild !== undefined) {
     `root DTS=${String(targetedBuild.targetSourcePaths.length)}`,
     `closure DTS=${String(targetedBuild.rootFiles.length)}`,
   ].filter(Boolean).join(' '))
+} else if (incrementalPlan?.mode === 'incremental') {
+  console.log([
+    'Incremental ClassModel compile:',
+    `unchanged=${String(incrementalPlan.unchangedSourcePaths.size)}`,
+    `changed=${String(incrementalPlan.changedSourcePaths.size)}`,
+    `removed=${String(incrementalPlan.removedSourcePaths.size)}`,
+    `program DTS=${String(buildRootFiles.length)}`,
+  ].join(' '))
 }
 
+buildDebugBreak('class-model-generate:after-incremental-plan', {
+  mode: incrementalPlan?.mode ?? (targetedBuild === undefined ? 'full' : 'targeted'),
+  buildRootFileCount: buildRootFiles.length,
+})
+
 timings.mark('collect-dts')
-if (targetedBuild === undefined) {
-  removeTreeSync(outputDir)
-} else {
+if (targetedBuild !== undefined) {
   removeTreeSync(buildOutputDir)
-}
-mkdirSync(outputDir, { recursive: true })
-if (targetedBuild === undefined) {
-  writeFileSync(dtsManifestPath, `${JSON.stringify(dtsFiles, null, 2)}\n`, 'utf8')
+  mkdirSync(outputDir, { recursive: true })
+} else if (incrementalPlan?.mode === 'full') {
+  removeTreeSync(outputDir)
+  mkdirSync(outputDir, { recursive: true })
+} else {
+  mkdirSync(outputDir, { recursive: true })
+  removeObsoleteBundleShards({
+    outputDir,
+    existingManifest,
+    removedSourcePaths: incrementalPlan.removedSourcePaths,
+  })
 }
 timings.mark('prepare-output')
 
-console.log('Building DTS ClassModel bundle...')
-const result = buildDtsClassModelBundle({
-  repoRoot,
-  rootFiles: buildRootFiles,
-  outputDir: buildOutputDir,
-  ...(declarationCompilerHost === undefined ? {} : { compilerHost: declarationCompilerHost }),
-  exportedOnly: false,
-  progressInterval: 50,
-  onProgress: event => {
-    const line = renderProgress(event)
-    if (line.length > 0) console.log(line)
-  },
-})
-
-if (result.fileCount !== buildRootFiles.length) {
-  throw new Error(`DTS JSON count mismatch: dts=${String(buildRootFiles.length)} json=${String(result.fileCount)}`)
-}
-const publishedResult = targetedBuild === undefined
-  ? result
-  : mergeTargetedBundle({
-      repoRoot,
+let publishedResult
+if (
+  targetedBuild === undefined
+  && incrementalPlan !== undefined
+  && incrementalPlan.changedSourcePaths.size === 0
+) {
+  if (incrementalPlan.removedSourcePaths.size === 0) {
+    console.log('No ClassModel shards need reprojection.')
+    publishedResult = {
+      manifest: existingManifest,
+      manifestPath: existingManifestPath,
+      semanticLogPath: resolve(outputDir, 'semantic-gaps.log'),
+      semanticLogJsonPath: existingSemanticJsonPath,
+      semanticGapCount: existingSemanticReport?.gapCount ?? 0,
+      fileCount: Object.keys(existingManifest?.files ?? {}).length,
+      modelCount: countModelsInManifest(outputDir, existingManifest),
+    }
+  } else {
+    console.log('No ClassModel shards need reprojection; refreshing manifest indexes only.')
+    const finalized = finalizeBundleWithoutProjection({
       outputDir,
-      tempOutputDir: targetedBuild.tempOutputDir,
-      result,
+      existingManifest,
+      existingSemanticReport,
+      removedSourcePaths: incrementalPlan.removedSourcePaths,
+      rebuildClassIndex: rebuildClassIndexFromBundleFiles,
+      mergeSemanticGapReports,
+      countModelsInManifest,
+      sortRecord,
     })
+    const manifestPath = existingManifestPath
+    writeFileSync(manifestPath, `${JSON.stringify(finalized.manifest, null, 2)}\n`, 'utf8')
+    writeFileSync(existingSemanticJsonPath, `${JSON.stringify(finalized.semanticReport, null, 2)}\n`, 'utf8')
+    writeFileSync(resolve(outputDir, 'semantic-gaps.log'), renderSemanticGapLogFromReport(finalized.semanticReport), 'utf8')
+    publishedResult = {
+      manifest: finalized.manifest,
+      manifestPath,
+      semanticLogPath: resolve(outputDir, 'semantic-gaps.log'),
+      semanticLogJsonPath: existingSemanticJsonPath,
+      semanticGapCount: finalized.semanticGapCount,
+      fileCount: finalized.fileCount,
+      modelCount: finalized.modelCount,
+    }
+  }
+} else {
+  console.log('Building DTS ClassModel bundle...')
+  buildDebugBreak('class-model-generate:before-build-bundle', {
+    buildRootFileCount: buildRootFiles.length,
+    outputDir: buildOutputDir,
+  })
+  const result = buildDtsClassModelBundle({
+    repoRoot,
+    rootFiles: buildRootFiles,
+    outputDir: buildOutputDir,
+    ...(declarationCompilerHost === undefined ? {} : { compilerHost: declarationCompilerHost }),
+    exportedOnly: false,
+    progressInterval: 50,
+    ...(targetedBuild === undefined && incrementalPlan?.mode === 'incremental'
+      ? {
+          projectOnlySourcePaths: incrementalPlan.changedSourcePaths,
+          knownProjectedClassNamesBySourcePath: incrementalPlan.knownClassNamesBySourcePath,
+        }
+      : {}),
+    onProgress: event => {
+      const line = renderProgress(event)
+      if (line.length > 0) console.log(line)
+    },
+  })
+
+  const expectedProjectedCount = targetedBuild === undefined && incrementalPlan !== undefined
+    ? incrementalPlan.changedSourcePaths.size
+    : buildRootFiles.length
+  if (result.fileCount !== expectedProjectedCount) {
+    throw new Error(`DTS JSON count mismatch: expected=${String(expectedProjectedCount)} json=${String(result.fileCount)}`)
+  }
+  publishedResult = targetedBuild === undefined && incrementalPlan?.mode === 'incremental'
+    ? mergeChangedBundle({
+        outputDir,
+        existingManifest,
+        existingSemanticReport,
+        result,
+        changedSourcePaths: incrementalPlan.changedSourcePaths,
+      })
+    : targetedBuild === undefined
+      ? result
+      : mergeTargetedBundle({
+          repoRoot,
+          outputDir,
+          tempOutputDir: targetedBuild.tempOutputDir,
+          result,
+        })
+}
 if (targetedBuild !== undefined) {
   removeTreeSync(targetedBuild.tempOutputDir)
 }
+writeDtsManifestSnapshot({
+  repoRoot,
+  manifest: publishedResult.manifest,
+  manifestPath: dtsManifestPath,
+  writeFileSync,
+})
 removeTreeSync(resolve(outputDir, 'runtime'))
 timings.mark('build-bundle')
+buildDebugBreak('class-model-generate:complete', {
+  fileCount: publishedResult.fileCount,
+  modelCount: publishedResult.modelCount,
+  semanticGapCount: publishedResult.semanticGapCount,
+})
 
 console.log(`DTS files: ${String(dtsFiles.length)}`)
 if (targetedBuild !== undefined) {
@@ -457,11 +593,16 @@ function parseCliOptions(args) {
   const sources = []
   let emitBackend = 'compiler-api'
   let checkDiagnostics = false
+  let forceFullRebuild = false
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
     if (arg === '--check-diagnostics') {
       checkDiagnostics = true
+      continue
+    }
+    if (arg === '--full') {
+      forceFullRebuild = true
       continue
     }
     if (arg === '--vue-tsc-emit') {
@@ -523,6 +664,7 @@ function parseCliOptions(args) {
   return {
     checkDiagnostics,
     emitBackend: readEmitBackendValue(emitBackend),
+    forceFullRebuild,
     models: uniqueStrings(models),
     sources: uniqueStrings(sources),
   }
@@ -767,6 +909,39 @@ function declaresNamedSymbol(node, symbolName) {
   return false
 }
 
+function mergeChangedBundle(command) {
+  const existingManifestPath = resolve(command.outputDir, 'manifest.json')
+  const existingSemanticJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
+  const mergedManifest = mergeBundleManifest({
+    outputDir: command.outputDir,
+    existingManifest: command.existingManifest,
+    targetManifest: command.result.manifest,
+    targetSourcePaths: command.changedSourcePaths,
+  })
+  writeFileSync(existingManifestPath, `${JSON.stringify(mergedManifest, null, 2)}\n`, 'utf8')
+  assertMergedBundleFilesExist(command.outputDir, mergedManifest.files)
+
+  const semanticReport = mergeSemanticGapReports({
+    existing: command.existingSemanticReport,
+    target: readJsonFile(command.result.semanticLogJsonPath),
+    targetSourcePaths: command.changedSourcePaths,
+  })
+  const semanticLogPath = resolve(command.outputDir, 'semantic-gaps.log')
+  const semanticLogJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
+  writeFileSync(semanticLogJsonPath, `${JSON.stringify(semanticReport, null, 2)}\n`, 'utf8')
+  writeFileSync(semanticLogPath, renderSemanticGapLogFromReport(semanticReport), 'utf8')
+
+  return {
+    manifest: mergedManifest,
+    manifestPath: existingManifestPath,
+    semanticLogPath,
+    semanticLogJsonPath,
+    semanticGapCount: semanticReport.gapCount,
+    fileCount: Object.keys(mergedManifest.files).length,
+    modelCount: countModelsInManifest(command.outputDir, mergedManifest),
+  }
+}
+
 function mergeTargetedBundle(command) {
   const existingManifestPath = resolve(command.outputDir, 'manifest.json')
   const existingSemanticJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
@@ -788,7 +963,6 @@ function mergeTargetedBundle(command) {
     targetSourcePaths,
   })
   writeFileSync(existingManifestPath, `${JSON.stringify(mergedManifest, null, 2)}\n`, 'utf8')
-  writeDtsManifestFromBundleManifest(command.repoRoot, command.outputDir, mergedManifest)
   assertMergedBundleFilesExist(command.outputDir, mergedManifest.files)
 
   const semanticReport = mergeSemanticGapReports({
@@ -822,7 +996,6 @@ function mergeBundleManifest(command) {
 
   return {
     ...command.existingManifest,
-    generatedAt: command.targetManifest.generatedAt,
     scannedFileCount: Object.keys(files).length,
     files: sortRecord(files),
     classIndex: sortRecord(rebuiltIndex.classIndex),
@@ -856,14 +1029,15 @@ function rebuildClassIndexFromBundleFiles(outputDir, files) {
 }
 
 function writeDtsManifestFromBundleManifest(repoRoot, outputDir, manifest) {
-  const dtsFiles = Object.keys(manifest.files ?? {})
-    .sort((left, right) => left.localeCompare(right))
-    .map(sourcePath => resolve(repoRoot, sourcePath))
-  writeFileSync(resolve(outputDir, '.dts-manifest.json'), `${JSON.stringify(dtsFiles, null, 2)}\n`, 'utf8')
+  writeDtsManifestSnapshot({
+    repoRoot,
+    manifest,
+    manifestPath: resolve(outputDir, '.dts-manifest.json'),
+    writeFileSync,
+  })
 }
 
 function mergeSemanticGapReports(command) {
-  const generatedAt = new Date().toISOString()
   const targetGaps = command.target.gaps ?? []
   const existingGaps = command.existing?.gaps ?? []
   const gaps = [
@@ -871,7 +1045,6 @@ function mergeSemanticGapReports(command) {
     ...targetGaps,
   ].sort(compareSemanticGaps)
   return {
-    generatedAt,
     gapCount: gaps.length,
     notes: command.existing?.notes ?? command.target.notes ?? [],
     gaps,
@@ -891,7 +1064,6 @@ function compareSemanticGaps(left, right) {
 function renderSemanticGapLogFromReport(report) {
   const lines = [
     '# DTS ClassModel semantic gaps',
-    `generatedAt: ${report.generatedAt}`,
     `gapCount: ${String(report.gapCount)}`,
     '',
     'notes:',

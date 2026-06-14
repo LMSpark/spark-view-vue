@@ -20,6 +20,24 @@
     "BaseContainerApi",
     "VisibilityContainerApi"
   ],
+  "generatedAt": "2026-06-11T12:48:50.964Z",
+  "$defs": {
+    "BaseCrudContainerApi": {
+      "type": "object",
+      "title": "BaseCrudContainerApi",
+      "description": "数据容器 CRUD API（统一最小公约数）。\n该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。"
+    },
+    "BaseContainerApi": {
+      "type": "object",
+      "title": "BaseContainerApi",
+      "description": "表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。"
+    },
+    "VisibilityContainerApi": {
+      "type": "object",
+      "title": "VisibilityContainerApi",
+      "description": "可见性容器 API（Dialog/Drawer 等）。"
+    }
+  },
   "models": {
     "BaseCrudContainerApi": {
       "kind": "BaseCrudContainerApi",
@@ -692,24 +710,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.348Z",
-  "$defs": {
-    "BaseCrudContainerApi": {
-      "type": "object",
-      "title": "BaseCrudContainerApi",
-      "description": "数据容器 CRUD API（统一最小公约数）。\n该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。"
-    },
-    "BaseContainerApi": {
-      "type": "object",
-      "title": "BaseContainerApi",
-      "description": "表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。"
-    },
-    "VisibilityContainerApi": {
-      "type": "object",
-      "title": "VisibilityContainerApi",
-      "description": "可见性容器 API（Dialog/Drawer 等）。"
     }
   }
 }

@@ -14,6 +14,7 @@ import {
   declarationNameText,
   sourceFileFromEmitPath,
 } from './dts-ast-utils'
+import { readSourceModifiedAtIso } from './class-model-emit-path'
 import {
   CLASS_MODEL_EMIT_SOURCE,
   isClassModelEmitPath,
@@ -223,6 +224,7 @@ export function projectDtsSourceFileProjection(
     if (className !== undefined) symbols.push(className)
   })
   const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
+  const sourceModifiedAt = readSourceModifiedAtIso({ repoRoot, emitSourcePath: sourcePath })
 
   return {
     schemaVersion: DTS_FILE_PROJECTION_VERSION,
@@ -235,7 +237,7 @@ export function projectDtsSourceFileProjection(
     }),
     symbols,
     models: context.models,
-    generatedAt: new Date().toISOString(),
+    ...(sourceModifiedAt === undefined ? {} : { generatedAt: sourceModifiedAt }),
   }
 }
 
@@ -305,7 +307,6 @@ export function projectDtsClassModelSurface(
     configPath,
     models: context.models,
     fileIndex: context.fileIndex,
-    generatedAt: new Date().toISOString(),
   }
 }
 

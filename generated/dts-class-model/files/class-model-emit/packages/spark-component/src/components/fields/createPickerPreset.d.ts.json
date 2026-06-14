@@ -16,6 +16,28 @@
   "symbols": [
     "PickerPresetDefaults"
   ],
+  "generatedAt": "2026-06-11T12:38:13.531Z",
+  "$defs": {
+    "PickerPresetDefaults": {
+      "type": "object",
+      "title": "PickerPresetDefaults",
+      "description": "Picker Preset Defaults 的语义模型。",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "buttonText": {
+          "type": "string"
+        },
+        "readonlyButtonText": {
+          "type": "string"
+        },
+        "entityName": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "PickerPresetDefaults": {
       "kind": "PickerPresetDefaults",
@@ -68,28 +90,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.490Z",
-  "$defs": {
-    "PickerPresetDefaults": {
-      "type": "object",
-      "title": "PickerPresetDefaults",
-      "description": "Picker Preset Defaults 的语义模型。",
-      "properties": {
-        "placeholder": {
-          "type": "string"
-        },
-        "buttonText": {
-          "type": "string"
-        },
-        "readonlyButtonText": {
-          "type": "string"
-        },
-        "entityName": {
-          "type": "string"
-        }
-      }
     }
   }
 }

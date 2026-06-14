@@ -20,6 +20,24 @@
     "PostMutationFn",
     "LocalMutationDelegate"
   ],
+  "generatedAt": "2026-06-11T12:48:51.021Z",
+  "$defs": {
+    "EmitRowsChangedFn": {
+      "type": "object",
+      "title": "EmitRowsChangedFn",
+      "description": "Emit Rows Changed Fn 的语义模型。"
+    },
+    "PostMutationFn": {
+      "type": "object",
+      "title": "PostMutationFn",
+      "description": "Post Mutation Fn 的语义模型。"
+    },
+    "LocalMutationDelegate": {
+      "type": "object",
+      "title": "LocalMutationDelegate",
+      "description": "Local Mutation Delegate 的语义模型。"
+    }
+  },
   "models": {
     "EmitRowsChangedFn": {
       "kind": "EmitRowsChangedFn",
@@ -389,24 +407,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.994Z",
-  "$defs": {
-    "EmitRowsChangedFn": {
-      "type": "object",
-      "title": "EmitRowsChangedFn",
-      "description": "Emit Rows Changed Fn 的语义模型。"
-    },
-    "PostMutationFn": {
-      "type": "object",
-      "title": "PostMutationFn",
-      "description": "Post Mutation Fn 的语义模型。"
-    },
-    "LocalMutationDelegate": {
-      "type": "object",
-      "title": "LocalMutationDelegate",
-      "description": "Local Mutation Delegate 的语义模型。"
     }
   }
 }

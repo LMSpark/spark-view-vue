@@ -23,6 +23,100 @@
     "TagType",
     "RTagProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.491Z",
+  "$defs": {
+    "TagType": {
+      "type": "object",
+      "title": "TagType",
+      "description": "Tag Type 的语义模型。"
+    },
+    "RTagProps": {
+      "type": "object",
+      "title": "RTagProps",
+      "description": "RTag Props 的属性契约。",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "tagType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                ""
+              ]
+            },
+            {
+              "$ref": "#/$defs/TagType"
+            }
+          ]
+        },
+        "dynamicType": {
+          "type": "object",
+          "title": "Record<string, '' | TagType>"
+        },
+        "closable": {
+          "type": "boolean"
+        },
+        "disableTransitions": {
+          "type": "boolean"
+        },
+        "hit": {
+          "type": "boolean"
+        },
+        "round": {
+          "type": "boolean"
+        },
+        "color": {
+          "type": "string"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "small"
+              ]
+            }
+          ]
+        },
+        "effect": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "dark"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "light"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "plain"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "TagType": {
       "kind": "TagType",
@@ -237,100 +331,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.410Z",
-  "$defs": {
-    "TagType": {
-      "type": "object",
-      "title": "TagType",
-      "description": "Tag Type 的语义模型。"
-    },
-    "RTagProps": {
-      "type": "object",
-      "title": "RTagProps",
-      "description": "RTag Props 的属性契约。",
-      "properties": {
-        "content": {
-          "type": "string"
-        },
-        "tagType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "$ref": "#/$defs/TagType"
-            }
-          ]
-        },
-        "dynamicType": {
-          "type": "object",
-          "title": "Record<string, '' | TagType>"
-        },
-        "closable": {
-          "type": "boolean"
-        },
-        "disableTransitions": {
-          "type": "boolean"
-        },
-        "hit": {
-          "type": "boolean"
-        },
-        "round": {
-          "type": "boolean"
-        },
-        "color": {
-          "type": "string"
-        },
-        "size": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "large"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "small"
-              ]
-            }
-          ]
-        },
-        "effect": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "dark"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "light"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "plain"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

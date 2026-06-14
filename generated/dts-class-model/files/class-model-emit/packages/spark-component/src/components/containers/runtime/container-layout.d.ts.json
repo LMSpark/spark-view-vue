@@ -22,6 +22,82 @@
     "UseCompositeItemGridOptions",
     "CompositeItemGridState"
   ],
+  "generatedAt": "2026-06-11T12:48:50.962Z",
+  "$defs": {
+    "UseContainerGridOptions": {
+      "type": "object",
+      "title": "UseContainerGridOptions",
+      "description": "`useContainerGrid` 输入选项。",
+      "properties": {
+        "children": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<SparkNode[]>"
+        },
+        "columns": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<number>"
+        },
+        "gap": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<number | string>"
+        },
+        "autoRows": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<string>"
+        },
+        "autoFitMinWidth": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<string>"
+        },
+        "defaultColSpan": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<number>"
+        },
+        "autoFillLastRow": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ContainerGridState": {
+      "type": "object",
+      "title": "ContainerGridState",
+      "description": "`useContainerGrid` 返回状态。",
+      "properties": {
+        "gridStyle": {
+          "type": "object",
+          "title": "ComputedRef<CSSProperties>"
+        },
+        "gridChildren": {
+          "type": "object",
+          "title": "ComputedRef<SparkNode[]>"
+        }
+      }
+    },
+    "UseCompositeItemGridOptions": {
+      "type": "object",
+      "title": "UseCompositeItemGridOptions",
+      "description": "Use Composite Item Grid Options 的调用配置。"
+    },
+    "CompositeItemGridState": {
+      "type": "object",
+      "title": "CompositeItemGridState",
+      "description": "`useCompositeItemGrid` 返回状态。",
+      "properties": {
+        "contentChildren": {
+          "type": "object",
+          "title": "ComputedRef<SparkNode[]>"
+        },
+        "contentBodyClass": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "contentGridStyle": {
+          "type": "object",
+          "title": "ComputedRef<CSSProperties>"
+        }
+      }
+    }
+  },
   "models": {
     "UseContainerGridOptions": {
       "kind": "UseContainerGridOptions",
@@ -482,82 +558,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.321Z",
-  "$defs": {
-    "UseContainerGridOptions": {
-      "type": "object",
-      "title": "UseContainerGridOptions",
-      "description": "`useContainerGrid` 输入选项。",
-      "properties": {
-        "children": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<SparkNode[]>"
-        },
-        "columns": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<number>"
-        },
-        "gap": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<number | string>"
-        },
-        "autoRows": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<string>"
-        },
-        "autoFitMinWidth": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<string>"
-        },
-        "defaultColSpan": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<number>"
-        },
-        "autoFillLastRow": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ContainerGridState": {
-      "type": "object",
-      "title": "ContainerGridState",
-      "description": "`useContainerGrid` 返回状态。",
-      "properties": {
-        "gridStyle": {
-          "type": "object",
-          "title": "ComputedRef<CSSProperties>"
-        },
-        "gridChildren": {
-          "type": "object",
-          "title": "ComputedRef<SparkNode[]>"
-        }
-      }
-    },
-    "UseCompositeItemGridOptions": {
-      "type": "object",
-      "title": "UseCompositeItemGridOptions",
-      "description": "Use Composite Item Grid Options 的调用配置。"
-    },
-    "CompositeItemGridState": {
-      "type": "object",
-      "title": "CompositeItemGridState",
-      "description": "`useCompositeItemGrid` 返回状态。",
-      "properties": {
-        "contentChildren": {
-          "type": "object",
-          "title": "ComputedRef<SparkNode[]>"
-        },
-        "contentBodyClass": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "contentGridStyle": {
-          "type": "object",
-          "title": "ComputedRef<CSSProperties>"
-        }
-      }
     }
   }
 }

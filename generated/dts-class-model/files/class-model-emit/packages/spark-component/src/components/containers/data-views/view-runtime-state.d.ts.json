@@ -37,6 +37,188 @@
     "AggregateResultState",
     "ResolvedViewRef"
   ],
+  "generatedAt": "2026-06-11T12:38:13.410Z",
+  "$defs": {
+    "DataViewIdentityState": {
+      "type": "object",
+      "title": "DataViewIdentityState",
+      "description": "DataView 标识态：来自 DataView 快照的静态元信息。",
+      "properties": {
+        "tableName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "viewId": {
+          "type": "object",
+          "title": "ComputedRef<string | undefined>"
+        },
+        "primaryKey": {
+          "type": "object",
+          "title": "ComputedRef<string | undefined>"
+        },
+        "treeConfig": {
+          "type": "object",
+          "title": "ComputedRef<TreeConfig | undefined>"
+        }
+      }
+    },
+    "DataViewRowsState": {
+      "type": "object",
+      "title": "DataViewRowsState",
+      "description": "DataView 行数据态：当前视图下的行级数据与选择状态。",
+      "properties": {
+        "rows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "columns": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataColumn[]>"
+        },
+        "currentRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        },
+        "selectedRows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "editingRows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "isMultiSelect": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        }
+      }
+    },
+    "DataViewDisplayState": {
+      "type": "object",
+      "title": "DataViewDisplayState",
+      "description": "DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。",
+      "properties": {
+        "_modelPerm": {
+          "type": "object",
+          "title": "ComputedRef<ModelPermission | undefined>"
+        },
+        "value": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "label": {
+          "type": "object",
+          "title": "ComputedRef<string | null>"
+        },
+        "labels": {
+          "type": "object",
+          "title": "ComputedRef<readonly string[]>"
+        }
+      }
+    },
+    "DataViewPermissionState": {
+      "type": "object",
+      "title": "DataViewPermissionState",
+      "description": "DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。",
+      "properties": {
+        "modelPermission": {
+          "type": "object",
+          "title": "ComputedRef<ModelPermission | undefined>"
+        }
+      }
+    },
+    "DataViewRequestAndAggregateState": {
+      "type": "object",
+      "title": "DataViewRequestAndAggregateState",
+      "description": "DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。",
+      "properties": {
+        "requestState": {
+          "type": "object",
+          "title": "ComputedRef<RequestState>"
+        },
+        "aggregateResult": {
+          "type": "object",
+          "title": "ComputedRef<AggregateResultState>"
+        },
+        "selectionAggregateResult": {
+          "type": "object",
+          "title": "ComputedRef<AggregateResultState>"
+        },
+        "total": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "page": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "pageSize": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "mutating": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "mutatingError": {
+          "type": "object",
+          "title": "ComputedRef<Error | null>"
+        },
+        "loadingError": {
+          "type": "object",
+          "title": "ComputedRef<Error | null>"
+        }
+      }
+    },
+    "DataViewRuntimeState": {
+      "type": "object",
+      "title": "DataViewRuntimeState",
+      "description": "DataView 完整运行时投影（不含容器级解析上下文）。"
+    },
+    "ContainerDataViewContextState": {
+      "type": "object",
+      "title": "ContainerDataViewContextState",
+      "description": "容器级数据解析上下文（不属于 DataView 原始字段）。",
+      "properties": {
+        "resolvedView": {
+          "type": "object",
+          "title": "ComputedRef<DataView | null>"
+        },
+        "resolvedDataRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        }
+      }
+    },
+    "DataViewState": {
+      "type": "object",
+      "title": "DataViewState",
+      "description": "五类容器共享顶层视图态。"
+    },
+    "AggregateResultState": {
+      "type": "object",
+      "title": "AggregateResultState",
+      "description": "聚合结果运行时类型（key -> 聚合值）。"
+    },
+    "ResolvedViewRef": {
+      "type": "object",
+      "title": "ResolvedViewRef",
+      "description": "resolvedView 的标准只读 ref 形态。",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "DataViewIdentityState": {
       "kind": "DataViewIdentityState",
@@ -540,188 +722,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.203Z",
-  "$defs": {
-    "DataViewIdentityState": {
-      "type": "object",
-      "title": "DataViewIdentityState",
-      "description": "DataView 标识态：来自 DataView 快照的静态元信息。",
-      "properties": {
-        "tableName": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "viewId": {
-          "type": "object",
-          "title": "ComputedRef<string | undefined>"
-        },
-        "primaryKey": {
-          "type": "object",
-          "title": "ComputedRef<string | undefined>"
-        },
-        "treeConfig": {
-          "type": "object",
-          "title": "ComputedRef<TreeConfig | undefined>"
-        }
-      }
-    },
-    "DataViewRowsState": {
-      "type": "object",
-      "title": "DataViewRowsState",
-      "description": "DataView 行数据态：当前视图下的行级数据与选择状态。",
-      "properties": {
-        "rows": {
-          "type": "object",
-          "title": "ComputedRef<readonly DataRow[]>"
-        },
-        "columns": {
-          "type": "object",
-          "title": "ComputedRef<readonly DataColumn[]>"
-        },
-        "currentRow": {
-          "type": "object",
-          "title": "ComputedRef<DataRow | null>"
-        },
-        "selectedRows": {
-          "type": "object",
-          "title": "ComputedRef<readonly DataRow[]>"
-        },
-        "editingRows": {
-          "type": "object",
-          "title": "ComputedRef<readonly DataRow[]>"
-        },
-        "isMultiSelect": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        }
-      }
-    },
-    "DataViewDisplayState": {
-      "type": "object",
-      "title": "DataViewDisplayState",
-      "description": "DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。",
-      "properties": {
-        "_modelPerm": {
-          "type": "object",
-          "title": "ComputedRef<ModelPermission | undefined>"
-        },
-        "value": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "label": {
-          "type": "object",
-          "title": "ComputedRef<string | null>"
-        },
-        "labels": {
-          "type": "object",
-          "title": "ComputedRef<readonly string[]>"
-        }
-      }
-    },
-    "DataViewPermissionState": {
-      "type": "object",
-      "title": "DataViewPermissionState",
-      "description": "DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。",
-      "properties": {
-        "modelPermission": {
-          "type": "object",
-          "title": "ComputedRef<ModelPermission | undefined>"
-        }
-      }
-    },
-    "DataViewRequestAndAggregateState": {
-      "type": "object",
-      "title": "DataViewRequestAndAggregateState",
-      "description": "DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。",
-      "properties": {
-        "requestState": {
-          "type": "object",
-          "title": "ComputedRef<RequestState>"
-        },
-        "aggregateResult": {
-          "type": "object",
-          "title": "ComputedRef<AggregateResultState>"
-        },
-        "selectionAggregateResult": {
-          "type": "object",
-          "title": "ComputedRef<AggregateResultState>"
-        },
-        "total": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        },
-        "page": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        },
-        "pageSize": {
-          "type": "object",
-          "title": "ComputedRef<number>"
-        },
-        "mutating": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "mutatingError": {
-          "type": "object",
-          "title": "ComputedRef<Error | null>"
-        },
-        "loadingError": {
-          "type": "object",
-          "title": "ComputedRef<Error | null>"
-        }
-      }
-    },
-    "DataViewRuntimeState": {
-      "type": "object",
-      "title": "DataViewRuntimeState",
-      "description": "DataView 完整运行时投影（不含容器级解析上下文）。"
-    },
-    "ContainerDataViewContextState": {
-      "type": "object",
-      "title": "ContainerDataViewContextState",
-      "description": "容器级数据解析上下文（不属于 DataView 原始字段）。",
-      "properties": {
-        "resolvedView": {
-          "type": "object",
-          "title": "ComputedRef<DataView | null>"
-        },
-        "resolvedDataRow": {
-          "type": "object",
-          "title": "ComputedRef<DataRow | null>"
-        }
-      }
-    },
-    "DataViewState": {
-      "type": "object",
-      "title": "DataViewState",
-      "description": "五类容器共享顶层视图态。"
-    },
-    "AggregateResultState": {
-      "type": "object",
-      "title": "AggregateResultState",
-      "description": "聚合结果运行时类型（key -> 聚合值）。"
-    },
-    "ResolvedViewRef": {
-      "type": "object",
-      "title": "ResolvedViewRef",
-      "description": "resolvedView 的标准只读 ref 形态。",
-      "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataView"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
     }
   }
 }

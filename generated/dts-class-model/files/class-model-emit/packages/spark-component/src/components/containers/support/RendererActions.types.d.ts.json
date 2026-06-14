@@ -22,6 +22,63 @@
     "PermissionDeniedBehavior",
     "RendererActionsProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.466Z",
+  "$defs": {
+    "ActionsAlign": {
+      "type": "object",
+      "title": "ActionsAlign",
+      "description": "动作区内容对齐方式。"
+    },
+    "ActionsPosition": {
+      "type": "object",
+      "title": "ActionsPosition",
+      "description": "动作区停靠位置。"
+    },
+    "PermissionDeniedBehavior": {
+      "type": "object",
+      "title": "PermissionDeniedBehavior",
+      "description": "权限不足时的动作呈现策略。"
+    },
+    "RendererActionsProps": {
+      "type": "object",
+      "title": "RendererActionsProps",
+      "description": "表格行动作列配置属性。\n用于 `r-table` 的 `actions` 属性，描述行动作操作列的列元数据与子动作节点。",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/ActionsPosition"
+        },
+        "align": {
+          "$ref": "#/$defs/ActionsAlign"
+        },
+        "fixed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/ActionsPosition"
+            }
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ActionsAlign": {
       "kind": "ActionsAlign",
@@ -196,63 +253,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.357Z",
-  "$defs": {
-    "ActionsAlign": {
-      "type": "object",
-      "title": "ActionsAlign",
-      "description": "动作区内容对齐方式。"
-    },
-    "ActionsPosition": {
-      "type": "object",
-      "title": "ActionsPosition",
-      "description": "动作区停靠位置。"
-    },
-    "PermissionDeniedBehavior": {
-      "type": "object",
-      "title": "PermissionDeniedBehavior",
-      "description": "权限不足时的动作呈现策略。"
-    },
-    "RendererActionsProps": {
-      "type": "object",
-      "title": "RendererActionsProps",
-      "description": "表格行动作列配置属性。\n用于 `r-table` 的 `actions` 属性，描述行动作操作列的列元数据与子动作节点。",
-      "properties": {
-        "position": {
-          "$ref": "#/$defs/ActionsPosition"
-        },
-        "align": {
-          "$ref": "#/$defs/ActionsAlign"
-        },
-        "fixed": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/ActionsPosition"
-            }
-          ]
-        },
-        "label": {
-          "type": "string"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "class": {
-          "type": "string"
-        }
-      }
     }
   }
 }

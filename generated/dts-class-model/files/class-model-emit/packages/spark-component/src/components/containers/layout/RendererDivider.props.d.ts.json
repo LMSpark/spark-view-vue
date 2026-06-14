@@ -21,6 +21,91 @@
   "symbols": [
     "RDividerProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.429Z",
+  "$defs": {
+    "RDividerProps": {
+      "type": "object",
+      "title": "RDividerProps",
+      "description": "RDivider Props 的属性契约。",
+      "properties": {
+        "direction": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            }
+          ]
+        },
+        "borderStyle": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "solid"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dashed"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dotted"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "double"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            }
+          ]
+        },
+        "contentPosition": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RDividerProps": {
       "kind": "RDividerProps",
@@ -152,91 +237,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.249Z",
-  "$defs": {
-    "RDividerProps": {
-      "type": "object",
-      "title": "RDividerProps",
-      "description": "RDivider Props 的属性契约。",
-      "properties": {
-        "direction": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "horizontal"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "vertical"
-              ]
-            }
-          ]
-        },
-        "borderStyle": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "solid"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dashed"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dotted"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "double"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "none"
-              ]
-            }
-          ]
-        },
-        "contentPosition": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "content": {
-          "type": "string"
-        }
-      }
     }
   }
 }

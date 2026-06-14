@@ -21,6 +21,61 @@
   "symbols": [
     "RPopoverProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.440Z",
+  "$defs": {
+    "RPopoverProps": {
+      "type": "object",
+      "title": "RPopoverProps",
+      "description": "RPopover Props 的属性契约。",
+      "properties": {
+        "contentChildren": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "click"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "focus"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "contextmenu"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RPopoverProps": {
       "kind": "RPopoverProps",
@@ -126,61 +181,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.267Z",
-  "$defs": {
-    "RPopoverProps": {
-      "type": "object",
-      "title": "RPopoverProps",
-      "description": "RPopover Props 的属性契约。",
-      "properties": {
-        "contentChildren": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "trigger": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "click"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "hover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "focus"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "contextmenu"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }

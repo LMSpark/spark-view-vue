@@ -27,6 +27,94 @@
     "FieldControlProps",
     "UseFieldControlStateOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.535Z",
+  "$defs": {
+    "FieldContextStateLike": {
+      "type": "object",
+      "title": "FieldContextStateLike",
+      "description": "字段上下文对控件层暴露的只读显示和校验状态。",
+      "properties": {
+        "fieldName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "displayLabel": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isCurrentFieldHidden": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "shouldRenderCurrentField": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "currentDisplayValue": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "validationRules": {
+          "type": "object",
+          "title": "ComputedRef<FormItemRule[]>"
+        }
+      }
+    },
+    "ControlledFieldStateLike": {
+      "type": "object",
+      "title": "ControlledFieldStateLike",
+      "description": "字段控件与数据源之间的受控值同步状态。",
+      "properties": {
+        "fieldValue": {
+          "type": "object",
+          "title": "ComputedRef<TValue>"
+        },
+        "contextData": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dataSource": true,
+        "currentRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        }
+      }
+    },
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "将选中 props 的每个字段都允许显式传 undefined。"
+    },
+    "FieldControlProps": {
+      "type": "object",
+      "title": "FieldControlProps",
+      "description": "字段控件层消费的通用组件属性子集。"
+    },
+    "UseFieldControlStateOptions": {
+      "type": "object",
+      "title": "UseFieldControlStateOptions",
+      "description": "创建字段控件运行态所需的输入。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/FieldControlProps"
+        },
+        "fieldType": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ControlledFieldStateLike",
+          "title": "ControlledFieldStateLike<TValue>"
+        }
+      }
+    }
+  },
   "models": {
     "FieldContextStateLike": {
       "kind": "FieldContextStateLike",
@@ -394,94 +482,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.510Z",
-  "$defs": {
-    "FieldContextStateLike": {
-      "type": "object",
-      "title": "FieldContextStateLike",
-      "description": "字段上下文对控件层暴露的只读显示和校验状态。",
-      "properties": {
-        "fieldName": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "displayLabel": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "isCurrentFieldHidden": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "shouldRenderCurrentField": {
-          "type": "object",
-          "title": "ComputedRef<boolean>"
-        },
-        "currentDisplayValue": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        },
-        "validationRules": {
-          "type": "object",
-          "title": "ComputedRef<FormItemRule[]>"
-        }
-      }
-    },
-    "ControlledFieldStateLike": {
-      "type": "object",
-      "title": "ControlledFieldStateLike",
-      "description": "字段控件与数据源之间的受控值同步状态。",
-      "properties": {
-        "fieldValue": {
-          "type": "object",
-          "title": "ComputedRef<TValue>"
-        },
-        "contextData": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "dataSource": true,
-        "currentRow": {
-          "type": "object",
-          "title": "ComputedRef<DataRow | null>"
-        }
-      }
-    },
-    "OptionalWithUndefined": {
-      "type": "object",
-      "title": "OptionalWithUndefined",
-      "description": "将选中 props 的每个字段都允许显式传 undefined。"
-    },
-    "FieldControlProps": {
-      "type": "object",
-      "title": "FieldControlProps",
-      "description": "字段控件层消费的通用组件属性子集。"
-    },
-    "UseFieldControlStateOptions": {
-      "type": "object",
-      "title": "UseFieldControlStateOptions",
-      "description": "创建字段控件运行态所需的输入。",
-      "properties": {
-        "props": {
-          "$ref": "#/$defs/FieldControlProps"
-        },
-        "fieldType": {
-          "type": "string"
-        },
-        "state": {
-          "$ref": "#/$defs/ControlledFieldStateLike",
-          "title": "ControlledFieldStateLike<TValue>"
-        }
-      }
     }
   }
 }

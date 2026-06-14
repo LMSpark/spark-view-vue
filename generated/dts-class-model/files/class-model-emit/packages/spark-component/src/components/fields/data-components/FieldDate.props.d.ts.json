@@ -23,6 +23,27 @@
     "DatePickerType",
     "RDateProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.550Z",
+  "$defs": {
+    "DatePickerType": {
+      "type": "object",
+      "title": "DatePickerType",
+      "description": "Date Picker Type 的语义模型。"
+    },
+    "RDateProps": {
+      "type": "object",
+      "title": "RDateProps",
+      "description": "RDate Props 的属性契约。",
+      "properties": {
+        "dateType": {
+          "$ref": "#/$defs/DatePickerType"
+        },
+        "valueFormat": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "DatePickerType": {
       "kind": "DatePickerType",
@@ -140,27 +161,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.542Z",
-  "$defs": {
-    "DatePickerType": {
-      "type": "object",
-      "title": "DatePickerType",
-      "description": "Date Picker Type 的语义模型。"
-    },
-    "RDateProps": {
-      "type": "object",
-      "title": "RDateProps",
-      "description": "RDate Props 的属性契约。",
-      "properties": {
-        "dateType": {
-          "$ref": "#/$defs/DatePickerType"
-        },
-        "valueFormat": {
-          "type": "string"
-        }
-      }
     }
   }
 }

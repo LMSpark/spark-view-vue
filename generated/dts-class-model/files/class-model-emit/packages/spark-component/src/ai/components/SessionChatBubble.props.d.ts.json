@@ -16,6 +16,53 @@
   "symbols": [
     "SessionChatBubbleProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.367Z",
+  "$defs": {
+    "SessionChatBubbleProps": {
+      "type": "object",
+      "title": "SessionChatBubbleProps",
+      "description": "Session Chat Bubble Props 的属性契约。",
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "user"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "assistant"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "content": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "isTyping": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "SessionChatBubbleProps": {
       "kind": "SessionChatBubbleProps",
@@ -101,53 +148,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.046Z",
-  "$defs": {
-    "SessionChatBubbleProps": {
-      "type": "object",
-      "title": "SessionChatBubbleProps",
-      "description": "Session Chat Bubble Props 的属性契约。",
-      "properties": {
-        "role": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "user"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "assistant"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "system"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
-          ]
-        },
-        "content": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "isTyping": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

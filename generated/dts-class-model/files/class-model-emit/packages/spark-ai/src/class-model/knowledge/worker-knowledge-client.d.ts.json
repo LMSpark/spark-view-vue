@@ -18,6 +18,36 @@
     "CreateWorkerDtsClassModelKnowledgeProviderOptions",
     "WorkerClassModelKnowledgeProvider"
   ],
+  "generatedAt": "2026-06-13T20:54:01.875Z",
+  "$defs": {
+    "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
+      "type": "object",
+      "title": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "description": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。",
+      "properties": {
+        "workerUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "URL"
+            }
+          ]
+        },
+        "workerOptions": {
+          "type": "object",
+          "title": "WorkerOptions"
+        }
+      }
+    },
+    "WorkerClassModelKnowledgeProvider": {
+      "type": "object",
+      "title": "WorkerClassModelKnowledgeProvider",
+      "description": "主线程 knowledge provider。\n成熟 Worker 通信由 Comlink 负责；主线程只传 metadata/catalog URL 和小查询参数。\n注意：本文件不得 import spark-json-document，也不得 import generated metadata JSON。"
+    }
+  },
   "models": {
     "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
       "kind": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
@@ -385,36 +415,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.825Z",
-  "$defs": {
-    "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
-      "type": "object",
-      "title": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
-      "description": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。",
-      "properties": {
-        "workerUrl": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "object",
-              "title": "URL"
-            }
-          ]
-        },
-        "workerOptions": {
-          "type": "object",
-          "title": "WorkerOptions"
-        }
-      }
-    },
-    "WorkerClassModelKnowledgeProvider": {
-      "type": "object",
-      "title": "WorkerClassModelKnowledgeProvider",
-      "description": "主线程 knowledge provider。\n成熟 Worker 通信由 Comlink 负责；主线程只传 metadata/catalog URL 和小查询参数。\n注意：本文件不得 import spark-json-document，也不得 import generated metadata JSON。"
     }
   }
 }

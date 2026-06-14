@@ -16,6 +16,25 @@
   "symbols": [
     "AiAgentTransportTurn"
   ],
+  "generatedAt": "2026-06-11T12:48:50.918Z",
+  "$defs": {
+    "AiAgentTransportTurn": {
+      "type": "object",
+      "title": "AiAgentTransportTurn",
+      "description": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
+      "properties": {
+        "turnId": {
+          "type": "string"
+        },
+        "turnKey": {
+          "type": "string"
+        },
+        "streamKey": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentTransportTurn": {
       "kind": "AiAgentTransportTurn",
@@ -66,25 +85,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.663Z",
-  "$defs": {
-    "AiAgentTransportTurn": {
-      "type": "object",
-      "title": "AiAgentTransportTurn",
-      "description": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
-      "properties": {
-        "turnId": {
-          "type": "string"
-        },
-        "turnKey": {
-          "type": "string"
-        },
-        "streamKey": {
-          "type": "string"
-        }
-      }
     }
   }
 }

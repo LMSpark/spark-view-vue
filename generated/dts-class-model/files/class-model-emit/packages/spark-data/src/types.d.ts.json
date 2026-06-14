@@ -152,6 +152,1691 @@
     "BatchResult",
     "CrudOperationConfig"
   ],
+  "generatedAt": "2026-06-11T12:48:51.026Z",
+  "$defs": {
+    "SparkEventEmitter": {
+      "type": "object",
+      "title": "SparkEventEmitter",
+      "description": "事件发射器：DataSet/DataView 内部使用的最小事件接口"
+    },
+    "DataRow": {
+      "type": "object",
+      "title": "DataRow",
+      "description": "数据行：所有数据容器的基本行形状，可选携带实例级权限",
+      "properties": {
+        "_perm": {
+          "$ref": "#/$defs/InstancePermission"
+        }
+      }
+    },
+    "ColumnType": {
+      "type": "object",
+      "title": "ColumnType",
+      "description": "列类型字面量联合——涵盖 DataValidator 中所有已知类型。\n末尾的 `(string & {})` 保持对自定义类型的开放性，同时不影响已知值的自动补全。"
+    },
+    "ColumnTypeMap": {
+      "type": "object",
+      "title": "ColumnTypeMap",
+      "description": "ColumnType → TypeScript 类型映射表，用于泛型推断和类型匹配",
+      "properties": {
+        "number": {
+          "type": "number"
+        },
+        "int": {
+          "type": "number"
+        },
+        "integer": {
+          "type": "number"
+        },
+        "decimal": {
+          "type": "number"
+        },
+        "float": {
+          "type": "number"
+        },
+        "double": {
+          "type": "number"
+        },
+        "string": {
+          "type": "string"
+        },
+        "varchar": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "boolean": {
+          "type": "boolean"
+        },
+        "bool": {
+          "type": "boolean"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Date"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "datetime": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Date"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "time": {
+          "type": "string"
+        },
+        "object": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "array": {
+          "type": "array",
+          "items": true
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "InferColumnValue": {
+      "type": "object",
+      "title": "InferColumnValue",
+      "description": "根据 ColumnType 字符串推断对应的 TypeScript 值类型。\n@example ```ts\ntype T = InferColumnValue<'number'>  // number\ntype S = InferColumnValue<'date'>    // Date | string\ntype U = InferColumnValue<'json'>    // unknown（未注册到 ColumnTypeMap）\n```"
+    },
+    "ComputedColumnFn": {
+      "type": "object",
+      "title": "ComputedColumnFn",
+      "description": "计算列函数签名：接收当前行，返回计算值"
+    },
+    "DataColumn": {
+      "type": "object",
+      "title": "DataColumn",
+      "description": "数据列定义\n分为两个部分：\n- **数据属性**（name, type, isPrimaryKey, ...）：描述数据结构，供校验 / 计算列 / CRUD 使用\n- **渲染属性**（label, visible, editable, ...）：描述 UI 呈现方式，供表格 / 表单组件消费\n渲染属性均为可选，不影响纯数据层使用。\nUI 组件通过 `DataSource.columns` 或 `DataView.columns` 读取列元数据。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ColumnType"
+        },
+        "label": {
+          "type": "string"
+        },
+        "allowDBNull": {
+          "type": "boolean"
+        },
+        "defaultValue": true,
+        "isPrimaryKey": {
+          "type": "boolean"
+        },
+        "autoIncrement": {
+          "type": "boolean"
+        },
+        "isComputed": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "minLength": {
+          "type": "number"
+        },
+        "maxLength": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "patternMessage": {
+          "type": "string"
+        },
+        "computeExpression": {
+          "type": "string"
+        }
+      }
+    },
+    "TableResourceType": {
+      "type": "object",
+      "title": "TableResourceType",
+      "description": "表资源类型——标记该表背后对应的资源来源或承载形态。\n推荐值：\n- `database-table`   — 直接映射数据库表\n- `database-view`    — 直接映射数据库视图\n- `third-party-api`  — 数据由外部第三方 API 提供\n- `static-data`      — 数据以内联/本地静态资源形式存在（唯一允许直接声明 rows 的资源类型）\n- `dictionary`       — 明确对应字典/枚举/选项型资源\n- `logical-view`     — 应用层拼装出的逻辑视图/投影视图\n保留 `(string & {})` 扩展口，允许业务侧继续定义更细的资源类型。"
+    },
+    "TableBusinessCategory": {
+      "type": "object",
+      "title": "TableBusinessCategory",
+      "description": "表业务分类——标记当前表在业务模型中的角色。\n推荐值：\n- `master`    — 主表\n- `child`     — 从表 / 明细表\n- `reference` — 引用表 / 参考表 / 查找表"
+    },
+    "TableSemanticMetadata": {
+      "type": "object",
+      "title": "TableSemanticMetadata",
+      "description": "表级语义元数据接口，组合资源类型、资源 ID 和业务分类",
+      "properties": {
+        "resourceType": {
+          "$ref": "#/$defs/TableResourceType"
+        },
+        "resourceId": {
+          "type": "string"
+        },
+        "businessCategory": {
+          "$ref": "#/$defs/TableBusinessCategory"
+        }
+      }
+    },
+    "InstancePermission": {
+      "type": "object",
+      "title": "InstancePermission",
+      "description": "实例级权限（行级）- 服务端权限快照\n附加在 DataRow._perm 上，描述单行数据的操作权限。",
+      "properties": {
+        "allowCreateChild": {
+          "type": "boolean"
+        },
+        "allowDelete": {
+          "type": "boolean"
+        },
+        "editableFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hiddenFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "maskedFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "permissionToken": {
+          "type": "string"
+        }
+      }
+    },
+    "ModelPermission": {
+      "type": "object",
+      "title": "ModelPermission",
+      "description": "模型级权限（表级）- 服务端权限快照\n附加在 DataSource._modelPerm 上，描述整张表的操作权限。\n权限信息在首次数据加载时由服务端计算并缓存，前端负责维护和传递权限状态。",
+      "properties": {
+        "allowCreate": {
+          "type": "boolean"
+        },
+        "allowImport": {
+          "type": "boolean"
+        },
+        "allowExport": {
+          "type": "boolean"
+        },
+        "permissionToken": {
+          "type": "string"
+        }
+      }
+    },
+    "FieldVisibility": {
+      "type": "object",
+      "title": "FieldVisibility",
+      "description": "字段可见性枚举",
+      "properties": {
+        "Visible": {
+          "type": "string"
+        },
+        "Masked": {
+          "type": "string"
+        },
+        "Hidden": {
+          "type": "string"
+        }
+      }
+    },
+    "ComponentLevel": {
+      "type": "object",
+      "title": "ComponentLevel",
+      "description": "组件级别枚举",
+      "properties": {
+        "Model": {
+          "type": "string"
+        },
+        "Instance": {
+          "type": "string"
+        },
+        "Field": {
+          "type": "string"
+        }
+      }
+    },
+    "HttpEndpoint": {
+      "type": "object",
+      "title": "HttpEndpoint",
+      "description": "HTTP 端点定义，描述一个 API 请求的完整元数据",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "GET"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "POST"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "PUT"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "PATCH"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "DELETE"
+              ]
+            }
+          ]
+        },
+        "headers": {
+          "type": "object",
+          "title": "Record<string, string>"
+        },
+        "params": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "pathParams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "baseURL": {
+          "type": "string"
+        }
+      }
+    },
+    "TreeApi": {
+      "type": "object",
+      "title": "TreeApi",
+      "description": "树操作端点配置——flat/nested 双模式成套接口族。\n每个端点均继承 `HttpEndpoint`，`url` 中可使用 `{id}`、`{parentId}` 等路径占位符。\nflat 模式（node/children/path/subtree/move/search）与 nested 模式（nested/nestedSearch）可按需配置，互不依赖。",
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "children": true,
+        "path": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "subtree": true,
+        "move": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "search": true,
+        "nested": true,
+        "nestedSearch": true
+      }
+    },
+    "CrudApi": {
+      "type": "object",
+      "title": "CrudApi",
+      "description": "CRUD 操作到端点的映射定义。\n语义：描述\"每个操作对应哪个接口\"。\n这里只定义各 CRUD / Tree 操作对应的 URL、HTTP 方法和端点级参数，不包含重试、校验、转换等运行策略。",
+      "properties": {
+        "create": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "retrieve": true,
+        "update": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "delete": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "transaction": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "list": true,
+        "batch": {
+          "type": "object"
+        },
+        "import": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "export": {
+          "$ref": "#/$defs/HttpEndpoint"
+        }
+      }
+    },
+    "RetrieveRecordOptions": {
+      "type": "object",
+      "title": "RetrieveRecordOptions",
+      "description": "单条记录拉取选项",
+      "properties": {
+        "syncToRows": {
+          "type": "boolean"
+        },
+        "setCurrentRow": {
+          "type": "boolean"
+        }
+      }
+    },
+    "TableMetadata": {
+      "type": "object",
+      "title": "TableMetadata",
+      "description": "表级元数据（对应 DataTable 核）\n表级关注点：表名、列定义、CRUD API、CRUD 配置和视图集合。\n以实体序列化结果 `DataTable.toJson()` 为准：\n- 所有默认视图字段均必须进入 `views.default`\n- 表级不再承载 `rows / autoCurrentFirst / autoSelectFirst / page / pageSize` 等视图字段",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataColumn"
+          }
+        },
+        "api": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CrudApi"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "crudConfig": {
+          "$ref": "#/$defs/CrudOperationConfig"
+        },
+        "views": true
+      }
+    },
+    "FilterOperator": {
+      "type": "object",
+      "title": "FilterOperator",
+      "description": "过滤操作符。\n- `==` / `!=` / `>` / `>=` / `<` / `<=` — 标量比较，value 为单个标量\n- `in` / `not in` — 集合成员，value 为数组\n- `like` / `not like` — SQL LIKE 模式（`%` 通配），通常由后端执行\n- `is null` / `is not null` — 空值判断，value 不使用\n- `between` / `not between` — 区间，value 为 `[min, max]` 两元素数组\n- `startsWith` / `endsWith` / `contains` — 字符串前缀/后缀/包含，前端内存过滤可用"
+    },
+    "FilterValueExpression": {
+      "type": "object",
+      "title": "FilterValueExpression",
+      "description": "过滤条件的值侧类型。\n- 标量（`string | number | boolean | null`）：静态常量值\n- `{ kind: 'field', field: string }`：动态引用父视图当前行的字段值\n- `FilterValueExpression[]`：`in / between` 等多值操作符使用的数组"
+    },
+    "FilterFieldValueReference": {
+      "type": "object",
+      "title": "FilterFieldValueReference",
+      "description": "过滤值侧字段引用：运行时从父视图当前行或上下文行读取字段值。",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "field"
+          ]
+        },
+        "field": {
+          "type": "string"
+        }
+      }
+    },
+    "FilterLeafExpression": {
+      "type": "object",
+      "title": "FilterLeafExpression",
+      "description": "过滤叶子条件：对单个字段执行一个比较操作。",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "op": {
+          "$ref": "#/$defs/FilterOperator"
+        },
+        "value": {
+          "$ref": "#/$defs/FilterValueExpression"
+        }
+      }
+    },
+    "FilterLogicExpression": {
+      "type": "object",
+      "title": "FilterLogicExpression",
+      "description": "过滤逻辑组合：用 AND/OR 组合多个子表达式。",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "and"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "or"
+              ]
+            }
+          ]
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FilterExpression"
+          }
+        }
+      }
+    },
+    "FilterNegatedConditionExpression": {
+      "type": "object",
+      "title": "FilterNegatedConditionExpression",
+      "description": "过滤叶子条件取反：对单个字段比较结果执行 NOT。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "!condition"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "op": {
+          "$ref": "#/$defs/FilterOperator"
+        },
+        "value": {
+          "$ref": "#/$defs/FilterValueExpression"
+        }
+      }
+    },
+    "FilterNegatedLogicExpression": {
+      "type": "object",
+      "title": "FilterNegatedLogicExpression",
+      "description": "过滤逻辑组合取反：对 AND/OR 子表达式整体执行 NOT。",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "!and"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "!or"
+              ]
+            }
+          ]
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FilterExpression"
+          }
+        }
+      }
+    },
+    "FilterExpression": {
+      "type": "object",
+      "title": "FilterExpression",
+      "description": "过滤表达式——树形判别联合。\n四种形状：\n- `{ field, op, value }` — 叶子条件（字段、操作符、值）\n- `{ type: 'and' | 'or', children }` — 逻辑组合（AND/OR，可嵌套）\n- `{ type: '!condition', field, op, value }` — 叶子条件取反（NOT）\n- `{ type: '!and' | '!or', children }` — 逻辑组合取反（NAND/NOR）\n叶子节点无 `type` 字段，通过是否存在 `field` 属性识别；组合节点通过 `type` 判别。"
+    },
+    "SortDirection": {
+      "type": "object",
+      "title": "SortDirection",
+      "description": "排序方向（小写）"
+    },
+    "SortField": {
+      "type": "object",
+      "title": "SortField",
+      "description": "排序规则项（direction 默认 'asc'）",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/SortDirection"
+        }
+      }
+    },
+    "SortExpression": {
+      "type": "object",
+      "title": "SortExpression",
+      "description": "排序表达式——统一数组格式，UI 和服务端提交共用。\n@example ```ts\n// 单字段升序（direction 可省略，默认 'asc'）\n[{ field: 'name' }]\n// 多字段排序\n[{ field: 'age', direction: 'desc' }, { field: 'name' }]\n```"
+    },
+    "AggregateType": {
+      "type": "object",
+      "title": "AggregateType",
+      "description": "视图聚合函数类型。\n配置在 `ViewMetadata.aggregates`（运行时为 `view.aggregates`）上。DataView 会先\n对 `computeExpression` 求值，再按 aggregates 的 key 生成输出行：\n`view.aggregateResult[key]` / `view.selectionAggregateResult[key]`。\n- `sum`   — `Number(raw ?? 0)` 累加；null/undefined 按 0，非数字会得到 NaN\n- `count` — 非 null/undefined 值计数（空字符串也计数）\n- `avg`   — 对可转为数字的值求平均；空集或无有效数字 → 0\n- `min`   — 可转为数字的最小值；空集或无有效数字 → undefined\n- `max`   — 可转为数字的最大值；空集或无有效数字 → undefined\n- `join`  — 字符串拼接（默认 `\", \"` 分隔，跳过 null/undefined/空串；空集 → ''）"
+    },
+    "AggregateResultRow": {
+      "type": "object",
+      "title": "AggregateResultRow",
+      "description": "视图聚合输出行（key 来自 aggregates 的输出字段名）"
+    },
+    "AggregateColumnConfig": {
+      "type": "object",
+      "title": "AggregateColumnConfig",
+      "description": "单个聚合列配置。\n- `type`  — 聚合函数（sum / count / avg / min / max / join）\n- `field` — 源字段名（省略时默认与 key 同名），可指向基础列或计算列\n- `separator` — `join` 的字符串分隔符\n@example ```json\n{\n  \"totalPrice\": { \"type\": \"sum\", \"field\": \"price\" },\n  \"avgScore\":   { \"type\": \"avg\", \"field\": \"score\" }\n}\n```",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/AggregateType"
+        },
+        "field": {
+          "type": "string"
+        },
+        "separator": {
+          "type": "string"
+        }
+      }
+    },
+    "ViewMetadata": {
+      "type": "object",
+      "title": "ViewMetadata",
+      "description": "数据视图元数据\n视图层关注点：行数据、过滤、排序、分页、树配置、聚合、序列化字段。\n当表的 resourceType = 'static-data' 时，才应在配置中直接声明 rows；\n其他资源类型应把数据视为远端来源，通过 requestData/loadFromServer 等机制获取。",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataRow"
+          }
+        },
+        "filterExpression": {
+          "$ref": "#/$defs/FilterExpression"
+        },
+        "sortExpression": {
+          "$ref": "#/$defs/SortExpression"
+        },
+        "autoCurrentFirst": {
+          "type": "boolean"
+        },
+        "autoSelectFirst": {
+          "type": "boolean"
+        },
+        "page": {
+          "type": "number"
+        },
+        "pageSize": {
+          "type": "number"
+        },
+        "treeConfig": {
+          "$ref": "#/$defs/TreeConfig"
+        },
+        "valueField": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "labelField": {
+          "type": "string"
+        },
+        "selectionDelimiter": {
+          "type": "string"
+        },
+        "autoLoad": {
+          "type": "boolean"
+        },
+        "commitMode": {
+          "$ref": "#/$defs/CommitMode"
+        },
+        "aggregates": {
+          "type": "object",
+          "title": "Record<string, AggregateColumnConfig>"
+        }
+      }
+    },
+    "TreeConfig": {
+      "type": "object",
+      "title": "TreeConfig",
+      "description": "树结构字段配置（属于视图层，固化在 DataView）。\n树操作 HTTP 接口族配置在 `CrudApi`；模型层始终存储平铺数据，树形态由视图层组织。",
+      "properties": {
+        "idField": {
+          "type": "string"
+        },
+        "parentIdField": {
+          "type": "string"
+        },
+        "textField": {
+          "type": "string"
+        },
+        "depthLimit": {
+          "type": "number"
+        },
+        "lazy": {
+          "type": "boolean"
+        },
+        "treeMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "flat"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "nested"
+              ]
+            }
+          ]
+        },
+        "serverPaginationMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "root"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "flat"
+              ]
+            }
+          ]
+        },
+        "filterMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "include-ancestors"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "node-only"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "FlatTreeNode": {
+      "type": "object",
+      "title": "FlatTreeNode",
+      "description": "平面树节点——服务端 flat 模式返回的基本行形状",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "level": {
+          "type": "number"
+        },
+        "hasChildren": {
+          "type": "boolean"
+        },
+        "isLoaded": {
+          "type": "boolean"
+        }
+      }
+    },
+    "NestedTreeNode": {
+      "type": "object",
+      "title": "NestedTreeNode",
+      "description": "嵌套树节点——在 FlatTreeNode 基础上增加 children 数组",
+      "properties": {
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NestedTreeNode"
+          }
+        }
+      }
+    },
+    "TreePath": {
+      "type": "object",
+      "title": "TreePath",
+      "description": "树路径——祖先链 ID 列表和可选的节点详情",
+      "properties": {
+        "pathIds": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "pathNodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FlatTreeNode"
+          }
+        }
+      }
+    },
+    "NestedTreeSearchResult": {
+      "type": "object",
+      "title": "NestedTreeSearchResult",
+      "description": "嵌套树搜索结果——对应 /tree/nested/search 接口返回格式。\n匹配节点 + 从根到该节点的祖先链（含自身），前端可直接展开定位。",
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/FlatTreeNode"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FlatTreeNode"
+          }
+        }
+      }
+    },
+    "TableRelation": {
+      "type": "object",
+      "title": "TableRelation",
+      "description": "表关系 — 声明两张表之间的外键/逻辑关联。\n纯数据结构描述，不涉及 UI 联动。\n消费者：计算列聚合函数（$sum/$count）、内存级联过滤、API 请求参数构建。\nSQL 等价：\n```sql\nSELECT child.* FROM {childTable} child\nJOIN {parentTable} parent ON child.{childField} = parent.{parentField}\n```\n@example ```json\n{ \"parentTable\": \"Users\", \"childTable\": \"Orders\", \"childField\": \"userId\" }\n```",
+      "properties": {
+        "relationName": {
+          "type": "string"
+        },
+        "parentTable": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        },
+        "childField": {
+          "type": "string"
+        },
+        "parentField": {
+          "type": "string"
+        },
+        "condition": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "cascadeUpdate": {
+          "type": "boolean"
+        },
+        "cascadeDelete": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DependencyType": {
+      "type": "object",
+      "title": "DependencyType",
+      "description": "子表 default 视图响应父表 default 视图的数据变化触发源。\n配置在 `ViewDependency.dependencyType`，决定父表 default 视图\"哪种数据变化\"会触发子表 default 视图重新级联加载。\n- `'currentRow'`   — 父表 default 视图当前聚焦行变化时触发（默认值）；子表 default 视图用当前行主键过滤\n- `'selectedRows'` — 父表 default 视图选中行集合变化时触发；子表 default 视图用所有选中行的主键 in-list 过滤\n- `'allRows'`      — 父表 default 视图全量行集合变化时触发（不区分分页）\n- `'pagedRows'`    — 父表 default 视图当前分页行集合变化时触发"
+    },
+    "ViewDependency": {
+      "type": "object",
+      "title": "ViewDependency",
+      "description": "视图依赖 — 声明子表 default 视图如何响应父表 default 视图数据变化。\n基于 TableRelation 的字段信息工作，独立描述视图层面的联动策略。\n省略 `viewDependencies` 时框架为每条 TableRelation 自动生成默认依赖。\n@example ```json\n{\n  \"parentTable\": \"Users\", \"childTable\": \"Orders\",\n  \"dependencyType\": \"selectedRows\"\n}\n```",
+      "properties": {
+        "parentTable": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        },
+        "dependencyType": {
+          "$ref": "#/$defs/DependencyType"
+        },
+        "autoLoad": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DataRelation": {
+      "type": "object",
+      "title": "DataRelation",
+      "description": "展开后的内部关系格式 — TableRelation + ViewDependency 合并后的字段绑定结果。\n@internal 仅供 spark-data 内部消费（CascadeDelegate / DataView）。\n外部配置使用 `TableRelation` + `ViewDependency`。",
+      "properties": {
+        "parentTable": {
+          "type": "string"
+        },
+        "parentViewId": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        },
+        "childViewId": {
+          "type": "string"
+        },
+        "parentField": {
+          "type": "string"
+        },
+        "childField": {
+          "type": "string"
+        },
+        "dependencyType": {
+          "$ref": "#/$defs/DependencyType"
+        },
+        "cascadeUpdate": {
+          "type": "boolean"
+        },
+        "cascadeDelete": {
+          "type": "boolean"
+        },
+        "autoLoad": {
+          "type": "boolean"
+        },
+        "relationName": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestState": {
+      "type": "object",
+      "title": "RequestState",
+      "description": "DataView 请求状态机。\n```\nIdle ──requestData()──▶ Preparing ──loadFromServer()──▶ Loading\n│\n┌──────────────┴──────────────┐\nLoaded                        Failed\n```",
+      "properties": {
+        "Idle": {
+          "type": "number"
+        },
+        "Preparing": {
+          "type": "number"
+        },
+        "Loading": {
+          "type": "number"
+        },
+        "Loaded": {
+          "type": "number"
+        },
+        "Failed": {
+          "type": "number"
+        }
+      }
+    },
+    "CommitMode": {
+      "type": "object",
+      "title": "CommitMode",
+      "description": "增删改提交模式。\n- `'immediate'`（默认）：`addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD（如已配置 API）\n- `'staged'`：仅修改内存并标记脏状态，需调用 `saveChanges()` 批量提交"
+    },
+    "DataSetLayoutMetadata": {
+      "type": "object",
+      "title": "DataSetLayoutMetadata",
+      "description": "DataSet 级布局元数据。\n该结构不参与运行时数据计算，仅用于设计器/编辑器恢复画布布局。",
+      "properties": {
+        "tablePositions": {
+          "type": "object",
+          "title": "Record<string, {\n        x: number;\n        y: number;\n    }>"
+        }
+      }
+    },
+    "DataSetMetadata": {
+      "type": "object",
+      "title": "DataSetMetadata",
+      "description": "数据集元数据（对应 DataSet.toJson() 输出）\n顶层只承载数据集自身字段；表的默认视图数据必须继续下沉到 `tables.*.views.default`。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "dataSetName": {
+          "type": "string"
+        },
+        "tables": {
+          "type": "object",
+          "title": "Record<string, TableMetadata>"
+        },
+        "tableRelations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TableRelation"
+          }
+        },
+        "viewDependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ViewDependency"
+          }
+        },
+        "version": {
+          "type": "number"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "saveChanges": {
+          "$ref": "#/$defs/DataSetSaveChangesConfig"
+        },
+        "layout": {
+          "$ref": "#/$defs/DataSetLayoutMetadata"
+        }
+      }
+    },
+    "DataSetAppServices": {
+      "type": "object",
+      "title": "DataSetAppServices",
+      "description": "DataSet 用到的应用服务最小形状（避免依赖上层能力体系类型）。",
+      "properties": {
+        "router": {
+          "type": "object"
+        },
+        "tenant": {
+          "type": "object"
+        },
+        "logger": {
+          "type": "object",
+          "title": "LoggerApi"
+        }
+      }
+    },
+    "DataSource": {
+      "type": "object",
+      "title": "DataSource",
+      "description": "完整数据源全量接口，包含分页、聚合结果、权限、值序列化。\nDataView 实现此接口。可将其理解为\"UI 读取 DataView（API 视图）时看到的运行时数据结构\"。\n边界：\n- DataView 对应 table + viewId 的 API 视图（含 requestData/refresh/requestState）。\n- DataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataViewKey 解析得到）。\n1. 行级计算列：`columns[].computeExpression` 对每一行求值，结果写回该行字段。\n表达式可直接读取行字段，可通过 `ctx` 读取外部上下文，也可通过\n`$sum/$count/$avg/$min/$max/$list/$join` 读取 DataRelation 匹配到的子表行。\n2. 视图级聚合配置：定义在 `ViewMetadata.aggregates`，不是 `DataSource` 字段。\n每个输出项包含 `type / field / separator` 等后端 API 认得的规则信息。\n3. 运行时聚合结果：`aggregateResult` 基于当前 `rows` 计算，`selectionAggregateResult`\n基于当前 `selectedRows` 计算；二者都是由 aggregates 配置生成的\"聚合结果输出行\"，\n字段名来自 aggregates 的输出 key，字段值是对应聚合计算结果。\n4. UI / DataView 成员消费：组件可直接读取 `dataSource.aggregateResult`，也可通过\ndataViewKey=`Table@default` + dataMember=`aggregateResult` + dataField=`totalAmount` 引用。\n5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、\n`selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。",
+      "properties": {
+        "rows": {
+          "type": "array"
+        },
+        "columns": {
+          "type": "array"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "requestState": {
+          "$ref": "#/$defs/RequestState"
+        },
+        "currentRow": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedRows": {
+          "type": "array"
+        },
+        "_modelPerm": {
+          "$ref": "#/$defs/ModelPermission"
+        },
+        "total": {
+          "type": "number"
+        },
+        "page": {
+          "type": "number"
+        },
+        "pageSize": {
+          "type": "number"
+        },
+        "aggregateResult": {
+          "type": "object",
+          "title": "Readonly<AggregateResultRow>"
+        },
+        "selectionAggregateResult": {
+          "type": "object",
+          "title": "Readonly<AggregateResultRow>"
+        },
+        "value": {
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "labels": {
+          "type": "array"
+        }
+      }
+    },
+    "DataViewEditingFieldChangeEvent": {
+      "type": "object",
+      "title": "DataViewEditingFieldChangeEvent",
+      "description": "DataView 编辑态字段变更事件",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "rowId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "previousValue": true,
+        "nextValue": true,
+        "editingRow": {
+          "$ref": "#/$defs/DataRow"
+        },
+        "patch": {
+          "type": "object",
+          "title": "Partial<DataRow>"
+        }
+      }
+    },
+    "DataViewApplyEditingRowsResult": {
+      "type": "object",
+      "title": "DataViewApplyEditingRowsResult",
+      "description": "DataView 编辑态应用结果",
+      "properties": {
+        "appliedCount": {
+          "type": "number"
+        },
+        "failedCount": {
+          "type": "number"
+        },
+        "failedIds": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "failedErrors": {
+          "type": "object",
+          "title": "Record<string, string>"
+        }
+      }
+    },
+    "ViewChangeHandlers": {
+      "type": "object",
+      "title": "ViewChangeHandlers",
+      "description": "DataSet 级视图变更处理器映射\n用于 `DataSet.onAnyViewChange()`：\n订阅者按需注册感兴趣的事件类型，每个回调接收 `(tableName, viewId, ...payload)`。\n@example ```ts\ndataSet.onAnyViewChange({\n  currentRowChanged(tableName, viewId, currentRow, originatorId) {\n    syncCurrentRowToUI(tableName, viewId, currentRow)\n  },\n  cleared(tableName, viewId) {\n    clearUI(tableName, viewId)\n  },\n})\n```"
+    },
+    "DataSetContract": {
+      "type": "object",
+      "title": "DataSetContract",
+      "description": "数据集公共契约\n消费者（渲染层、能力系统）应依赖此接口而非具体 DataSet 类，\n便于测试 mock 与未来扩展。",
+      "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "tables": {
+          "type": "object",
+          "title": "Record<string, DataTable>"
+        },
+        "tableRelations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TableRelation"
+          }
+        },
+        "viewDependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ViewDependency"
+          }
+        },
+        "schemaVersion": {
+          "type": "number"
+        },
+        "version": {
+          "type": "number"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "destroyed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DataSetSaveChangesViewSelector": {
+      "type": "object",
+      "title": "DataSetSaveChangesViewSelector",
+      "description": "DataSet 级保存目标：用于一次提交一个主从编辑范围",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "DataSetSaveChangesMode": {
+      "type": "object",
+      "title": "DataSetSaveChangesMode",
+      "description": "DataSet 级保存模式"
+    },
+    "DataSetTransactionOperation": {
+      "type": "object",
+      "title": "DataSetTransactionOperation",
+      "description": "事务中的单个 CRUD 操作",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "op": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "create"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "update"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "delete"
+              ]
+            }
+          ]
+        },
+        "data": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "pk": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "DataSetTransactionRequest": {
+      "type": "object",
+      "title": "DataSetTransactionRequest",
+      "description": "事务请求：包含一组事务操作",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetTransactionOperation"
+          }
+        }
+      }
+    },
+    "DataSetTransactionOperationResult": {
+      "type": "object",
+      "title": "DataSetTransactionOperationResult",
+      "description": "事务中单个操作的结果",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "result": true,
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetTransactionResponse": {
+      "type": "object",
+      "title": "DataSetTransactionResponse",
+      "description": "事务响应：服务端返回的完整事务结果",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "transactionId": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "operationCount": {
+          "type": "number"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetTransactionOperationResult"
+          }
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DataSetSaveChangesTransactionConfig": {
+      "type": "object",
+      "title": "DataSetSaveChangesTransactionConfig",
+      "description": "DataSet.saveChanges 事务配置（ViewMetadata 中持久化用）",
+      "properties": {
+        "endpoint": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "requestId": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetSaveChangesTransactionOptions": {
+      "type": "object",
+      "title": "DataSetSaveChangesTransactionOptions",
+      "description": "DataSet.saveChanges 事务选项（运行时传递用）",
+      "properties": {
+        "endpoint": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "requestId": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetSaveChangesConfig": {
+      "type": "object",
+      "title": "DataSetSaveChangesConfig",
+      "description": "DataSet.saveChanges 配置（ViewMetadata 中持久化用）",
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/DataSetSaveChangesMode"
+        },
+        "transaction": {
+          "$ref": "#/$defs/DataSetSaveChangesTransactionConfig"
+        }
+      }
+    },
+    "DataSetSaveChangesOptions": {
+      "type": "object",
+      "title": "DataSetSaveChangesOptions",
+      "description": "DataSet 级保存选项（运行时传递给 saveChanges）",
+      "properties": {
+        "views": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetSaveChangesViewSelector"
+          }
+        },
+        "applyEditingRows": {
+          "type": "boolean"
+        },
+        "mode": {
+          "$ref": "#/$defs/DataSetSaveChangesMode"
+        },
+        "transaction": {
+          "$ref": "#/$defs/DataSetSaveChangesTransactionOptions"
+        }
+      }
+    },
+    "DataSetSaveChangesViewResult": {
+      "type": "object",
+      "title": "DataSetSaveChangesViewResult",
+      "description": "DataSet 级单视图保存结果",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "appliedEditingRows": {
+          "type": "number"
+        },
+        "failedEditingRows": {
+          "type": "number"
+        },
+        "createdCount": {
+          "type": "number"
+        },
+        "savedCount": {
+          "type": "number"
+        },
+        "deletedCount": {
+          "type": "number"
+        },
+        "failedCount": {
+          "type": "number"
+        },
+        "failedIds": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "failedErrors": {
+          "type": "object",
+          "title": "Record<string, string>"
+        }
+      }
+    },
+    "DataSetSaveChangesResult": {
+      "type": "object",
+      "title": "DataSetSaveChangesResult",
+      "description": "DataSet 级跨视图保存结果",
+      "properties": {
+        "viewCount": {
+          "type": "number"
+        },
+        "appliedEditingRows": {
+          "type": "number"
+        },
+        "failedEditingRows": {
+          "type": "number"
+        },
+        "createdCount": {
+          "type": "number"
+        },
+        "savedCount": {
+          "type": "number"
+        },
+        "deletedCount": {
+          "type": "number"
+        },
+        "failedCount": {
+          "type": "number"
+        },
+        "failedViews": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "viewResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetSaveChangesViewResult"
+          }
+        },
+        "transaction": {
+          "$ref": "#/$defs/DataSetTransactionResponse"
+        }
+      }
+    },
+    "CrudResult": {
+      "type": "object",
+      "title": "CrudResult",
+      "description": "CRUD 操作结果",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "data": true,
+        "error": {
+          "type": "object",
+          "title": "Error"
+        },
+        "message": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "QueryParams": {
+      "type": "object",
+      "title": "QueryParams",
+      "description": "分页查询参数 - 支持权限快照传递",
+      "properties": {
+        "page": {
+          "type": "number"
+        },
+        "pageSize": {
+          "type": "number"
+        },
+        "sort": {
+          "type": "string"
+        },
+        "filter": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            },
+            {
+              "$ref": "#/$defs/FilterExpression"
+            }
+          ]
+        },
+        "search": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "viewConfig": {
+          "$ref": "#/$defs/ViewMetadata"
+        },
+        "treeMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "flat"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "nested"
+              ]
+            }
+          ]
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rootId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "depthLimit": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "modelPermission": {
+          "$ref": "#/$defs/ModelPermission"
+        },
+        "instancePermission": {
+          "$ref": "#/$defs/InstancePermission"
+        }
+      }
+    },
+    "BatchResult": {
+      "type": "object",
+      "title": "BatchResult",
+      "description": "批量操作结果",
+      "properties": {
+        "successCount": {
+          "type": "number"
+        },
+        "failureCount": {
+          "type": "number"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CrudResult"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Error"
+          }
+        },
+        "totalTime": {
+          "type": "number"
+        }
+      }
+    },
+    "CrudOperationConfig": {
+      "type": "object",
+      "title": "CrudOperationConfig",
+      "description": "CRUD 通用运行策略配置。\n语义：描述\"调用端点时应用什么策略\"。\n这里定义超时、重试、权限校验、数据校验，以及请求/响应转换等运行期策略，不负责声明端点映射。",
+      "properties": {
+        "timeout": {
+          "type": "number"
+        },
+        "retryCount": {
+          "type": "number"
+        },
+        "skipPermissionCheck": {
+          "type": "boolean"
+        },
+        "modelPermission": {
+          "$ref": "#/$defs/ModelPermission"
+        },
+        "instancePermission": {
+          "$ref": "#/$defs/InstancePermission"
+        },
+        "validateData": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "SparkEventEmitter": {
       "kind": "SparkEventEmitter",
@@ -6322,1691 +8007,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.110Z",
-  "$defs": {
-    "SparkEventEmitter": {
-      "type": "object",
-      "title": "SparkEventEmitter",
-      "description": "事件发射器：DataSet/DataView 内部使用的最小事件接口"
-    },
-    "DataRow": {
-      "type": "object",
-      "title": "DataRow",
-      "description": "数据行：所有数据容器的基本行形状，可选携带实例级权限",
-      "properties": {
-        "_perm": {
-          "$ref": "#/$defs/InstancePermission"
-        }
-      }
-    },
-    "ColumnType": {
-      "type": "object",
-      "title": "ColumnType",
-      "description": "列类型字面量联合——涵盖 DataValidator 中所有已知类型。\n末尾的 `(string & {})` 保持对自定义类型的开放性，同时不影响已知值的自动补全。"
-    },
-    "ColumnTypeMap": {
-      "type": "object",
-      "title": "ColumnTypeMap",
-      "description": "ColumnType → TypeScript 类型映射表，用于泛型推断和类型匹配",
-      "properties": {
-        "number": {
-          "type": "number"
-        },
-        "int": {
-          "type": "number"
-        },
-        "integer": {
-          "type": "number"
-        },
-        "decimal": {
-          "type": "number"
-        },
-        "float": {
-          "type": "number"
-        },
-        "double": {
-          "type": "number"
-        },
-        "string": {
-          "type": "string"
-        },
-        "varchar": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        },
-        "boolean": {
-          "type": "boolean"
-        },
-        "bool": {
-          "type": "boolean"
-        },
-        "date": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Date"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "datetime": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Date"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "time": {
-          "type": "string"
-        },
-        "object": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "array": {
-          "type": "array",
-          "items": true
-        },
-        "enum": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
-    },
-    "InferColumnValue": {
-      "type": "object",
-      "title": "InferColumnValue",
-      "description": "根据 ColumnType 字符串推断对应的 TypeScript 值类型。\n@example ```ts\ntype T = InferColumnValue<'number'>  // number\ntype S = InferColumnValue<'date'>    // Date | string\ntype U = InferColumnValue<'json'>    // unknown（未注册到 ColumnTypeMap）\n```"
-    },
-    "ComputedColumnFn": {
-      "type": "object",
-      "title": "ComputedColumnFn",
-      "description": "计算列函数签名：接收当前行，返回计算值"
-    },
-    "DataColumn": {
-      "type": "object",
-      "title": "DataColumn",
-      "description": "数据列定义\n分为两个部分：\n- **数据属性**（name, type, isPrimaryKey, ...）：描述数据结构，供校验 / 计算列 / CRUD 使用\n- **渲染属性**（label, visible, editable, ...）：描述 UI 呈现方式，供表格 / 表单组件消费\n渲染属性均为可选，不影响纯数据层使用。\nUI 组件通过 `DataSource.columns` 或 `DataView.columns` 读取列元数据。",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/$defs/ColumnType"
-        },
-        "label": {
-          "type": "string"
-        },
-        "allowDBNull": {
-          "type": "boolean"
-        },
-        "defaultValue": true,
-        "isPrimaryKey": {
-          "type": "boolean"
-        },
-        "autoIncrement": {
-          "type": "boolean"
-        },
-        "isComputed": {
-          "type": "boolean"
-        },
-        "required": {
-          "type": "boolean"
-        },
-        "minLength": {
-          "type": "number"
-        },
-        "maxLength": {
-          "type": "number"
-        },
-        "min": {
-          "type": "number"
-        },
-        "max": {
-          "type": "number"
-        },
-        "pattern": {
-          "type": "string"
-        },
-        "patternMessage": {
-          "type": "string"
-        },
-        "computeExpression": {
-          "type": "string"
-        }
-      }
-    },
-    "TableResourceType": {
-      "type": "object",
-      "title": "TableResourceType",
-      "description": "表资源类型——标记该表背后对应的资源来源或承载形态。\n推荐值：\n- `database-table`   — 直接映射数据库表\n- `database-view`    — 直接映射数据库视图\n- `third-party-api`  — 数据由外部第三方 API 提供\n- `static-data`      — 数据以内联/本地静态资源形式存在（唯一允许直接声明 rows 的资源类型）\n- `dictionary`       — 明确对应字典/枚举/选项型资源\n- `logical-view`     — 应用层拼装出的逻辑视图/投影视图\n保留 `(string & {})` 扩展口，允许业务侧继续定义更细的资源类型。"
-    },
-    "TableBusinessCategory": {
-      "type": "object",
-      "title": "TableBusinessCategory",
-      "description": "表业务分类——标记当前表在业务模型中的角色。\n推荐值：\n- `master`    — 主表\n- `child`     — 从表 / 明细表\n- `reference` — 引用表 / 参考表 / 查找表"
-    },
-    "TableSemanticMetadata": {
-      "type": "object",
-      "title": "TableSemanticMetadata",
-      "description": "表级语义元数据接口，组合资源类型、资源 ID 和业务分类",
-      "properties": {
-        "resourceType": {
-          "$ref": "#/$defs/TableResourceType"
-        },
-        "resourceId": {
-          "type": "string"
-        },
-        "businessCategory": {
-          "$ref": "#/$defs/TableBusinessCategory"
-        }
-      }
-    },
-    "InstancePermission": {
-      "type": "object",
-      "title": "InstancePermission",
-      "description": "实例级权限（行级）- 服务端权限快照\n附加在 DataRow._perm 上，描述单行数据的操作权限。",
-      "properties": {
-        "allowCreateChild": {
-          "type": "boolean"
-        },
-        "allowDelete": {
-          "type": "boolean"
-        },
-        "editableFields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "hiddenFields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "maskedFields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "permissionToken": {
-          "type": "string"
-        }
-      }
-    },
-    "ModelPermission": {
-      "type": "object",
-      "title": "ModelPermission",
-      "description": "模型级权限（表级）- 服务端权限快照\n附加在 DataSource._modelPerm 上，描述整张表的操作权限。\n权限信息在首次数据加载时由服务端计算并缓存，前端负责维护和传递权限状态。",
-      "properties": {
-        "allowCreate": {
-          "type": "boolean"
-        },
-        "allowImport": {
-          "type": "boolean"
-        },
-        "allowExport": {
-          "type": "boolean"
-        },
-        "permissionToken": {
-          "type": "string"
-        }
-      }
-    },
-    "FieldVisibility": {
-      "type": "object",
-      "title": "FieldVisibility",
-      "description": "字段可见性枚举",
-      "properties": {
-        "Visible": {
-          "type": "string"
-        },
-        "Masked": {
-          "type": "string"
-        },
-        "Hidden": {
-          "type": "string"
-        }
-      }
-    },
-    "ComponentLevel": {
-      "type": "object",
-      "title": "ComponentLevel",
-      "description": "组件级别枚举",
-      "properties": {
-        "Model": {
-          "type": "string"
-        },
-        "Instance": {
-          "type": "string"
-        },
-        "Field": {
-          "type": "string"
-        }
-      }
-    },
-    "HttpEndpoint": {
-      "type": "object",
-      "title": "HttpEndpoint",
-      "description": "HTTP 端点定义，描述一个 API 请求的完整元数据",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "method": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "GET"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "POST"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "PUT"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "PATCH"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "DELETE"
-              ]
-            }
-          ]
-        },
-        "headers": {
-          "type": "object",
-          "title": "Record<string, string>"
-        },
-        "params": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "pathParams": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "baseURL": {
-          "type": "string"
-        }
-      }
-    },
-    "TreeApi": {
-      "type": "object",
-      "title": "TreeApi",
-      "description": "树操作端点配置——flat/nested 双模式成套接口族。\n每个端点均继承 `HttpEndpoint`，`url` 中可使用 `{id}`、`{parentId}` 等路径占位符。\nflat 模式（node/children/path/subtree/move/search）与 nested 模式（nested/nestedSearch）可按需配置，互不依赖。",
-      "properties": {
-        "node": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "children": true,
-        "path": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "subtree": true,
-        "move": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "search": true,
-        "nested": true,
-        "nestedSearch": true
-      }
-    },
-    "CrudApi": {
-      "type": "object",
-      "title": "CrudApi",
-      "description": "CRUD 操作到端点的映射定义。\n语义：描述\"每个操作对应哪个接口\"。\n这里只定义各 CRUD / Tree 操作对应的 URL、HTTP 方法和端点级参数，不包含重试、校验、转换等运行策略。",
-      "properties": {
-        "create": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "retrieve": true,
-        "update": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "delete": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "transaction": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "list": true,
-        "batch": {
-          "type": "object"
-        },
-        "import": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "export": {
-          "$ref": "#/$defs/HttpEndpoint"
-        }
-      }
-    },
-    "RetrieveRecordOptions": {
-      "type": "object",
-      "title": "RetrieveRecordOptions",
-      "description": "单条记录拉取选项",
-      "properties": {
-        "syncToRows": {
-          "type": "boolean"
-        },
-        "setCurrentRow": {
-          "type": "boolean"
-        }
-      }
-    },
-    "TableMetadata": {
-      "type": "object",
-      "title": "TableMetadata",
-      "description": "表级元数据（对应 DataTable 核）\n表级关注点：表名、列定义、CRUD API、CRUD 配置和视图集合。\n以实体序列化结果 `DataTable.toJson()` 为准：\n- 所有默认视图字段均必须进入 `views.default`\n- 表级不再承载 `rows / autoCurrentFirst / autoSelectFirst / page / pageSize` 等视图字段",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataColumn"
-          }
-        },
-        "api": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/CrudApi"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        },
-        "crudConfig": {
-          "$ref": "#/$defs/CrudOperationConfig"
-        },
-        "views": true
-      }
-    },
-    "FilterOperator": {
-      "type": "object",
-      "title": "FilterOperator",
-      "description": "过滤操作符。\n- `==` / `!=` / `>` / `>=` / `<` / `<=` — 标量比较，value 为单个标量\n- `in` / `not in` — 集合成员，value 为数组\n- `like` / `not like` — SQL LIKE 模式（`%` 通配），通常由后端执行\n- `is null` / `is not null` — 空值判断，value 不使用\n- `between` / `not between` — 区间，value 为 `[min, max]` 两元素数组\n- `startsWith` / `endsWith` / `contains` — 字符串前缀/后缀/包含，前端内存过滤可用"
-    },
-    "FilterValueExpression": {
-      "type": "object",
-      "title": "FilterValueExpression",
-      "description": "过滤条件的值侧类型。\n- 标量（`string | number | boolean | null`）：静态常量值\n- `{ kind: 'field', field: string }`：动态引用父视图当前行的字段值\n- `FilterValueExpression[]`：`in / between` 等多值操作符使用的数组"
-    },
-    "FilterFieldValueReference": {
-      "type": "object",
-      "title": "FilterFieldValueReference",
-      "description": "过滤值侧字段引用：运行时从父视图当前行或上下文行读取字段值。",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "field"
-          ]
-        },
-        "field": {
-          "type": "string"
-        }
-      }
-    },
-    "FilterLeafExpression": {
-      "type": "object",
-      "title": "FilterLeafExpression",
-      "description": "过滤叶子条件：对单个字段执行一个比较操作。",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "op": {
-          "$ref": "#/$defs/FilterOperator"
-        },
-        "value": {
-          "$ref": "#/$defs/FilterValueExpression"
-        }
-      }
-    },
-    "FilterLogicExpression": {
-      "type": "object",
-      "title": "FilterLogicExpression",
-      "description": "过滤逻辑组合：用 AND/OR 组合多个子表达式。",
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "and"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "or"
-              ]
-            }
-          ]
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/FilterExpression"
-          }
-        }
-      }
-    },
-    "FilterNegatedConditionExpression": {
-      "type": "object",
-      "title": "FilterNegatedConditionExpression",
-      "description": "过滤叶子条件取反：对单个字段比较结果执行 NOT。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "!condition"
-          ]
-        },
-        "field": {
-          "type": "string"
-        },
-        "op": {
-          "$ref": "#/$defs/FilterOperator"
-        },
-        "value": {
-          "$ref": "#/$defs/FilterValueExpression"
-        }
-      }
-    },
-    "FilterNegatedLogicExpression": {
-      "type": "object",
-      "title": "FilterNegatedLogicExpression",
-      "description": "过滤逻辑组合取反：对 AND/OR 子表达式整体执行 NOT。",
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "!and"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "!or"
-              ]
-            }
-          ]
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/FilterExpression"
-          }
-        }
-      }
-    },
-    "FilterExpression": {
-      "type": "object",
-      "title": "FilterExpression",
-      "description": "过滤表达式——树形判别联合。\n四种形状：\n- `{ field, op, value }` — 叶子条件（字段、操作符、值）\n- `{ type: 'and' | 'or', children }` — 逻辑组合（AND/OR，可嵌套）\n- `{ type: '!condition', field, op, value }` — 叶子条件取反（NOT）\n- `{ type: '!and' | '!or', children }` — 逻辑组合取反（NAND/NOR）\n叶子节点无 `type` 字段，通过是否存在 `field` 属性识别；组合节点通过 `type` 判别。"
-    },
-    "SortDirection": {
-      "type": "object",
-      "title": "SortDirection",
-      "description": "排序方向（小写）"
-    },
-    "SortField": {
-      "type": "object",
-      "title": "SortField",
-      "description": "排序规则项（direction 默认 'asc'）",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "direction": {
-          "$ref": "#/$defs/SortDirection"
-        }
-      }
-    },
-    "SortExpression": {
-      "type": "object",
-      "title": "SortExpression",
-      "description": "排序表达式——统一数组格式，UI 和服务端提交共用。\n@example ```ts\n// 单字段升序（direction 可省略，默认 'asc'）\n[{ field: 'name' }]\n// 多字段排序\n[{ field: 'age', direction: 'desc' }, { field: 'name' }]\n```"
-    },
-    "AggregateType": {
-      "type": "object",
-      "title": "AggregateType",
-      "description": "视图聚合函数类型。\n配置在 `ViewMetadata.aggregates`（运行时为 `view.aggregates`）上。DataView 会先\n对 `computeExpression` 求值，再按 aggregates 的 key 生成输出行：\n`view.aggregateResult[key]` / `view.selectionAggregateResult[key]`。\n- `sum`   — `Number(raw ?? 0)` 累加；null/undefined 按 0，非数字会得到 NaN\n- `count` — 非 null/undefined 值计数（空字符串也计数）\n- `avg`   — 对可转为数字的值求平均；空集或无有效数字 → 0\n- `min`   — 可转为数字的最小值；空集或无有效数字 → undefined\n- `max`   — 可转为数字的最大值；空集或无有效数字 → undefined\n- `join`  — 字符串拼接（默认 `\", \"` 分隔，跳过 null/undefined/空串；空集 → ''）"
-    },
-    "AggregateResultRow": {
-      "type": "object",
-      "title": "AggregateResultRow",
-      "description": "视图聚合输出行（key 来自 aggregates 的输出字段名）"
-    },
-    "AggregateColumnConfig": {
-      "type": "object",
-      "title": "AggregateColumnConfig",
-      "description": "单个聚合列配置。\n- `type`  — 聚合函数（sum / count / avg / min / max / join）\n- `field` — 源字段名（省略时默认与 key 同名），可指向基础列或计算列\n- `separator` — `join` 的字符串分隔符\n@example ```json\n{\n  \"totalPrice\": { \"type\": \"sum\", \"field\": \"price\" },\n  \"avgScore\":   { \"type\": \"avg\", \"field\": \"score\" }\n}\n```",
-      "properties": {
-        "type": {
-          "$ref": "#/$defs/AggregateType"
-        },
-        "field": {
-          "type": "string"
-        },
-        "separator": {
-          "type": "string"
-        }
-      }
-    },
-    "ViewMetadata": {
-      "type": "object",
-      "title": "ViewMetadata",
-      "description": "数据视图元数据\n视图层关注点：行数据、过滤、排序、分页、树配置、聚合、序列化字段。\n当表的 resourceType = 'static-data' 时，才应在配置中直接声明 rows；\n其他资源类型应把数据视为远端来源，通过 requestData/loadFromServer 等机制获取。",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "viewId": {
-          "type": "string"
-        },
-        "rows": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataRow"
-          }
-        },
-        "filterExpression": {
-          "$ref": "#/$defs/FilterExpression"
-        },
-        "sortExpression": {
-          "$ref": "#/$defs/SortExpression"
-        },
-        "autoCurrentFirst": {
-          "type": "boolean"
-        },
-        "autoSelectFirst": {
-          "type": "boolean"
-        },
-        "page": {
-          "type": "number"
-        },
-        "pageSize": {
-          "type": "number"
-        },
-        "treeConfig": {
-          "$ref": "#/$defs/TreeConfig"
-        },
-        "valueField": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "labelField": {
-          "type": "string"
-        },
-        "selectionDelimiter": {
-          "type": "string"
-        },
-        "autoLoad": {
-          "type": "boolean"
-        },
-        "commitMode": {
-          "$ref": "#/$defs/CommitMode"
-        },
-        "aggregates": {
-          "type": "object",
-          "title": "Record<string, AggregateColumnConfig>"
-        }
-      }
-    },
-    "TreeConfig": {
-      "type": "object",
-      "title": "TreeConfig",
-      "description": "树结构字段配置（属于视图层，固化在 DataView）。\n树操作 HTTP 接口族配置在 `CrudApi`；模型层始终存储平铺数据，树形态由视图层组织。",
-      "properties": {
-        "idField": {
-          "type": "string"
-        },
-        "parentIdField": {
-          "type": "string"
-        },
-        "textField": {
-          "type": "string"
-        },
-        "depthLimit": {
-          "type": "number"
-        },
-        "lazy": {
-          "type": "boolean"
-        },
-        "treeMode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "flat"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "nested"
-              ]
-            }
-          ]
-        },
-        "serverPaginationMode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "root"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "flat"
-              ]
-            }
-          ]
-        },
-        "filterMode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "include-ancestors"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "node-only"
-              ]
-            }
-          ]
-        }
-      }
-    },
-    "FlatTreeNode": {
-      "type": "object",
-      "title": "FlatTreeNode",
-      "description": "平面树节点——服务端 flat 模式返回的基本行形状",
-      "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "parentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "name": {
-          "type": "string"
-        },
-        "level": {
-          "type": "number"
-        },
-        "hasChildren": {
-          "type": "boolean"
-        },
-        "isLoaded": {
-          "type": "boolean"
-        }
-      }
-    },
-    "NestedTreeNode": {
-      "type": "object",
-      "title": "NestedTreeNode",
-      "description": "嵌套树节点——在 FlatTreeNode 基础上增加 children 数组",
-      "properties": {
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/NestedTreeNode"
-          }
-        }
-      }
-    },
-    "TreePath": {
-      "type": "object",
-      "title": "TreePath",
-      "description": "树路径——祖先链 ID 列表和可选的节点详情",
-      "properties": {
-        "pathIds": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        "pathNodes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/FlatTreeNode"
-          }
-        }
-      }
-    },
-    "NestedTreeSearchResult": {
-      "type": "object",
-      "title": "NestedTreeSearchResult",
-      "description": "嵌套树搜索结果——对应 /tree/nested/search 接口返回格式。\n匹配节点 + 从根到该节点的祖先链（含自身），前端可直接展开定位。",
-      "properties": {
-        "node": {
-          "$ref": "#/$defs/FlatTreeNode"
-        },
-        "path": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/FlatTreeNode"
-          }
-        }
-      }
-    },
-    "TableRelation": {
-      "type": "object",
-      "title": "TableRelation",
-      "description": "表关系 — 声明两张表之间的外键/逻辑关联。\n纯数据结构描述，不涉及 UI 联动。\n消费者：计算列聚合函数（$sum/$count）、内存级联过滤、API 请求参数构建。\nSQL 等价：\n```sql\nSELECT child.* FROM {childTable} child\nJOIN {parentTable} parent ON child.{childField} = parent.{parentField}\n```\n@example ```json\n{ \"parentTable\": \"Users\", \"childTable\": \"Orders\", \"childField\": \"userId\" }\n```",
-      "properties": {
-        "relationName": {
-          "type": "string"
-        },
-        "parentTable": {
-          "type": "string"
-        },
-        "childTable": {
-          "type": "string"
-        },
-        "childField": {
-          "type": "string"
-        },
-        "parentField": {
-          "type": "string"
-        },
-        "condition": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "cascadeUpdate": {
-          "type": "boolean"
-        },
-        "cascadeDelete": {
-          "type": "boolean"
-        }
-      }
-    },
-    "DependencyType": {
-      "type": "object",
-      "title": "DependencyType",
-      "description": "子表 default 视图响应父表 default 视图的数据变化触发源。\n配置在 `ViewDependency.dependencyType`，决定父表 default 视图\"哪种数据变化\"会触发子表 default 视图重新级联加载。\n- `'currentRow'`   — 父表 default 视图当前聚焦行变化时触发（默认值）；子表 default 视图用当前行主键过滤\n- `'selectedRows'` — 父表 default 视图选中行集合变化时触发；子表 default 视图用所有选中行的主键 in-list 过滤\n- `'allRows'`      — 父表 default 视图全量行集合变化时触发（不区分分页）\n- `'pagedRows'`    — 父表 default 视图当前分页行集合变化时触发"
-    },
-    "ViewDependency": {
-      "type": "object",
-      "title": "ViewDependency",
-      "description": "视图依赖 — 声明子表 default 视图如何响应父表 default 视图数据变化。\n基于 TableRelation 的字段信息工作，独立描述视图层面的联动策略。\n省略 `viewDependencies` 时框架为每条 TableRelation 自动生成默认依赖。\n@example ```json\n{\n  \"parentTable\": \"Users\", \"childTable\": \"Orders\",\n  \"dependencyType\": \"selectedRows\"\n}\n```",
-      "properties": {
-        "parentTable": {
-          "type": "string"
-        },
-        "childTable": {
-          "type": "string"
-        },
-        "dependencyType": {
-          "$ref": "#/$defs/DependencyType"
-        },
-        "autoLoad": {
-          "type": "boolean"
-        }
-      }
-    },
-    "DataRelation": {
-      "type": "object",
-      "title": "DataRelation",
-      "description": "展开后的内部关系格式 — TableRelation + ViewDependency 合并后的字段绑定结果。\n@internal 仅供 spark-data 内部消费（CascadeDelegate / DataView）。\n外部配置使用 `TableRelation` + `ViewDependency`。",
-      "properties": {
-        "parentTable": {
-          "type": "string"
-        },
-        "parentViewId": {
-          "type": "string"
-        },
-        "childTable": {
-          "type": "string"
-        },
-        "childViewId": {
-          "type": "string"
-        },
-        "parentField": {
-          "type": "string"
-        },
-        "childField": {
-          "type": "string"
-        },
-        "dependencyType": {
-          "$ref": "#/$defs/DependencyType"
-        },
-        "cascadeUpdate": {
-          "type": "boolean"
-        },
-        "cascadeDelete": {
-          "type": "boolean"
-        },
-        "autoLoad": {
-          "type": "boolean"
-        },
-        "relationName": {
-          "type": "string"
-        }
-      }
-    },
-    "RequestState": {
-      "type": "object",
-      "title": "RequestState",
-      "description": "DataView 请求状态机。\n```\nIdle ──requestData()──▶ Preparing ──loadFromServer()──▶ Loading\n│\n┌──────────────┴──────────────┐\nLoaded                        Failed\n```",
-      "properties": {
-        "Idle": {
-          "type": "number"
-        },
-        "Preparing": {
-          "type": "number"
-        },
-        "Loading": {
-          "type": "number"
-        },
-        "Loaded": {
-          "type": "number"
-        },
-        "Failed": {
-          "type": "number"
-        }
-      }
-    },
-    "CommitMode": {
-      "type": "object",
-      "title": "CommitMode",
-      "description": "增删改提交模式。\n- `'immediate'`（默认）：`addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD（如已配置 API）\n- `'staged'`：仅修改内存并标记脏状态，需调用 `saveChanges()` 批量提交"
-    },
-    "DataSetLayoutMetadata": {
-      "type": "object",
-      "title": "DataSetLayoutMetadata",
-      "description": "DataSet 级布局元数据。\n该结构不参与运行时数据计算，仅用于设计器/编辑器恢复画布布局。",
-      "properties": {
-        "tablePositions": {
-          "type": "object",
-          "title": "Record<string, {\n        x: number;\n        y: number;\n    }>"
-        }
-      }
-    },
-    "DataSetMetadata": {
-      "type": "object",
-      "title": "DataSetMetadata",
-      "description": "数据集元数据（对应 DataSet.toJson() 输出）\n顶层只承载数据集自身字段；表的默认视图数据必须继续下沉到 `tables.*.views.default`。",
-      "properties": {
-        "schemaVersion": {
-          "type": "number"
-        },
-        "dataSetName": {
-          "type": "string"
-        },
-        "tables": {
-          "type": "object",
-          "title": "Record<string, TableMetadata>"
-        },
-        "tableRelations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/TableRelation"
-          }
-        },
-        "viewDependencies": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ViewDependency"
-          }
-        },
-        "version": {
-          "type": "number"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "saveChanges": {
-          "$ref": "#/$defs/DataSetSaveChangesConfig"
-        },
-        "layout": {
-          "$ref": "#/$defs/DataSetLayoutMetadata"
-        }
-      }
-    },
-    "DataSetAppServices": {
-      "type": "object",
-      "title": "DataSetAppServices",
-      "description": "DataSet 用到的应用服务最小形状（避免依赖上层能力体系类型）。",
-      "properties": {
-        "router": {
-          "type": "object"
-        },
-        "tenant": {
-          "type": "object"
-        },
-        "logger": {
-          "type": "object",
-          "title": "LoggerApi"
-        }
-      }
-    },
-    "DataSource": {
-      "type": "object",
-      "title": "DataSource",
-      "description": "完整数据源全量接口，包含分页、聚合结果、权限、值序列化。\nDataView 实现此接口。可将其理解为\"UI 读取 DataView（API 视图）时看到的运行时数据结构\"。\n边界：\n- DataView 对应 table + viewId 的 API 视图（含 requestData/refresh/requestState）。\n- DataSource 只暴露 UI 消费所需的输出字段，不承载 API 配置定义本身（例如 viewId 应由 dataViewKey 解析得到）。\n1. 行级计算列：`columns[].computeExpression` 对每一行求值，结果写回该行字段。\n表达式可直接读取行字段，可通过 `ctx` 读取外部上下文，也可通过\n`$sum/$count/$avg/$min/$max/$list/$join` 读取 DataRelation 匹配到的子表行。\n2. 视图级聚合配置：定义在 `ViewMetadata.aggregates`，不是 `DataSource` 字段。\n每个输出项包含 `type / field / separator` 等后端 API 认得的规则信息。\n3. 运行时聚合结果：`aggregateResult` 基于当前 `rows` 计算，`selectionAggregateResult`\n基于当前 `selectedRows` 计算；二者都是由 aggregates 配置生成的\"聚合结果输出行\"，\n字段名来自 aggregates 的输出 key，字段值是对应聚合计算结果。\n4. UI / DataView 成员消费：组件可直接读取 `dataSource.aggregateResult`，也可通过\ndataViewKey=`Table@default` + dataMember=`aggregateResult` + dataField=`totalAmount` 引用。\n5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、\n`selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。",
-      "properties": {
-        "rows": {
-          "type": "array"
-        },
-        "columns": {
-          "type": "array"
-        },
-        "tableName": {
-          "type": "string"
-        },
-        "requestState": {
-          "$ref": "#/$defs/RequestState"
-        },
-        "currentRow": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "selectedRows": {
-          "type": "array"
-        },
-        "_modelPerm": {
-          "$ref": "#/$defs/ModelPermission"
-        },
-        "total": {
-          "type": "number"
-        },
-        "page": {
-          "type": "number"
-        },
-        "pageSize": {
-          "type": "number"
-        },
-        "aggregateResult": {
-          "type": "object",
-          "title": "Readonly<AggregateResultRow>"
-        },
-        "selectionAggregateResult": {
-          "type": "object",
-          "title": "Readonly<AggregateResultRow>"
-        },
-        "value": {
-          "type": "string"
-        },
-        "label": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "labels": {
-          "type": "array"
-        }
-      }
-    },
-    "DataViewEditingFieldChangeEvent": {
-      "type": "object",
-      "title": "DataViewEditingFieldChangeEvent",
-      "description": "DataView 编辑态字段变更事件",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "viewId": {
-          "type": "string"
-        },
-        "rowId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "field": {
-          "type": "string"
-        },
-        "previousValue": true,
-        "nextValue": true,
-        "editingRow": {
-          "$ref": "#/$defs/DataRow"
-        },
-        "patch": {
-          "type": "object",
-          "title": "Partial<DataRow>"
-        }
-      }
-    },
-    "DataViewApplyEditingRowsResult": {
-      "type": "object",
-      "title": "DataViewApplyEditingRowsResult",
-      "description": "DataView 编辑态应用结果",
-      "properties": {
-        "appliedCount": {
-          "type": "number"
-        },
-        "failedCount": {
-          "type": "number"
-        },
-        "failedIds": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        "failedErrors": {
-          "type": "object",
-          "title": "Record<string, string>"
-        }
-      }
-    },
-    "ViewChangeHandlers": {
-      "type": "object",
-      "title": "ViewChangeHandlers",
-      "description": "DataSet 级视图变更处理器映射\n用于 `DataSet.onAnyViewChange()`：\n订阅者按需注册感兴趣的事件类型，每个回调接收 `(tableName, viewId, ...payload)`。\n@example ```ts\ndataSet.onAnyViewChange({\n  currentRowChanged(tableName, viewId, currentRow, originatorId) {\n    syncCurrentRowToUI(tableName, viewId, currentRow)\n  },\n  cleared(tableName, viewId) {\n    clearUI(tableName, viewId)\n  },\n})\n```"
-    },
-    "DataSetContract": {
-      "type": "object",
-      "title": "DataSetContract",
-      "description": "数据集公共契约\n消费者（渲染层、能力系统）应依赖此接口而非具体 DataSet 类，\n便于测试 mock 与未来扩展。",
-      "properties": {
-        "dataSetName": {
-          "type": "string"
-        },
-        "tables": {
-          "type": "object",
-          "title": "Record<string, DataTable>"
-        },
-        "tableRelations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/TableRelation"
-          }
-        },
-        "viewDependencies": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ViewDependency"
-          }
-        },
-        "schemaVersion": {
-          "type": "number"
-        },
-        "version": {
-          "type": "number"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "destroyed": {
-          "type": "boolean"
-        }
-      }
-    },
-    "DataSetSaveChangesViewSelector": {
-      "type": "object",
-      "title": "DataSetSaveChangesViewSelector",
-      "description": "DataSet 级保存目标：用于一次提交一个主从编辑范围",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "viewId": {
-          "type": "string"
-        },
-        "ids": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        }
-      }
-    },
-    "DataSetSaveChangesMode": {
-      "type": "object",
-      "title": "DataSetSaveChangesMode",
-      "description": "DataSet 级保存模式"
-    },
-    "DataSetTransactionOperation": {
-      "type": "object",
-      "title": "DataSetTransactionOperation",
-      "description": "事务中的单个 CRUD 操作",
-      "properties": {
-        "operationId": {
-          "type": "string"
-        },
-        "tableName": {
-          "type": "string"
-        },
-        "op": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "create"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "update"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "delete"
-              ]
-            }
-          ]
-        },
-        "data": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "pk": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
-    },
-    "DataSetTransactionRequest": {
-      "type": "object",
-      "title": "DataSetTransactionRequest",
-      "description": "事务请求：包含一组事务操作",
-      "properties": {
-        "requestId": {
-          "type": "string"
-        },
-        "operations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataSetTransactionOperation"
-          }
-        }
-      }
-    },
-    "DataSetTransactionOperationResult": {
-      "type": "object",
-      "title": "DataSetTransactionOperationResult",
-      "description": "事务中单个操作的结果",
-      "properties": {
-        "operationId": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "result": true,
-        "error": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetTransactionResponse": {
-      "type": "object",
-      "title": "DataSetTransactionResponse",
-      "description": "事务响应：服务端返回的完整事务结果",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "transactionId": {
-          "type": "string"
-        },
-        "requestId": {
-          "type": "string"
-        },
-        "operationCount": {
-          "type": "number"
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataSetTransactionOperationResult"
-          }
-        },
-        "replayed": {
-          "type": "boolean"
-        }
-      }
-    },
-    "DataSetSaveChangesTransactionConfig": {
-      "type": "object",
-      "title": "DataSetSaveChangesTransactionConfig",
-      "description": "DataSet.saveChanges 事务配置（ViewMetadata 中持久化用）",
-      "properties": {
-        "endpoint": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "requestId": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetSaveChangesTransactionOptions": {
-      "type": "object",
-      "title": "DataSetSaveChangesTransactionOptions",
-      "description": "DataSet.saveChanges 事务选项（运行时传递用）",
-      "properties": {
-        "endpoint": {
-          "$ref": "#/$defs/HttpEndpoint"
-        },
-        "requestId": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetSaveChangesConfig": {
-      "type": "object",
-      "title": "DataSetSaveChangesConfig",
-      "description": "DataSet.saveChanges 配置（ViewMetadata 中持久化用）",
-      "properties": {
-        "mode": {
-          "$ref": "#/$defs/DataSetSaveChangesMode"
-        },
-        "transaction": {
-          "$ref": "#/$defs/DataSetSaveChangesTransactionConfig"
-        }
-      }
-    },
-    "DataSetSaveChangesOptions": {
-      "type": "object",
-      "title": "DataSetSaveChangesOptions",
-      "description": "DataSet 级保存选项（运行时传递给 saveChanges）",
-      "properties": {
-        "views": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataSetSaveChangesViewSelector"
-          }
-        },
-        "applyEditingRows": {
-          "type": "boolean"
-        },
-        "mode": {
-          "$ref": "#/$defs/DataSetSaveChangesMode"
-        },
-        "transaction": {
-          "$ref": "#/$defs/DataSetSaveChangesTransactionOptions"
-        }
-      }
-    },
-    "DataSetSaveChangesViewResult": {
-      "type": "object",
-      "title": "DataSetSaveChangesViewResult",
-      "description": "DataSet 级单视图保存结果",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        },
-        "viewId": {
-          "type": "string"
-        },
-        "appliedEditingRows": {
-          "type": "number"
-        },
-        "failedEditingRows": {
-          "type": "number"
-        },
-        "createdCount": {
-          "type": "number"
-        },
-        "savedCount": {
-          "type": "number"
-        },
-        "deletedCount": {
-          "type": "number"
-        },
-        "failedCount": {
-          "type": "number"
-        },
-        "failedIds": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        "failedErrors": {
-          "type": "object",
-          "title": "Record<string, string>"
-        }
-      }
-    },
-    "DataSetSaveChangesResult": {
-      "type": "object",
-      "title": "DataSetSaveChangesResult",
-      "description": "DataSet 级跨视图保存结果",
-      "properties": {
-        "viewCount": {
-          "type": "number"
-        },
-        "appliedEditingRows": {
-          "type": "number"
-        },
-        "failedEditingRows": {
-          "type": "number"
-        },
-        "createdCount": {
-          "type": "number"
-        },
-        "savedCount": {
-          "type": "number"
-        },
-        "deletedCount": {
-          "type": "number"
-        },
-        "failedCount": {
-          "type": "number"
-        },
-        "failedViews": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        },
-        "viewResults": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DataSetSaveChangesViewResult"
-          }
-        },
-        "transaction": {
-          "$ref": "#/$defs/DataSetTransactionResponse"
-        }
-      }
-    },
-    "CrudResult": {
-      "type": "object",
-      "title": "CrudResult",
-      "description": "CRUD 操作结果",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "data": true,
-        "error": {
-          "type": "object",
-          "title": "Error"
-        },
-        "message": {
-          "type": "string"
-        },
-        "code": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "number"
-        }
-      }
-    },
-    "QueryParams": {
-      "type": "object",
-      "title": "QueryParams",
-      "description": "分页查询参数 - 支持权限快照传递",
-      "properties": {
-        "page": {
-          "type": "number"
-        },
-        "pageSize": {
-          "type": "number"
-        },
-        "sort": {
-          "type": "string"
-        },
-        "filter": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Record<string, unknown>"
-            },
-            {
-              "$ref": "#/$defs/FilterExpression"
-            }
-          ]
-        },
-        "search": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "include": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "viewId": {
-          "type": "string"
-        },
-        "viewConfig": {
-          "$ref": "#/$defs/ViewMetadata"
-        },
-        "treeMode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "flat"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "nested"
-              ]
-            }
-          ]
-        },
-        "parentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "rootId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "depthLimit": {
-          "type": "number"
-        },
-        "limit": {
-          "type": "number"
-        },
-        "modelPermission": {
-          "$ref": "#/$defs/ModelPermission"
-        },
-        "instancePermission": {
-          "$ref": "#/$defs/InstancePermission"
-        }
-      }
-    },
-    "BatchResult": {
-      "type": "object",
-      "title": "BatchResult",
-      "description": "批量操作结果",
-      "properties": {
-        "successCount": {
-          "type": "number"
-        },
-        "failureCount": {
-          "type": "number"
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CrudResult"
-          }
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "Error"
-          }
-        },
-        "totalTime": {
-          "type": "number"
-        }
-      }
-    },
-    "CrudOperationConfig": {
-      "type": "object",
-      "title": "CrudOperationConfig",
-      "description": "CRUD 通用运行策略配置。\n语义：描述\"调用端点时应用什么策略\"。\n这里定义超时、重试、权限校验、数据校验，以及请求/响应转换等运行期策略，不负责声明端点映射。",
-      "properties": {
-        "timeout": {
-          "type": "number"
-        },
-        "retryCount": {
-          "type": "number"
-        },
-        "skipPermissionCheck": {
-          "type": "boolean"
-        },
-        "modelPermission": {
-          "$ref": "#/$defs/ModelPermission"
-        },
-        "instancePermission": {
-          "$ref": "#/$defs/InstancePermission"
-        },
-        "validateData": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

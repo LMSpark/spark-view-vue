@@ -21,6 +21,49 @@
     "BoundBooleanColumn",
     "UseSwitchNullValueOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.541Z",
+  "$defs": {
+    "BoundBooleanColumn": {
+      "type": "object",
+      "title": "BoundBooleanColumn",
+      "description": "Bound Boolean Column 的语义模型。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "allowDBNull": {
+          "type": "boolean"
+        }
+      }
+    },
+    "UseSwitchNullValueOptions": {
+      "type": "object",
+      "title": "UseSwitchNullValueOptions",
+      "description": "Use Switch Null Value Options 的调用配置。",
+      "properties": {
+        "boundColumn": {
+          "type": "object",
+          "title": "ValueRef<BoundBooleanColumn | null | undefined>"
+        },
+        "contextData": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dataSource": true,
+        "fieldName": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        }
+      }
+    }
+  },
   "models": {
     "BoundBooleanColumn": {
       "kind": "BoundBooleanColumn",
@@ -166,49 +209,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.531Z",
-  "$defs": {
-    "BoundBooleanColumn": {
-      "type": "object",
-      "title": "BoundBooleanColumn",
-      "description": "Bound Boolean Column 的语义模型。",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "allowDBNull": {
-          "type": "boolean"
-        }
-      }
-    },
-    "UseSwitchNullValueOptions": {
-      "type": "object",
-      "title": "UseSwitchNullValueOptions",
-      "description": "Use Switch Null Value Options 的调用配置。",
-      "properties": {
-        "boundColumn": {
-          "type": "object",
-          "title": "ValueRef<BoundBooleanColumn | null | undefined>"
-        },
-        "contextData": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "dataSource": true,
-        "fieldName": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        }
-      }
     }
   }
 }

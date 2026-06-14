@@ -16,6 +16,36 @@
   "symbols": [
     "VisibilityContainerZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.472Z",
+  "$defs": {
+    "VisibilityContainerZeroCodeOptions": {
+      "type": "object",
+      "title": "VisibilityContainerZeroCodeOptions",
+      "description": "Visibility Container Zero Code Options 的调用配置。",
+      "properties": {
+        "visibleValue": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "onOpen": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "onClose": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "onOpened": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "onClosed": {
+          "type": "object",
+          "title": "() => void"
+        }
+      }
+    }
+  },
   "models": {
     "VisibilityContainerZeroCodeOptions": {
       "kind": "VisibilityContainerZeroCodeOptions",
@@ -111,36 +141,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.364Z",
-  "$defs": {
-    "VisibilityContainerZeroCodeOptions": {
-      "type": "object",
-      "title": "VisibilityContainerZeroCodeOptions",
-      "description": "Visibility Container Zero Code Options 的调用配置。",
-      "properties": {
-        "visibleValue": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "onOpen": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "onClose": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "onOpened": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "onClosed": {
-          "type": "object",
-          "title": "() => void"
-        }
-      }
     }
   }
 }

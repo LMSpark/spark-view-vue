@@ -16,6 +16,14 @@
   "symbols": [
     "TokenManager"
   ],
+  "generatedAt": "2026-06-11T12:48:50.934Z",
+  "$defs": {
+    "TokenManager": {
+      "type": "object",
+      "title": "TokenManager",
+      "description": "统一令牌管理器\n提供跨平台的令牌存储、管理和检索功能。支持多种存储后端，\n自动适应不同的运行环境（浏览器、服务端、测试环境）。\n@class\n@example ```typescript\nconst manager = new TokenManager('localStorage', 'auth_token')\nmanager.setToken('jwt-token-here')\nconsole.log(manager.getToken()) // 'jwt-token-here'\n```"
+    }
+  },
   "models": {
     "TokenManager": {
       "kind": "TokenManager",
@@ -149,14 +157,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.911Z",
-  "$defs": {
-    "TokenManager": {
-      "type": "object",
-      "title": "TokenManager",
-      "description": "统一令牌管理器\n提供跨平台的令牌存储、管理和检索功能。支持多种存储后端，\n自动适应不同的运行环境（浏览器、服务端、测试环境）。\n@class\n@example ```typescript\nconst manager = new TokenManager('localStorage', 'auth_token')\nmanager.setToken('jwt-token-here')\nconsole.log(manager.getToken()) // 'jwt-token-here'\n```"
     }
   }
 }

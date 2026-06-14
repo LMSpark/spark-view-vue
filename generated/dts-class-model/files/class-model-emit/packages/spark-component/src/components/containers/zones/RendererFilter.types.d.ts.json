@@ -21,6 +21,78 @@
   "symbols": [
     "RFilterProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.476Z",
+  "$defs": {
+    "RFilterProps": {
+      "type": "object",
+      "title": "RFilterProps",
+      "description": "`r-filter` / `RendererFilter` 完整属性定义。\nSSOT 设计：r-filter 通过 `dataViewKey` 自治绑定 DataView，\n自己维护 filterModel / FilterExpression / DataView.setFilter 同步。\n父容器（r-table 等）不再注入桥接字段；嵌入 r-table 时可省略 dataViewKey，\n由 r-table 提供的 DATA_SOURCE 能力向下注入。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "r-filter"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "class": {
+          "type": "string"
+        },
+        "dataViewKey": {
+          "type": "string"
+        },
+        "collapsible": {
+          "type": "boolean"
+        },
+        "defaultCollapsed": {
+          "type": "boolean"
+        },
+        "autoFitMinWidth": {
+          "type": "string"
+        },
+        "itemSpan": {
+          "type": "number"
+        },
+        "actionSpan": {
+          "type": "number"
+        },
+        "gridColumns": {
+          "type": "number"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        },
+        "showDataViewMeta": {
+          "type": "boolean"
+        },
+        "showAggregateSummary": {
+          "type": "boolean"
+        },
+        "showSelectionSummary": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RFilterProps": {
       "kind": "RFilterProps",
@@ -211,78 +283,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.369Z",
-  "$defs": {
-    "RFilterProps": {
-      "type": "object",
-      "title": "RFilterProps",
-      "description": "`r-filter` / `RendererFilter` 完整属性定义。\nSSOT 设计：r-filter 通过 `dataViewKey` 自治绑定 DataView，\n自己维护 filterModel / FilterExpression / DataView.setFilter 同步。\n父容器（r-table 等）不再注入桥接字段；嵌入 r-table 时可省略 dataViewKey，\n由 r-table 提供的 DATA_SOURCE 能力向下注入。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "r-filter"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "class": {
-          "type": "string"
-        },
-        "dataViewKey": {
-          "type": "string"
-        },
-        "collapsible": {
-          "type": "boolean"
-        },
-        "defaultCollapsed": {
-          "type": "boolean"
-        },
-        "autoFitMinWidth": {
-          "type": "string"
-        },
-        "itemSpan": {
-          "type": "number"
-        },
-        "actionSpan": {
-          "type": "number"
-        },
-        "gridColumns": {
-          "type": "number"
-        },
-        "gridGap": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "gridAutoRows": {
-          "type": "string"
-        },
-        "showDataViewMeta": {
-          "type": "boolean"
-        },
-        "showAggregateSummary": {
-          "type": "boolean"
-        },
-        "showSelectionSummary": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

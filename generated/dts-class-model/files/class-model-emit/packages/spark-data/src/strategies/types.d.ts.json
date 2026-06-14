@@ -20,6 +20,79 @@
     "CrudLifecycleEvent",
     "CrudLifecycleEventInput"
   ],
+  "generatedAt": "2026-06-11T12:38:13.615Z",
+  "$defs": {
+    "CrudOperation": {
+      "type": "object",
+      "title": "CrudOperation",
+      "description": "CRUD 操作类型"
+    },
+    "CrudLifecycleEvent": {
+      "type": "object",
+      "title": "CrudLifecycleEvent",
+      "description": "CRUD 生命周期事件\n- `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）\n- `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）",
+      "properties": {
+        "operation": {
+          "$ref": "#/$defs/CrudOperation"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "before"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "after"
+              ]
+            }
+          ]
+        },
+        "data": true,
+        "result": {
+          "type": "object",
+          "title": "CrudResult"
+        },
+        "cancelled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CrudLifecycleEventInput": {
+      "type": "object",
+      "title": "CrudLifecycleEventInput",
+      "description": "Crud Lifecycle Event Input 的输入数据。",
+      "properties": {
+        "operation": {
+          "$ref": "#/$defs/CrudOperation"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "before"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "after"
+              ]
+            }
+          ]
+        },
+        "data": true,
+        "result": {
+          "type": "object",
+          "title": "CrudResult"
+        }
+      }
+    }
+  },
   "models": {
     "CrudOperation": {
       "kind": "CrudOperation",
@@ -230,79 +303,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.010Z",
-  "$defs": {
-    "CrudOperation": {
-      "type": "object",
-      "title": "CrudOperation",
-      "description": "CRUD 操作类型"
-    },
-    "CrudLifecycleEvent": {
-      "type": "object",
-      "title": "CrudLifecycleEvent",
-      "description": "CRUD 生命周期事件\n- `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）\n- `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）",
-      "properties": {
-        "operation": {
-          "$ref": "#/$defs/CrudOperation"
-        },
-        "phase": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "before"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "after"
-              ]
-            }
-          ]
-        },
-        "data": true,
-        "result": {
-          "type": "object",
-          "title": "CrudResult"
-        },
-        "cancelled": {
-          "type": "boolean"
-        }
-      }
-    },
-    "CrudLifecycleEventInput": {
-      "type": "object",
-      "title": "CrudLifecycleEventInput",
-      "description": "Crud Lifecycle Event Input 的输入数据。",
-      "properties": {
-        "operation": {
-          "$ref": "#/$defs/CrudOperation"
-        },
-        "phase": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "before"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "after"
-              ]
-            }
-          ]
-        },
-        "data": true,
-        "result": {
-          "type": "object",
-          "title": "CrudResult"
-        }
-      }
     }
   }
 }

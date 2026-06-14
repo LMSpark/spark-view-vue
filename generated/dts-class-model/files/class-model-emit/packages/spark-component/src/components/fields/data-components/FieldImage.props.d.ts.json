@@ -21,6 +21,14 @@
   "symbols": [
     "RImageProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.562Z",
+  "$defs": {
+    "RImageProps": {
+      "type": "object",
+      "title": "RImageProps",
+      "description": "RImage Props 的属性契约。"
+    }
+  },
   "models": {
     "RImageProps": {
       "kind": "RImageProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.552Z",
-  "$defs": {
-    "RImageProps": {
-      "type": "object",
-      "title": "RImageProps",
-      "description": "RImage Props 的属性契约。"
     }
   }
 }

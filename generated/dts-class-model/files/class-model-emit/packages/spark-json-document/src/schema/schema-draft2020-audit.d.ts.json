@@ -16,6 +16,25 @@
   "symbols": [
     "Draft2020AuditIssue"
   ],
+  "generatedAt": "2026-06-11T12:38:13.616Z",
+  "$defs": {
+    "Draft2020AuditIssue": {
+      "type": "object",
+      "title": "Draft2020AuditIssue",
+      "description": "Draft2020 Audit Issue 的语义模型。",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "Draft2020AuditIssue": {
       "kind": "Draft2020AuditIssue",
@@ -66,25 +85,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.126Z",
-  "$defs": {
-    "Draft2020AuditIssue": {
-      "type": "object",
-      "title": "Draft2020AuditIssue",
-      "description": "Draft2020 Audit Issue 的语义模型。",
-      "properties": {
-        "path": {
-          "type": "string"
-        },
-        "rule": {
-          "type": "string"
-        },
-        "detail": {
-          "type": "string"
-        }
-      }
     }
   }
 }

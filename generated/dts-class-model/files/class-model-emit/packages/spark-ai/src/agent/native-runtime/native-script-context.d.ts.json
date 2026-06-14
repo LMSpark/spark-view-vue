@@ -26,6 +26,88 @@
     "ExecuteAiApiActionCommand",
     "AiApiScriptActionFailure"
   ],
+  "generatedAt": "2026-06-11T20:43:03.239Z",
+  "$defs": {
+    "ScriptCallback": {
+      "type": "object",
+      "title": "ScriptCallback",
+      "description": "Script Callback 的语义模型。"
+    },
+    "ScriptActionArg": {
+      "type": "object",
+      "title": "ScriptActionArg",
+      "description": "Script Action Arg 的语义模型。"
+    },
+    "AiNativePathContext": {
+      "type": "object",
+      "title": "AiNativePathContext",
+      "description": "Ai Native Path Context 的运行上下文。",
+      "properties": {
+        "segments": {
+          "type": "array"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        }
+      }
+    },
+    "AiApiScriptContextCommand": {
+      "type": "object",
+      "title": "AiApiScriptContextCommand",
+      "description": "Ai Api Script Context Command 的命令参数。",
+      "properties": {
+        "instance": true,
+        "api": {
+          "type": "object",
+          "title": "AiApiObjectMetadata"
+        },
+        "ctx": {
+          "$ref": "#/$defs/AiNativePathContext"
+        },
+        "validateOptions": {
+          "type": "object",
+          "title": "AiJsonSchemaValidateOptions"
+        }
+      }
+    },
+    "ExecuteAiApiActionCommand": {
+      "type": "object",
+      "title": "ExecuteAiApiActionCommand",
+      "description": "Execute Ai Api Action Command 的命令参数。",
+      "properties": {
+        "target": true,
+        "action": {
+          "type": "object",
+          "title": "AiApiActionMetadata"
+        },
+        "args": {
+          "$ref": "#/$defs/ScriptActionArg"
+        },
+        "ctx": {
+          "$ref": "#/$defs/AiNativePathContext"
+        },
+        "validateOptions": {
+          "type": "object",
+          "title": "AiJsonSchemaValidateOptions"
+        }
+      }
+    },
+    "AiApiScriptActionFailure": {
+      "type": "object",
+      "title": "AiApiScriptActionFailure",
+      "description": "Ai Api Script Action Failure 的语义模型。",
+      "properties": {
+        "actionName": {
+          "type": "string"
+        },
+        "result": {
+          "type": "object",
+          "title": "AiAgentToolResult<unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "ScriptCallback": {
       "kind": "ScriptCallback",
@@ -318,88 +400,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.551Z",
-  "$defs": {
-    "ScriptCallback": {
-      "type": "object",
-      "title": "ScriptCallback",
-      "description": "Script Callback 的语义模型。"
-    },
-    "ScriptActionArg": {
-      "type": "object",
-      "title": "ScriptActionArg",
-      "description": "Script Action Arg 的语义模型。"
-    },
-    "AiNativePathContext": {
-      "type": "object",
-      "title": "AiNativePathContext",
-      "description": "Ai Native Path Context 的运行上下文。",
-      "properties": {
-        "segments": {
-          "type": "array"
-        },
-        "host": {
-          "type": "object",
-          "title": "AiAgentRuntimeHostContext"
-        }
-      }
-    },
-    "AiApiScriptContextCommand": {
-      "type": "object",
-      "title": "AiApiScriptContextCommand",
-      "description": "Ai Api Script Context Command 的命令参数。",
-      "properties": {
-        "instance": true,
-        "api": {
-          "type": "object",
-          "title": "AiApiObjectMetadata"
-        },
-        "ctx": {
-          "$ref": "#/$defs/AiNativePathContext"
-        },
-        "validateOptions": {
-          "type": "object",
-          "title": "AiJsonSchemaValidateOptions"
-        }
-      }
-    },
-    "ExecuteAiApiActionCommand": {
-      "type": "object",
-      "title": "ExecuteAiApiActionCommand",
-      "description": "Execute Ai Api Action Command 的命令参数。",
-      "properties": {
-        "target": true,
-        "action": {
-          "type": "object",
-          "title": "AiApiActionMetadata"
-        },
-        "args": {
-          "$ref": "#/$defs/ScriptActionArg"
-        },
-        "ctx": {
-          "$ref": "#/$defs/AiNativePathContext"
-        },
-        "validateOptions": {
-          "type": "object",
-          "title": "AiJsonSchemaValidateOptions"
-        }
-      }
-    },
-    "AiApiScriptActionFailure": {
-      "type": "object",
-      "title": "AiApiScriptActionFailure",
-      "description": "Ai Api Script Action Failure 的语义模型。",
-      "properties": {
-        "actionName": {
-          "type": "string"
-        },
-        "result": {
-          "type": "object",
-          "title": "AiAgentToolResult<unknown>"
-        }
-      }
     }
   }
 }

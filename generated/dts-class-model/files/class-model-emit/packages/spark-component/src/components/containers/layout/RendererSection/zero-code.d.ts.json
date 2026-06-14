@@ -21,6 +21,24 @@
   "symbols": [
     "RendererSectionZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.444Z",
+  "$defs": {
+    "RendererSectionZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererSectionZeroCodeOptions",
+      "description": "Renderer Section Zero Code Options 的调用配置。",
+      "properties": {
+        "collapsed": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        },
+        "collapsible": {
+          "type": "object",
+          "title": "ValueRef<boolean>"
+        }
+      }
+    }
+  },
   "models": {
     "RendererSectionZeroCodeOptions": {
       "kind": "RendererSectionZeroCodeOptions",
@@ -62,24 +80,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.272Z",
-  "$defs": {
-    "RendererSectionZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererSectionZeroCodeOptions",
-      "description": "Renderer Section Zero Code Options 的调用配置。",
-      "properties": {
-        "collapsed": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        },
-        "collapsible": {
-          "type": "object",
-          "title": "ValueRef<boolean>"
-        }
-      }
     }
   }
 }

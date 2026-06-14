@@ -20,6 +20,86 @@
     "BuildProjectPageSummariesOptions",
     "TreeNodeLike"
   ],
+  "generatedAt": "2026-06-13T21:09:36.105Z",
+  "$defs": {
+    "NormalizeNavRootInput": {
+      "type": "object",
+      "title": "NormalizeNavRootInput",
+      "description": "Normalize Nav Root Input 的输入数据。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "childPlacement": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "module"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system-directory"
+              ]
+            }
+          ]
+        },
+        "homePath": {
+          "type": "string"
+        }
+      }
+    },
+    "BuildProjectPageSummariesOptions": {
+      "type": "object",
+      "title": "BuildProjectPageSummariesOptions",
+      "description": "Build Project Page Summaries Options 的调用配置。",
+      "properties": {
+        "descriptionContext": {
+          "type": "array"
+        }
+      }
+    },
+    "TreeNodeLike": {
+      "type": "object",
+      "title": "TreeNodeLike",
+      "description": "树节点最小接口——避免循环依赖",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "pid": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "NormalizeNavRootInput": {
       "kind": "NormalizeNavRootInput",
@@ -222,86 +302,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.195Z",
-  "$defs": {
-    "NormalizeNavRootInput": {
-      "type": "object",
-      "title": "NormalizeNavRootInput",
-      "description": "Normalize Nav Root Input 的输入数据。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "childPlacement": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "ProjectNodeData"
-          }
-        },
-        "icon": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "module"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "system-directory"
-              ]
-            }
-          ]
-        },
-        "homePath": {
-          "type": "string"
-        }
-      }
-    },
-    "BuildProjectPageSummariesOptions": {
-      "type": "object",
-      "title": "BuildProjectPageSummariesOptions",
-      "description": "Build Project Page Summaries Options 的调用配置。",
-      "properties": {
-        "descriptionContext": {
-          "type": "array"
-        }
-      }
-    },
-    "TreeNodeLike": {
-      "type": "object",
-      "title": "TreeNodeLike",
-      "description": "树节点最小接口——避免循环依赖",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "pid": {
-          "type": "string"
-        }
-      }
     }
   }
 }

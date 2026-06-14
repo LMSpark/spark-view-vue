@@ -21,6 +21,119 @@
   "symbols": [
     "RProgressProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.486Z",
+  "$defs": {
+    "RProgressProps": {
+      "type": "object",
+      "title": "RProgressProps",
+      "description": "RProgress Props 的属性契约。",
+      "properties": {
+        "percentage": {
+          "type": "number"
+        },
+        "progressType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "line"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "circle"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dashboard"
+              ]
+            }
+          ]
+        },
+        "strokeWidth": {
+          "type": "number"
+        },
+        "textInside": {
+          "type": "boolean"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "exception"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            }
+          ]
+        },
+        "indeterminate": {
+          "type": "boolean"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          ]
+        },
+        "circleWidth": {
+          "type": "number"
+        },
+        "showText": {
+          "type": "boolean"
+        },
+        "strokeLinecap": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "butt"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "round"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "square"
+              ]
+            }
+          ]
+        },
+        "formatText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RProgressProps": {
       "kind": "RProgressProps",
@@ -233,119 +346,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.406Z",
-  "$defs": {
-    "RProgressProps": {
-      "type": "object",
-      "title": "RProgressProps",
-      "description": "RProgress Props 的属性契约。",
-      "properties": {
-        "percentage": {
-          "type": "number"
-        },
-        "progressType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "line"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "circle"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dashboard"
-              ]
-            }
-          ]
-        },
-        "strokeWidth": {
-          "type": "number"
-        },
-        "textInside": {
-          "type": "boolean"
-        },
-        "status": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "exception"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            }
-          ]
-        },
-        "indeterminate": {
-          "type": "boolean"
-        },
-        "duration": {
-          "type": "number"
-        },
-        "color": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "object"
-              }
-            }
-          ]
-        },
-        "circleWidth": {
-          "type": "number"
-        },
-        "showText": {
-          "type": "boolean"
-        },
-        "strokeLinecap": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "butt"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "round"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "square"
-              ]
-            }
-          ]
-        },
-        "formatText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

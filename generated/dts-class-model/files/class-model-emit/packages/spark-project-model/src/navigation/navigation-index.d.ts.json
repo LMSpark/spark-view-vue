@@ -18,6 +18,30 @@
     "NavigationTreeNodeLike",
     "NavigationIndex"
   ],
+  "generatedAt": "2026-06-11T12:48:51.049Z",
+  "$defs": {
+    "NavigationTreeNodeLike": {
+      "type": "object",
+      "title": "NavigationTreeNodeLike",
+      "description": "Navigation Tree Node Like 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "pid": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        }
+      }
+    },
+    "NavigationIndex": {
+      "type": "object",
+      "title": "NavigationIndex",
+      "description": "导航索引：id → node 映射 + pid → children 查询。"
+    }
+  },
   "models": {
     "NavigationTreeNodeLike": {
       "kind": "NavigationTreeNodeLike",
@@ -330,30 +354,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.187Z",
-  "$defs": {
-    "NavigationTreeNodeLike": {
-      "type": "object",
-      "title": "NavigationTreeNodeLike",
-      "description": "Navigation Tree Node Like 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "pid": {
-          "type": "string"
-        },
-        "order": {
-          "type": "number"
-        }
-      }
-    },
-    "NavigationIndex": {
-      "type": "object",
-      "title": "NavigationIndex",
-      "description": "导航索引：id → node 映射 + pid → children 查询。"
     }
   }
 }

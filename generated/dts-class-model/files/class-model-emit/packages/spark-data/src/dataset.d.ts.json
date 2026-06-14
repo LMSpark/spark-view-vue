@@ -18,6 +18,121 @@
     "DataSetConfig",
     "DataSet"
   ],
+  "generatedAt": "2026-06-14T01:03:51.211Z",
+  "$defs": {
+    "DataSetConfig": {
+      "type": "object",
+      "title": "DataSetConfig",
+      "description": "Data Set Config 的配置结构。",
+      "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "tables": {
+          "type": "object",
+          "title": "Record<string, TableMetadata>"
+        },
+        "schemaVersion": {
+          "type": "number"
+        },
+        "tableRelations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "TableRelation"
+          }
+        },
+        "viewDependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "ViewDependency"
+          }
+        },
+        "version": {
+          "type": "number"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "saveChanges": {
+          "type": "object",
+          "title": "DataSetSaveChangesConfig"
+        },
+        "layout": true
+      }
+    },
+    "DataSet": {
+      "type": "object",
+      "title": "DataSet",
+      "description": "Data Set 的语义模型。",
+      "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "tables": {
+          "type": "object",
+          "title": "Record<string, DataTable>"
+        },
+        "tableRelations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "TableRelation"
+          }
+        },
+        "viewDependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "ViewDependency"
+          }
+        },
+        "_resolvedRelations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataRelation"
+          }
+        },
+        "schemaVersion": {
+          "type": "number"
+        },
+        "version": {
+          "type": "number"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "saveChangesConfig": {
+          "type": "object",
+          "title": "DataSetSaveChangesConfig"
+        },
+        "layout": true,
+        "_sharedHttpClient": {
+          "type": "object",
+          "title": "HttpClientBase"
+        },
+        "_appServices": {
+          "type": "object",
+          "title": "DataSetAppServices"
+        },
+        "_pageRoute": true,
+        "_activeViewSubs": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "_activeOnSubs": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
   "models": {
     "DataSetConfig": {
       "kind": "DataSetConfig",
@@ -1653,121 +1768,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.948Z",
-  "$defs": {
-    "DataSetConfig": {
-      "type": "object",
-      "title": "DataSetConfig",
-      "description": "Data Set Config 的配置结构。",
-      "properties": {
-        "dataSetName": {
-          "type": "string"
-        },
-        "tables": {
-          "type": "object",
-          "title": "Record<string, TableMetadata>"
-        },
-        "schemaVersion": {
-          "type": "number"
-        },
-        "tableRelations": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "TableRelation"
-          }
-        },
-        "viewDependencies": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "ViewDependency"
-          }
-        },
-        "version": {
-          "type": "number"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "saveChanges": {
-          "type": "object",
-          "title": "DataSetSaveChangesConfig"
-        },
-        "layout": true
-      }
-    },
-    "DataSet": {
-      "type": "object",
-      "title": "DataSet",
-      "description": "Data Set 的语义模型。",
-      "properties": {
-        "dataSetName": {
-          "type": "string"
-        },
-        "tables": {
-          "type": "object",
-          "title": "Record<string, DataTable>"
-        },
-        "tableRelations": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "TableRelation"
-          }
-        },
-        "viewDependencies": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "ViewDependency"
-          }
-        },
-        "_resolvedRelations": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "DataRelation"
-          }
-        },
-        "schemaVersion": {
-          "type": "number"
-        },
-        "version": {
-          "type": "number"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "saveChangesConfig": {
-          "type": "object",
-          "title": "DataSetSaveChangesConfig"
-        },
-        "layout": true,
-        "_sharedHttpClient": {
-          "type": "object",
-          "title": "HttpClientBase"
-        },
-        "_appServices": {
-          "type": "object",
-          "title": "DataSetAppServices"
-        },
-        "_pageRoute": true,
-        "_activeViewSubs": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        },
-        "_activeOnSubs": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
-        }
-      }
     }
   }
 }

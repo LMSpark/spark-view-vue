@@ -22,6 +22,59 @@
     "PermissionAction",
     "ResolveFieldPermissionStateInput"
   ],
+  "generatedAt": "2026-06-11T12:48:50.997Z",
+  "$defs": {
+    "PermissionActionContext": {
+      "type": "object",
+      "title": "PermissionActionContext",
+      "description": "Permission Action Context 的运行上下文。",
+      "properties": {
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
+    },
+    "PermissionActionName": {
+      "type": "object",
+      "title": "PermissionActionName",
+      "description": "Permission Action Name 的语义模型。"
+    },
+    "PermissionAction": {
+      "type": "object",
+      "title": "PermissionAction",
+      "description": "Permission Action 的语义模型。"
+    },
+    "ResolveFieldPermissionStateInput": {
+      "type": "object",
+      "title": "ResolveFieldPermissionStateInput",
+      "description": "Resolve Field Permission State Input 的输入数据。",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config": {
+          "type": "object",
+          "title": "Omit<FieldRenderConfig, 'field'>"
+        },
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
+    }
+  },
   "models": {
     "PermissionActionContext": {
       "kind": "PermissionActionContext",
@@ -195,59 +248,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.751Z",
-  "$defs": {
-    "PermissionActionContext": {
-      "type": "object",
-      "title": "PermissionActionContext",
-      "description": "Permission Action Context 的运行上下文。",
-      "properties": {
-        "permissionMode": {
-          "type": "object",
-          "title": "NavPermissionMode"
-        }
-      }
-    },
-    "PermissionActionName": {
-      "type": "object",
-      "title": "PermissionActionName",
-      "description": "Permission Action Name 的语义模型。"
-    },
-    "PermissionAction": {
-      "type": "object",
-      "title": "PermissionAction",
-      "description": "Permission Action 的语义模型。"
-    },
-    "ResolveFieldPermissionStateInput": {
-      "type": "object",
-      "title": "ResolveFieldPermissionStateInput",
-      "description": "Resolve Field Permission State Input 的输入数据。",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "row": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "config": {
-          "type": "object",
-          "title": "Omit<FieldRenderConfig, 'field'>"
-        },
-        "permissionMode": {
-          "type": "object",
-          "title": "NavPermissionMode"
-        }
-      }
     }
   }
 }

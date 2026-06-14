@@ -16,6 +16,20 @@
   "symbols": [
     "PassthroughOptions"
   ],
+  "generatedAt": "2026-06-11T12:48:50.967Z",
+  "$defs": {
+    "PassthroughOptions": {
+      "type": "object",
+      "title": "PassthroughOptions",
+      "description": "透传组件配置",
+      "properties": {
+        "propDefaults": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "PassthroughOptions": {
       "kind": "PassthroughOptions",
@@ -42,20 +56,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.391Z",
-  "$defs": {
-    "PassthroughOptions": {
-      "type": "object",
-      "title": "PassthroughOptions",
-      "description": "透传组件配置",
-      "properties": {
-        "propDefaults": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
     }
   }
 }

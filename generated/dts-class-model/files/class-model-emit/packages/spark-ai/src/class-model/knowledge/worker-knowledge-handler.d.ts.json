@@ -16,6 +16,24 @@
   "symbols": [
     "CreateClassModelKnowledgeWorkerApiOptions"
   ],
+  "generatedAt": "2026-06-13T20:51:30.570Z",
+  "$defs": {
+    "CreateClassModelKnowledgeWorkerApiOptions": {
+      "type": "object",
+      "title": "CreateClassModelKnowledgeWorkerApiOptions",
+      "description": "Create Class Model Knowledge Worker Api Options 的调用配置。",
+      "properties": {
+        "refreshBundle": {
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
+        },
+        "refreshPolicy": {
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshPolicy"
+        }
+      }
+    }
+  },
   "models": {
     "CreateClassModelKnowledgeWorkerApiOptions": {
       "kind": "CreateClassModelKnowledgeWorkerApiOptions",
@@ -97,24 +115,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.829Z",
-  "$defs": {
-    "CreateClassModelKnowledgeWorkerApiOptions": {
-      "type": "object",
-      "title": "CreateClassModelKnowledgeWorkerApiOptions",
-      "description": "Create Class Model Knowledge Worker Api Options 的调用配置。",
-      "properties": {
-        "refreshBundle": {
-          "type": "object",
-          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
-        },
-        "refreshPolicy": {
-          "type": "object",
-          "title": "DtsBundleClassModelKnowledgeRefreshPolicy"
-        }
-      }
     }
   }
 }

@@ -21,6 +21,23 @@
   "symbols": [
     "RDisplayCalendarProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.498Z",
+  "$defs": {
+    "RDisplayCalendarProps": {
+      "type": "object",
+      "title": "RDisplayCalendarProps",
+      "description": "RDisplay Calendar Props 的属性契约。",
+      "properties": {
+        "value": {
+          "type": "object",
+          "title": "Date"
+        },
+        "range": {
+          "type": "array"
+        }
+      }
+    }
+  },
   "models": {
     "RDisplayCalendarProps": {
       "kind": "RDisplayCalendarProps",
@@ -72,23 +89,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.425Z",
-  "$defs": {
-    "RDisplayCalendarProps": {
-      "type": "object",
-      "title": "RDisplayCalendarProps",
-      "description": "RDisplay Calendar Props 的属性契约。",
-      "properties": {
-        "value": {
-          "type": "object",
-          "title": "Date"
-        },
-        "range": {
-          "type": "array"
-        }
-      }
     }
   }
 }

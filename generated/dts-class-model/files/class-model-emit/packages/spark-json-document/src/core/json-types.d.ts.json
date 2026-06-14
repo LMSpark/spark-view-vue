@@ -26,6 +26,39 @@
     "JsonParams",
     "JsonParamShape"
   ],
+  "generatedAt": "2026-06-11T12:48:51.031Z",
+  "$defs": {
+    "JsonPrimitive": {
+      "type": "object",
+      "title": "JsonPrimitive",
+      "description": "JSON 原始值"
+    },
+    "JsonValue": {
+      "type": "object",
+      "title": "JsonValue",
+      "description": "递归 JSON 值：原始值 | 对象 | 数组"
+    },
+    "JsonObject": {
+      "type": "object",
+      "title": "JsonObject",
+      "description": "JSON 对象：key → JsonValue 映射"
+    },
+    "JsonDocument": {
+      "type": "object",
+      "title": "JsonDocument",
+      "description": "文档顶层：对象或数组"
+    },
+    "JsonParams": {
+      "type": "object",
+      "title": "JsonParams",
+      "description": "函数/业务参数对象：运行时宽形态，key → JsonValue"
+    },
+    "JsonParamShape": {
+      "type": "object",
+      "title": "JsonParamShape",
+      "description": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。"
+    }
+  },
   "models": {
     "JsonPrimitive": {
       "kind": "JsonPrimitive",
@@ -175,39 +208,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.121Z",
-  "$defs": {
-    "JsonPrimitive": {
-      "type": "object",
-      "title": "JsonPrimitive",
-      "description": "JSON 原始值"
-    },
-    "JsonValue": {
-      "type": "object",
-      "title": "JsonValue",
-      "description": "递归 JSON 值：原始值 | 对象 | 数组"
-    },
-    "JsonObject": {
-      "type": "object",
-      "title": "JsonObject",
-      "description": "JSON 对象：key → JsonValue 映射"
-    },
-    "JsonDocument": {
-      "type": "object",
-      "title": "JsonDocument",
-      "description": "文档顶层：对象或数组"
-    },
-    "JsonParams": {
-      "type": "object",
-      "title": "JsonParams",
-      "description": "函数/业务参数对象：运行时宽形态，key → JsonValue"
-    },
-    "JsonParamShape": {
-      "type": "object",
-      "title": "JsonParamShape",
-      "description": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。"
     }
   }
 }

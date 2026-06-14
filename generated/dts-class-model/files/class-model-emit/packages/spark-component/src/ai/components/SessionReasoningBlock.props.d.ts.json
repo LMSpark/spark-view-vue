@@ -16,6 +16,25 @@
   "symbols": [
     "SessionReasoningBlockProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.371Z",
+  "$defs": {
+    "SessionReasoningBlockProps": {
+      "type": "object",
+      "title": "SessionReasoningBlockProps",
+      "description": "Session Reasoning Block Props 的属性契约。",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "collapsed": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "SessionReasoningBlockProps": {
       "kind": "SessionReasoningBlockProps",
@@ -67,25 +86,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.051Z",
-  "$defs": {
-    "SessionReasoningBlockProps": {
-      "type": "object",
-      "title": "SessionReasoningBlockProps",
-      "description": "Session Reasoning Block Props 的属性契约。",
-      "properties": {
-        "text": {
-          "type": "string"
-        },
-        "collapsed": {
-          "type": "boolean"
-        },
-        "isActive": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

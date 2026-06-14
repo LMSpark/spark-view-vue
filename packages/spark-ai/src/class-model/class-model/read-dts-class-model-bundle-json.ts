@@ -136,7 +136,6 @@ export function readDtsClassModelBundleManifest(value: unknown): DtsClassModelBu
   return {
     schemaVersion: DTS_CLASS_MODEL_BUNDLE_VERSION,
     protocol: DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
-    generatedAt: readRequiredString(record, 'generatedAt', 'manifest.generatedAt'),
     scannedFileCount: readRequiredNumber(record, 'scannedFileCount', 'manifest.scannedFileCount'),
     files: readRequiredStringKeyedRecord({
       record,

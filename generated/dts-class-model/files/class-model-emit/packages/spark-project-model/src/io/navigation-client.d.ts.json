@@ -20,6 +20,38 @@
     "LinkProbeResult",
     "NavigationClient"
   ],
+  "generatedAt": "2026-06-11T12:38:13.621Z",
+  "$defs": {
+    "NavigationClientOptions": {
+      "type": "object",
+      "title": "NavigationClientOptions",
+      "description": "Navigation Client Options 的调用配置。",
+      "properties": {
+        "http": {
+          "type": "object",
+          "title": "HttpClientBase"
+        }
+      }
+    },
+    "LinkProbeResult": {
+      "type": "object",
+      "title": "LinkProbeResult",
+      "description": "Link Probe Result 的返回结果。",
+      "properties": {
+        "embeddable": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "NavigationClient": {
+      "type": "object",
+      "title": "NavigationClient",
+      "description": "Navigation Client 的语义模型。"
+    }
+  },
   "models": {
     "NavigationClientOptions": {
       "kind": "NavigationClientOptions",
@@ -405,38 +437,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.163Z",
-  "$defs": {
-    "NavigationClientOptions": {
-      "type": "object",
-      "title": "NavigationClientOptions",
-      "description": "Navigation Client Options 的调用配置。",
-      "properties": {
-        "http": {
-          "type": "object",
-          "title": "HttpClientBase"
-        }
-      }
-    },
-    "LinkProbeResult": {
-      "type": "object",
-      "title": "LinkProbeResult",
-      "description": "Link Probe Result 的返回结果。",
-      "properties": {
-        "embeddable": {
-          "type": "boolean"
-        },
-        "reason": {
-          "type": "string"
-        }
-      }
-    },
-    "NavigationClient": {
-      "type": "object",
-      "title": "NavigationClient",
-      "description": "Navigation Client 的语义模型。"
     }
   }
 }

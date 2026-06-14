@@ -36,7 +36,7 @@
         "verify:pages-config": "node tools/verify-pages-config.mjs",
         "verify:ai-codegen": "node tools/verify-ai-codegen-rules.mjs",
         "verify:docs": "node tools/verify-docs.mjs",
-        "verify:class-model": "pnpm run ensure:class-model-bundle && pnpm --filter @spark-appworks/spark-ai run lint && pnpm --filter @spark-appworks/spark-ai run typecheck && pnpm exec vitest run packages/spark-ai/src/class-model/tests/read-dts-class-model-bundle-json.test.ts packages/spark-ai/src/class-model/tests/class-model-tool-schema-recovery.test.ts tests/scripts/class-model-bundle-assert.test.ts",
+        "verify:class-model": "pnpm run ensure:class-model-bundle && pnpm --filter @spark-appworks/spark-ai run lint && pnpm --filter @spark-appworks/spark-ai run typecheck && pnpm exec vitest run packages/spark-ai/src/class-model/tests/read-dts-class-model-bundle-json.test.ts packages/spark-ai/src/class-model/tests/class-model-tool-schema-recovery.test.ts tests/scripts/class-model-bundle-assert.test.ts tests/scripts/class-model-incremental-build.test.ts",
         "verify:class-model:full": "pnpm run generate:class-model-surface && node scripts/verify-class-model-guide-params-schema.mjs && node scripts/verify-class-model-semantic-gaps.mjs && pnpm run verify:class-model && pnpm run typecheck",
         "verify:page-design": "node scripts/verify-page-design-offline.mjs",
         "verify:project-planning": "node scripts/verify-project-planning-offline.mjs",

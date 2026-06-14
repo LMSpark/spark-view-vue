@@ -16,6 +16,32 @@
   "symbols": [
     "NavigationContext"
   ],
+  "generatedAt": "2026-06-11T12:38:13.348Z",
+  "$defs": {
+    "NavigationContext": {
+      "type": "object",
+      "title": "NavigationContext",
+      "description": "Navigation Context 的运行上下文。",
+      "properties": {
+        "activePath": {
+          "type": "object",
+          "title": "ComputedRef<ProjectNodeData[]>"
+        },
+        "regionItems": {
+          "type": "object",
+          "title": "ComputedRef<RegionItems>"
+        },
+        "regionVisibility": {
+          "type": "object",
+          "title": "ComputedRef<RegionVisibility>"
+        },
+        "moduleContext": {
+          "type": "object",
+          "title": "ComputedRef<NavContextState | null>"
+        }
+      }
+    }
+  },
   "models": {
     "NavigationContext": {
       "kind": "NavigationContext",
@@ -320,32 +346,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.969Z",
-  "$defs": {
-    "NavigationContext": {
-      "type": "object",
-      "title": "NavigationContext",
-      "description": "Navigation Context 的运行上下文。",
-      "properties": {
-        "activePath": {
-          "type": "object",
-          "title": "ComputedRef<ProjectNodeData[]>"
-        },
-        "regionItems": {
-          "type": "object",
-          "title": "ComputedRef<RegionItems>"
-        },
-        "regionVisibility": {
-          "type": "object",
-          "title": "ComputedRef<RegionVisibility>"
-        },
-        "moduleContext": {
-          "type": "object",
-          "title": "ComputedRef<NavContextState | null>"
-        }
-      }
     }
   }
 }

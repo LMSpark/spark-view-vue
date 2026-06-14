@@ -18,6 +18,68 @@
     "AiAgentDiagnosticEventInput",
     "ToolResultEventInput"
   ],
+  "generatedAt": "2026-06-14T01:03:51.192Z",
+  "$defs": {
+    "AiAgentDiagnosticEventInput": {
+      "type": "object",
+      "title": "AiAgentDiagnosticEventInput",
+      "description": "Ai Agent Diagnostic Event Input 的输入数据。",
+      "properties": {
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "llm-request"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "llm-append"
+              ]
+            }
+          ]
+        },
+        "data": true
+      }
+    },
+    "ToolResultEventInput": {
+      "type": "object",
+      "title": "ToolResultEventInput",
+      "description": "Tool Result Event Input 的输入数据。",
+      "properties": {
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "eventModuleId": {
+          "type": "string"
+        },
+        "data": true
+      }
+    }
+  },
   "models": {
     "AiAgentDiagnosticEventInput": {
       "kind": "AiAgentDiagnosticEventInput",
@@ -169,68 +231,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.593Z",
-  "$defs": {
-    "AiAgentDiagnosticEventInput": {
-      "type": "object",
-      "title": "AiAgentDiagnosticEventInput",
-      "description": "Ai Agent Diagnostic Event Input 的输入数据。",
-      "properties": {
-        "request": {
-          "type": "object",
-          "title": "AiAgentChatRequest"
-        },
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
-        },
-        "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "llm-request"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "llm-append"
-              ]
-            }
-          ]
-        },
-        "data": true
-      }
-    },
-    "ToolResultEventInput": {
-      "type": "object",
-      "title": "ToolResultEventInput",
-      "description": "Tool Result Event Input 的输入数据。",
-      "properties": {
-        "request": {
-          "type": "object",
-          "title": "AiAgentChatRequest"
-        },
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
-        },
-        "eventModuleId": {
-          "type": "string"
-        },
-        "data": true
-      }
     }
   }
 }

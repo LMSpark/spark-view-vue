@@ -18,6 +18,124 @@
     "ButtonTemplateProps",
     "ResolvedButtonStyle"
   ],
+  "generatedAt": "2026-06-11T12:48:50.980Z",
+  "$defs": {
+    "ButtonTemplateProps": {
+      "type": "object",
+      "title": "ButtonTemplateProps",
+      "description": "Button Template Props 的属性契约。",
+      "properties": {
+        "buttonType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "plain": {
+          "type": "boolean"
+        },
+        "text": {
+          "type": "boolean"
+        },
+        "link": {
+          "type": "boolean"
+        },
+        "round": {
+          "type": "boolean"
+        },
+        "circle": {
+          "type": "boolean"
+        },
+        "buttonSize": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "small"
+              ]
+            }
+          ]
+        },
+        "icon": {
+          "type": "string"
+        }
+      }
+    },
+    "ResolvedButtonStyle": {
+      "type": "object",
+      "title": "ResolvedButtonStyle",
+      "description": "Resolved Button Style 的语义模型。",
+      "properties": {
+        "buttonType": {
+          "type": "string"
+        },
+        "buttonSize": {
+          "type": "string"
+        },
+        "plain": {
+          "type": "boolean"
+        },
+        "text": {
+          "type": "boolean"
+        },
+        "link": {
+          "type": "boolean"
+        },
+        "round": {
+          "type": "boolean"
+        },
+        "circle": {
+          "type": "boolean"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "ButtonTemplateProps": {
       "kind": "ButtonTemplateProps",
@@ -253,124 +371,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.723Z",
-  "$defs": {
-    "ButtonTemplateProps": {
-      "type": "object",
-      "title": "ButtonTemplateProps",
-      "description": "Button Template Props 的属性契约。",
-      "properties": {
-        "buttonType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
-          ]
-        },
-        "plain": {
-          "type": "boolean"
-        },
-        "text": {
-          "type": "boolean"
-        },
-        "link": {
-          "type": "boolean"
-        },
-        "round": {
-          "type": "boolean"
-        },
-        "circle": {
-          "type": "boolean"
-        },
-        "buttonSize": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "large"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "small"
-              ]
-            }
-          ]
-        },
-        "icon": {
-          "type": "string"
-        }
-      }
-    },
-    "ResolvedButtonStyle": {
-      "type": "object",
-      "title": "ResolvedButtonStyle",
-      "description": "Resolved Button Style 的语义模型。",
-      "properties": {
-        "buttonType": {
-          "type": "string"
-        },
-        "buttonSize": {
-          "type": "string"
-        },
-        "plain": {
-          "type": "boolean"
-        },
-        "text": {
-          "type": "boolean"
-        },
-        "link": {
-          "type": "boolean"
-        },
-        "round": {
-          "type": "boolean"
-        },
-        "circle": {
-          "type": "boolean"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
     }
   }
 }

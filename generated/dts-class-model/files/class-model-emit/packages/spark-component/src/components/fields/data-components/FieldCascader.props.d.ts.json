@@ -25,6 +25,29 @@
     "CascaderValue",
     "RCascaderProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.544Z",
+  "$defs": {
+    "CascaderPath": {
+      "type": "object",
+      "title": "CascaderPath",
+      "description": "Cascader Path 的语义模型。"
+    },
+    "CascaderValue": {
+      "type": "object",
+      "title": "CascaderValue",
+      "description": "Cascader Value 的语义模型。"
+    },
+    "RCascaderProps": {
+      "type": "object",
+      "title": "RCascaderProps",
+      "description": "RCascader Props 的属性契约。",
+      "properties": {
+        "emitPath": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "CascaderPath": {
       "kind": "CascaderPath",
@@ -129,29 +152,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.534Z",
-  "$defs": {
-    "CascaderPath": {
-      "type": "object",
-      "title": "CascaderPath",
-      "description": "Cascader Path 的语义模型。"
-    },
-    "CascaderValue": {
-      "type": "object",
-      "title": "CascaderValue",
-      "description": "Cascader Value 的语义模型。"
-    },
-    "RCascaderProps": {
-      "type": "object",
-      "title": "RCascaderProps",
-      "description": "RCascader Props 的属性契约。",
-      "properties": {
-        "emitPath": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

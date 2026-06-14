@@ -16,6 +16,26 @@
   "symbols": [
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.638Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "label": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "Props": {
       "kind": "Props",
@@ -60,26 +80,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.382Z",
-  "$defs": {
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
-      "properties": {
-        "config": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "label": {
-          "type": "string"
-        },
-        "emptyText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

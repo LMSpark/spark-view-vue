@@ -24,6 +24,83 @@
     "BatchTransportOptions",
     "AppLogger"
   ],
+  "generatedAt": "2026-06-11T12:48:50.945Z",
+  "$defs": {
+    "AppLoggerApi": {
+      "type": "object",
+      "title": "AppLoggerApi",
+      "description": "应用层 Logger API 接口\n与 spark-utils 的 LoggerApi 是不同的接口：\n- spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void\n- AppLoggerApi: 结构化参数，(message: string, meta?) => void"
+    },
+    "AppLoggerConfig": {
+      "type": "object",
+      "title": "AppLoggerConfig",
+      "description": "日志配置",
+      "properties": {
+        "level": {
+          "type": "object",
+          "title": "LogLevel"
+        },
+        "enableColors": {
+          "type": "boolean"
+        },
+        "showTimestamp": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "suppressErrorConsoleTrace": {
+          "type": "boolean"
+        },
+        "remoteEndpoint": {
+          "type": "string"
+        },
+        "minRemoteLevel": {
+          "type": "object",
+          "title": "LogLevel"
+        },
+        "batchSize": {
+          "type": "number"
+        },
+        "flushInterval": {
+          "type": "number"
+        }
+      }
+    },
+    "LogTransport": {
+      "type": "object",
+      "title": "LogTransport",
+      "description": "日志传输器接口\n继承 spark-utils LogTransport（SSoT）并补充批量传输需要的 flush/destroy。"
+    },
+    "BatchTransportOptions": {
+      "type": "object",
+      "title": "BatchTransportOptions",
+      "description": "Batch Transport Options 的调用配置。",
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        },
+        "minLevel": {
+          "type": "object",
+          "title": "LogLevel"
+        },
+        "batchSize": {
+          "type": "number"
+        },
+        "flushInterval": {
+          "type": "number"
+        },
+        "sessionId": {
+          "type": "string"
+        }
+      }
+    },
+    "AppLogger": {
+      "type": "object",
+      "title": "AppLogger",
+      "description": "应用层 Logger 实现"
+    }
+  },
   "models": {
     "AppLoggerApi": {
       "kind": "AppLoggerApi",
@@ -907,83 +984,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.956Z",
-  "$defs": {
-    "AppLoggerApi": {
-      "type": "object",
-      "title": "AppLoggerApi",
-      "description": "应用层 Logger API 接口\n与 spark-utils 的 LoggerApi 是不同的接口：\n- spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void\n- AppLoggerApi: 结构化参数，(message: string, meta?) => void"
-    },
-    "AppLoggerConfig": {
-      "type": "object",
-      "title": "AppLoggerConfig",
-      "description": "日志配置",
-      "properties": {
-        "level": {
-          "type": "object",
-          "title": "LogLevel"
-        },
-        "enableColors": {
-          "type": "boolean"
-        },
-        "showTimestamp": {
-          "type": "boolean"
-        },
-        "prefix": {
-          "type": "string"
-        },
-        "suppressErrorConsoleTrace": {
-          "type": "boolean"
-        },
-        "remoteEndpoint": {
-          "type": "string"
-        },
-        "minRemoteLevel": {
-          "type": "object",
-          "title": "LogLevel"
-        },
-        "batchSize": {
-          "type": "number"
-        },
-        "flushInterval": {
-          "type": "number"
-        }
-      }
-    },
-    "LogTransport": {
-      "type": "object",
-      "title": "LogTransport",
-      "description": "日志传输器接口\n继承 spark-utils LogTransport（SSoT）并补充批量传输需要的 flush/destroy。"
-    },
-    "BatchTransportOptions": {
-      "type": "object",
-      "title": "BatchTransportOptions",
-      "description": "Batch Transport Options 的调用配置。",
-      "properties": {
-        "endpoint": {
-          "type": "string"
-        },
-        "minLevel": {
-          "type": "object",
-          "title": "LogLevel"
-        },
-        "batchSize": {
-          "type": "number"
-        },
-        "flushInterval": {
-          "type": "number"
-        },
-        "sessionId": {
-          "type": "string"
-        }
-      }
-    },
-    "AppLogger": {
-      "type": "object",
-      "title": "AppLogger",
-      "description": "应用层 Logger 实现"
     }
   }
 }

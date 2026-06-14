@@ -21,6 +21,54 @@
   "symbols": [
     "Props"
   ],
+  "generatedAt": "2026-06-11T12:38:13.518Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "SparkCodeEditor 组件属性，描述代码内容、语言和编辑器外观。",
+      "properties": {
+        "modelValue": {
+          "type": "string"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "javascript"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "css"
+              ]
+            }
+          ]
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "tabSize": {
+          "type": "number"
+        },
+        "lineWrapping": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "Props": {
       "kind": "Props",
@@ -116,54 +164,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.455Z",
-  "$defs": {
-    "Props": {
-      "type": "object",
-      "title": "Props",
-      "description": "SparkCodeEditor 组件属性，描述代码内容、语言和编辑器外观。",
-      "properties": {
-        "modelValue": {
-          "type": "string"
-        },
-        "language": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "javascript"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "css"
-              ]
-            }
-          ]
-        },
-        "readOnly": {
-          "type": "boolean"
-        },
-        "height": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "tabSize": {
-          "type": "number"
-        },
-        "lineWrapping": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,26 @@
   "symbols": [
     "PageServiceOverrides"
   ],
+  "generatedAt": "2026-06-12T20:32:06.116Z",
+  "$defs": {
+    "PageServiceOverrides": {
+      "type": "object",
+      "title": "PageServiceOverrides",
+      "description": "可选的外部 UI 服务注入（测试或宿主覆盖用）",
+      "properties": {
+        "messageService": {
+          "type": "object"
+        },
+        "confirmService": {
+          "type": "object"
+        },
+        "pageService": {
+          "type": "object",
+          "title": "Partial<PageServiceCapability>"
+        }
+      }
+    }
+  },
   "models": {
     "PageServiceOverrides": {
       "kind": "PageServiceOverrides",
@@ -60,26 +80,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.745Z",
-  "$defs": {
-    "PageServiceOverrides": {
-      "type": "object",
-      "title": "PageServiceOverrides",
-      "description": "可选的外部 UI 服务注入（测试或宿主覆盖用）",
-      "properties": {
-        "messageService": {
-          "type": "object"
-        },
-        "confirmService": {
-          "type": "object"
-        },
-        "pageService": {
-          "type": "object",
-          "title": "Partial<PageServiceCapability>"
-        }
-      }
     }
   }
 }

@@ -38,6 +38,241 @@
     "ErrorContext",
     "ErrorType"
   ],
+  "generatedAt": "2026-06-11T12:48:50.952Z",
+  "$defs": {
+    "AppEnvironment": {
+      "type": "object",
+      "title": "AppEnvironment",
+      "description": "应用环境"
+    },
+    "UserInfo": {
+      "type": "object",
+      "title": "UserInfo",
+      "description": "用户信息",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "TenantInfo": {
+      "type": "object",
+      "title": "TenantInfo",
+      "description": "租户信息",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "tenantCode": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "EnvironmentInfo": {
+      "type": "object",
+      "title": "EnvironmentInfo",
+      "description": "环境信息",
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/AppEnvironment"
+        },
+        "apiBaseUrl": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "buildTime": {
+          "type": "string"
+        }
+      }
+    },
+    "AppContext": {
+      "type": "object",
+      "title": "AppContext",
+      "description": "应用全局上下文接口\n作用域：整个 SPA 应用\n生命周期：应用启动时创建，应用关闭时销毁（单例）\n用途：\n- 存储应用级全局信息（用户、租户、环境）\n- 提供跨页面共享的配置和状态\n- 支持 SSR/CSR 环境检测\n注意：\n- 此 Context 是应用级单例，所有页面共享\n- 不应存储页面级状态，避免内存泄漏\n- 通过依赖注入（DI）在需要时注入到组件中\n典型使用场景：\n- 权限校验（基于 user/tenant）\n- 环境判断（SSR vs CSR）\n- 全局配置读取",
+      "properties": {
+        "user": {
+          "$ref": "#/$defs/UserInfo"
+        },
+        "tenant": {
+          "$ref": "#/$defs/TenantInfo"
+        },
+        "env": {
+          "$ref": "#/$defs/EnvironmentInfo"
+        },
+        "config": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "initializedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "AppConfig": {
+      "type": "object",
+      "title": "AppConfig",
+      "description": "应用配置",
+      "properties": {
+        "apiBaseUrl": {
+          "type": "string"
+        },
+        "logLevel": {
+          "type": "object",
+          "title": "LogLevel"
+        },
+        "enableMock": {
+          "type": "boolean"
+        },
+        "enableRemoteConfig": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "string"
+        },
+        "features": {
+          "type": "object"
+        }
+      }
+    },
+    "BootstrapContext": {
+      "type": "object",
+      "title": "BootstrapContext",
+      "description": "Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由",
+      "properties": {
+        "app": {
+          "type": "object",
+          "title": "App"
+        },
+        "router": {
+          "type": "object",
+          "title": "Router"
+        },
+        "theme": {
+          "type": "object",
+          "title": "ThemeCapability"
+        }
+      }
+    },
+    "BootstrapOptions": {
+      "type": "object",
+      "title": "BootstrapOptions",
+      "description": "初始化选项",
+      "properties": {
+        "app": {
+          "type": "object",
+          "title": "App"
+        },
+        "router": {
+          "type": "object",
+          "title": "Router"
+        },
+        "config": {
+          "$ref": "#/$defs/AppConfig"
+        },
+        "auth": {
+          "type": "object",
+          "title": "AuthConfig"
+        },
+        "mountTarget": {
+          "type": "string"
+        },
+        "themeService": {
+          "type": "object",
+          "title": "ThemeCapability"
+        }
+      }
+    },
+    "RouterGuardOptions": {
+      "type": "object",
+      "title": "RouterGuardOptions",
+      "description": "路由守卫选项"
+    },
+    "ErrorHandlerOptions": {
+      "type": "object",
+      "title": "ErrorHandlerOptions",
+      "description": "错误处理选项"
+    },
+    "ErrorContext": {
+      "type": "object",
+      "title": "ErrorContext",
+      "description": "错误上下文接口\n作用域：单次错误发生时的临时上下文\n生命周期：错误捕获时创建，用于错误日志记录和上报\n用途：\n- 记录错误发生的位置和时间\n- 为错误监控和追踪提供结构化信息\n- 支持错误日志聚合和分析\n典型使用场景：\n- 组件渲染失败时记录 source\n- API 请求错误时记录 info 和 timestamp\n- 用户操作异常时进行错误上报",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "info": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "ErrorType": {
+      "type": "object",
+      "title": "ErrorType",
+      "description": "错误类型",
+      "properties": {
+        "Auth": {
+          "type": "string"
+        },
+        "Permission": {
+          "type": "string"
+        },
+        "Network": {
+          "type": "string"
+        },
+        "Validation": {
+          "type": "string"
+        },
+        "Unknown": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "AppEnvironment": {
       "kind": "AppEnvironment",
@@ -936,241 +1171,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.031Z",
-  "$defs": {
-    "AppEnvironment": {
-      "type": "object",
-      "title": "AppEnvironment",
-      "description": "应用环境"
-    },
-    "UserInfo": {
-      "type": "object",
-      "title": "UserInfo",
-      "description": "用户信息",
-      "properties": {
-        "userId": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "avatar": {
-          "type": "string"
-        },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "permissions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "TenantInfo": {
-      "type": "object",
-      "title": "TenantInfo",
-      "description": "租户信息",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "tenantName": {
-          "type": "string"
-        },
-        "tenantCode": {
-          "type": "string"
-        },
-        "config": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "features": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "EnvironmentInfo": {
-      "type": "object",
-      "title": "EnvironmentInfo",
-      "description": "环境信息",
-      "properties": {
-        "mode": {
-          "$ref": "#/$defs/AppEnvironment"
-        },
-        "apiBaseUrl": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "buildTime": {
-          "type": "string"
-        }
-      }
-    },
-    "AppContext": {
-      "type": "object",
-      "title": "AppContext",
-      "description": "应用全局上下文接口\n作用域：整个 SPA 应用\n生命周期：应用启动时创建，应用关闭时销毁（单例）\n用途：\n- 存储应用级全局信息（用户、租户、环境）\n- 提供跨页面共享的配置和状态\n- 支持 SSR/CSR 环境检测\n注意：\n- 此 Context 是应用级单例，所有页面共享\n- 不应存储页面级状态，避免内存泄漏\n- 通过依赖注入（DI）在需要时注入到组件中\n典型使用场景：\n- 权限校验（基于 user/tenant）\n- 环境判断（SSR vs CSR）\n- 全局配置读取",
-      "properties": {
-        "user": {
-          "$ref": "#/$defs/UserInfo"
-        },
-        "tenant": {
-          "$ref": "#/$defs/TenantInfo"
-        },
-        "env": {
-          "$ref": "#/$defs/EnvironmentInfo"
-        },
-        "config": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "initializedAt": {
-          "type": "string"
-        }
-      }
-    },
-    "AppConfig": {
-      "type": "object",
-      "title": "AppConfig",
-      "description": "应用配置",
-      "properties": {
-        "apiBaseUrl": {
-          "type": "string"
-        },
-        "logLevel": {
-          "type": "object",
-          "title": "LogLevel"
-        },
-        "enableMock": {
-          "type": "boolean"
-        },
-        "enableRemoteConfig": {
-          "type": "boolean"
-        },
-        "version": {
-          "type": "string"
-        },
-        "features": {
-          "type": "object"
-        }
-      }
-    },
-    "BootstrapContext": {
-      "type": "object",
-      "title": "BootstrapContext",
-      "description": "Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由",
-      "properties": {
-        "app": {
-          "type": "object",
-          "title": "App"
-        },
-        "router": {
-          "type": "object",
-          "title": "Router"
-        },
-        "theme": {
-          "type": "object",
-          "title": "ThemeCapability"
-        }
-      }
-    },
-    "BootstrapOptions": {
-      "type": "object",
-      "title": "BootstrapOptions",
-      "description": "初始化选项",
-      "properties": {
-        "app": {
-          "type": "object",
-          "title": "App"
-        },
-        "router": {
-          "type": "object",
-          "title": "Router"
-        },
-        "config": {
-          "$ref": "#/$defs/AppConfig"
-        },
-        "auth": {
-          "type": "object",
-          "title": "AuthConfig"
-        },
-        "mountTarget": {
-          "type": "string"
-        },
-        "themeService": {
-          "type": "object",
-          "title": "ThemeCapability"
-        }
-      }
-    },
-    "RouterGuardOptions": {
-      "type": "object",
-      "title": "RouterGuardOptions",
-      "description": "路由守卫选项"
-    },
-    "ErrorHandlerOptions": {
-      "type": "object",
-      "title": "ErrorHandlerOptions",
-      "description": "错误处理选项"
-    },
-    "ErrorContext": {
-      "type": "object",
-      "title": "ErrorContext",
-      "description": "错误上下文接口\n作用域：单次错误发生时的临时上下文\n生命周期：错误捕获时创建，用于错误日志记录和上报\n用途：\n- 记录错误发生的位置和时间\n- 为错误监控和追踪提供结构化信息\n- 支持错误日志聚合和分析\n典型使用场景：\n- 组件渲染失败时记录 source\n- API 请求错误时记录 info 和 timestamp\n- 用户操作异常时进行错误上报",
-      "properties": {
-        "source": {
-          "type": "string"
-        },
-        "file": {
-          "type": "string"
-        },
-        "info": {
-          "type": "string"
-        },
-        "timestamp": {
-          "type": "number"
-        }
-      }
-    },
-    "ErrorType": {
-      "type": "object",
-      "title": "ErrorType",
-      "description": "错误类型",
-      "properties": {
-        "Auth": {
-          "type": "string"
-        },
-        "Permission": {
-          "type": "string"
-        },
-        "Network": {
-          "type": "string"
-        },
-        "Validation": {
-          "type": "string"
-        },
-        "Unknown": {
-          "type": "string"
-        }
-      }
     }
   }
 }

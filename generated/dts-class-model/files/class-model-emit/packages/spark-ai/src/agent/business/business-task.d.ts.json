@@ -24,6 +24,77 @@
     "AiAgentTaskRegistry",
     "AiAgentTask"
   ],
+  "generatedAt": "2026-06-14T02:24:09.386Z",
+  "$defs": {
+    "AiAgentOrchestrationPlan": {
+      "type": "object",
+      "title": "AiAgentOrchestrationPlan",
+      "description": "编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤",
+      "properties": {
+        "userMessage": {
+          "type": "string"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "readonlySteps": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentInputContract": {
+      "type": "object",
+      "title": "AiAgentInputContract",
+      "description": "输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成",
+      "properties": {
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "identityField": true
+      }
+    },
+    "AiAgentTaskChatOptions": {
+      "type": "object",
+      "title": "AiAgentTaskChatOptions",
+      "description": "Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成）",
+      "properties": {
+        "systemPrompt": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentTaskRegistry": {
+      "type": "object",
+      "title": "AiAgentTaskRegistry",
+      "description": "任务注册表查找接口"
+    },
+    "AiAgentTask": {
+      "type": "object",
+      "title": "AiAgentTask",
+      "description": "可执行的 Agent Task。\n持有归一化输入、scope 和编排计划。通过 toChatRequest 生成\n标准 LLM 对话请求，自动拼接业务 systemPrompt + 编排 systemPrompt。",
+      "properties": {
+        "kindID": {
+          "type": "string"
+        },
+        "normalizedInput": true,
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "orchestration": {
+          "$ref": "#/$defs/AiAgentOrchestrationPlan"
+        },
+        "target": {
+          "type": "object",
+          "title": "AiAgentTarget"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentOrchestrationPlan": {
       "kind": "AiAgentOrchestrationPlan",
@@ -465,77 +536,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.463Z",
-  "$defs": {
-    "AiAgentOrchestrationPlan": {
-      "type": "object",
-      "title": "AiAgentOrchestrationPlan",
-      "description": "编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤",
-      "properties": {
-        "userMessage": {
-          "type": "string"
-        },
-        "systemPrompt": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "readonlySteps": {
-          "type": "array"
-        }
-      }
-    },
-    "AiAgentInputContract": {
-      "type": "object",
-      "title": "AiAgentInputContract",
-      "description": "输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成",
-      "properties": {
-        "paramsSchema": {
-          "type": "object",
-          "title": "AiJsonSchemaObject"
-        },
-        "identityField": true
-      }
-    },
-    "AiAgentTaskChatOptions": {
-      "type": "object",
-      "title": "AiAgentTaskChatOptions",
-      "description": "Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成）",
-      "properties": {
-        "systemPrompt": {
-          "type": "string"
-        }
-      }
-    },
-    "AiAgentTaskRegistry": {
-      "type": "object",
-      "title": "AiAgentTaskRegistry",
-      "description": "任务注册表查找接口"
-    },
-    "AiAgentTask": {
-      "type": "object",
-      "title": "AiAgentTask",
-      "description": "可执行的 Agent Task。\n持有归一化输入、scope 和编排计划。通过 toChatRequest 生成\n标准 LLM 对话请求，自动拼接业务 systemPrompt + 编排 systemPrompt。",
-      "properties": {
-        "kindID": {
-          "type": "string"
-        },
-        "normalizedInput": true,
-        "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
-        },
-        "orchestration": {
-          "$ref": "#/$defs/AiAgentOrchestrationPlan"
-        },
-        "target": {
-          "type": "object",
-          "title": "AiAgentTarget"
-        }
-      }
     }
   }
 }

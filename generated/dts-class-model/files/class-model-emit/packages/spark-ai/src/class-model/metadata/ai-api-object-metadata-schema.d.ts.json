@@ -36,6 +36,277 @@
     "AiApiResultApiRef",
     "AiRuntimeApiMetadataJson"
   ],
+  "generatedAt": "2026-06-11T22:45:18.587Z",
+  "$defs": {
+    "AiApiActionFailureMode": {
+      "type": "object",
+      "title": "AiApiActionFailureMode",
+      "description": "Ai Api Action Failure Mode 的语义模型。",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
+    },
+    "AiApiActionExample": {
+      "type": "object",
+      "title": "AiApiActionExample",
+      "description": "Ai Api Action Example 的语义模型。",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "call": {
+          "type": "object",
+          "title": "AiJsonValue"
+        }
+      }
+    },
+    "AiApiActionAntiExample": {
+      "type": "object",
+      "title": "AiApiActionAntiExample",
+      "description": "Ai Api Action Anti Example 的语义模型。",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonValue"
+        }
+      }
+    },
+    "AiApiJsDocMetadata": {
+      "type": "object",
+      "title": "AiApiJsDocMetadata",
+      "description": "从源码 JSDoc 原样拷贝的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。"
+    },
+    "AiApiSourceProvenanceMetadata": {
+      "type": "object",
+      "title": "AiApiSourceProvenanceMetadata",
+      "description": "反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "number"
+        },
+        "className": {
+          "type": "string"
+        },
+        "memberName": {
+          "type": "string"
+        },
+        "typeEntryFile": {
+          "type": "string"
+        }
+      }
+    },
+    "AiApiObjectMetadata": {
+      "type": "object",
+      "title": "AiApiObjectMetadata",
+      "description": "API 对象元数据（根对象或 action 返回的嵌套对象）。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "constructorSignature": {
+          "$ref": "#/$defs/AiApiConstructorMetadata"
+        },
+        "actions": {
+          "type": "array"
+        },
+        "attributes": {
+          "type": "array"
+        }
+      }
+    },
+    "AiApiConstructorMetadata": {
+      "type": "object",
+      "title": "AiApiConstructorMetadata",
+      "description": "API 对象构造函数元数据。",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        }
+      }
+    },
+    "AiApiAttributeMetadata": {
+      "type": "object",
+      "title": "AiApiAttributeMetadata",
+      "description": "API 属性元数据。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "schema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "readable": {
+          "type": "boolean"
+        },
+        "writable": {
+          "type": "boolean"
+        },
+        "api": {
+          "$ref": "#/$defs/AiApiObjectMetadata"
+        }
+      }
+    },
+    "AiApiActionMetadata": {
+      "type": "object",
+      "title": "AiApiActionMetadata",
+      "description": "API action 元数据。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        },
+        "signatureText": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "takesContext": {
+          "type": "boolean"
+        },
+        "resultSchema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "resultApis": {
+          "type": "array"
+        },
+        "usageRules": {
+          "type": "array"
+        },
+        "requiredBeforeCall": {
+          "type": "array"
+        },
+        "failureModes": {
+          "type": "array"
+        },
+        "example": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "examples": {
+          "type": "array"
+        },
+        "antiExamples": {
+          "type": "array"
+        }
+      }
+    },
+    "AiApiResultApiRef": {
+      "type": "object",
+      "title": "AiApiResultApiRef",
+      "description": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。",
+      "properties": {
+        "resultPath": {
+          "type": "array"
+        },
+        "api": {
+          "$ref": "#/$defs/AiApiObjectMetadata"
+        },
+        "$ref": {
+          "type": "string"
+        }
+      }
+    },
+    "AiRuntimeApiMetadataJson": {
+      "type": "object",
+      "title": "AiRuntimeApiMetadataJson",
+      "description": "运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。",
+      "properties": {
+        "schemaVersion": {
+          "anyOf": [
+            {
+              "type": "number",
+              "enum": [
+                1
+              ]
+            },
+            {
+              "type": "number",
+              "enum": [
+                2
+              ]
+            }
+          ]
+        },
+        "rootApi": {
+          "$ref": "#/$defs/AiApiObjectMetadata"
+        },
+        "apiRegistry": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiApiObjectMetadata>>"
+        }
+      }
+    }
+  },
   "models": {
     "AiApiActionFailureMode": {
       "kind": "AiApiActionFailureMode",
@@ -816,277 +1087,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.869Z",
-  "$defs": {
-    "AiApiActionFailureMode": {
-      "type": "object",
-      "title": "AiApiActionFailureMode",
-      "description": "Ai Api Action Failure Mode 的语义模型。",
-      "properties": {
-        "code": {
-          "type": "string"
-        },
-        "when": {
-          "type": "string"
-        },
-        "fix": {
-          "type": "string"
-        }
-      }
-    },
-    "AiApiActionExample": {
-      "type": "object",
-      "title": "AiApiActionExample",
-      "description": "Ai Api Action Example 的语义模型。",
-      "properties": {
-        "user": {
-          "type": "string"
-        },
-        "intent": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "AiJsonValue"
-        },
-        "call": {
-          "type": "object",
-          "title": "AiJsonValue"
-        }
-      }
-    },
-    "AiApiActionAntiExample": {
-      "type": "object",
-      "title": "AiApiActionAntiExample",
-      "description": "Ai Api Action Anti Example 的语义模型。",
-      "properties": {
-        "user": {
-          "type": "string"
-        },
-        "reason": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "AiJsonValue"
-        }
-      }
-    },
-    "AiApiJsDocMetadata": {
-      "type": "object",
-      "title": "AiApiJsDocMetadata",
-      "description": "从源码 JSDoc 原样拷贝的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。"
-    },
-    "AiApiSourceProvenanceMetadata": {
-      "type": "object",
-      "title": "AiApiSourceProvenanceMetadata",
-      "description": "反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。",
-      "properties": {
-        "file": {
-          "type": "string"
-        },
-        "line": {
-          "type": "number"
-        },
-        "className": {
-          "type": "string"
-        },
-        "memberName": {
-          "type": "string"
-        },
-        "typeEntryFile": {
-          "type": "string"
-        }
-      }
-    },
-    "AiApiObjectMetadata": {
-      "type": "object",
-      "title": "AiApiObjectMetadata",
-      "description": "API 对象元数据（根对象或 action 返回的嵌套对象）。",
-      "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "jsdoc": {
-          "$ref": "#/$defs/AiApiJsDocMetadata"
-        },
-        "provenance": {
-          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
-        },
-        "constructorSignature": {
-          "$ref": "#/$defs/AiApiConstructorMetadata"
-        },
-        "actions": {
-          "type": "array"
-        },
-        "attributes": {
-          "type": "array"
-        }
-      }
-    },
-    "AiApiConstructorMetadata": {
-      "type": "object",
-      "title": "AiApiConstructorMetadata",
-      "description": "API 对象构造函数元数据。",
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "jsdoc": {
-          "$ref": "#/$defs/AiApiJsDocMetadata"
-        },
-        "provenance": {
-          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
-        },
-        "paramsSchema": {
-          "type": "object",
-          "title": "AiJsonSchemaObject"
-        }
-      }
-    },
-    "AiApiAttributeMetadata": {
-      "type": "object",
-      "title": "AiApiAttributeMetadata",
-      "description": "API 属性元数据。",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "jsdoc": {
-          "$ref": "#/$defs/AiApiJsDocMetadata"
-        },
-        "provenance": {
-          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
-        },
-        "schema": {
-          "type": "object",
-          "title": "AiJsonSchema"
-        },
-        "readable": {
-          "type": "boolean"
-        },
-        "writable": {
-          "type": "boolean"
-        },
-        "api": {
-          "$ref": "#/$defs/AiApiObjectMetadata"
-        }
-      }
-    },
-    "AiApiActionMetadata": {
-      "type": "object",
-      "title": "AiApiActionMetadata",
-      "description": "API action 元数据。",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "methodName": {
-          "type": "string"
-        },
-        "signatureText": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "jsdoc": {
-          "$ref": "#/$defs/AiApiJsDocMetadata"
-        },
-        "provenance": {
-          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
-        },
-        "paramsSchema": {
-          "type": "object",
-          "title": "AiJsonSchemaObject"
-        },
-        "takesContext": {
-          "type": "boolean"
-        },
-        "resultSchema": {
-          "type": "object",
-          "title": "AiJsonSchema"
-        },
-        "resultApis": {
-          "type": "array"
-        },
-        "usageRules": {
-          "type": "array"
-        },
-        "requiredBeforeCall": {
-          "type": "array"
-        },
-        "failureModes": {
-          "type": "array"
-        },
-        "example": {
-          "type": "object",
-          "title": "AiJsonValue"
-        },
-        "examples": {
-          "type": "array"
-        },
-        "antiExamples": {
-          "type": "array"
-        }
-      }
-    },
-    "AiApiResultApiRef": {
-      "type": "object",
-      "title": "AiApiResultApiRef",
-      "description": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。",
-      "properties": {
-        "resultPath": {
-          "type": "array"
-        },
-        "api": {
-          "$ref": "#/$defs/AiApiObjectMetadata"
-        },
-        "$ref": {
-          "type": "string"
-        }
-      }
-    },
-    "AiRuntimeApiMetadataJson": {
-      "type": "object",
-      "title": "AiRuntimeApiMetadataJson",
-      "description": "运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。",
-      "properties": {
-        "schemaVersion": {
-          "anyOf": [
-            {
-              "type": "number",
-              "enum": [
-                1
-              ]
-            },
-            {
-              "type": "number",
-              "enum": [
-                2
-              ]
-            }
-          ]
-        },
-        "rootApi": {
-          "$ref": "#/$defs/AiApiObjectMetadata"
-        },
-        "apiRegistry": {
-          "type": "object",
-          "title": "Readonly<Record<string, AiApiObjectMetadata>>"
-        }
-      }
     }
   }
 }

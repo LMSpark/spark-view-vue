@@ -21,6 +21,46 @@
   "symbols": [
     "RPaginationProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.484Z",
+  "$defs": {
+    "RPaginationProps": {
+      "type": "object",
+      "title": "RPaginationProps",
+      "description": "RPagination Props 的属性契约。",
+      "properties": {
+        "total": {
+          "type": "number"
+        },
+        "pageSize": {
+          "type": "number"
+        },
+        "currentPage": {
+          "type": "number"
+        },
+        "pageSizes": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "pagerCount": {
+          "type": "number"
+        },
+        "layout": {
+          "type": "string"
+        },
+        "background": {
+          "type": "boolean"
+        },
+        "small": {
+          "type": "boolean"
+        },
+        "hideOnSinglePage": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RPaginationProps": {
       "kind": "RPaginationProps",
@@ -137,46 +177,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.403Z",
-  "$defs": {
-    "RPaginationProps": {
-      "type": "object",
-      "title": "RPaginationProps",
-      "description": "RPagination Props 的属性契约。",
-      "properties": {
-        "total": {
-          "type": "number"
-        },
-        "pageSize": {
-          "type": "number"
-        },
-        "currentPage": {
-          "type": "number"
-        },
-        "pageSizes": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          }
-        },
-        "pagerCount": {
-          "type": "number"
-        },
-        "layout": {
-          "type": "string"
-        },
-        "background": {
-          "type": "boolean"
-        },
-        "small": {
-          "type": "boolean"
-        },
-        "hideOnSinglePage": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

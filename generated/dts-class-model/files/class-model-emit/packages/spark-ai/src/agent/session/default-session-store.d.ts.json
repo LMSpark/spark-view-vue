@@ -18,6 +18,19 @@
     "DefaultAiAgentSessionStoreOptions",
     "DefaultAiAgentSessionStore"
   ],
+  "generatedAt": "2026-06-11T12:48:50.906Z",
+  "$defs": {
+    "DefaultAiAgentSessionStoreOptions": {
+      "type": "object",
+      "title": "DefaultAiAgentSessionStoreOptions",
+      "description": "存储选项：允许注入自定义时间源（便于测试）"
+    },
+    "DefaultAiAgentSessionStore": {
+      "type": "object",
+      "title": "DefaultAiAgentSessionStore",
+      "description": "Default Ai Agent Session Store 的语义模型。"
+    }
+  },
   "models": {
     "DefaultAiAgentSessionStoreOptions": {
       "kind": "DefaultAiAgentSessionStoreOptions",
@@ -362,19 +375,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.566Z",
-  "$defs": {
-    "DefaultAiAgentSessionStoreOptions": {
-      "type": "object",
-      "title": "DefaultAiAgentSessionStoreOptions",
-      "description": "存储选项：允许注入自定义时间源（便于测试）"
-    },
-    "DefaultAiAgentSessionStore": {
-      "type": "object",
-      "title": "DefaultAiAgentSessionStore",
-      "description": "Default Ai Agent Session Store 的语义模型。"
     }
   }
 }

@@ -1,9 +1,12 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path
  * 职责：ClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。
- * 边界：只做路径字符串规则，不访问文件系统或 TypeScript Program。
+ * 边界：路径字符串规则与源文件 mtime 读取；不创建 TypeScript Program。
  * AI用途：判断 bundle 键是否为 class-model-emit 虚拟源或映射 repo 路径时，用本模块统一约定。
  */
+import { statSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 export const CLASS_MODEL_EMIT_PREFIX = 'class-model-emit/' as const
 
 export const CLASS_MODEL_EMIT_SOURCE = 'class-model-emit' as const
@@ -62,4 +65,18 @@ export function sourceFileFromEmitPath(emitPath: string): string {
   if (hasPathSuffix(sourcePath, '.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
   if (hasPathSuffix(sourcePath, '.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
   return sourcePath
+}
+
+/** 读取 emit 虚拟键对应源文件的最后修改时间（ISO）；源文件不存在时返回 undefined。 */
+export function readSourceModifiedAtIso(command: Readonly<{
+  repoRoot: string
+  emitSourcePath: string
+}>): string | undefined {
+  const sourceRelativePath = sourceFileFromEmitPath(command.emitSourcePath)
+  const absolutePath = resolve(command.repoRoot, sourceRelativePath)
+  try {
+    return statSync(absolutePath).mtime.toISOString()
+  } catch {
+    return undefined
+  }
 }

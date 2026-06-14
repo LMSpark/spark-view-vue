@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { PACKAGES_DIR, runCommand } from './build-shared.mjs'
+import { buildDebugBreak } from './lib/build-debug.mjs'
 import {
   computePackageInputFingerprint,
   isPackageBuildFresh,
@@ -55,6 +56,14 @@ function main() {
   const packages = selected.filter(hasBuildScript)
   const skippedWithoutBuild = selected.filter((pkgDir) => !hasBuildScript(pkgDir))
 
+  buildDebugBreak('build-packages:order-resolved', {
+    packages,
+    skippedWithoutBuild,
+    dryRun,
+    force,
+    onlyDirs,
+  })
+
   if (packages.length === 0) {
     console.log('No packages selected.')
     process.exit(0)
@@ -75,8 +84,15 @@ function main() {
   for (const pkgDir of packages) {
     const pkgRoot = join(PACKAGES_DIR, pkgDir)
     const fingerprint = computePackageInputFingerprint(pkgRoot, dependencyFingerprints)
+    const fresh = !force && isPackageBuildFresh(pkgRoot, fingerprint)
 
-    if (!force && isPackageBuildFresh(pkgRoot, fingerprint)) {
+    buildDebugBreak('build-packages:package-decision', {
+      pkgDir,
+      fresh,
+      fingerprint,
+    })
+
+    if (fresh) {
       console.log(`\n⏭️  Skipping ${pkgDir} (unchanged)`)
       dependencyFingerprints.set(readPackageName(pkgDir), fingerprint)
       skippedCount += 1
@@ -84,6 +100,7 @@ function main() {
     }
 
     console.log(`\n🔧 Building ${pkgDir} ...`)
+    buildDebugBreak('build-packages:before-pnpm-build', { pkgDir })
     runCommand('pnpm run build', { cwd: pkgRoot })
     writeBuildStamp(pkgRoot, fingerprint)
     dependencyFingerprints.set(readPackageName(pkgDir), fingerprint)
@@ -91,6 +108,7 @@ function main() {
   }
 
   console.log(`\n✅ Package build complete (${builtCount} built, ${skippedCount} skipped).`)
+  buildDebugBreak('build-packages:complete', { builtCount, skippedCount })
 }
 
 try {

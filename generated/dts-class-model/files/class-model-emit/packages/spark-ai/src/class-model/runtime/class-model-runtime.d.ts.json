@@ -30,6 +30,117 @@
     "ClassModelScriptExecutor",
     "ClassModelRuntime"
   ],
+  "generatedAt": "2026-06-12T05:39:08.159Z",
+  "$defs": {
+    "ClassModelScriptCommand": {
+      "type": "object",
+      "title": "ClassModelScriptCommand",
+      "description": "Class Model Script Command 的命令参数。",
+      "properties": {
+        "script": {
+          "type": "string"
+        },
+        "host": true
+      }
+    },
+    "ClassModelRuntimeOptions": {
+      "type": "object",
+      "title": "ClassModelRuntimeOptions",
+      "description": "Class Model Runtime Options 的调用配置。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "knowledge": {
+          "type": "object",
+          "title": "ClassModelKnowledgeProvider"
+        },
+        "scriptExecutor": {
+          "$ref": "#/$defs/ClassModelScriptExecutor"
+        }
+      }
+    },
+    "ClassModelToolArgs": {
+      "type": "object",
+      "title": "ClassModelToolArgs",
+      "description": "Class Model Tool Args 的语义模型。"
+    },
+    "ClassModelToolResult": {
+      "type": "object",
+      "title": "ClassModelToolResult",
+      "description": "Class Model Tool Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "checks": {
+          "type": "array"
+        },
+        "state": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        }
+      }
+    },
+    "ClassModelToolCheck": {
+      "type": "object",
+      "title": "ClassModelToolCheck",
+      "description": "Class Model Tool Check 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "ClassModelScriptExecutorResult": {
+      "type": "object",
+      "title": "ClassModelScriptExecutorResult",
+      "description": "Class Model Script Executor Result 的返回结果。"
+    },
+    "ClassModelScriptExecutor": {
+      "type": "object",
+      "title": "ClassModelScriptExecutor",
+      "description": "Class Model Script Executor 的语义模型。"
+    },
+    "ClassModelRuntime": {
+      "type": "object",
+      "title": "ClassModelRuntime",
+      "description": "ClassModel tool runtime。\n这是 ClassModel 的运行时投影，唯一执行入口由 scriptExecutor 承接。\nruntime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。\nClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。"
+    }
+  },
   "models": {
     "ClassModelScriptCommand": {
       "kind": "ClassModelScriptCommand",
@@ -441,117 +552,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.892Z",
-  "$defs": {
-    "ClassModelScriptCommand": {
-      "type": "object",
-      "title": "ClassModelScriptCommand",
-      "description": "Class Model Script Command 的命令参数。",
-      "properties": {
-        "script": {
-          "type": "string"
-        },
-        "host": true
-      }
-    },
-    "ClassModelRuntimeOptions": {
-      "type": "object",
-      "title": "ClassModelRuntimeOptions",
-      "description": "Class Model Runtime Options 的调用配置。",
-      "properties": {
-        "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
-        },
-        "knowledge": {
-          "type": "object",
-          "title": "ClassModelKnowledgeProvider"
-        },
-        "scriptExecutor": {
-          "$ref": "#/$defs/ClassModelScriptExecutor"
-        }
-      }
-    },
-    "ClassModelToolArgs": {
-      "type": "object",
-      "title": "ClassModelToolArgs",
-      "description": "Class Model Tool Args 的语义模型。"
-    },
-    "ClassModelToolResult": {
-      "type": "object",
-      "title": "ClassModelToolResult",
-      "description": "Class Model Tool Result 的返回结果。",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "data": {
-          "type": "object",
-          "title": "AiJsonValue"
-        },
-        "checks": {
-          "type": "array"
-        },
-        "state": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        }
-      }
-    },
-    "ClassModelToolCheck": {
-      "type": "object",
-      "title": "ClassModelToolCheck",
-      "description": "Class Model Tool Check 的语义模型。",
-      "properties": {
-        "level": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warn"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
-          ]
-        },
-        "code": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "hint": {
-          "type": "string"
-        }
-      }
-    },
-    "ClassModelScriptExecutorResult": {
-      "type": "object",
-      "title": "ClassModelScriptExecutorResult",
-      "description": "Class Model Script Executor Result 的返回结果。"
-    },
-    "ClassModelScriptExecutor": {
-      "type": "object",
-      "title": "ClassModelScriptExecutor",
-      "description": "Class Model Script Executor 的语义模型。"
-    },
-    "ClassModelRuntime": {
-      "type": "object",
-      "title": "ClassModelRuntime",
-      "description": "ClassModel tool runtime。\n这是 ClassModel 的运行时投影，唯一执行入口由 scriptExecutor 承接。\nruntime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。\nClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。"
     }
   }
 }

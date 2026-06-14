@@ -42,6 +42,271 @@
     "ProjectInfoInput",
     "ProjectModelInitOptions"
   ],
+  "generatedAt": "2026-06-14T01:03:51.211Z",
+  "$defs": {
+    "ProjectNavigationDirtyScope": {
+      "type": "object",
+      "title": "ProjectNavigationDirtyScope",
+      "description": "Project Navigation Dirty Scope 的语义模型。"
+    },
+    "ProjectModelEvent": {
+      "type": "object",
+      "title": "ProjectModelEvent",
+      "description": "Project Model Event 的事件载荷。"
+    },
+    "ProjectModelEventListener": {
+      "type": "object",
+      "title": "ProjectModelEventListener",
+      "description": "Project Model Event Listener 的语义模型。"
+    },
+    "ProjectPageFileWriteCommand": {
+      "type": "object",
+      "title": "ProjectPageFileWriteCommand",
+      "description": "Project Page File Write Command 的命令参数。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "fileName": {
+          "type": "object",
+          "title": "PageNodeFileName"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectNavigationProjection": {
+      "type": "object",
+      "title": "ProjectNavigationProjection",
+      "description": "Project Navigation Projection 的语义模型。",
+      "properties": {
+        "navigationRoot": {
+          "type": "object",
+          "title": "ProjectModelData"
+        },
+        "treeData": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        },
+        "selectedNode": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ProjectNodeData"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedNodeId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "navigationLocation": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ProjectNodeLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "navigationDraft": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "NavigationNodeDraft"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pageFeatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "ProjectPageNodeSummary"
+          }
+        }
+      }
+    },
+    "ProjectActivePageProjection": {
+      "type": "object",
+      "title": "ProjectActivePageProjection",
+      "description": "Project Active Page Projection 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "ruleJson": {
+          "type": "string"
+        },
+        "pageDataJson": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string"
+        },
+        "style": {
+          "type": "string"
+        },
+        "parseErrors": {
+          "type": "object",
+          "title": "Record<PageNodeFileName, string | null>"
+        },
+        "isLoaded": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectDirtyProjection": {
+      "type": "object",
+      "title": "ProjectDirtyProjection",
+      "description": "Project Dirty Projection 的语义模型。",
+      "properties": {
+        "dirtyFiles": {
+          "type": "object",
+          "title": "Set<PageNodeFileName>"
+        },
+        "hasAnyFileDirty": {
+          "type": "boolean"
+        },
+        "navigationDirty": {
+          "type": "boolean"
+        },
+        "hasAnyDirty": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectPlanningInput": {
+      "type": "object",
+      "title": "ProjectPlanningInput",
+      "description": "项目级策划输入：短需求 + 可选详细说明附件引用。",
+      "properties": {
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        }
+      }
+    },
+    "NavigationPlanningInput": {
+      "type": "object",
+      "title": "NavigationPlanningInput",
+      "description": "单个导航节点策划输入：节点 description + 可选附件引用。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectPlanningCompletionInput": {
+      "type": "object",
+      "title": "ProjectPlanningCompletionInput",
+      "description": "项目策划完成动作输入；由 agent_complete 转发到领域模型。",
+      "properties": {
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectPlanningCompletionResult": {
+      "type": "object",
+      "title": "ProjectPlanningCompletionResult",
+      "description": "项目策划完成动作结果；失败结果会回灌给 LLM 继续补查/补执行。"
+    },
+    "ProjectInfo": {
+      "type": "object",
+      "title": "ProjectInfo",
+      "description": "Project Info 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectType": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "homeNodeId": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectInfoInput": {
+      "type": "object",
+      "title": "ProjectInfoInput",
+      "description": "Project Info Input 的输入数据。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectModelInitOptions": {
+      "type": "object",
+      "title": "ProjectModelInitOptions",
+      "description": "纯领域构造参数（无 IO）。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "project": {
+          "$ref": "#/$defs/ProjectInfoInput"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectNavigationDirtyScope": {
       "kind": "ProjectNavigationDirtyScope",
@@ -764,271 +1029,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.274Z",
-  "$defs": {
-    "ProjectNavigationDirtyScope": {
-      "type": "object",
-      "title": "ProjectNavigationDirtyScope",
-      "description": "Project Navigation Dirty Scope 的语义模型。"
-    },
-    "ProjectModelEvent": {
-      "type": "object",
-      "title": "ProjectModelEvent",
-      "description": "Project Model Event 的事件载荷。"
-    },
-    "ProjectModelEventListener": {
-      "type": "object",
-      "title": "ProjectModelEventListener",
-      "description": "Project Model Event Listener 的语义模型。"
-    },
-    "ProjectPageFileWriteCommand": {
-      "type": "object",
-      "title": "ProjectPageFileWriteCommand",
-      "description": "Project Page File Write Command 的命令参数。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "fileName": {
-          "type": "object",
-          "title": "PageNodeFileName"
-        },
-        "text": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectNavigationProjection": {
-      "type": "object",
-      "title": "ProjectNavigationProjection",
-      "description": "Project Navigation Projection 的语义模型。",
-      "properties": {
-        "navigationRoot": {
-          "type": "object",
-          "title": "ProjectModelData"
-        },
-        "treeData": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "ProjectNodeData"
-          }
-        },
-        "selectedNode": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "ProjectNodeData"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "selectedNodeId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "navigationLocation": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "ProjectNodeLocation"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "navigationDraft": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "NavigationNodeDraft"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "pageFeatures": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "ProjectPageNodeSummary"
-          }
-        }
-      }
-    },
-    "ProjectActivePageProjection": {
-      "type": "object",
-      "title": "ProjectActivePageProjection",
-      "description": "Project Active Page Projection 的语义模型。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "ruleJson": {
-          "type": "string"
-        },
-        "pageDataJson": {
-          "type": "string"
-        },
-        "script": {
-          "type": "string"
-        },
-        "style": {
-          "type": "string"
-        },
-        "parseErrors": {
-          "type": "object",
-          "title": "Record<PageNodeFileName, string | null>"
-        },
-        "isLoaded": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ProjectDirtyProjection": {
-      "type": "object",
-      "title": "ProjectDirtyProjection",
-      "description": "Project Dirty Projection 的语义模型。",
-      "properties": {
-        "dirtyFiles": {
-          "type": "object",
-          "title": "Set<PageNodeFileName>"
-        },
-        "hasAnyFileDirty": {
-          "type": "boolean"
-        },
-        "navigationDirty": {
-          "type": "boolean"
-        },
-        "hasAnyDirty": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ProjectPlanningInput": {
-      "type": "object",
-      "title": "ProjectPlanningInput",
-      "description": "项目级策划输入：短需求 + 可选详细说明附件引用。",
-      "properties": {
-        "requirement": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        }
-      }
-    },
-    "NavigationPlanningInput": {
-      "type": "object",
-      "title": "NavigationPlanningInput",
-      "description": "单个导航节点策划输入：节点 description + 可选附件引用。",
-      "properties": {
-        "nodeId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "type": "string"
-        },
-        "requirement": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectPlanningCompletionInput": {
-      "type": "object",
-      "title": "ProjectPlanningCompletionInput",
-      "description": "项目策划完成动作输入；由 agent_complete 转发到领域模型。",
-      "properties": {
-        "summary": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectPlanningCompletionResult": {
-      "type": "object",
-      "title": "ProjectPlanningCompletionResult",
-      "description": "项目策划完成动作结果；失败结果会回灌给 LLM 继续补查/补执行。"
-    },
-    "ProjectInfo": {
-      "type": "object",
-      "title": "ProjectInfo",
-      "description": "Project Info 的语义模型。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectType": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "planningAttachmentRef": {
-          "type": "string"
-        },
-        "homeNodeId": {
-          "type": "string"
-        },
-        "order": {
-          "type": "number"
-        },
-        "createdAt": {
-          "type": "string"
-        },
-        "updatedAt": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectInfoInput": {
-      "type": "object",
-      "title": "ProjectInfoInput",
-      "description": "Project Info Input 的输入数据。",
-      "properties": {
-        "projectId": {
-          "type": "string"
-        }
-      }
-    },
-    "ProjectModelInitOptions": {
-      "type": "object",
-      "title": "ProjectModelInitOptions",
-      "description": "纯领域构造参数（无 IO）。",
-      "properties": {
-        "projectId": {
-          "type": "string"
-        },
-        "project": {
-          "$ref": "#/$defs/ProjectInfoInput"
-        }
-      }
     }
   }
 }

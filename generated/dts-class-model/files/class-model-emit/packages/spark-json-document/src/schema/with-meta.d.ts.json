@@ -16,6 +16,14 @@
   "symbols": [
     "JsonSchemaNode"
   ],
+  "generatedAt": "2026-06-11T12:38:13.617Z",
+  "$defs": {
+    "JsonSchemaNode": {
+      "type": "object",
+      "title": "JsonSchemaNode",
+      "description": "schema/with-meta.ts — JSON Schema 节点添加 title/description 元数据"
+    }
+  },
   "models": {
     "JsonSchemaNode": {
       "kind": "JsonSchemaNode",
@@ -31,14 +39,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.142Z",
-  "$defs": {
-    "JsonSchemaNode": {
-      "type": "object",
-      "title": "JsonSchemaNode",
-      "description": "schema/with-meta.ts — JSON Schema 节点添加 title/description 元数据"
     }
   }
 }

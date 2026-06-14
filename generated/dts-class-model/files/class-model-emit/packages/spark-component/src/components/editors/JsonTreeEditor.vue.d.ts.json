@@ -20,6 +20,78 @@
   "symbols": [
     "JsonTreeEditorProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.517Z",
+  "$defs": {
+    "JsonTreeEditorProps": {
+      "type": "object",
+      "title": "JsonTreeEditorProps",
+      "description": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "json-tree-editor"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "modelValue": {
+          "type": "string"
+        },
+        "documentValue": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Sjd.JsonDocument"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "schema": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filterPlaceholder": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "object",
+          "title": "Sjd.JsonTreePolicy"
+        },
+        "rootLabel": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "JsonTreeEditorProps": {
       "kind": "JsonTreeEditorProps",
@@ -384,78 +456,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.454Z",
-  "$defs": {
-    "JsonTreeEditorProps": {
-      "type": "object",
-      "title": "JsonTreeEditorProps",
-      "description": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "json-tree-editor"
-          ]
-        },
-        "field": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "width": {
-          "type": "number"
-        },
-        "modelValue": {
-          "type": "string"
-        },
-        "documentValue": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Sjd.JsonDocument"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "height": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "readOnly": {
-          "type": "boolean"
-        },
-        "schema": {
-          "anyOf": [
-            {
-              "type": "object"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "filterPlaceholder": {
-          "type": "string"
-        },
-        "policy": {
-          "type": "object",
-          "title": "Sjd.JsonTreePolicy"
-        },
-        "rootLabel": {
-          "type": "string"
-        }
-      }
     }
   }
 }

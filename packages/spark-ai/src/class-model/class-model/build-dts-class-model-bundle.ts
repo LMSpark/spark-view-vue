@@ -55,6 +55,10 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
   exportedOnly?: boolean
   onProgress?: (event: BuildDtsClassModelBundleProgress) => void
   progressInterval?: number
+  /** 仅投影并落盘这些 emit 源路径；rootFiles 仍可包含依赖闭包供 TypeChecker 解析。 */
+  projectOnlySourcePaths?: ReadonlySet<string>
+  /** 未重投影 shard 的 className 索引，供 $ref 解析跨文件类型引用。 */
+  knownProjectedClassNamesBySourcePath?: ReadonlyMap<string, ReadonlySet<string>>
 }>
 
 /** Build Dts Class Model Bundle Result 的返回结果。 */
@@ -118,9 +122,13 @@ export function buildDtsClassModelBundle(
   const projectedFiles: ProjectedBundleFile[] = []
   const typeReferenceIndex = new Map<string, ReadonlyMap<string, TypeReferenceTarget>>()
   let modelCount = 0
+  let projectedCount = 0
 
   for (const [index, absolutePath] of rootFiles.entries()) {
     const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
+    if (options.projectOnlySourcePaths !== undefined && !options.projectOnlySourcePaths.has(sourcePath)) {
+      continue
+    }
     const sourceFile = resolveProgramSourceFile(program, absolutePath)
     const typeReferenceTargets = collectDtsTypeReferenceTargets({
       checker,
@@ -145,6 +153,7 @@ export function buildDtsClassModelBundle(
       bundleFile: normalizedBundleFile,
       outputPath,
     })
+    projectedCount += 1
 
     files[sourcePath] = {
       file: normalizedBundleFile,
@@ -180,9 +189,15 @@ export function buildDtsClassModelBundle(
     }
   }
 
-  const projectedClassNamesBySourcePath = new Map(
-    projectedFiles.map(file => [file.sourcePath, new Set(Object.keys(file.projection.models))] as const),
+  const projectedClassNamesBySourcePath = new Map<string, ReadonlySet<string>>(
+    options.knownProjectedClassNamesBySourcePath ?? [],
   )
+  for (const projectedFile of projectedFiles) {
+    projectedClassNamesBySourcePath.set(
+      projectedFile.sourcePath,
+      new Set(Object.keys(projectedFile.projection.models)),
+    )
+  }
   for (const projectedFile of projectedFiles) {
     const compactProjection = compactDtsFileProjectionForBundle(projectedFile.projection, {
       currentSourcePath: projectedFile.sourcePath,
@@ -194,8 +209,7 @@ export function buildDtsClassModelBundle(
     writeFileSync(projectedFile.outputPath, `${JSON.stringify(compactProjection, null, 2)}\n`, 'utf8')
   }
 
-  const generatedAt = new Date().toISOString()
-  const semanticReport = createSemanticGapReport(generatedAt, semanticGaps)
+  const semanticReport = createSemanticGapReport(semanticGaps)
   const semanticLogPath = resolve(outputDir, 'semantic-gaps.log')
   const semanticLogJsonPath = resolve(outputDir, 'semantic-gaps.json')
   reportProgress(options, { phase: 'write-semantic-gaps', total })
@@ -205,7 +219,6 @@ export function buildDtsClassModelBundle(
   const manifest: DtsClassModelBundleManifest = {
     schemaVersion: DTS_CLASS_MODEL_BUNDLE_VERSION,
     protocol: DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
-    generatedAt,
     scannedFileCount: Object.keys(files).length,
     files,
     classIndex,
@@ -224,7 +237,7 @@ export function buildDtsClassModelBundle(
     semanticLogPath,
     semanticLogJsonPath,
     semanticGapCount: semanticReport.gapCount,
-    fileCount: Object.keys(files).length,
+    fileCount: projectedCount,
     modelCount,
   }
 }
@@ -342,7 +355,11 @@ function compactDtsFileProjectionForBundle(
   }
   const schemaDefs = createSchemaDefsForBundle(models, refContext)
   return {
-    ...projection,
+    schemaVersion: projection.schemaVersion,
+    sourcePath: projection.sourcePath,
+    module: projection.module,
+    symbols: projection.symbols,
+    ...(projection.generatedAt === undefined ? {} : { generatedAt: projection.generatedAt }),
     ...(Object.keys(schemaDefs).length === 0 ? {} : { $defs: schemaDefs }),
     models,
   }
@@ -696,12 +713,10 @@ function describeSemanticGapChainBreak(
 }
 
 function createSemanticGapReport(
-  generatedAt: string,
   gaps: readonly DtsClassModelSemanticGap[],
 ): DtsClassModelSemanticGapReport {
   const sorted = [...gaps].sort(compareSemanticGaps)
   return {
-    generatedAt,
     gapCount: sorted.length,
     notes: [
       '.d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。',
@@ -723,7 +738,6 @@ function compareSemanticGaps(left: DtsClassModelSemanticGap, right: DtsClassMode
 function renderSemanticGapLog(report: DtsClassModelSemanticGapReport): string {
   const lines = [
     '# DTS ClassModel semantic gaps',
-    `generatedAt: ${report.generatedAt}`,
     `gapCount: ${String(report.gapCount)}`,
     '',
     'notes:',

@@ -18,6 +18,34 @@
     "SparkNodeChildren",
     "SparkNode"
   ],
+  "generatedAt": "2026-06-11T12:48:51.014Z",
+  "$defs": {
+    "SparkNodeChildren": {
+      "type": "object",
+      "title": "SparkNodeChildren",
+      "description": "SparkNode 子节点数组。\n允许混合结构节点与纯文本子节点（string / number）；消费侧可用\n`getSparkNodeChildren()` 过滤出结构节点。"
+    },
+    "SparkNode": {
+      "type": "object",
+      "title": "SparkNode",
+      "description": "页面配置组件节点。\nrule.json 中每个条目的基本结构，渲染器根据 type 查找对应组件，\n将 props 注入为组件属性，递归渲染 children。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "children": {
+          "$ref": "#/$defs/SparkNodeChildren"
+        }
+      }
+    }
+  },
   "models": {
     "SparkNodeChildren": {
       "kind": "SparkNodeChildren",
@@ -93,34 +121,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.973Z",
-  "$defs": {
-    "SparkNodeChildren": {
-      "type": "object",
-      "title": "SparkNodeChildren",
-      "description": "SparkNode 子节点数组。\n允许混合结构节点与纯文本子节点（string / number）；消费侧可用\n`getSparkNodeChildren()` 过滤出结构节点。"
-    },
-    "SparkNode": {
-      "type": "object",
-      "title": "SparkNode",
-      "description": "页面配置组件节点。\nrule.json 中每个条目的基本结构，渲染器根据 type 查找对应组件，\n将 props 注入为组件属性，递归渲染 children。",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "children": {
-          "$ref": "#/$defs/SparkNodeChildren"
-        }
-      }
     }
   }
 }

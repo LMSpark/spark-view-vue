@@ -80,6 +80,481 @@
     "SparkNodeTreeMethodKey",
     "SparkNodeTree"
   ],
+  "generatedAt": "2026-06-11T12:48:51.014Z",
+  "$defs": {
+    "SparkNodeTreeJsonInput": {
+      "type": "object",
+      "title": "SparkNodeTreeJsonInput",
+      "description": "fromJson 的输入：SparkNode 对象、任意对象或 JSON 字符串"
+    },
+    "SparkNodeTreeRuleJsonInput": {
+      "type": "object",
+      "title": "SparkNodeTreeRuleJsonInput",
+      "description": "fromRuleJson 的输入：rule.json 的合法形态。\n可以是单个节点、节点数组、任意对象或数组、JSON 字符串。"
+    },
+    "SparkNodeTreeRootParams": {
+      "type": "object",
+      "title": "SparkNodeTreeRootParams",
+      "description": "创建 SparkNodeTree 实例的输入参数",
+      "properties": {
+        "root": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "historyLimit": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeTreeFromJsonOptions": {
+      "type": "object",
+      "title": "SparkNodeTreeFromJsonOptions",
+      "description": "SparkNodeTree.fromJson 的可选参数",
+      "properties": {
+        "historyLimit": {
+          "type": "number"
+        },
+        "fillMissingComponentId": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SparkNodeTreeHistoryStats": {
+      "type": "object",
+      "title": "SparkNodeTreeHistoryStats",
+      "description": "SparkNodeTree 历史栈状态摘要。",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "cursor": {
+          "type": "number"
+        },
+        "canUndo": {
+          "type": "boolean"
+        },
+        "canRedo": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SparkNodeTreeLookupParams": {
+      "type": "object",
+      "title": "SparkNodeTreeLookupParams",
+      "description": "按 componentId 查找节点的参数",
+      "properties": {
+        "componentId": {
+          "type": "string"
+        }
+      }
+    },
+    "SparkNodeTreeChildrenParams": {
+      "type": "object",
+      "title": "SparkNodeTreeChildrenParams",
+      "description": "定位父节点 children 的参数",
+      "properties": {
+        "parentComponentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SparkNodeFindByTypeParams": {
+      "type": "object",
+      "title": "SparkNodeFindByTypeParams",
+      "description": "findByType 的查询参数",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "startComponentId": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeTreeAddParams": {
+      "type": "object",
+      "title": "SparkNodeTreeAddParams",
+      "description": "添加单个节点的参数",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeTreeAddNodesParams": {
+      "type": "object",
+      "title": "SparkNodeTreeAddNodesParams",
+      "description": "批量添加节点的参数",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeTreeMoveParams": {
+      "type": "object",
+      "title": "SparkNodeTreeMoveParams",
+      "description": "移动已有节点的参数",
+      "properties": {
+        "componentId": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeTreeSetPropsParams": {
+      "type": "object",
+      "title": "SparkNodeTreeSetPropsParams",
+      "description": "设置单个节点 props 的参数",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "merge": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SparkNodeTreeSetPropsBatchItem": {
+      "type": "object",
+      "title": "SparkNodeTreeSetPropsBatchItem",
+      "description": "批量设置节点 props 的单项参数",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "merge": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SparkNodeTreeSetPropsBatchParams": {
+      "type": "object",
+      "title": "SparkNodeTreeSetPropsBatchParams",
+      "description": "批量设置节点 props 的参数",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SparkNodeTreeSetPropsBatchItem"
+          }
+        }
+      }
+    },
+    "SparkNodeTreeReplaceParams": {
+      "type": "object",
+      "title": "SparkNodeTreeReplaceParams",
+      "description": "替换单个节点的参数",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        }
+      }
+    },
+    "SparkNodeTreeReplaceNodesItem": {
+      "type": "object",
+      "title": "SparkNodeTreeReplaceNodesItem",
+      "description": "批量替换节点的单项参数",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        }
+      }
+    },
+    "SparkNodeTreeReplaceNodesParams": {
+      "type": "object",
+      "title": "SparkNodeTreeReplaceNodesParams",
+      "description": "批量替换节点的参数",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SparkNodeTreeReplaceNodesItem"
+          }
+        }
+      }
+    },
+    "SparkNodeTreeRemoveParams": {
+      "type": "object",
+      "title": "SparkNodeTreeRemoveParams",
+      "description": "删除单个节点的参数",
+      "properties": {
+        "componentId": {
+          "type": "string"
+        }
+      }
+    },
+    "SparkNodeTreeRemoveNodesParams": {
+      "type": "object",
+      "title": "SparkNodeTreeRemoveNodesParams",
+      "description": "批量删除节点的参数",
+      "properties": {
+        "componentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SparkNodeLocation": {
+      "type": "object",
+      "title": "SparkNodeLocation",
+      "description": "节点在树中的位置信息",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "SparkNode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        },
+        "depth": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeAddResult": {
+      "type": "object",
+      "title": "SparkNodeAddResult",
+      "description": "addNode 的返回结果",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeAddNodesResult": {
+      "type": "object",
+      "title": "SparkNodeAddNodesResult",
+      "description": "addNodes 的返回结果",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "indexes": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "SparkNodeMoveResult": {
+      "type": "object",
+      "title": "SparkNodeMoveResult",
+      "description": "moveNode 的返回结果",
+      "properties": {
+        "componentId": {
+          "type": "string"
+        },
+        "fromParentComponentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "toParentComponentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previousIndex": {
+          "type": "number"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeSetPropsResult": {
+      "type": "object",
+      "title": "SparkNodeSetPropsResult",
+      "description": "setProps 的返回结果",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        }
+      }
+    },
+    "SparkNodeSetPropsBatchResult": {
+      "type": "object",
+      "title": "SparkNodeSetPropsBatchResult",
+      "description": "setPropsBatch 的返回结果",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        }
+      }
+    },
+    "SparkNodeReplaceResult": {
+      "type": "object",
+      "title": "SparkNodeReplaceResult",
+      "description": "replaceNode 的返回结果",
+      "properties": {
+        "node": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "previous": {
+          "type": "object",
+          "title": "SparkNode"
+        }
+      }
+    },
+    "SparkNodeReplaceNodesResult": {
+      "type": "object",
+      "title": "SparkNodeReplaceNodesResult",
+      "description": "replaceNodes 的返回结果",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SparkNodeReplaceResult"
+          }
+        }
+      }
+    },
+    "SparkNodeRemoveResult": {
+      "type": "object",
+      "title": "SparkNodeRemoveResult",
+      "description": "removeNode 的返回结果",
+      "properties": {
+        "removed": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeRemoveNodesResult": {
+      "type": "object",
+      "title": "SparkNodeRemoveNodesResult",
+      "description": "removeNodes 的返回结果",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SparkNodeRemoveResult"
+          }
+        }
+      }
+    },
+    "SparkNodeFindByTypeMatch": {
+      "type": "object",
+      "title": "SparkNodeFindByTypeMatch",
+      "description": "findByType 单条匹配结果",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "depth": {
+          "type": "number"
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SparkNodeFindByTypeResult": {
+      "type": "object",
+      "title": "SparkNodeFindByTypeResult",
+      "description": "findByType 的返回结果",
+      "properties": {
+        "matches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SparkNodeFindByTypeMatch"
+          }
+        },
+        "total": {
+          "type": "number"
+        }
+      }
+    },
+    "SparkNodeTreeMethodKey": {
+      "type": "object",
+      "title": "SparkNodeTreeMethodKey",
+      "description": "SparkNodeTree 公开方法键名联合类型"
+    },
+    "SparkNodeTree": {
+      "type": "object",
+      "title": "SparkNodeTree",
+      "description": "SparkNodeTree\n面向单个组件实例（SparkNode）及其子树的结构编辑核心。\n这里的 root 表示“当前被编辑的组件实例”。\n它既可以是页面组件，也可以是页面中的任意子组件；页面只是递归 SparkNode 模型里的一个更大组件。\n在上层设计里，SparkNodeTree 是设计时编辑能力的真实本体：\n1. 调用方先查询组件列表，选择合适的组件 type；\n2. 再根据组件规格构造一个 SparkNode 节点对象；\n3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。\n因此，这个类提供的不是“组件清单”，而是“树编辑能力集合”。\n上层的 tool catalog / function 列表，只是在此基础上做协议投影。\n当前公开能力大致可分为四类：\n1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。\n2. 子树统计：countNodes / collectDataViewKeys / collectHandlerNames。\n3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。\n4. 属性写入：setProps / setPropsBatch。\n设计目标：\n1. 构造时绑定一个当前组件实例，后续所有方法都围绕该组件及其子树工作。\n2. 查询类方法不修改当前树状态。\n3. 写操作通过不可变重写生成新子树，并回写到实例内部 root。\n4. 全部公开方法只接受命名参数对象，不提供位置参数重载。"
+    }
+  },
   "models": {
     "SparkNodeTreeJsonInput": {
       "kind": "SparkNodeTreeJsonInput",
@@ -2397,481 +2872,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.971Z",
-  "$defs": {
-    "SparkNodeTreeJsonInput": {
-      "type": "object",
-      "title": "SparkNodeTreeJsonInput",
-      "description": "fromJson 的输入：SparkNode 对象、任意对象或 JSON 字符串"
-    },
-    "SparkNodeTreeRuleJsonInput": {
-      "type": "object",
-      "title": "SparkNodeTreeRuleJsonInput",
-      "description": "fromRuleJson 的输入：rule.json 的合法形态。\n可以是单个节点、节点数组、任意对象或数组、JSON 字符串。"
-    },
-    "SparkNodeTreeRootParams": {
-      "type": "object",
-      "title": "SparkNodeTreeRootParams",
-      "description": "创建 SparkNodeTree 实例的输入参数",
-      "properties": {
-        "root": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "historyLimit": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeTreeFromJsonOptions": {
-      "type": "object",
-      "title": "SparkNodeTreeFromJsonOptions",
-      "description": "SparkNodeTree.fromJson 的可选参数",
-      "properties": {
-        "historyLimit": {
-          "type": "number"
-        },
-        "fillMissingComponentId": {
-          "type": "boolean"
-        }
-      }
-    },
-    "SparkNodeTreeHistoryStats": {
-      "type": "object",
-      "title": "SparkNodeTreeHistoryStats",
-      "description": "SparkNodeTree 历史栈状态摘要。",
-      "properties": {
-        "length": {
-          "type": "number"
-        },
-        "cursor": {
-          "type": "number"
-        },
-        "canUndo": {
-          "type": "boolean"
-        },
-        "canRedo": {
-          "type": "boolean"
-        }
-      }
-    },
-    "SparkNodeTreeLookupParams": {
-      "type": "object",
-      "title": "SparkNodeTreeLookupParams",
-      "description": "按 componentId 查找节点的参数",
-      "properties": {
-        "componentId": {
-          "type": "string"
-        }
-      }
-    },
-    "SparkNodeTreeChildrenParams": {
-      "type": "object",
-      "title": "SparkNodeTreeChildrenParams",
-      "description": "定位父节点 children 的参数",
-      "properties": {
-        "parentComponentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "SparkNodeFindByTypeParams": {
-      "type": "object",
-      "title": "SparkNodeFindByTypeParams",
-      "description": "findByType 的查询参数",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "startComponentId": {
-          "type": "string"
-        },
-        "limit": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeTreeAddParams": {
-      "type": "object",
-      "title": "SparkNodeTreeAddParams",
-      "description": "添加单个节点的参数",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeTreeAddNodesParams": {
-      "type": "object",
-      "title": "SparkNodeTreeAddNodesParams",
-      "description": "批量添加节点的参数",
-      "properties": {
-        "nodes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeTreeMoveParams": {
-      "type": "object",
-      "title": "SparkNodeTreeMoveParams",
-      "description": "移动已有节点的参数",
-      "properties": {
-        "componentId": {
-          "type": "string"
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeTreeSetPropsParams": {
-      "type": "object",
-      "title": "SparkNodeTreeSetPropsParams",
-      "description": "设置单个节点 props 的参数",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "merge": {
-          "type": "boolean"
-        }
-      }
-    },
-    "SparkNodeTreeSetPropsBatchItem": {
-      "type": "object",
-      "title": "SparkNodeTreeSetPropsBatchItem",
-      "description": "批量设置节点 props 的单项参数",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "merge": {
-          "type": "boolean"
-        }
-      }
-    },
-    "SparkNodeTreeSetPropsBatchParams": {
-      "type": "object",
-      "title": "SparkNodeTreeSetPropsBatchParams",
-      "description": "批量设置节点 props 的参数",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/SparkNodeTreeSetPropsBatchItem"
-          }
-        }
-      }
-    },
-    "SparkNodeTreeReplaceParams": {
-      "type": "object",
-      "title": "SparkNodeTreeReplaceParams",
-      "description": "替换单个节点的参数",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        }
-      }
-    },
-    "SparkNodeTreeReplaceNodesItem": {
-      "type": "object",
-      "title": "SparkNodeTreeReplaceNodesItem",
-      "description": "批量替换节点的单项参数",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        }
-      }
-    },
-    "SparkNodeTreeReplaceNodesParams": {
-      "type": "object",
-      "title": "SparkNodeTreeReplaceNodesParams",
-      "description": "批量替换节点的参数",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/SparkNodeTreeReplaceNodesItem"
-          }
-        }
-      }
-    },
-    "SparkNodeTreeRemoveParams": {
-      "type": "object",
-      "title": "SparkNodeTreeRemoveParams",
-      "description": "删除单个节点的参数",
-      "properties": {
-        "componentId": {
-          "type": "string"
-        }
-      }
-    },
-    "SparkNodeTreeRemoveNodesParams": {
-      "type": "object",
-      "title": "SparkNodeTreeRemoveNodesParams",
-      "description": "批量删除节点的参数",
-      "properties": {
-        "componentIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "SparkNodeLocation": {
-      "type": "object",
-      "title": "SparkNodeLocation",
-      "description": "节点在树中的位置信息",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "parent": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "SparkNode"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "index": {
-          "type": "number"
-        },
-        "depth": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeAddResult": {
-      "type": "object",
-      "title": "SparkNodeAddResult",
-      "description": "addNode 的返回结果",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeAddNodesResult": {
-      "type": "object",
-      "title": "SparkNodeAddNodesResult",
-      "description": "addNodes 的返回结果",
-      "properties": {
-        "nodes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        },
-        "indexes": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          }
-        }
-      }
-    },
-    "SparkNodeMoveResult": {
-      "type": "object",
-      "title": "SparkNodeMoveResult",
-      "description": "moveNode 的返回结果",
-      "properties": {
-        "componentId": {
-          "type": "string"
-        },
-        "fromParentComponentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "toParentComponentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "previousIndex": {
-          "type": "number"
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeSetPropsResult": {
-      "type": "object",
-      "title": "SparkNodeSetPropsResult",
-      "description": "setProps 的返回结果",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        }
-      }
-    },
-    "SparkNodeSetPropsBatchResult": {
-      "type": "object",
-      "title": "SparkNodeSetPropsBatchResult",
-      "description": "setPropsBatch 的返回结果",
-      "properties": {
-        "nodes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "SparkNode"
-          }
-        }
-      }
-    },
-    "SparkNodeReplaceResult": {
-      "type": "object",
-      "title": "SparkNodeReplaceResult",
-      "description": "replaceNode 的返回结果",
-      "properties": {
-        "node": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "previous": {
-          "type": "object",
-          "title": "SparkNode"
-        }
-      }
-    },
-    "SparkNodeReplaceNodesResult": {
-      "type": "object",
-      "title": "SparkNodeReplaceNodesResult",
-      "description": "replaceNodes 的返回结果",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/SparkNodeReplaceResult"
-          }
-        }
-      }
-    },
-    "SparkNodeRemoveResult": {
-      "type": "object",
-      "title": "SparkNodeRemoveResult",
-      "description": "removeNode 的返回结果",
-      "properties": {
-        "removed": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeRemoveNodesResult": {
-      "type": "object",
-      "title": "SparkNodeRemoveNodesResult",
-      "description": "removeNodes 的返回结果",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/SparkNodeRemoveResult"
-          }
-        }
-      }
-    },
-    "SparkNodeFindByTypeMatch": {
-      "type": "object",
-      "title": "SparkNodeFindByTypeMatch",
-      "description": "findByType 单条匹配结果",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "depth": {
-          "type": "number"
-        },
-        "parentId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "SparkNodeFindByTypeResult": {
-      "type": "object",
-      "title": "SparkNodeFindByTypeResult",
-      "description": "findByType 的返回结果",
-      "properties": {
-        "matches": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/SparkNodeFindByTypeMatch"
-          }
-        },
-        "total": {
-          "type": "number"
-        }
-      }
-    },
-    "SparkNodeTreeMethodKey": {
-      "type": "object",
-      "title": "SparkNodeTreeMethodKey",
-      "description": "SparkNodeTree 公开方法键名联合类型"
-    },
-    "SparkNodeTree": {
-      "type": "object",
-      "title": "SparkNodeTree",
-      "description": "SparkNodeTree\n面向单个组件实例（SparkNode）及其子树的结构编辑核心。\n这里的 root 表示“当前被编辑的组件实例”。\n它既可以是页面组件，也可以是页面中的任意子组件；页面只是递归 SparkNode 模型里的一个更大组件。\n在上层设计里，SparkNodeTree 是设计时编辑能力的真实本体：\n1. 调用方先查询组件列表，选择合适的组件 type；\n2. 再根据组件规格构造一个 SparkNode 节点对象；\n3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。\n因此，这个类提供的不是“组件清单”，而是“树编辑能力集合”。\n上层的 tool catalog / function 列表，只是在此基础上做协议投影。\n当前公开能力大致可分为四类：\n1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。\n2. 子树统计：countNodes / collectDataViewKeys / collectHandlerNames。\n3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。\n4. 属性写入：setProps / setPropsBatch。\n设计目标：\n1. 构造时绑定一个当前组件实例，后续所有方法都围绕该组件及其子树工作。\n2. 查询类方法不修改当前树状态。\n3. 写操作通过不可变重写生成新子树，并回写到实例内部 root。\n4. 全部公开方法只接受命名参数对象，不提供位置参数重载。"
     }
   }
 }

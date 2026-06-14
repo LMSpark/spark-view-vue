@@ -21,6 +21,89 @@
   "symbols": [
     "RVirtualCardProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.402Z",
+  "$defs": {
+    "RVirtualCardProps": {
+      "type": "object",
+      "title": "RVirtualCardProps",
+      "description": "RVirtual Card Props 的属性契约。",
+      "properties": {
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "rowKey": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        },
+        "pageHeight": {
+          "type": "number"
+        },
+        "mobilePageHeight": {
+          "type": "number"
+        },
+        "mobileBreakpoint": {
+          "type": "number"
+        },
+        "viewportHeight": {
+          "type": "string"
+        },
+        "minViewportHeight": {
+          "type": "string"
+        },
+        "overscanPages": {
+          "type": "number"
+        },
+        "prefetchPages": {
+          "type": "number"
+        },
+        "maxCachedPages": {
+          "type": "number"
+        },
+        "columns": {
+          "type": "number"
+        },
+        "mobileColumns": {
+          "type": "number"
+        },
+        "settleDelay": {
+          "type": "number"
+        },
+        "wheelStepPx": {
+          "type": "number"
+        },
+        "maxWheelJumpPages": {
+          "type": "number"
+        },
+        "itemClass": {
+          "type": "string"
+        },
+        "itemStyle": {
+          "type": "object",
+          "title": "CSSProperties"
+        },
+        "showHeader": {
+          "type": "boolean"
+        },
+        "showHud": {
+          "type": "boolean"
+        },
+        "showPageMeta": {
+          "type": "boolean"
+        },
+        "onItemClick": {
+          "type": "object",
+          "title": "RowClickHandler"
+        }
+      }
+    }
+  },
   "models": {
     "RVirtualCardProps": {
       "kind": "RVirtualCardProps",
@@ -321,89 +404,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.144Z",
-  "$defs": {
-    "RVirtualCardProps": {
-      "type": "object",
-      "title": "RVirtualCardProps",
-      "description": "RVirtual Card Props 的属性契约。",
-      "properties": {
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "rowKey": {
-          "type": "string"
-        },
-        "emptyText": {
-          "type": "string"
-        },
-        "pageHeight": {
-          "type": "number"
-        },
-        "mobilePageHeight": {
-          "type": "number"
-        },
-        "mobileBreakpoint": {
-          "type": "number"
-        },
-        "viewportHeight": {
-          "type": "string"
-        },
-        "minViewportHeight": {
-          "type": "string"
-        },
-        "overscanPages": {
-          "type": "number"
-        },
-        "prefetchPages": {
-          "type": "number"
-        },
-        "maxCachedPages": {
-          "type": "number"
-        },
-        "columns": {
-          "type": "number"
-        },
-        "mobileColumns": {
-          "type": "number"
-        },
-        "settleDelay": {
-          "type": "number"
-        },
-        "wheelStepPx": {
-          "type": "number"
-        },
-        "maxWheelJumpPages": {
-          "type": "number"
-        },
-        "itemClass": {
-          "type": "string"
-        },
-        "itemStyle": {
-          "type": "object",
-          "title": "CSSProperties"
-        },
-        "showHeader": {
-          "type": "boolean"
-        },
-        "showHud": {
-          "type": "boolean"
-        },
-        "showPageMeta": {
-          "type": "boolean"
-        },
-        "onItemClick": {
-          "type": "object",
-          "title": "RowClickHandler"
-        }
-      }
     }
   }
 }

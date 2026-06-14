@@ -24,6 +24,113 @@
     "RegisterParams",
     "RegisterTenantParams"
   ],
+  "generatedAt": "2026-06-11T12:38:13.654Z",
+  "$defs": {
+    "AuthUser": {
+      "type": "object",
+      "title": "AuthUser",
+      "description": "认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "defaultProjectId": {
+          "type": "string"
+        }
+      }
+    },
+    "PlatformAdminUserLike": {
+      "type": "object",
+      "title": "PlatformAdminUserLike",
+      "description": "Platform Admin User Like 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array"
+        }
+      }
+    },
+    "LoginParams": {
+      "type": "object",
+      "title": "LoginParams",
+      "description": "Login Params 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterParams": {
+      "type": "object",
+      "title": "RegisterParams",
+      "description": "Register Params 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterTenantParams": {
+      "type": "object",
+      "title": "RegisterTenantParams",
+      "description": "Register Tenant Params 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "AuthUser": {
       "kind": "AuthUser",
@@ -305,113 +412,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.437Z",
-  "$defs": {
-    "AuthUser": {
-      "type": "object",
-      "title": "AuthUser",
-      "description": "认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
-      "properties": {
-        "userId": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "avatar": {
-          "type": "string"
-        },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "tenantId": {
-          "type": "string"
-        },
-        "defaultProjectId": {
-          "type": "string"
-        }
-      }
-    },
-    "PlatformAdminUserLike": {
-      "type": "object",
-      "title": "PlatformAdminUserLike",
-      "description": "Platform Admin User Like 的语义模型。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "roles": {
-          "type": "array"
-        }
-      }
-    },
-    "LoginParams": {
-      "type": "object",
-      "title": "LoginParams",
-      "description": "Login Params 的语义模型。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
-    },
-    "RegisterParams": {
-      "type": "object",
-      "title": "RegisterParams",
-      "description": "Register Params 的语义模型。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        }
-      }
-    },
-    "RegisterTenantParams": {
-      "type": "object",
-      "title": "RegisterTenantParams",
-      "description": "Register Tenant Params 的语义模型。",
-      "properties": {
-        "tenantId": {
-          "type": "string"
-        },
-        "tenantName": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
     }
   }
 }

@@ -37,6 +37,152 @@
     "RendererTreeBehaviorProps",
     "RendererTreeZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.400Z",
+  "$defs": {
+    "TreeNode": {
+      "type": "object",
+      "title": "TreeNode",
+      "description": "r-tree 对外暴露的树节点数据形态，兼容普通 DataRow 和嵌套 children。",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TreeNode"
+          }
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ElTreeNode": {
+      "type": "object",
+      "title": "ElTreeNode",
+      "description": "Element Plus 树节点实例的最小结构，供事件回调和拖拽逻辑读取。",
+      "properties": {
+        "level": {
+          "type": "number"
+        },
+        "expanded": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": "object",
+          "title": "DataRow"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ElTreeNode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ElTreeComponent": {
+      "type": "object",
+      "title": "ElTreeComponent",
+      "description": "Element Plus tree 组件实例的最小透传形态。"
+    },
+    "NativeTreeLike": {
+      "type": "object",
+      "title": "NativeTreeLike",
+      "description": "r-tree 运行时需要调用的 Element Plus tree 原生能力集合。"
+    },
+    "NativeTreeNodeLike": {
+      "type": "object",
+      "title": "NativeTreeNodeLike",
+      "description": "Element Plus 原生树节点实例的最小能力集合。",
+      "properties": {
+        "data": {
+          "type": "object",
+          "title": "DataRow"
+        }
+      }
+    },
+    "TreeEventControl": {
+      "type": "object",
+      "title": "TreeEventControl",
+      "description": "树事件回调的默认行为控制器。",
+      "properties": {
+        "cancel": true
+      }
+    },
+    "TreeEventHandler": {
+      "type": "object",
+      "title": "TreeEventHandler",
+      "description": "r-tree 节点交互事件处理函数。"
+    },
+    "RendererTreeBehaviorProps": {
+      "type": "object",
+      "title": "RendererTreeBehaviorProps",
+      "description": "r-tree 与节点交互相关的行为属性。",
+      "properties": {
+        "onNodeClick": {
+          "$ref": "#/$defs/TreeEventHandler"
+        },
+        "onNodeExpand": {
+          "$ref": "#/$defs/TreeEventHandler"
+        },
+        "onNodeCollapse": {
+          "$ref": "#/$defs/TreeEventHandler"
+        }
+      }
+    },
+    "RendererTreeZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererTreeZeroCodeOptions",
+      "description": "创建 r-tree zero-code API 和事件桥接所需的运行时输入。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/RendererTreeBehaviorProps"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "treeData": {
+          "type": "object",
+          "title": "ValueRef<DataRow[]>"
+        },
+        "nativeTreeRef": {
+          "type": "object",
+          "title": "ValueRef<unknown>"
+        },
+        "logger": {
+          "type": "object",
+          "title": "LoggerApi"
+        },
+        "nodeKeyField": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "treeIdField": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        }
+      }
+    }
+  },
   "models": {
     "TreeNode": {
       "kind": "TreeNode",
@@ -905,152 +1051,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.142Z",
-  "$defs": {
-    "TreeNode": {
-      "type": "object",
-      "title": "TreeNode",
-      "description": "r-tree 对外暴露的树节点数据形态，兼容普通 DataRow 和嵌套 children。",
-      "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "label": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/TreeNode"
-          }
-        },
-        "disabled": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ElTreeNode": {
-      "type": "object",
-      "title": "ElTreeNode",
-      "description": "Element Plus 树节点实例的最小结构，供事件回调和拖拽逻辑读取。",
-      "properties": {
-        "level": {
-          "type": "number"
-        },
-        "expanded": {
-          "type": "boolean"
-        },
-        "data": {
-          "type": "object",
-          "title": "DataRow"
-        },
-        "parent": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ElTreeNode"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "ElTreeComponent": {
-      "type": "object",
-      "title": "ElTreeComponent",
-      "description": "Element Plus tree 组件实例的最小透传形态。"
-    },
-    "NativeTreeLike": {
-      "type": "object",
-      "title": "NativeTreeLike",
-      "description": "r-tree 运行时需要调用的 Element Plus tree 原生能力集合。"
-    },
-    "NativeTreeNodeLike": {
-      "type": "object",
-      "title": "NativeTreeNodeLike",
-      "description": "Element Plus 原生树节点实例的最小能力集合。",
-      "properties": {
-        "data": {
-          "type": "object",
-          "title": "DataRow"
-        }
-      }
-    },
-    "TreeEventControl": {
-      "type": "object",
-      "title": "TreeEventControl",
-      "description": "树事件回调的默认行为控制器。",
-      "properties": {
-        "cancel": true
-      }
-    },
-    "TreeEventHandler": {
-      "type": "object",
-      "title": "TreeEventHandler",
-      "description": "r-tree 节点交互事件处理函数。"
-    },
-    "RendererTreeBehaviorProps": {
-      "type": "object",
-      "title": "RendererTreeBehaviorProps",
-      "description": "r-tree 与节点交互相关的行为属性。",
-      "properties": {
-        "onNodeClick": {
-          "$ref": "#/$defs/TreeEventHandler"
-        },
-        "onNodeExpand": {
-          "$ref": "#/$defs/TreeEventHandler"
-        },
-        "onNodeCollapse": {
-          "$ref": "#/$defs/TreeEventHandler"
-        }
-      }
-    },
-    "RendererTreeZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererTreeZeroCodeOptions",
-      "description": "创建 r-tree zero-code API 和事件桥接所需的运行时输入。",
-      "properties": {
-        "props": {
-          "$ref": "#/$defs/RendererTreeBehaviorProps"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
-        },
-        "treeData": {
-          "type": "object",
-          "title": "ValueRef<DataRow[]>"
-        },
-        "nativeTreeRef": {
-          "type": "object",
-          "title": "ValueRef<unknown>"
-        },
-        "logger": {
-          "type": "object",
-          "title": "LoggerApi"
-        },
-        "nodeKeyField": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "treeIdField": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        }
-      }
     }
   }
 }

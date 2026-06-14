@@ -21,6 +21,139 @@
   "symbols": [
     "RPopconfirmProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.438Z",
+  "$defs": {
+    "RPopconfirmProps": {
+      "type": "object",
+      "title": "RPopconfirmProps",
+      "description": "RPopconfirm Props 的属性契约。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "confirmButtonText": {
+          "type": "string"
+        },
+        "cancelButtonText": {
+          "type": "string"
+        },
+        "confirmButtonType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                ""
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            }
+          ]
+        },
+        "cancelButtonType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                ""
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            }
+          ]
+        },
+        "icon": {
+          "type": "string"
+        },
+        "iconColor": {
+          "type": "string"
+        },
+        "hideIcon": {
+          "type": "boolean"
+        },
+        "hideAfter": {
+          "type": "number"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RPopconfirmProps": {
       "kind": "RPopconfirmProps",
@@ -236,139 +369,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.263Z",
-  "$defs": {
-    "RPopconfirmProps": {
-      "type": "object",
-      "title": "RPopconfirmProps",
-      "description": "RPopconfirm Props 的属性契约。",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "confirmButtonText": {
-          "type": "string"
-        },
-        "cancelButtonText": {
-          "type": "string"
-        },
-        "confirmButtonType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            }
-          ]
-        },
-        "cancelButtonType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            }
-          ]
-        },
-        "icon": {
-          "type": "string"
-        },
-        "iconColor": {
-          "type": "string"
-        },
-        "hideIcon": {
-          "type": "boolean"
-        },
-        "hideAfter": {
-          "type": "number"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        }
-      }
     }
   }
 }

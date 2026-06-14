@@ -16,6 +16,14 @@
   "symbols": [
     "CrudService"
   ],
+  "generatedAt": "2026-06-11T12:48:51.006Z",
+  "$defs": {
+    "CrudService": {
+      "type": "object",
+      "title": "CrudService",
+      "description": "业务层CRUD服务\n封装网络请求，提供类型安全的CRUD操作\n自动处理权限、数据转换、分页等业务逻辑"
+    }
+  },
   "models": {
     "CrudService": {
       "kind": "CrudService",
@@ -911,14 +919,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.855Z",
-  "$defs": {
-    "CrudService": {
-      "type": "object",
-      "title": "CrudService",
-      "description": "业务层CRUD服务\n封装网络请求，提供类型安全的CRUD操作\n自动处理权限、数据转换、分页等业务逻辑"
     }
   }
 }

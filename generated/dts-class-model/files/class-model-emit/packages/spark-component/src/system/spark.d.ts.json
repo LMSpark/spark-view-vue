@@ -16,6 +16,24 @@
   "symbols": [
     "SparkSystem"
   ],
+  "generatedAt": "2026-06-11T12:48:51.001Z",
+  "$defs": {
+    "SparkSystem": {
+      "type": "object",
+      "title": "SparkSystem",
+      "description": "Spark.createSystem() 返回的隔离测试系统",
+      "properties": {
+        "registry": {
+          "type": "object",
+          "title": "ComponentRegistry"
+        },
+        "rootContext": {
+          "type": "object",
+          "title": "CapabilityContext"
+        }
+      }
+    }
+  },
   "models": {
     "SparkSystem": {
       "kind": "SparkSystem",
@@ -111,24 +129,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.800Z",
-  "$defs": {
-    "SparkSystem": {
-      "type": "object",
-      "title": "SparkSystem",
-      "description": "Spark.createSystem() 返回的隔离测试系统",
-      "properties": {
-        "registry": {
-          "type": "object",
-          "title": "ComponentRegistry"
-        },
-        "rootContext": {
-          "type": "object",
-          "title": "CapabilityContext"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,33 @@
   "symbols": [
     "ProjectDtsSourceFileProjectionOptions"
   ],
+  "generatedAt": "2026-06-14T02:53:45.915Z",
+  "$defs": {
+    "ProjectDtsSourceFileProjectionOptions": {
+      "type": "object",
+      "title": "ProjectDtsSourceFileProjectionOptions",
+      "description": "Project Dts Source File Projection Options 的调用配置。",
+      "properties": {
+        "repoRoot": {
+          "type": "string"
+        },
+        "absolutePath": {
+          "type": "string"
+        },
+        "sourceFile": {
+          "type": "object",
+          "title": "ts.SourceFile"
+        },
+        "checker": {
+          "type": "object",
+          "title": "ts.TypeChecker"
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectDtsSourceFileProjectionOptions": {
       "kind": "ProjectDtsSourceFileProjectionOptions",
@@ -86,33 +113,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.777Z",
-  "$defs": {
-    "ProjectDtsSourceFileProjectionOptions": {
-      "type": "object",
-      "title": "ProjectDtsSourceFileProjectionOptions",
-      "description": "Project Dts Source File Projection Options 的调用配置。",
-      "properties": {
-        "repoRoot": {
-          "type": "string"
-        },
-        "absolutePath": {
-          "type": "string"
-        },
-        "sourceFile": {
-          "type": "object",
-          "title": "ts.SourceFile"
-        },
-        "checker": {
-          "type": "object",
-          "title": "ts.TypeChecker"
-        },
-        "exportedOnly": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

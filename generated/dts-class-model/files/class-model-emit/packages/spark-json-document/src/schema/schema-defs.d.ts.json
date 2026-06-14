@@ -16,6 +16,21 @@
   "symbols": [
     "JsonSchemaLocalDefsExtraction"
   ],
+  "generatedAt": "2026-06-11T12:48:51.034Z",
+  "$defs": {
+    "JsonSchemaLocalDefsExtraction": {
+      "type": "object",
+      "title": "JsonSchemaLocalDefsExtraction",
+      "description": "Json Schema Local Defs Extraction 的语义模型。",
+      "properties": {
+        "schema": true,
+        "defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchema>>"
+        }
+      }
+    }
+  },
   "models": {
     "JsonSchemaLocalDefsExtraction": {
       "kind": "JsonSchemaLocalDefsExtraction",
@@ -56,21 +71,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.123Z",
-  "$defs": {
-    "JsonSchemaLocalDefsExtraction": {
-      "type": "object",
-      "title": "JsonSchemaLocalDefsExtraction",
-      "description": "Json Schema Local Defs Extraction 的语义模型。",
-      "properties": {
-        "schema": true,
-        "defs": {
-          "type": "object",
-          "title": "Readonly<Record<string, JsonSchema>>"
-        }
-      }
     }
   }
 }

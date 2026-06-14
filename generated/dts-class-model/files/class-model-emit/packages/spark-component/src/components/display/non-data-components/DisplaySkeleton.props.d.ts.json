@@ -21,6 +21,31 @@
   "symbols": [
     "RSkeletonProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.511Z",
+  "$defs": {
+    "RSkeletonProps": {
+      "type": "object",
+      "title": "RSkeletonProps",
+      "description": "RSkeleton Props 的属性契约。",
+      "properties": {
+        "rows": {
+          "type": "number"
+        },
+        "count": {
+          "type": "number"
+        },
+        "loading": {
+          "type": "boolean"
+        },
+        "animated": {
+          "type": "boolean"
+        },
+        "throttle": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "RSkeletonProps": {
       "kind": "RSkeletonProps",
@@ -98,31 +123,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.440Z",
-  "$defs": {
-    "RSkeletonProps": {
-      "type": "object",
-      "title": "RSkeletonProps",
-      "description": "RSkeleton Props 的属性契约。",
-      "properties": {
-        "rows": {
-          "type": "number"
-        },
-        "count": {
-          "type": "number"
-        },
-        "loading": {
-          "type": "boolean"
-        },
-        "animated": {
-          "type": "boolean"
-        },
-        "throttle": {
-          "type": "number"
-        }
-      }
     }
   }
 }

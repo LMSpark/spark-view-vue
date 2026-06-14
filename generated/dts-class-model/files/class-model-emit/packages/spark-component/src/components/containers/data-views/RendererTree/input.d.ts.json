@@ -23,6 +23,39 @@
     "RendererTreeInputProps",
     "RendererTreeInputOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.397Z",
+  "$defs": {
+    "RendererTreeInputProps": {
+      "type": "object",
+      "title": "RendererTreeInputProps",
+      "description": "Renderer Tree Input Props 的属性契约。",
+      "properties": {
+        "children": true,
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "actions": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "editor": {
+          "type": "object",
+          "title": "REditorProps"
+        }
+      }
+    },
+    "RendererTreeInputOptions": {
+      "type": "object",
+      "title": "RendererTreeInputOptions",
+      "description": "Renderer Tree Input Options 的调用配置。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/RendererTreeInputProps"
+        }
+      }
+    }
+  },
   "models": {
     "RendererTreeInputProps": {
       "kind": "RendererTreeInputProps",
@@ -111,39 +144,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.123Z",
-  "$defs": {
-    "RendererTreeInputProps": {
-      "type": "object",
-      "title": "RendererTreeInputProps",
-      "description": "Renderer Tree Input Props 的属性契约。",
-      "properties": {
-        "children": true,
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "actions": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "editor": {
-          "type": "object",
-          "title": "REditorProps"
-        }
-      }
-    },
-    "RendererTreeInputOptions": {
-      "type": "object",
-      "title": "RendererTreeInputOptions",
-      "description": "Renderer Tree Input Options 的调用配置。",
-      "properties": {
-        "props": {
-          "$ref": "#/$defs/RendererTreeInputProps"
-        }
-      }
     }
   }
 }

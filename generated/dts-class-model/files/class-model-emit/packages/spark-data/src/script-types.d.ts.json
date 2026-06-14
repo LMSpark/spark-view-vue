@@ -18,6 +18,57 @@
     "PermissionActionContext",
     "FieldRenderState"
   ],
+  "generatedAt": "2026-06-11T12:48:51.015Z",
+  "$defs": {
+    "PermissionActionContext": {
+      "type": "object",
+      "title": "PermissionActionContext",
+      "description": "权限动作上下文（脚本可用）",
+      "properties": {
+        "modelPermission": {
+          "type": "object",
+          "title": "ModelPermission"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "FieldRenderState": {
+      "type": "object",
+      "title": "FieldRenderState",
+      "description": "字段渲染状态（脚本可用）",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "visibility": {
+          "type": "object",
+          "title": "FieldVisibility"
+        },
+        "readable": {
+          "type": "boolean"
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "displayValue": {
+          "type": "string"
+        },
+        "shouldRender": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "PermissionActionContext": {
       "kind": "PermissionActionContext",
@@ -132,57 +183,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.974Z",
-  "$defs": {
-    "PermissionActionContext": {
-      "type": "object",
-      "title": "PermissionActionContext",
-      "description": "权限动作上下文（脚本可用）",
-      "properties": {
-        "modelPermission": {
-          "type": "object",
-          "title": "ModelPermission"
-        },
-        "row": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataRow"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "FieldRenderState": {
-      "type": "object",
-      "title": "FieldRenderState",
-      "description": "字段渲染状态（脚本可用）",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "visibility": {
-          "type": "object",
-          "title": "FieldVisibility"
-        },
-        "readable": {
-          "type": "boolean"
-        },
-        "editable": {
-          "type": "boolean"
-        },
-        "displayValue": {
-          "type": "string"
-        },
-        "shouldRender": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

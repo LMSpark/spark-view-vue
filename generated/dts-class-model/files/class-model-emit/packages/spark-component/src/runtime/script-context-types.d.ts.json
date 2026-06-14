@@ -22,6 +22,79 @@
     "PermissionApiInScript",
     "PageComponentAccessInScript"
   ],
+  "generatedAt": "2026-06-12T21:22:26.978Z",
+  "$defs": {
+    "PageRoute": {
+      "type": "object",
+      "title": "PageRoute",
+      "description": "框架无关的路由信息快照。\n替代 Vue Router 的 `RouteLocationNormalizedLoaded`，业务脚本通过 `$route` 访问，\n无 Vue Router 依赖。\n@example ```js\n// script.js\nconst orderId = $route.params.id\nconst tab = $route.query.tab\n```",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "fullPath": {
+          "type": "string"
+        },
+        "name": true,
+        "params": {
+          "type": "object",
+          "title": "Record<string, string | string[]>"
+        },
+        "query": {
+          "type": "object",
+          "title": "Record<string, string | string[] | null>"
+        },
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "ScriptContext": {
+      "type": "object",
+      "title": "ScriptContext",
+      "description": "业务脚本沙箱上下文 — 完整 API 契约。\n此接口是 `script.js` 可访问的所有变量的类型声明。\n脚本在 `with (__ctx)` 沙箱内执行，所有变量均通过此接口注入。\n**稳定 API（核心框架契约）**：\n- `$route` — 路由快照（只读，不依赖 Vue Router）\n- `$el` — 当前页面容器元素\n- `$query` / `$queryAll` — DOM 查询（谨慎使用）\n- `$refreshData` — 刷新数据（可选指定表名）\n- `$page` — UI 交互服务（消息 / 确认 / 导航）\n**渲染层附加（非核心契约，实现层注入）**：\n- `$dataSet` — DataSet 实例（由渲染层以具体类型注入，不在此契约层定义）\n- `permission` — 权限 helper 命名空间（字段/动作权限判断）\n- `SparkData` — SPARK 数据工具命名空间（在 ScriptContext 外单独注入）\n- `h` — Vue 渲染函数（仅供 Render* 渲染函数，非业务逻辑）\n@example ```js\n// script.js（沙箱内所有变量直接可用，无需 this.xxx）\n\n// 读取路由参数\nconst id = $route.params.id\n\n// UI 交互（框架无关）\nawait $page.showConfirm('是否确认提交？')\n$page.showMessage('保存成功', 'success')\n$page.navigate('/orders')\n```",
+      "properties": {
+        "$components": {
+          "$ref": "#/$defs/PageComponentAccessInScript"
+        },
+        "$route": {
+          "$ref": "#/$defs/PageRoute"
+        },
+        "$page": {
+          "type": "object",
+          "title": "PageServiceCapability"
+        },
+        "permission": {
+          "$ref": "#/$defs/PermissionApiInScript"
+        },
+        "console": {
+          "type": "object",
+          "title": "Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>"
+        },
+        "$moduleContext": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ContextSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "PermissionApiInScript": {
+      "type": "object",
+      "title": "PermissionApiInScript",
+      "description": "沙箱权限 API — 纯函数集，无类/工厂/单例。\n所有函数可选接受 `permissionMode` 参数（脚本通常省略）。\n函数直接来自组件层 `permission/` 模块导出。"
+    },
+    "PageComponentAccessInScript": {
+      "type": "object",
+      "title": "PageComponentAccessInScript",
+      "description": "页面级组件访问 API（脚本可用）"
+    }
+  },
   "models": {
     "PageRoute": {
       "kind": "PageRoute",
@@ -1423,79 +1496,6 @@
           }
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.796Z",
-  "$defs": {
-    "PageRoute": {
-      "type": "object",
-      "title": "PageRoute",
-      "description": "框架无关的路由信息快照。\n替代 Vue Router 的 `RouteLocationNormalizedLoaded`，业务脚本通过 `$route` 访问，\n无 Vue Router 依赖。\n@example ```js\n// script.js\nconst orderId = $route.params.id\nconst tab = $route.query.tab\n```",
-      "properties": {
-        "path": {
-          "type": "string"
-        },
-        "fullPath": {
-          "type": "string"
-        },
-        "name": true,
-        "params": {
-          "type": "object",
-          "title": "Record<string, string | string[]>"
-        },
-        "query": {
-          "type": "object",
-          "title": "Record<string, string | string[] | null>"
-        },
-        "hash": {
-          "type": "string"
-        }
-      }
-    },
-    "ScriptContext": {
-      "type": "object",
-      "title": "ScriptContext",
-      "description": "业务脚本沙箱上下文 — 完整 API 契约。\n此接口是 `script.js` 可访问的所有变量的类型声明。\n脚本在 `with (__ctx)` 沙箱内执行，所有变量均通过此接口注入。\n**稳定 API（核心框架契约）**：\n- `$route` — 路由快照（只读，不依赖 Vue Router）\n- `$el` — 当前页面容器元素\n- `$query` / `$queryAll` — DOM 查询（谨慎使用）\n- `$refreshData` — 刷新数据（可选指定表名）\n- `$page` — UI 交互服务（消息 / 确认 / 导航）\n**渲染层附加（非核心契约，实现层注入）**：\n- `$dataSet` — DataSet 实例（由渲染层以具体类型注入，不在此契约层定义）\n- `permission` — 权限 helper 命名空间（字段/动作权限判断）\n- `SparkData` — SPARK 数据工具命名空间（在 ScriptContext 外单独注入）\n- `h` — Vue 渲染函数（仅供 Render* 渲染函数，非业务逻辑）\n@example ```js\n// script.js（沙箱内所有变量直接可用，无需 this.xxx）\n\n// 读取路由参数\nconst id = $route.params.id\n\n// UI 交互（框架无关）\nawait $page.showConfirm('是否确认提交？')\n$page.showMessage('保存成功', 'success')\n$page.navigate('/orders')\n```",
-      "properties": {
-        "$components": {
-          "$ref": "#/$defs/PageComponentAccessInScript"
-        },
-        "$route": {
-          "$ref": "#/$defs/PageRoute"
-        },
-        "$page": {
-          "type": "object",
-          "title": "PageServiceCapability"
-        },
-        "permission": {
-          "$ref": "#/$defs/PermissionApiInScript"
-        },
-        "console": {
-          "type": "object",
-          "title": "Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>"
-        },
-        "$moduleContext": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "ContextSnapshot"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "PermissionApiInScript": {
-      "type": "object",
-      "title": "PermissionApiInScript",
-      "description": "沙箱权限 API — 纯函数集，无类/工厂/单例。\n所有函数可选接受 `permissionMode` 参数（脚本通常省略）。\n函数直接来自组件层 `permission/` 模块导出。"
-    },
-    "PageComponentAccessInScript": {
-      "type": "object",
-      "title": "PageComponentAccessInScript",
-      "description": "页面级组件访问 API（脚本可用）"
     }
   }
 }

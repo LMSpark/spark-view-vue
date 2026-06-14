@@ -21,6 +21,22 @@
   "symbols": [
     "RCheckTagProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.548Z",
+  "$defs": {
+    "RCheckTagProps": {
+      "type": "object",
+      "title": "RCheckTagProps",
+      "description": "RCheck Tag Props 的属性契约。",
+      "properties": {
+        "checked": {
+          "type": "boolean"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RCheckTagProps": {
       "kind": "RCheckTagProps",
@@ -71,22 +87,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.539Z",
-  "$defs": {
-    "RCheckTagProps": {
-      "type": "object",
-      "title": "RCheckTagProps",
-      "description": "RCheck Tag Props 的属性契约。",
-      "properties": {
-        "checked": {
-          "type": "boolean"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
     }
   }
 }

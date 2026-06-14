@@ -21,6 +21,60 @@
   "symbols": [
     "RendererVirtualCardZeroCodeOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.408Z",
+  "$defs": {
+    "RendererVirtualCardZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererVirtualCardZeroCodeOptions",
+      "description": "创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ValueRef<readonly DataRow[]>"
+        },
+        "cachedPages": {
+          "type": "object",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "pendingPages": {
+          "type": "object",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "visiblePages": {
+          "type": "object",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "currentPage": {
+          "type": "object",
+          "title": "ValueRef<number>"
+        },
+        "totalPages": {
+          "type": "object",
+          "title": "ValueRef<number>"
+        },
+        "progressText": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "loadPolicyText": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "wheelStatusText": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        }
+      }
+    }
+  },
   "models": {
     "RendererVirtualCardZeroCodeOptions": {
       "kind": "RendererVirtualCardZeroCodeOptions",
@@ -206,60 +260,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.160Z",
-  "$defs": {
-    "RendererVirtualCardZeroCodeOptions": {
-      "type": "object",
-      "title": "RendererVirtualCardZeroCodeOptions",
-      "description": "创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。",
-      "properties": {
-        "props": {
-          "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
-        },
-        "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
-        },
-        "rows": {
-          "type": "object",
-          "title": "ValueRef<readonly DataRow[]>"
-        },
-        "cachedPages": {
-          "type": "object",
-          "title": "ValueRef<readonly number[]>"
-        },
-        "pendingPages": {
-          "type": "object",
-          "title": "ValueRef<readonly number[]>"
-        },
-        "visiblePages": {
-          "type": "object",
-          "title": "ValueRef<readonly number[]>"
-        },
-        "currentPage": {
-          "type": "object",
-          "title": "ValueRef<number>"
-        },
-        "totalPages": {
-          "type": "object",
-          "title": "ValueRef<number>"
-        },
-        "progressText": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "loadPolicyText": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        },
-        "wheelStatusText": {
-          "type": "object",
-          "title": "ValueRef<string>"
-        }
-      }
     }
   }
 }

@@ -16,6 +16,24 @@
   "symbols": [
     "RendererProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.599Z",
+  "$defs": {
+    "RendererProps": {
+      "type": "object",
+      "title": "RendererProps",
+      "description": "SparkComponentRenderer 递归渲染入口属性。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "parentContext": {
+          "type": "object",
+          "title": "CapabilityContext"
+        }
+      }
+    }
+  },
   "models": {
     "RendererProps": {
       "kind": "RendererProps",
@@ -52,24 +70,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.680Z",
-  "$defs": {
-    "RendererProps": {
-      "type": "object",
-      "title": "RendererProps",
-      "description": "SparkComponentRenderer 递归渲染入口属性。",
-      "properties": {
-        "config": {
-          "type": "object",
-          "title": "SparkNode"
-        },
-        "parentContext": {
-          "type": "object",
-          "title": "CapabilityContext"
-        }
-      }
     }
   }
 }

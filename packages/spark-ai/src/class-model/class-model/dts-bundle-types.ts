@@ -24,6 +24,7 @@ export type DtsFileProjectionDocument = Readonly<{
   symbols: readonly string[]
   $defs?: Readonly<Record<string, AiJsonSchemaObject>>
   models: Readonly<Record<string, ClassModel>>
+  /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */
   generatedAt?: string
 }>
 
@@ -66,7 +67,6 @@ export type DtsClassModelBundleClassEntry = Readonly<{
 export type DtsClassModelBundleManifest = Readonly<{
   schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION
   protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL
-  generatedAt: string
   scannedFileCount: number
   files: Readonly<Record<string, DtsClassModelBundleFileEntry>>
   classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>
@@ -110,7 +110,6 @@ export type DtsClassModelSemanticGap = Readonly<{
 
 /** Dts Class Model Semantic Gap Report 的语义模型。 */
 export type DtsClassModelSemanticGapReport = Readonly<{
-  generatedAt: string
   gapCount: number
   notes: readonly string[]
   gaps: readonly DtsClassModelSemanticGap[]

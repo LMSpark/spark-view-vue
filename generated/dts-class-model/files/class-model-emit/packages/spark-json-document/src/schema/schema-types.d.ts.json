@@ -20,6 +20,130 @@
     "JsonSchema",
     "JsonSchemaObject"
   ],
+  "generatedAt": "2026-06-11T12:48:51.037Z",
+  "$defs": {
+    "JsonSchemaType": {
+      "type": "object",
+      "title": "JsonSchemaType",
+      "description": "JSON Schema type 字段允许的类型字符串。\n支持联合类型数组，如 ['string', 'null'] 表示可选字符串。"
+    },
+    "JsonSchema": {
+      "type": "object",
+      "title": "JsonSchema",
+      "description": "JSON Schema 节点。\n- `true` : 接受任意值（无约束）\n- `false`: 拒绝任何值（用于禁止某字段）\n- `JsonSchemaObject`: 完整约束节点"
+    },
+    "JsonSchemaObject": {
+      "type": "object",
+      "title": "JsonSchemaObject",
+      "description": "标准 JSON Schema 节点（Draft 2020-12 常用子集）。\n覆盖以下特性：\n- 类型声明：type / title / description\n- 对象约束：properties / required / additionalProperties\n- 数组约束：items / prefixItems\n- 枚举/常量：enum / const\n- 组合校验：oneOf / anyOf / allOf / not\n- 字符串校验：maxLength / minLength / pattern / format\n- 数字校验：minimum / maximum\n- 引用与示例：$ref / default / examples",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonSchemaType"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchema>>"
+        },
+        "required": {
+          "type": "array"
+        },
+        "additionalProperties": {
+          "$ref": "#/$defs/JsonSchema"
+        },
+        "items": {
+          "$ref": "#/$defs/JsonSchema"
+        },
+        "prefixItems": {
+          "type": "array"
+        },
+        "enum": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "const": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "default": true,
+        "examples": {
+          "type": "array"
+        },
+        "oneOf": {
+          "type": "array"
+        },
+        "anyOf": {
+          "type": "array"
+        },
+        "allOf": {
+          "type": "array"
+        },
+        "not": {
+          "$ref": "#/$defs/JsonSchema"
+        },
+        "maxLength": {
+          "type": "number"
+        },
+        "minLength": {
+          "type": "number"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "minimum": {
+          "type": "number"
+        },
+        "maximum": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "JsonSchemaType": {
       "kind": "JsonSchemaType",
@@ -349,130 +473,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.139Z",
-  "$defs": {
-    "JsonSchemaType": {
-      "type": "object",
-      "title": "JsonSchemaType",
-      "description": "JSON Schema type 字段允许的类型字符串。\n支持联合类型数组，如 ['string', 'null'] 表示可选字符串。"
-    },
-    "JsonSchema": {
-      "type": "object",
-      "title": "JsonSchema",
-      "description": "JSON Schema 节点。\n- `true` : 接受任意值（无约束）\n- `false`: 拒绝任何值（用于禁止某字段）\n- `JsonSchemaObject`: 完整约束节点"
-    },
-    "JsonSchemaObject": {
-      "type": "object",
-      "title": "JsonSchemaObject",
-      "description": "标准 JSON Schema 节点（Draft 2020-12 常用子集）。\n覆盖以下特性：\n- 类型声明：type / title / description\n- 对象约束：properties / required / additionalProperties\n- 数组约束：items / prefixItems\n- 枚举/常量：enum / const\n- 组合校验：oneOf / anyOf / allOf / not\n- 字符串校验：maxLength / minLength / pattern / format\n- 数字校验：minimum / maximum\n- 引用与示例：$ref / default / examples",
-      "properties": {
-        "$ref": {
-          "type": "string"
-        },
-        "type": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/JsonSchemaType"
-            },
-            {
-              "type": "array"
-            }
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "properties": {
-          "type": "object",
-          "title": "Readonly<Record<string, JsonSchema>>"
-        },
-        "required": {
-          "type": "array"
-        },
-        "additionalProperties": {
-          "$ref": "#/$defs/JsonSchema"
-        },
-        "items": {
-          "$ref": "#/$defs/JsonSchema"
-        },
-        "prefixItems": {
-          "type": "array"
-        },
-        "enum": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "const": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            },
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "default": true,
-        "examples": {
-          "type": "array"
-        },
-        "oneOf": {
-          "type": "array"
-        },
-        "anyOf": {
-          "type": "array"
-        },
-        "allOf": {
-          "type": "array"
-        },
-        "not": {
-          "$ref": "#/$defs/JsonSchema"
-        },
-        "maxLength": {
-          "type": "number"
-        },
-        "minLength": {
-          "type": "number"
-        },
-        "pattern": {
-          "type": "string"
-        },
-        "format": {
-          "type": "string"
-        },
-        "minimum": {
-          "type": "number"
-        },
-        "maximum": {
-          "type": "number"
-        }
-      }
     }
   }
 }

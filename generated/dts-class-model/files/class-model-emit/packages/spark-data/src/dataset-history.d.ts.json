@@ -28,6 +28,135 @@
     "DataSetSnapshotCommitOptions",
     "DataSetCommitSnapshotOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.613Z",
+  "$defs": {
+    "DataSetHistoryStorageAdapter": {
+      "type": "object",
+      "title": "DataSetHistoryStorageAdapter",
+      "description": "Data Set History Storage Adapter 的语义模型。"
+    },
+    "DataSetHistoryScope": {
+      "type": "object",
+      "title": "DataSetHistoryScope",
+      "description": "Data Set History Scope 的语义模型。",
+      "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "scopeId": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetSnapshotSelector": {
+      "type": "object",
+      "title": "DataSetSnapshotSelector",
+      "description": "Data Set Snapshot Selector 的语义模型。",
+      "properties": {
+        "entryId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "number"
+        }
+      }
+    },
+    "DataSetHistorySnapshot": {
+      "type": "object",
+      "title": "DataSetHistorySnapshot",
+      "description": "Data Set History Snapshot 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "dataSetName": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "snapshot": {
+          "type": "object",
+          "title": "DataSetMetadata"
+        },
+        "sourceData": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "DataSetHistoryListOptions": {
+      "type": "object",
+      "title": "DataSetHistoryListOptions",
+      "description": "Data Set History List Options 的调用配置。",
+      "properties": {
+        "adapter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DataSetHistoryStorageAdapter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "DataSetSnapshotCommitOptions": {
+      "type": "object",
+      "title": "DataSetSnapshotCommitOptions",
+      "description": "Data Set Snapshot Commit Options 的调用配置。",
+      "properties": {
+        "maxEntries": {
+          "type": "number"
+        },
+        "label": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "sourceData": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "version": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "DataSetCommitSnapshotOptions": {
+      "type": "object",
+      "title": "DataSetCommitSnapshotOptions",
+      "description": "Data Set Commit Snapshot Options 的调用配置。",
+      "properties": {
+        "bumpVersion": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "DataSetHistoryStorageAdapter": {
       "kind": "DataSetHistoryStorageAdapter",
@@ -502,135 +631,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.936Z",
-  "$defs": {
-    "DataSetHistoryStorageAdapter": {
-      "type": "object",
-      "title": "DataSetHistoryStorageAdapter",
-      "description": "Data Set History Storage Adapter 的语义模型。"
-    },
-    "DataSetHistoryScope": {
-      "type": "object",
-      "title": "DataSetHistoryScope",
-      "description": "Data Set History Scope 的语义模型。",
-      "properties": {
-        "dataSetName": {
-          "type": "string"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "scopeId": {
-          "type": "string"
-        },
-        "namespace": {
-          "type": "string"
-        }
-      }
-    },
-    "DataSetSnapshotSelector": {
-      "type": "object",
-      "title": "DataSetSnapshotSelector",
-      "description": "Data Set Snapshot Selector 的语义模型。",
-      "properties": {
-        "entryId": {
-          "type": "string"
-        },
-        "version": {
-          "type": "number"
-        }
-      }
-    },
-    "DataSetHistorySnapshot": {
-      "type": "object",
-      "title": "DataSetHistorySnapshot",
-      "description": "Data Set History Snapshot 的语义模型。",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "version": {
-          "type": "number"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "dataSetName": {
-          "type": "string"
-        },
-        "pageId": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "summary": {
-          "type": "string"
-        },
-        "snapshot": {
-          "type": "object",
-          "title": "DataSetMetadata"
-        },
-        "sourceData": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
-    },
-    "DataSetHistoryListOptions": {
-      "type": "object",
-      "title": "DataSetHistoryListOptions",
-      "description": "Data Set History List Options 的调用配置。",
-      "properties": {
-        "adapter": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/DataSetHistoryStorageAdapter"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      }
-    },
-    "DataSetSnapshotCommitOptions": {
-      "type": "object",
-      "title": "DataSetSnapshotCommitOptions",
-      "description": "Data Set Snapshot Commit Options 的调用配置。",
-      "properties": {
-        "maxEntries": {
-          "type": "number"
-        },
-        "label": {
-          "type": "string"
-        },
-        "summary": {
-          "type": "string"
-        },
-        "sourceData": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "version": {
-          "type": "number"
-        },
-        "timestamp": {
-          "type": "number"
-        }
-      }
-    },
-    "DataSetCommitSnapshotOptions": {
-      "type": "object",
-      "title": "DataSetCommitSnapshotOptions",
-      "description": "Data Set Commit Snapshot Options 的调用配置。",
-      "properties": {
-        "bumpVersion": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

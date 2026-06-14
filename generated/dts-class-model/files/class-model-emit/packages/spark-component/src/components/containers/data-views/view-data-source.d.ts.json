@@ -25,6 +25,102 @@
     "UseContainerDataSourceEffectsOptions",
     "ContainerDataSourceState"
   ],
+  "generatedAt": "2026-06-11T12:38:13.409Z",
+  "$defs": {
+    "DataSourceLoggerLike": {
+      "type": "object",
+      "title": "DataSourceLoggerLike",
+      "description": "极简日志接口，仅供 useContainerDataSource 内部使用。"
+    },
+    "UseContainerDataSourceOptions": {
+      "type": "object",
+      "title": "UseContainerDataSourceOptions",
+      "description": "容器解析 DataView 或派生数据源时使用的统一输入。",
+      "properties": {
+        "dataViewKey": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<string | undefined>"
+        },
+        "contextDataMember": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>"
+        },
+        "contextDataField": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<string | undefined>"
+        },
+        "sparkConsume": {
+          "type": "object",
+          "title": "SparkCapabilityConsumer"
+        },
+        "externalDataSource": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<TSource | undefined>"
+        },
+        "inheritedDataSource": {
+          "type": "object",
+          "title": "MaybeRefOrGetter<TSource | null | undefined>"
+        },
+        "logger": {
+          "$ref": "#/$defs/DataSourceLoggerLike"
+        },
+        "logPrefix": {
+          "type": "string"
+        },
+        "skipEffects": {
+          "type": "boolean"
+        },
+        "skipProvideEffect": {
+          "type": "boolean"
+        },
+        "skipAutoLoadEffect": {
+          "type": "boolean"
+        }
+      }
+    },
+    "UseContainerDataSourceEffectsOptions": {
+      "type": "object",
+      "title": "UseContainerDataSourceEffectsOptions",
+      "description": "容器数据源解析后的副作用配置。",
+      "properties": {
+        "resolvedView": {
+          "type": "object",
+          "title": "ComputedRef<TSource | null>"
+        },
+        "diagnostic": {
+          "type": "object",
+          "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>"
+        },
+        "logger": {
+          "$ref": "#/$defs/DataSourceLoggerLike"
+        },
+        "logPrefix": {
+          "type": "string"
+        },
+        "skipProvideEffect": {
+          "type": "boolean"
+        },
+        "skipAutoLoadEffect": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ContainerDataSourceState": {
+      "type": "object",
+      "title": "ContainerDataSourceState",
+      "description": "容器解析后的数据源和行上下文结果。",
+      "properties": {
+        "resolvedView": {
+          "type": "object",
+          "title": "ComputedRef<TSource | null>"
+        },
+        "resolvedDataRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        }
+      }
+    }
+  },
   "models": {
     "DataSourceLoggerLike": {
       "kind": "DataSourceLoggerLike",
@@ -435,102 +531,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.196Z",
-  "$defs": {
-    "DataSourceLoggerLike": {
-      "type": "object",
-      "title": "DataSourceLoggerLike",
-      "description": "极简日志接口，仅供 useContainerDataSource 内部使用。"
-    },
-    "UseContainerDataSourceOptions": {
-      "type": "object",
-      "title": "UseContainerDataSourceOptions",
-      "description": "容器解析 DataView 或派生数据源时使用的统一输入。",
-      "properties": {
-        "dataViewKey": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<string | undefined>"
-        },
-        "contextDataMember": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>"
-        },
-        "contextDataField": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<string | undefined>"
-        },
-        "sparkConsume": {
-          "type": "object",
-          "title": "SparkCapabilityConsumer"
-        },
-        "externalDataSource": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<TSource | undefined>"
-        },
-        "inheritedDataSource": {
-          "type": "object",
-          "title": "MaybeRefOrGetter<TSource | null | undefined>"
-        },
-        "logger": {
-          "$ref": "#/$defs/DataSourceLoggerLike"
-        },
-        "logPrefix": {
-          "type": "string"
-        },
-        "skipEffects": {
-          "type": "boolean"
-        },
-        "skipProvideEffect": {
-          "type": "boolean"
-        },
-        "skipAutoLoadEffect": {
-          "type": "boolean"
-        }
-      }
-    },
-    "UseContainerDataSourceEffectsOptions": {
-      "type": "object",
-      "title": "UseContainerDataSourceEffectsOptions",
-      "description": "容器数据源解析后的副作用配置。",
-      "properties": {
-        "resolvedView": {
-          "type": "object",
-          "title": "ComputedRef<TSource | null>"
-        },
-        "diagnostic": {
-          "type": "object",
-          "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>"
-        },
-        "logger": {
-          "$ref": "#/$defs/DataSourceLoggerLike"
-        },
-        "logPrefix": {
-          "type": "string"
-        },
-        "skipProvideEffect": {
-          "type": "boolean"
-        },
-        "skipAutoLoadEffect": {
-          "type": "boolean"
-        }
-      }
-    },
-    "ContainerDataSourceState": {
-      "type": "object",
-      "title": "ContainerDataSourceState",
-      "description": "容器解析后的数据源和行上下文结果。",
-      "properties": {
-        "resolvedView": {
-          "type": "object",
-          "title": "ComputedRef<TSource | null>"
-        },
-        "resolvedDataRow": {
-          "type": "object",
-          "title": "ComputedRef<DataRow | null>"
-        }
-      }
     }
   }
 }

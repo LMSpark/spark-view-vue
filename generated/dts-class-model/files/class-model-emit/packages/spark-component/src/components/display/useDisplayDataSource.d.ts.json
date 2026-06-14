@@ -18,6 +18,88 @@
     "DisplayDataProps",
     "UseDisplayDataSourceReturn"
   ],
+  "generatedAt": "2026-06-11T12:48:50.968Z",
+  "$defs": {
+    "DisplayDataProps": {
+      "type": "object",
+      "title": "DisplayDataProps",
+      "description": "Display Data Props 的属性契约。",
+      "properties": {
+        "dataViewKey": {
+          "type": "string"
+        },
+        "dataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "dataField": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "value": true
+      }
+    },
+    "UseDisplayDataSourceReturn": {
+      "type": "object",
+      "title": "UseDisplayDataSourceReturn",
+      "description": "Use Display Data Source Return 的语义模型。",
+      "properties": {
+        "resolvedValue": {
+          "type": "object",
+          "title": "ComputedRef<unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "DisplayDataProps": {
       "kind": "DisplayDataProps",
@@ -151,88 +233,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.450Z",
-  "$defs": {
-    "DisplayDataProps": {
-      "type": "object",
-      "title": "DisplayDataProps",
-      "description": "Display Data Props 的属性契约。",
-      "properties": {
-        "dataViewKey": {
-          "type": "string"
-        },
-        "dataMember": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataMember"
-            },
-            {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          ]
-        },
-        "dataField": {
-          "type": "string"
-        },
-        "field": {
-          "type": "string"
-        },
-        "value": true
-      }
-    },
-    "UseDisplayDataSourceReturn": {
-      "type": "object",
-      "title": "UseDisplayDataSourceReturn",
-      "description": "Use Display Data Source Return 的语义模型。",
-      "properties": {
-        "resolvedValue": {
-          "type": "object",
-          "title": "ComputedRef<unknown>"
-        }
-      }
     }
   }
 }

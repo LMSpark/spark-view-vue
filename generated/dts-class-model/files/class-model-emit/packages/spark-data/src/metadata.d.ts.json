@@ -16,6 +16,19 @@
   "symbols": [
     "TableMetadataLike"
   ],
+  "generatedAt": "2026-06-11T12:38:13.614Z",
+  "$defs": {
+    "TableMetadataLike": {
+      "type": "object",
+      "title": "TableMetadataLike",
+      "description": "Table Metadata Like 的语义模型。",
+      "properties": {
+        "tableName": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "TableMetadataLike": {
       "kind": "TableMetadataLike",
@@ -52,19 +65,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.952Z",
-  "$defs": {
-    "TableMetadataLike": {
-      "type": "object",
-      "title": "TableMetadataLike",
-      "description": "Table Metadata Like 的语义模型。",
-      "properties": {
-        "tableName": {
-          "type": "string"
-        }
-      }
     }
   }
 }

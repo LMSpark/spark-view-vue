@@ -16,6 +16,14 @@
   "symbols": [
     "SnapshotHistory"
   ],
+  "generatedAt": "2026-06-11T12:38:13.634Z",
+  "$defs": {
+    "SnapshotHistory": {
+      "type": "object",
+      "title": "SnapshotHistory",
+      "description": "通用快照历史管理器 — push / undo / redo / cursor。\n设计目标：\n1. 纯 TypeScript，零框架依赖。\n2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。"
+    }
+  },
   "models": {
     "SnapshotHistory": {
       "kind": "SnapshotHistory",
@@ -152,14 +160,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.374Z",
-  "$defs": {
-    "SnapshotHistory": {
-      "type": "object",
-      "title": "SnapshotHistory",
-      "description": "通用快照历史管理器 — push / undo / redo / cursor。\n设计目标：\n1. 纯 TypeScript，零框架依赖。\n2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。"
     }
   }
 }

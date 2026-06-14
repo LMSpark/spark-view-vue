@@ -18,6 +18,67 @@
     "AiTurnBridgeDiagnostic",
     "AiAgentTurnBridgeOptions"
   ],
+  "generatedAt": "2026-06-12T01:02:32.236Z",
+  "$defs": {
+    "AiTurnBridgeDiagnostic": {
+      "type": "object",
+      "title": "AiTurnBridgeDiagnostic",
+      "description": "Ai Turn Bridge Diagnostic 的诊断信息。",
+      "properties": {
+        "at": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "turnId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "AiAgentTurnBridgeOptions": {
+      "type": "object",
+      "title": "AiAgentTurnBridgeOptions",
+      "description": "Ai Agent Turn Bridge Options 的调用配置。",
+      "properties": {
+        "transport": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "app-sse"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "session-turn"
+              ]
+            }
+          ]
+        },
+        "timeoutMs": {
+          "type": "number"
+        },
+        "idleTimeoutMs": {
+          "type": "number"
+        },
+        "windowSize": {
+          "type": "number"
+        }
+      }
+    }
+  },
   "models": {
     "AiTurnBridgeDiagnostic": {
       "kind": "AiTurnBridgeDiagnostic",
@@ -168,67 +229,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.433Z",
-  "$defs": {
-    "AiTurnBridgeDiagnostic": {
-      "type": "object",
-      "title": "AiTurnBridgeDiagnostic",
-      "description": "Ai Turn Bridge Diagnostic 的诊断信息。",
-      "properties": {
-        "at": {
-          "type": "number"
-        },
-        "type": {
-          "type": "string"
-        },
-        "sessionId": {
-          "type": "string"
-        },
-        "turnId": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        }
-      }
-    },
-    "AiAgentTurnBridgeOptions": {
-      "type": "object",
-      "title": "AiAgentTurnBridgeOptions",
-      "description": "Ai Agent Turn Bridge Options 的调用配置。",
-      "properties": {
-        "transport": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "app-sse"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "session-turn"
-              ]
-            }
-          ]
-        },
-        "timeoutMs": {
-          "type": "number"
-        },
-        "idleTimeoutMs": {
-          "type": "number"
-        },
-        "windowSize": {
-          "type": "number"
-        }
-      }
     }
   }
 }

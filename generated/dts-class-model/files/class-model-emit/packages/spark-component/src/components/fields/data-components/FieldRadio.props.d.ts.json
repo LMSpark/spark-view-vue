@@ -21,6 +21,14 @@
   "symbols": [
     "RRadioProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.568Z",
+  "$defs": {
+    "RRadioProps": {
+      "type": "object",
+      "title": "RRadioProps",
+      "description": "RRadio Props 的属性契约。"
+    }
+  },
   "models": {
     "RRadioProps": {
       "kind": "RRadioProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.562Z",
-  "$defs": {
-    "RRadioProps": {
-      "type": "object",
-      "title": "RRadioProps",
-      "description": "RRadio Props 的属性契约。"
     }
   }
 }

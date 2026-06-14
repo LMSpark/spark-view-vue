@@ -16,6 +16,14 @@
   "symbols": [
     "ResolvedPolicy"
   ],
+  "generatedAt": "2026-06-11T12:48:51.043Z",
+  "$defs": {
+    "ResolvedPolicy": {
+      "type": "object",
+      "title": "ResolvedPolicy",
+      "description": "Resolved Policy 的语义模型。"
+    }
+  },
   "models": {
     "ResolvedPolicy": {
       "kind": "ResolvedPolicy",
@@ -38,14 +46,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.145Z",
-  "$defs": {
-    "ResolvedPolicy": {
-      "type": "object",
-      "title": "ResolvedPolicy",
-      "description": "Resolved Policy 的语义模型。"
     }
   }
 }

@@ -21,6 +21,79 @@
   "symbols": [
     "RDescriptionsItemProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.503Z",
+  "$defs": {
+    "RDescriptionsItemProps": {
+      "type": "object",
+      "title": "RDescriptionsItemProps",
+      "description": "RDescriptions Item Props 的属性契约。",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "span": {
+          "type": "number"
+        },
+        "labelAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "contentAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "labelClassName": {
+          "type": "string"
+        },
+        "className": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "value": true,
+        "field": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RDescriptionsItemProps": {
       "kind": "RDescriptionsItemProps",
@@ -170,79 +243,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.430Z",
-  "$defs": {
-    "RDescriptionsItemProps": {
-      "type": "object",
-      "title": "RDescriptionsItemProps",
-      "description": "RDescriptions Item Props 的属性契约。",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "span": {
-          "type": "number"
-        },
-        "labelAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "contentAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
-          ]
-        },
-        "labelClassName": {
-          "type": "string"
-        },
-        "className": {
-          "type": "string"
-        },
-        "content": {
-          "type": "string"
-        },
-        "value": true,
-        "field": {
-          "type": "string"
-        }
-      }
     }
   }
 }

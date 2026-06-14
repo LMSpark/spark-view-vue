@@ -21,6 +21,55 @@
   "symbols": [
     "RCardProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.416Z",
+  "$defs": {
+    "RCardProps": {
+      "type": "object",
+      "title": "RCardProps",
+      "description": "RCard Props 的属性契约。",
+      "properties": {
+        "header": {
+          "type": "string"
+        },
+        "shadow": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "always"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "never"
+              ]
+            }
+          ]
+        },
+        "bodyStyle": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "bodyClass": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "RCardProps": {
       "kind": "RCardProps",
@@ -116,55 +165,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.236Z",
-  "$defs": {
-    "RCardProps": {
-      "type": "object",
-      "title": "RCardProps",
-      "description": "RCard Props 的属性契约。",
-      "properties": {
-        "header": {
-          "type": "string"
-        },
-        "shadow": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "always"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "hover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "never"
-              ]
-            }
-          ]
-        },
-        "bodyStyle": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Record<string, unknown>"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "bodyClass": {
-          "type": "string"
-        }
-      }
     }
   }
 }

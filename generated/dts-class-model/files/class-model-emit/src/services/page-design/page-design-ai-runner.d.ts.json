@@ -22,6 +22,119 @@
     "PageDesignAiRunCommand",
     "PageDesignAiRunResult"
   ],
+  "generatedAt": "2026-06-12T01:02:39.579Z",
+  "$defs": {
+    "PageDesignAiRunOptions": {
+      "type": "object",
+      "title": "PageDesignAiRunOptions",
+      "description": "Page Design Ai Run Options 的调用配置。",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "object",
+          "title": "PageDesignRunMode"
+        },
+        "allowedOperations": {
+          "type": "object",
+          "title": "PageDesignAllowedOperations"
+        },
+        "preserveExistingInteractions": {
+          "type": "boolean"
+        },
+        "strictImplGate": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageDesignAiRunEvents": {
+      "type": "object",
+      "title": "PageDesignAiRunEvents",
+      "description": "DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。"
+    },
+    "PageDesignAiRunCommand": {
+      "type": "object",
+      "title": "PageDesignAiRunCommand",
+      "description": "Page Design Ai Run Command 的命令参数。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "consumeCapability": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "SparkCapabilityConsumer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "events": {
+          "$ref": "#/$defs/PageDesignAiRunEvents"
+        },
+        "trace": {
+          "type": "object",
+          "title": "AiRunTraceSink"
+        },
+        "adapter": {
+          "type": "object",
+          "title": "AiRunAdapterState"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "AiRunBeforeFunctionCall"
+        },
+        "onAbort": {
+          "type": "object",
+          "title": "AiRunAbortHandler"
+        },
+        "userMessage": {
+          "type": "string"
+        },
+        "saveDirtyFilesAfterRun": {
+          "type": "boolean"
+        },
+        "deliverySaveFileNames": {
+          "type": "array"
+        }
+      }
+    },
+    "PageDesignAiRunResult": {
+      "type": "object",
+      "title": "PageDesignAiRunResult",
+      "description": "Page Design Ai Run Result 的返回结果。",
+      "properties": {
+        "sawToolCall": {
+          "type": "boolean"
+        },
+        "files": {
+          "type": "object",
+          "title": "ProjectActivePageProjection"
+        },
+        "dirtyFileNames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "PageNodeFileName"
+          }
+        },
+        "savedDirtyFileNames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "PageNodeFileName"
+          }
+        }
+      }
+    }
+  },
   "models": {
     "PageDesignAiRunOptions": {
       "kind": "PageDesignAiRunOptions",
@@ -330,119 +443,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.447Z",
-  "$defs": {
-    "PageDesignAiRunOptions": {
-      "type": "object",
-      "title": "PageDesignAiRunOptions",
-      "description": "Page Design Ai Run Options 的调用配置。",
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "mode": {
-          "type": "object",
-          "title": "PageDesignRunMode"
-        },
-        "allowedOperations": {
-          "type": "object",
-          "title": "PageDesignAllowedOperations"
-        },
-        "preserveExistingInteractions": {
-          "type": "boolean"
-        },
-        "strictImplGate": {
-          "type": "boolean"
-        }
-      }
-    },
-    "PageDesignAiRunEvents": {
-      "type": "object",
-      "title": "PageDesignAiRunEvents",
-      "description": "DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。"
-    },
-    "PageDesignAiRunCommand": {
-      "type": "object",
-      "title": "PageDesignAiRunCommand",
-      "description": "Page Design Ai Run Command 的命令参数。",
-      "properties": {
-        "pageId": {
-          "type": "string"
-        },
-        "editor": {
-          "type": "object",
-          "title": "ProjectWorkspace"
-        },
-        "consumeCapability": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "SparkCapabilityConsumer"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "events": {
-          "$ref": "#/$defs/PageDesignAiRunEvents"
-        },
-        "trace": {
-          "type": "object",
-          "title": "AiRunTraceSink"
-        },
-        "adapter": {
-          "type": "object",
-          "title": "AiRunAdapterState"
-        },
-        "beforeFunctionCall": {
-          "type": "object",
-          "title": "AiRunBeforeFunctionCall"
-        },
-        "onAbort": {
-          "type": "object",
-          "title": "AiRunAbortHandler"
-        },
-        "userMessage": {
-          "type": "string"
-        },
-        "saveDirtyFilesAfterRun": {
-          "type": "boolean"
-        },
-        "deliverySaveFileNames": {
-          "type": "array"
-        }
-      }
-    },
-    "PageDesignAiRunResult": {
-      "type": "object",
-      "title": "PageDesignAiRunResult",
-      "description": "Page Design Ai Run Result 的返回结果。",
-      "properties": {
-        "sawToolCall": {
-          "type": "boolean"
-        },
-        "files": {
-          "type": "object",
-          "title": "ProjectActivePageProjection"
-        },
-        "dirtyFileNames": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "PageNodeFileName"
-          }
-        },
-        "savedDirtyFileNames": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "title": "PageNodeFileName"
-          }
-        }
-      }
     }
   }
 }

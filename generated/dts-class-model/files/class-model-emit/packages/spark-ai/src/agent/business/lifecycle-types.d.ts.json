@@ -26,6 +26,92 @@
     "AiAgentLifecycleDirective",
     "AiAgentAfterFunctionCallOptions"
   ],
+  "generatedAt": "2026-06-13T12:31:45.739Z",
+  "$defs": {
+    "AiAgentBeforeFunctionCallStatus": {
+      "type": "object",
+      "title": "AiAgentBeforeFunctionCallStatus",
+      "description": "工具调用前置裁决三态：\n'allow'  — 允许本次工具调用继续执行\n'reject' — 拒绝本次工具调用，回灌失败 tool result，当前 turn 可继续\n'abort'  — 中止当前 turn，并进入会话停止流程"
+    },
+    "AiAgentBeforeFunctionCallDirective": {
+      "type": "object",
+      "title": "AiAgentBeforeFunctionCallDirective",
+      "description": "工具调用前置裁决指令。\n字段：\nstatus                — 必填，allow / reject / abort 之一\nreason                — 可选，拒绝或中止原因\nfix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\nfinalAssistantMessage — 可选，abort 时发送给用户的最终消息\nreleaseInstance       — 可选，abort 时是否释放模块实例资源",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/AiAgentBeforeFunctionCallStatus"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        },
+        "finalAssistantMessage": {
+          "type": "string"
+        },
+        "releaseInstance": {
+          "type": "boolean"
+        }
+      }
+    },
+    "AiAgentBeforeFunctionCallOptions": {
+      "type": "object",
+      "title": "AiAgentBeforeFunctionCallOptions",
+      "description": "beforeFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        }
+      }
+    },
+    "AiAgentLifecycleStatus": {
+      "type": "object",
+      "title": "AiAgentLifecycleStatus",
+      "description": "生命周期状态三态：\n'continue' — 继续下一轮工具调用（默认）\n'complete' — 业务目标已达成，正常结束当前 turn\n'abort'    — 业务异常或用户取消，中止当前 turn"
+    },
+    "AiAgentLifecycleDirective": {
+      "type": "object",
+      "title": "AiAgentLifecycleDirective",
+      "description": "生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n字段：\nstatus               — 必填，三态之一\nreason               — 可选，结束原因（complete/abort 时建议提供）\nfinalAssistantMessage — 可选，结束时发送给用户的最终消息\nreleaseInstance      — 可选，是否在结束时释放模块实例资源",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/AiAgentLifecycleStatus"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "finalAssistantMessage": {
+          "type": "string"
+        },
+        "releaseInstance": {
+          "type": "boolean"
+        }
+      }
+    },
+    "AiAgentAfterFunctionCallOptions": {
+      "type": "object",
+      "title": "AiAgentAfterFunctionCallOptions",
+      "description": "afterFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的具体信息：\ntoolName — 被调用的工具名称\nargs     — 调用参数（已通过 JSON Schema 校验）\nresult   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        },
+        "result": {
+          "type": "object",
+          "title": "AiAgentFunctionCallResult<unknown>"
+        }
+      }
+    }
+  },
   "models": {
     "AiAgentBeforeFunctionCallStatus": {
       "kind": "AiAgentBeforeFunctionCallStatus",
@@ -315,92 +401,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.507Z",
-  "$defs": {
-    "AiAgentBeforeFunctionCallStatus": {
-      "type": "object",
-      "title": "AiAgentBeforeFunctionCallStatus",
-      "description": "工具调用前置裁决三态：\n'allow'  — 允许本次工具调用继续执行\n'reject' — 拒绝本次工具调用，回灌失败 tool result，当前 turn 可继续\n'abort'  — 中止当前 turn，并进入会话停止流程"
-    },
-    "AiAgentBeforeFunctionCallDirective": {
-      "type": "object",
-      "title": "AiAgentBeforeFunctionCallDirective",
-      "description": "工具调用前置裁决指令。\n字段：\nstatus                — 必填，allow / reject / abort 之一\nreason                — 可选，拒绝或中止原因\nfix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\nfinalAssistantMessage — 可选，abort 时发送给用户的最终消息\nreleaseInstance       — 可选，abort 时是否释放模块实例资源",
-      "properties": {
-        "status": {
-          "$ref": "#/$defs/AiAgentBeforeFunctionCallStatus"
-        },
-        "reason": {
-          "type": "string"
-        },
-        "fix": {
-          "type": "string"
-        },
-        "finalAssistantMessage": {
-          "type": "string"
-        },
-        "releaseInstance": {
-          "type": "boolean"
-        }
-      }
-    },
-    "AiAgentBeforeFunctionCallOptions": {
-      "type": "object",
-      "title": "AiAgentBeforeFunctionCallOptions",
-      "description": "beforeFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。",
-      "properties": {
-        "toolName": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "AiJsonParams"
-        }
-      }
-    },
-    "AiAgentLifecycleStatus": {
-      "type": "object",
-      "title": "AiAgentLifecycleStatus",
-      "description": "生命周期状态三态：\n'continue' — 继续下一轮工具调用（默认）\n'complete' — 业务目标已达成，正常结束当前 turn\n'abort'    — 业务异常或用户取消，中止当前 turn"
-    },
-    "AiAgentLifecycleDirective": {
-      "type": "object",
-      "title": "AiAgentLifecycleDirective",
-      "description": "生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n字段：\nstatus               — 必填，三态之一\nreason               — 可选，结束原因（complete/abort 时建议提供）\nfinalAssistantMessage — 可选，结束时发送给用户的最终消息\nreleaseInstance      — 可选，是否在结束时释放模块实例资源",
-      "properties": {
-        "status": {
-          "$ref": "#/$defs/AiAgentLifecycleStatus"
-        },
-        "reason": {
-          "type": "string"
-        },
-        "finalAssistantMessage": {
-          "type": "string"
-        },
-        "releaseInstance": {
-          "type": "boolean"
-        }
-      }
-    },
-    "AiAgentAfterFunctionCallOptions": {
-      "type": "object",
-      "title": "AiAgentAfterFunctionCallOptions",
-      "description": "afterFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的具体信息：\ntoolName — 被调用的工具名称\nargs     — 调用参数（已通过 JSON Schema 校验）\nresult   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）",
-      "properties": {
-        "toolName": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object",
-          "title": "AiJsonParams"
-        },
-        "result": {
-          "type": "object",
-          "title": "AiAgentFunctionCallResult<unknown>"
-        }
-      }
     }
   }
 }

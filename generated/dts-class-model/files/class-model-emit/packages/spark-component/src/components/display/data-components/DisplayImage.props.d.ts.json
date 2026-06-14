@@ -21,6 +21,103 @@
   "symbols": [
     "RDisplayImageProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.483Z",
+  "$defs": {
+    "RDisplayImageProps": {
+      "type": "object",
+      "title": "RDisplayImageProps",
+      "description": "RDisplay Image Props 的属性契约。",
+      "properties": {
+        "src": {
+          "type": "string"
+        },
+        "fit": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "fill"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "contain"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "cover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "scale-down"
+              ]
+            }
+          ]
+        },
+        "alt": {
+          "type": "string"
+        },
+        "lazy": {
+          "type": "boolean"
+        },
+        "previewSrcList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "previewField": {
+          "type": "string"
+        },
+        "initialIndex": {
+          "type": "number"
+        },
+        "zIndex": {
+          "type": "number"
+        },
+        "hideOnClickModal": {
+          "type": "boolean"
+        },
+        "previewTeleported": {
+          "type": "boolean"
+        },
+        "closeOnPressEscape": {
+          "type": "boolean"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RDisplayImageProps": {
       "kind": "RDisplayImageProps",
@@ -223,103 +320,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.402Z",
-  "$defs": {
-    "RDisplayImageProps": {
-      "type": "object",
-      "title": "RDisplayImageProps",
-      "description": "RDisplay Image Props 的属性契约。",
-      "properties": {
-        "src": {
-          "type": "string"
-        },
-        "fit": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "fill"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "contain"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "cover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "none"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "scale-down"
-              ]
-            }
-          ]
-        },
-        "alt": {
-          "type": "string"
-        },
-        "lazy": {
-          "type": "boolean"
-        },
-        "previewSrcList": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "previewField": {
-          "type": "string"
-        },
-        "initialIndex": {
-          "type": "number"
-        },
-        "zIndex": {
-          "type": "number"
-        },
-        "hideOnClickModal": {
-          "type": "boolean"
-        },
-        "previewTeleported": {
-          "type": "boolean"
-        },
-        "closeOnPressEscape": {
-          "type": "boolean"
-        },
-        "width": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        },
-        "height": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      }
     }
   }
 }

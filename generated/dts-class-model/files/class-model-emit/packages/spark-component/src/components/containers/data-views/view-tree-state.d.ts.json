@@ -23,6 +23,63 @@
     "TreeTableRowsInput",
     "RendererTreeViewStateOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.410Z",
+  "$defs": {
+    "RendererTreeViewState": {
+      "type": "object",
+      "title": "RendererTreeViewState",
+      "description": "树形视图态（RendererTree 专用扩展）。",
+      "properties": {
+        "treeData": {
+          "type": "object",
+          "title": "ComputedRef<TreeNode[]>"
+        },
+        "treeIdField": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        }
+      }
+    },
+    "TreeTableRowsInput": {
+      "type": "object",
+      "title": "TreeTableRowsInput",
+      "description": "Tree Table Rows Input 的输入数据。",
+      "properties": {
+        "view": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rows": {
+          "type": "array"
+        },
+        "treeConfig": {
+          "type": "object",
+          "title": "TreeConfig"
+        },
+        "primaryKey": {
+          "type": "string"
+        }
+      }
+    },
+    "RendererTreeViewStateOptions": {
+      "type": "object",
+      "title": "RendererTreeViewStateOptions",
+      "description": "Renderer Tree View State Options 的调用配置。",
+      "properties": {
+        "dataState": {
+          "type": "object",
+          "title": "DataViewState"
+        }
+      }
+    }
+  },
   "models": {
     "RendererTreeViewState": {
       "kind": "RendererTreeViewState",
@@ -173,63 +230,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.207Z",
-  "$defs": {
-    "RendererTreeViewState": {
-      "type": "object",
-      "title": "RendererTreeViewState",
-      "description": "树形视图态（RendererTree 专用扩展）。",
-      "properties": {
-        "treeData": {
-          "type": "object",
-          "title": "ComputedRef<TreeNode[]>"
-        },
-        "treeIdField": {
-          "type": "object",
-          "title": "ComputedRef<string>"
-        }
-      }
-    },
-    "TreeTableRowsInput": {
-      "type": "object",
-      "title": "TreeTableRowsInput",
-      "description": "Tree Table Rows Input 的输入数据。",
-      "properties": {
-        "view": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "DataView"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "rows": {
-          "type": "array"
-        },
-        "treeConfig": {
-          "type": "object",
-          "title": "TreeConfig"
-        },
-        "primaryKey": {
-          "type": "string"
-        }
-      }
-    },
-    "RendererTreeViewStateOptions": {
-      "type": "object",
-      "title": "RendererTreeViewStateOptions",
-      "description": "Renderer Tree View State Options 的调用配置。",
-      "properties": {
-        "dataState": {
-          "type": "object",
-          "title": "DataViewState"
-        }
-      }
     }
   }
 }

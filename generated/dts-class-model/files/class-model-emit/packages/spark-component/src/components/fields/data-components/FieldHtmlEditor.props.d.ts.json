@@ -21,6 +21,14 @@
   "symbols": [
     "RHtmlEditorProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.559Z",
+  "$defs": {
+    "RHtmlEditorProps": {
+      "type": "object",
+      "title": "RHtmlEditorProps",
+      "description": "RHtml Editor Props 的属性契约。"
+    }
+  },
   "models": {
     "RHtmlEditorProps": {
       "kind": "RHtmlEditorProps",
@@ -53,14 +61,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.548Z",
-  "$defs": {
-    "RHtmlEditorProps": {
-      "type": "object",
-      "title": "RHtmlEditorProps",
-      "description": "RHtml Editor Props 的属性契约。"
     }
   }
 }

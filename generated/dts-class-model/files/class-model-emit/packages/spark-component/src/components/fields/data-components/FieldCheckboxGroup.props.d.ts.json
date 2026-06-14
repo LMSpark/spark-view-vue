@@ -23,6 +23,19 @@
     "CheckboxGroupMultiValue",
     "RCheckboxGroupProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.547Z",
+  "$defs": {
+    "CheckboxGroupMultiValue": {
+      "type": "object",
+      "title": "CheckboxGroupMultiValue",
+      "description": "Checkbox Group Multi Value 的语义模型。"
+    },
+    "RCheckboxGroupProps": {
+      "type": "object",
+      "title": "RCheckboxGroupProps",
+      "description": "RCheckbox Group Props 的属性契约。"
+    }
+  },
   "models": {
     "CheckboxGroupMultiValue": {
       "kind": "CheckboxGroupMultiValue",
@@ -82,19 +95,6 @@
       },
       "attributes": [],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.537Z",
-  "$defs": {
-    "CheckboxGroupMultiValue": {
-      "type": "object",
-      "title": "CheckboxGroupMultiValue",
-      "description": "Checkbox Group Multi Value 的语义模型。"
-    },
-    "RCheckboxGroupProps": {
-      "type": "object",
-      "title": "RCheckboxGroupProps",
-      "description": "RCheckbox Group Props 的属性契约。"
     }
   }
 }

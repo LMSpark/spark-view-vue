@@ -21,6 +21,89 @@
   "symbols": [
     "RListProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.388Z",
+  "$defs": {
+    "RListProps": {
+      "type": "object",
+      "title": "RListProps",
+      "description": "r-list 组件公开属性接口。\n命名规范：组件 type `r-list` → 接口名 `RListProps`。",
+      "properties": {
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "toolbar": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "actions": {
+          "type": "object",
+          "title": "RToolbarProps"
+        },
+        "columns": {
+          "type": "number"
+        },
+        "minItemWidth": {
+          "type": "string"
+        },
+        "rowKey": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        },
+        "itemClass": {
+          "type": "string"
+        },
+        "itemStyle": {
+          "type": "object",
+          "title": "CSSProperties"
+        },
+        "useCard": {
+          "type": "boolean"
+        },
+        "cardShadow": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "always"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "never"
+              ]
+            }
+          ]
+        },
+        "itemColSpan": {
+          "type": "number"
+        },
+        "itemRowSpan": {
+          "type": "number"
+        },
+        "onItemClick": {
+          "type": "object",
+          "title": "RowClickHandler"
+        },
+        "listProps": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "showPagination": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "RListProps": {
       "kind": "RListProps",
@@ -232,89 +315,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.086Z",
-  "$defs": {
-    "RListProps": {
-      "type": "object",
-      "title": "RListProps",
-      "description": "r-list 组件公开属性接口。\n命名规范：组件 type `r-list` → 接口名 `RListProps`。",
-      "properties": {
-        "dataSource": {
-          "type": "object",
-          "title": "DataView"
-        },
-        "toolbar": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "actions": {
-          "type": "object",
-          "title": "RToolbarProps"
-        },
-        "columns": {
-          "type": "number"
-        },
-        "minItemWidth": {
-          "type": "string"
-        },
-        "rowKey": {
-          "type": "string"
-        },
-        "emptyText": {
-          "type": "string"
-        },
-        "itemClass": {
-          "type": "string"
-        },
-        "itemStyle": {
-          "type": "object",
-          "title": "CSSProperties"
-        },
-        "useCard": {
-          "type": "boolean"
-        },
-        "cardShadow": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "always"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "hover"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "never"
-              ]
-            }
-          ]
-        },
-        "itemColSpan": {
-          "type": "number"
-        },
-        "itemRowSpan": {
-          "type": "number"
-        },
-        "onItemClick": {
-          "type": "object",
-          "title": "RowClickHandler"
-        },
-        "listProps": {
-          "type": "object",
-          "title": "Record<string, unknown>"
-        },
-        "showPagination": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

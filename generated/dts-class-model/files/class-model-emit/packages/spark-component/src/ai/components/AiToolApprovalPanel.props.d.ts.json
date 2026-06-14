@@ -16,6 +16,22 @@
   "symbols": [
     "AiToolApprovalPanelProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.365Z",
+  "$defs": {
+    "AiToolApprovalPanelProps": {
+      "type": "object",
+      "title": "AiToolApprovalPanelProps",
+      "description": "Ai Tool Approval Panel Props 的属性契约。",
+      "properties": {
+        "pending": {
+          "type": "array"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  },
   "models": {
     "AiToolApprovalPanelProps": {
       "kind": "AiToolApprovalPanelProps",
@@ -58,22 +74,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.045Z",
-  "$defs": {
-    "AiToolApprovalPanelProps": {
-      "type": "object",
-      "title": "AiToolApprovalPanelProps",
-      "description": "Ai Tool Approval Panel Props 的属性契约。",
-      "properties": {
-        "pending": {
-          "type": "array"
-        },
-        "emptyText": {
-          "type": "string"
-        }
-      }
     }
   }
 }

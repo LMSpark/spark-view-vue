@@ -21,6 +21,34 @@
     "UnifiedValueBridgeOptions",
     "CommitValueOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.462Z",
+  "$defs": {
+    "UnifiedValueBridgeOptions": {
+      "type": "object",
+      "title": "UnifiedValueBridgeOptions",
+      "description": "Unified Value Bridge Options 的调用配置。",
+      "properties": {
+        "value": {
+          "type": "object",
+          "title": "ValueRef<TValue | undefined>"
+        },
+        "fallbackValue": true,
+        "debounceMs": {
+          "type": "number"
+        }
+      }
+    },
+    "CommitValueOptions": {
+      "type": "object",
+      "title": "CommitValueOptions",
+      "description": "Commit Value Options 的调用配置。",
+      "properties": {
+        "emit": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "UnifiedValueBridgeOptions": {
       "kind": "UnifiedValueBridgeOptions",
@@ -191,34 +219,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.304Z",
-  "$defs": {
-    "UnifiedValueBridgeOptions": {
-      "type": "object",
-      "title": "UnifiedValueBridgeOptions",
-      "description": "Unified Value Bridge Options 的调用配置。",
-      "properties": {
-        "value": {
-          "type": "object",
-          "title": "ValueRef<TValue | undefined>"
-        },
-        "fallbackValue": true,
-        "debounceMs": {
-          "type": "number"
-        }
-      }
-    },
-    "CommitValueOptions": {
-      "type": "object",
-      "title": "CommitValueOptions",
-      "description": "Commit Value Options 的调用配置。",
-      "properties": {
-        "emit": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

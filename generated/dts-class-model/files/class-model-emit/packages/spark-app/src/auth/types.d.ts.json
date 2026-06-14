@@ -22,6 +22,113 @@
     "TokenStorage",
     "AuthConfig"
   ],
+  "generatedAt": "2026-06-11T12:48:50.935Z",
+  "$defs": {
+    "LoginCredentials": {
+      "type": "object",
+      "title": "LoginCredentials",
+      "description": "登录凭证",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "AuthResult": {
+      "type": "object",
+      "title": "AuthResult",
+      "description": "认证结果",
+      "properties": {
+        "user": {
+          "type": "object",
+          "title": "UserInfo"
+        },
+        "tenant": {
+          "type": "object",
+          "title": "TenantInfo"
+        },
+        "env": {
+          "type": "object",
+          "title": "EnvironmentInfo"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "TokenStorage": {
+      "type": "object",
+      "title": "TokenStorage",
+      "description": "Token 存储类型"
+    },
+    "AuthConfig": {
+      "type": "object",
+      "title": "AuthConfig",
+      "description": "认证配置",
+      "properties": {
+        "apiEndpoints": {
+          "type": "object"
+        },
+        "tokenStorage": {
+          "$ref": "#/$defs/TokenStorage"
+        },
+        "tokenKey": {
+          "type": "string"
+        },
+        "loginPath": {
+          "type": "string"
+        },
+        "loginComponent": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Component"
+            },
+            {
+              "type": "object",
+              "title": "() => Promise<Component>"
+            }
+          ]
+        },
+        "enableMock": {
+          "type": "boolean"
+        },
+        "mockUser": {
+          "type": "object",
+          "title": "UserInfo"
+        },
+        "mockTenant": {
+          "type": "object",
+          "title": "TenantInfo"
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "apiBaseUrl": {
+          "type": "string"
+        },
+        "onLoginSuccess": {
+          "type": "object",
+          "title": "(user: UserInfo) => void | Promise<void>"
+        },
+        "onLogoutSuccess": {
+          "type": "object",
+          "title": "() => void | Promise<void>"
+        },
+        "onAuthError": {
+          "type": "object",
+          "title": "(error: Error) => void"
+        },
+        "onTokenRefresh": {
+          "type": "object",
+          "title": "(token: string) => void"
+        }
+      }
+    }
+  },
   "models": {
     "LoginCredentials": {
       "kind": "LoginCredentials",
@@ -301,113 +408,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:02.920Z",
-  "$defs": {
-    "LoginCredentials": {
-      "type": "object",
-      "title": "LoginCredentials",
-      "description": "登录凭证",
-      "properties": {
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
-    },
-    "AuthResult": {
-      "type": "object",
-      "title": "AuthResult",
-      "description": "认证结果",
-      "properties": {
-        "user": {
-          "type": "object",
-          "title": "UserInfo"
-        },
-        "tenant": {
-          "type": "object",
-          "title": "TenantInfo"
-        },
-        "env": {
-          "type": "object",
-          "title": "EnvironmentInfo"
-        },
-        "token": {
-          "type": "string"
-        }
-      }
-    },
-    "TokenStorage": {
-      "type": "object",
-      "title": "TokenStorage",
-      "description": "Token 存储类型"
-    },
-    "AuthConfig": {
-      "type": "object",
-      "title": "AuthConfig",
-      "description": "认证配置",
-      "properties": {
-        "apiEndpoints": {
-          "type": "object"
-        },
-        "tokenStorage": {
-          "$ref": "#/$defs/TokenStorage"
-        },
-        "tokenKey": {
-          "type": "string"
-        },
-        "loginPath": {
-          "type": "string"
-        },
-        "loginComponent": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "Component"
-            },
-            {
-              "type": "object",
-              "title": "() => Promise<Component>"
-            }
-          ]
-        },
-        "enableMock": {
-          "type": "boolean"
-        },
-        "mockUser": {
-          "type": "object",
-          "title": "UserInfo"
-        },
-        "mockTenant": {
-          "type": "object",
-          "title": "TenantInfo"
-        },
-        "timeout": {
-          "type": "number"
-        },
-        "apiBaseUrl": {
-          "type": "string"
-        },
-        "onLoginSuccess": {
-          "type": "object",
-          "title": "(user: UserInfo) => void | Promise<void>"
-        },
-        "onLogoutSuccess": {
-          "type": "object",
-          "title": "() => void | Promise<void>"
-        },
-        "onAuthError": {
-          "type": "object",
-          "title": "(error: Error) => void"
-        },
-        "onTokenRefresh": {
-          "type": "object",
-          "title": "(token: string) => void"
-        }
-      }
     }
   }
 }

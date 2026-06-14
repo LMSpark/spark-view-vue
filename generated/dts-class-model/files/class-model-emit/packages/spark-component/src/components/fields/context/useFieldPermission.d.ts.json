@@ -20,6 +20,38 @@
     "FieldPermissionProps",
     "UseFieldPermissionOptions"
   ],
+  "generatedAt": "2026-06-11T12:38:13.529Z",
+  "$defs": {
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "Optional With Undefined 的语义模型。"
+    },
+    "FieldPermissionProps": {
+      "type": "object",
+      "title": "FieldPermissionProps",
+      "description": "Field Permission Props 的属性契约。",
+      "properties": {
+        "modelValue": true,
+        "value": true
+      }
+    },
+    "UseFieldPermissionOptions": {
+      "type": "object",
+      "title": "UseFieldPermissionOptions",
+      "description": "Use Field Permission Options 的调用配置。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/FieldPermissionProps",
+          "title": "FieldPermissionProps<TValue>"
+        },
+        "type": {
+          "type": "string"
+        },
+        "fallbackValue": true
+      }
+    }
+  },
   "models": {
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
@@ -174,38 +206,6 @@
           "returnSchema": true
         }
       ]
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.487Z",
-  "$defs": {
-    "OptionalWithUndefined": {
-      "type": "object",
-      "title": "OptionalWithUndefined",
-      "description": "Optional With Undefined 的语义模型。"
-    },
-    "FieldPermissionProps": {
-      "type": "object",
-      "title": "FieldPermissionProps",
-      "description": "Field Permission Props 的属性契约。",
-      "properties": {
-        "modelValue": true,
-        "value": true
-      }
-    },
-    "UseFieldPermissionOptions": {
-      "type": "object",
-      "title": "UseFieldPermissionOptions",
-      "description": "Use Field Permission Options 的调用配置。",
-      "properties": {
-        "props": {
-          "$ref": "#/$defs/FieldPermissionProps",
-          "title": "FieldPermissionProps<TValue>"
-        },
-        "type": {
-          "type": "string"
-        },
-        "fallbackValue": true
-      }
     }
   }
 }

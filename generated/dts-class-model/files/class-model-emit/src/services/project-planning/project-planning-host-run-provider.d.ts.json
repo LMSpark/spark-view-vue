@@ -16,6 +16,23 @@
   "symbols": [
     "ProjectPlanningDeliveryContext"
   ],
+  "generatedAt": "2026-06-14T02:26:37.713Z",
+  "$defs": {
+    "ProjectPlanningDeliveryContext": {
+      "type": "object",
+      "title": "ProjectPlanningDeliveryContext",
+      "description": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
+      "properties": {
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "saveNavigationAfterRun": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "models": {
     "ProjectPlanningDeliveryContext": {
       "kind": "ProjectPlanningDeliveryContext",
@@ -58,23 +75,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:04.498Z",
-  "$defs": {
-    "ProjectPlanningDeliveryContext": {
-      "type": "object",
-      "title": "ProjectPlanningDeliveryContext",
-      "description": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
-      "properties": {
-        "editor": {
-          "type": "object",
-          "title": "ProjectWorkspace"
-        },
-        "saveNavigationAfterRun": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

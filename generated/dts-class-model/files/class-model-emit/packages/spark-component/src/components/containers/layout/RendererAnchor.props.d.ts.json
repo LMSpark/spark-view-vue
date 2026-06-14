@@ -21,6 +21,63 @@
   "symbols": [
     "RAnchorProps"
   ],
+  "generatedAt": "2026-06-11T12:38:13.412Z",
+  "$defs": {
+    "RAnchorProps": {
+      "type": "object",
+      "title": "RAnchorProps",
+      "description": "RAnchor Props 的属性契约。",
+      "properties": {
+        "container": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "bound": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "marker": {
+          "type": "boolean"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            }
+          ]
+        },
+        "anchorType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "underline"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
   "models": {
     "RAnchorProps": {
       "kind": "RAnchorProps",
@@ -142,63 +199,6 @@
         }
       ],
       "methods": []
-    }
-  },
-  "generatedAt": "2026-06-14T02:45:03.212Z",
-  "$defs": {
-    "RAnchorProps": {
-      "type": "object",
-      "title": "RAnchorProps",
-      "description": "RAnchor Props 的属性契约。",
-      "properties": {
-        "container": {
-          "type": "string"
-        },
-        "offset": {
-          "type": "number"
-        },
-        "bound": {
-          "type": "number"
-        },
-        "duration": {
-          "type": "number"
-        },
-        "marker": {
-          "type": "boolean"
-        },
-        "direction": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "vertical"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "horizontal"
-              ]
-            }
-          ]
-        },
-        "anchorType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "underline"
-              ]
-            }
-          ]
-        }
-      }
     }
   }
 }
