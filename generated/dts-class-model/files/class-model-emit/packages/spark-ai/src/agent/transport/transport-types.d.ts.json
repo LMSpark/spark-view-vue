@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/transport/transport-types",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
@@ -21,66 +21,53 @@
       "AiAgentTurnCallbacks"
     ]
   },
-  "symbols": [
-    "AiAgentTransportToolSpec",
-    "AiAgentTransportMessage",
-    "AiAgentTransportToolCall",
-    "AiAgentStreamTurnInput",
-    "AiAgentPrepareSessionInput",
-    "AiAgentStreamTurnResult",
-    "AiAgentAppendMessagesInput",
-    "AiAgentAppSseEventSource",
-    "AiAgentTurnCallbacks"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.919Z",
   "$defs": {
     "AiAgentTransportToolSpec": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentTransportToolSpec",
-      "description": "传输层工具规约（对齐 OpenAI function tool spec）",
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "function"
-          ]
+          "const": "function"
         },
         "function": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "parameters": {
+              "type": "object",
+              "title": "AiJsonSchemaObject"
+            },
+            "strict": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentTransportMessage": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentTransportMessage",
-      "description": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）",
       "properties": {
         "role": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "user"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "assistant"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "system"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "tool"
-              ]
-            }
+          "enum": [
+            "user",
+            "assistant",
+            "system",
+            "tool"
           ]
         },
         "content": {
@@ -90,88 +77,154 @@
           "type": "string"
         },
         "tool_calls": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentTransportToolCall"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentTransportToolCall": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentTransportToolCall",
-      "description": "传输层工具调用",
       "properties": {
         "id": {
           "type": "string"
         },
         "type": {
-          "type": "string",
-          "enum": [
-            "function"
-          ]
+          "const": "function"
         },
         "function": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "arguments": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "arguments"
+          ],
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentStreamTurnInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentStreamTurnInput",
-      "description": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）",
       "properties": {
         "sessionId": {
           "type": "string"
         },
         "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
+          "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentScope"
         },
         "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
+          "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentTurnMeta"
         },
         "systemPrompt": {
           "type": "string"
         },
         "tools": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentTransportToolSpec"
+          }
         },
         "messages": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentTransportMessage"
+          }
         },
         "signal": {
           "type": "object",
           "title": "AbortSignal"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.onStreamEvent.params": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentStreamEvent"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onStreamEvent.return": true,
+        "method.onDelta.params": {
+          "type": "object",
+          "properties": {
+            "delta": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onDelta.return": true,
+        "method.onReasoning.params": {
+          "type": "object",
+          "properties": {
+            "reasoning": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onReasoning.return": true,
+        "method.onUsage.params": {
+          "type": "object",
+          "properties": {
+            "usage": {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onUsage.return": true
       }
     },
     "AiAgentPrepareSessionInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentPrepareSessionInput",
-      "description": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。",
       "properties": {
         "sessionId": {
           "type": "string"
         },
         "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
+          "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentScope"
         },
         "systemPrompt": {
           "type": "string"
         },
         "tools": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentTransportToolSpec"
+          }
         },
         "signal": {
           "type": "object",
           "title": "AbortSignal"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentStreamTurnResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentStreamTurnResult",
-      "description": "AI turn 汇总结果",
       "properties": {
         "text": {
           "type": "string"
@@ -180,680 +233,577 @@
           "type": "string"
         },
         "toolCalls": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentTransportToolCall"
+          }
         },
         "assistantMessagePersisted": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentAppendMessagesInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentAppendMessagesInput",
-      "description": "追加消息请求输入",
       "properties": {
         "sessionId": {
           "type": "string"
         },
         "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
+          "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentScope"
         },
         "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
+          "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentTurnMeta"
         },
         "messages": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentTransportMessage"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiAgentAppSseEventSource": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "AiAgentAppSseEventSource",
+      "$defs": {
+        "method.on.params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "app-sse-events.d.ts.json#/$defs/AiAgentAppSseEventName"
+            },
+            "listener": {
+              "type": "object",
+              "title": "(event: AiAgentAppSseEvent) => void"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.on.return": {
+          "type": "object",
+          "title": "() => void"
         }
       }
     },
-    "AiAgentAppSseEventSource": {
-      "type": "object",
-      "title": "AiAgentAppSseEventSource",
-      "description": "Ai Agent App Sse Event Source 的语义模型。"
-    },
     "AiAgentTurnCallbacks": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentTurnCallbacks",
-      "description": "APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。"
+      "$defs": {
+        "method.prepareSession.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "#/$defs/AiAgentPrepareSessionInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.prepareSession.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.executeTurn.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "#/$defs/AiAgentStreamTurnInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.executeTurn.return": {
+          "type": "object",
+          "title": "Promise<AiAgentStreamTurnResult>"
+        },
+        "method.appendMessages.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "#/$defs/AiAgentAppendMessagesInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendMessages.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.919Z",
   "models": {
     "AiAgentTransportToolSpec": {
-      "kind": "AiAgentTransportToolSpec",
-      "className": "AiAgentTransportToolSpec",
+      "name": "AiAgentTransportToolSpec",
       "jsdoc": "传输层工具规约（对齐 OpenAI function tool spec）",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 12,
         "className": "AiAgentTransportToolSpec",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "function"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "function",
-          "jsdoc": "",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "function",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentTransportMessage": {
-      "kind": "AiAgentTransportMessage",
-      "className": "AiAgentTransportMessage",
+      "name": "AiAgentTransportMessage",
       "jsdoc": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 23,
         "className": "AiAgentTransportMessage",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "role",
-          "jsdoc": "system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "user"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "assistant"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "system"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "tool"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "content",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tool_call_id",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "tool_calls",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "role",
+              "jsdoc": "system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "content",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tool_call_id",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tool_calls",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentTransportToolCall": {
-      "kind": "AiAgentTransportToolCall",
-      "className": "AiAgentTransportToolCall",
+      "name": "AiAgentTransportToolCall",
       "jsdoc": "传输层工具调用",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 31,
         "className": "AiAgentTransportToolCall",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "function"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "function",
-          "jsdoc": "",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "function",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentStreamTurnInput": {
-      "kind": "AiAgentStreamTurnInput",
-      "className": "AiAgentStreamTurnInput",
+      "name": "AiAgentStreamTurnInput",
       "jsdoc": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 40,
         "className": "AiAgentStreamTurnInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "sessionId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "scope",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentScope"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turn",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTurnMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "systemPrompt",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tools",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "messages",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "signal",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AbortSignal"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "onStreamEvent",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
             {
-              "name": "event",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
+              "name": "sessionId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turn",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "systemPrompt",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tools",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "messages",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "signal",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "event": {
-                "type": "object",
-                "title": "AiAgentStreamEvent"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "onDelta",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+          "methods": [
             {
-              "name": "delta",
+              "name": "onStreamEvent",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentStreamEvent",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "delta": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "onReasoning",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "reasoning",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "reasoning": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "onUsage",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "usage",
-              "type": {
-                "type": "reference",
-                "name": "Record",
-                "typeArguments": [
-                  {
+              "name": "onDelta",
+              "parameters": [
+                {
+                  "name": "delta",
+                  "type": {
                     "type": "intrinsic",
                     "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "unknown"
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "usage": {
-                "type": "object",
-                "title": "Record<string, unknown>"
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "onReasoning",
+              "parameters": [
+                {
+                  "name": "reasoning",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "onUsage",
+              "parameters": [
+                {
+                  "name": "usage",
+                  "type": {
+                    "type": "reference",
+                    "name": "Record",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "unknown"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "AiAgentPrepareSessionInput": {
-      "kind": "AiAgentPrepareSessionInput",
-      "className": "AiAgentPrepareSessionInput",
+      "name": "AiAgentPrepareSessionInput",
       "jsdoc": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 54,
         "className": "AiAgentPrepareSessionInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "sessionId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "scope",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentScope"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "systemPrompt",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tools",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "signal",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AbortSignal"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "sessionId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "systemPrompt",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tools",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "signal",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentStreamTurnResult": {
-      "kind": "AiAgentStreamTurnResult",
-      "className": "AiAgentStreamTurnResult",
+      "name": "AiAgentStreamTurnResult",
       "jsdoc": "AI turn 汇总结果",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 62,
         "className": "AiAgentStreamTurnResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "text",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "reasoning",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "toolCalls",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "assistantMessagePersisted",
-          "jsdoc": "true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "text",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reasoning",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolCalls",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "assistantMessagePersisted",
+              "jsdoc": "true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentAppendMessagesInput": {
-      "kind": "AiAgentAppendMessagesInput",
-      "className": "AiAgentAppendMessagesInput",
+      "name": "AiAgentAppendMessagesInput",
       "jsdoc": "追加消息请求输入",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 70,
         "className": "AiAgentAppendMessagesInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "sessionId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "scope",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentScope"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turn",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTurnMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "messages",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "sessionId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turn",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "messages",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentAppSseEventSource": {
-      "kind": "AiAgentAppSseEventSource",
-      "className": "AiAgentAppSseEventSource",
+      "name": "AiAgentAppSseEventSource",
       "jsdoc": "Ai Agent App Sse Event Source 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 77,
         "className": "AiAgentAppSseEventSource",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "on",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "name",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "listener",
+              "name": "on",
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentAppSseEventName",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts"
+                  }
+                },
+                {
+                  "name": "listener",
+                  "type": {
+                    "type": "reflection",
+                    "declaration": {
+                      "signatures": [
+                        {
+                          "parameters": [
+                            {
+                              "name": "event",
+                              "type": {
+                                "type": "reference",
+                                "name": "AiAgentAppSseEvent",
+                                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts"
+                              }
+                            }
+                          ],
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "void"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
               "type": {
                 "type": "reflection",
                 "declaration": {
                   "signatures": [
                     {
-                      "parameters": [
-                        {
-                          "name": "event",
-                          "type": {
-                            "type": "reference",
-                            "name": "unknown"
-                          }
-                        }
-                      ],
+                      "parameters": [],
                       "type": {
                         "type": "intrinsic",
                         "name": "void"
@@ -863,179 +813,107 @@
                 }
               }
             }
-          ],
-          "type": {
-            "type": "reflection",
-            "declaration": {
-              "signatures": [
-                {
-                  "parameters": [],
-                  "type": {
-                    "type": "intrinsic",
-                    "name": "void"
-                  }
-                }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "object",
-                "title": "AiAgentAppSseEventName"
-              },
-              "listener": {
-                "type": "object",
-                "title": "(event: AiAgentAppSseEvent) => void"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "() => void"
-          }
+          ]
         }
-      ]
+      }
     },
     "AiAgentTurnCallbacks": {
-      "kind": "AiAgentTurnCallbacks",
-      "className": "AiAgentTurnCallbacks",
+      "name": "AiAgentTurnCallbacks",
       "jsdoc": "APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    /** 可选：在 turn 前显式准备后端 session。 */\n    prepareSession?: (input: AiAgentPrepareSessionInput) => Promise<void>;\n    /** 启动一次模型 turn，聚合 APP SSE 事件后返回结果。 */\n    executeTurn: (input: AiAgentStreamTurnInput) => Promise<AiAgentStreamTurnResult>;\n    /** 将工具调用结果同步到后端会话。 */\n    appendMessages: (input: AiAgentAppendMessagesInput) => Promise<void>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    /** 可选：在 turn 前显式准备后端 session。 */\n    prepareSession?: (input: AiAgentPrepareSessionInput) => Promise<void>;\n    /** 启动一次模型 turn，聚合 APP SSE 事件后返回结果。 */\n    executeTurn: (input: AiAgentStreamTurnInput) => Promise<AiAgentStreamTurnResult>;\n    /** 将工具调用结果同步到后端会话。 */\n    appendMessages: (input: AiAgentAppendMessagesInput) => Promise<void>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts",
         "line": 81,
         "className": "AiAgentTurnCallbacks",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "prepareSession",
-          "jsdoc": "可选：在 turn 前显式准备后端 session。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    /** 可选：在 turn 前显式准备后端 session。 */\n    prepareSession?: (input: AiAgentPrepareSessionInput) => Promise<void>;\n    /** 启动一次模型 turn，聚合 APP SSE 事件后返回结果。 */\n    executeTurn: (input: AiAgentStreamTurnInput) => Promise<AiAgentStreamTurnResult>;\n    /** 将工具调用结果同步到后端会话。 */\n    appendMessages: (input: AiAgentAppendMessagesInput) => Promise<void>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** 可选：在 turn 前显式准备后端 session。 */\n    prepareSession?: (input: AiAgentPrepareSessionInput) => Promise<void>;\n    /** 启动一次模型 turn，聚合 APP SSE 事件后返回结果。 */\n    executeTurn: (input: AiAgentStreamTurnInput) => Promise<AiAgentStreamTurnResult>;\n    /** 将工具调用结果同步到后端会话。 */\n    appendMessages: (input: AiAgentAppendMessagesInput) => Promise<void>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "input",
+              "name": "prepareSession",
+              "jsdoc": "可选：在 turn 前显式准备后端 session。",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentPrepareSessionInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "AiAgentPrepareSessionInput",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "$ref": "#/$defs/AiAgentPrepareSessionInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "executeTurn",
-          "jsdoc": "启动一次模型 turn，聚合 APP SSE 事件后返回结果。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "executeTurn",
+              "jsdoc": "启动一次模型 turn，聚合 APP SSE 事件后返回结果。",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentStreamTurnInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "AiAgentStreamTurnInput",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "AiAgentStreamTurnResult",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "$ref": "#/$defs/AiAgentStreamTurnInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentStreamTurnResult",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiAgentStreamTurnResult>"
-          }
-        },
-        {
-          "name": "appendMessages",
-          "jsdoc": "将工具调用结果同步到后端会话。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "appendMessages",
+              "jsdoc": "将工具调用结果同步到后端会话。",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentAppendMessagesInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "AiAgentAppendMessagesInput",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "$ref": "#/$defs/AiAgentAppendMessagesInput"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

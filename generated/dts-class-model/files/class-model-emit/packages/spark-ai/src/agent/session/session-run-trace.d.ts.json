@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/session/session-run-trace",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
@@ -19,21 +19,11 @@
       "AiAgentRunTrace"
     ]
   },
-  "symbols": [
-    "AiAgentRunTraceToolCall",
-    "AiAgentRunTraceReasoning",
-    "AiAgentRunTraceEntry",
-    "AiAgentRunTraceSnapshot",
-    "AiAgentRunTraceOptions",
-    "AiAgentRunTraceListener",
-    "AiAgentRunTrace"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.909Z",
   "$defs": {
     "AiAgentRunTraceToolCall": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentRunTraceToolCall",
-      "description": "Ai Agent Run Trace Tool Call 的语义模型。",
       "properties": {
         "toolName": {
           "type": "string"
@@ -48,50 +38,33 @@
           "type": "number"
         },
         "callId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         },
         "status": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
+          "enum": [
+            "success",
+            "error"
           ]
         },
         "resultSummary": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         },
         "durationMs": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentRunTraceReasoning": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentRunTraceReasoning",
-      "description": "Ai Agent Run Trace Reasoning 的语义模型。",
       "properties": {
         "text": {
           "type": "string"
@@ -102,17 +75,153 @@
         "collapsed": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentRunTraceEntry": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AiAgentRunTraceEntry",
-      "description": "Ai Agent Run Trace Entry 的语义模型。"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "user-message"
+            },
+            "content": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "content",
+            "timestamp"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "assistant-delta"
+            },
+            "content": {
+              "type": "string"
+            },
+            "turnId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "content",
+            "turnId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "assistant-complete"
+            },
+            "content": {
+              "type": "string"
+            },
+            "turnId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "content",
+            "turnId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "reasoning"
+            },
+            "item": {
+              "type": "object",
+              "title": "AiAgentRunTraceReasoning"
+            }
+          },
+          "required": [
+            "kind",
+            "item"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "tool-call"
+            },
+            "item": {
+              "type": "object",
+              "title": "AiAgentRunTraceToolCall"
+            }
+          },
+          "required": [
+            "kind",
+            "item"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "error"
+            },
+            "message": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "message",
+            "timestamp"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "system-message"
+            },
+            "content": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "content",
+            "timestamp"
+          ],
+          "additionalProperties": false
+        }
+      ]
     },
     "AiAgentRunTraceSnapshot": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentRunTraceSnapshot",
-      "description": "Ai Agent Run Trace Snapshot 的语义模型。",
       "properties": {
         "streamText": {
           "type": "string"
@@ -127,17 +236,24 @@
           "type": "boolean"
         },
         "entries": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentRunTraceEntry"
+          }
         },
         "toolCalls": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentRunTraceToolCall"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentRunTraceOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentRunTraceOptions",
-      "description": "Ai Agent Run Trace Options 的调用配置。",
       "properties": {
         "argsPreviewLimit": {
           "type": "number"
@@ -145,712 +261,593 @@
         "resultPreviewLimit": {
           "type": "number"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.now.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.now.return": {
+          "type": "number"
+        }
       }
     },
-    "AiAgentRunTraceListener": {
-      "type": "object",
-      "title": "AiAgentRunTraceListener",
-      "description": "Ai Agent Run Trace Listener 的语义模型。"
-    },
     "AiAgentRunTrace": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentRunTrace",
-      "description": "Ai Agent Run Trace 的语义模型。"
+      "$defs": {
+        "method.snapshot.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.snapshot.return": {
+          "$ref": "#/$defs/AiAgentRunTraceSnapshot"
+        },
+        "method.subscribe.params": {
+          "type": "object",
+          "properties": {
+            "listener": {
+              "$ref": "#/$defs/AiAgentRunTraceListener"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.subscribe.return": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "method.appendUserMessage.params": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendUserMessage.return": true,
+        "method.appendDelta.params": {
+          "type": "object",
+          "properties": {
+            "delta": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendDelta.return": true,
+        "method.appendReasoning.params": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendReasoning.return": true,
+        "method.appendEvent.params": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentStreamEvent"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendEvent.return": true,
+        "method.appendToolCall.params": {
+          "type": "object",
+          "properties": {
+            "record": {
+              "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentToolCallRecord"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendToolCall.return": true,
+        "method.appendError.params": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendError.return": true,
+        "method.markAborted.params": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.markAborted.return": true,
+        "method.finish.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.finish.return": true,
+        "method.reset.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.reset.return": true
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.909Z",
   "models": {
     "AiAgentRunTraceToolCall": {
-      "kind": "AiAgentRunTraceToolCall",
-      "className": "AiAgentRunTraceToolCall",
+      "name": "AiAgentRunTraceToolCall",
       "jsdoc": "Ai Agent Run Trace Tool Call 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 15,
         "className": "AiAgentRunTraceToolCall",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "toolName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "argsPreview",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turnId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "round",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "callId",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "success"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "error"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "resultSummary",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "durationMs",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "argsPreview",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turnId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "round",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "callId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "resultSummary",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "durationMs",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentRunTraceReasoning": {
-      "kind": "AiAgentRunTraceReasoning",
-      "className": "AiAgentRunTraceReasoning",
+      "name": "AiAgentRunTraceReasoning",
       "jsdoc": "Ai Agent Run Trace Reasoning 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 26,
         "className": "AiAgentRunTraceReasoning",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "text",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turnId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "collapsed",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "text",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turnId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "collapsed",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentRunTraceEntry": {
-      "kind": "AiAgentRunTraceEntry",
-      "className": "AiAgentRunTraceEntry",
+      "name": "AiAgentRunTraceEntry",
       "jsdoc": "Ai Agent Run Trace Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}> | Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}> | Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 32,
         "className": "AiAgentRunTraceEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}> | Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}> | Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiAgentRunTraceSnapshot": {
-      "kind": "AiAgentRunTraceSnapshot",
-      "className": "AiAgentRunTraceSnapshot",
+      "name": "AiAgentRunTraceSnapshot",
       "jsdoc": "Ai Agent Run Trace Snapshot 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    streamText: string;\n    reasoningText: string;\n    isStreaming: boolean;\n    isReasoning: boolean;\n    entries: readonly AiAgentRunTraceEntry[];\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    streamText: string;\n    reasoningText: string;\n    isStreaming: boolean;\n    isReasoning: boolean;\n    entries: readonly AiAgentRunTraceEntry[];\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 60,
         "className": "AiAgentRunTraceSnapshot",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "streamText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "reasoningText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "isStreaming",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "isReasoning",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "entries",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "toolCalls",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    streamText: string;\n    reasoningText: string;\n    isStreaming: boolean;\n    isReasoning: boolean;\n    entries: readonly AiAgentRunTraceEntry[];\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    streamText: string;\n    reasoningText: string;\n    isStreaming: boolean;\n    isReasoning: boolean;\n    entries: readonly AiAgentRunTraceEntry[];\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "streamText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reasoningText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isStreaming",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isReasoning",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "entries",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolCalls",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentRunTraceOptions": {
-      "kind": "AiAgentRunTraceOptions",
-      "className": "AiAgentRunTraceOptions",
+      "name": "AiAgentRunTraceOptions",
       "jsdoc": "Ai Agent Run Trace Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    now?: () => number;\n    argsPreviewLimit?: number;\n    resultPreviewLimit?: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    now?: () => number;\n    argsPreviewLimit?: number;\n    resultPreviewLimit?: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 69,
         "className": "AiAgentRunTraceOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "argsPreviewLimit",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "resultPreviewLimit",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "now",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    now?: () => number;\n    argsPreviewLimit?: number;\n    resultPreviewLimit?: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    now?: () => number;\n    argsPreviewLimit?: number;\n    resultPreviewLimit?: number;\n}>",
+            "targetName": "Readonly"
           }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "argsPreviewLimit",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "resultPreviewLimit",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "now",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "AiAgentRunTraceListener": {
-      "kind": "AiAgentRunTraceListener",
-      "className": "AiAgentRunTraceListener",
+      "name": "AiAgentRunTraceListener",
       "jsdoc": "Ai Agent Run Trace Listener 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "(snapshot: AiAgentRunTraceSnapshot) => void",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 75,
         "className": "AiAgentRunTraceListener",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "(snapshot: AiAgentRunTraceSnapshot) => void",
+        "members": {}
+      }
     },
     "AiAgentRunTrace": {
-      "kind": "AiAgentRunTrace",
-      "className": "AiAgentRunTrace",
+      "name": "AiAgentRunTrace",
       "jsdoc": "Ai Agent Run Trace 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    snapshot(): AiAgentRunTraceSnapshot;\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    appendUserMessage(content: string): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    snapshot(): AiAgentRunTraceSnapshot;\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    appendUserMessage(content: string): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
         "line": 77,
         "className": "AiAgentRunTrace",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "snapshot",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "AiAgentRunTraceSnapshot",
-            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentRunTraceSnapshot"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    snapshot(): AiAgentRunTraceSnapshot;\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    appendUserMessage(content: string): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    snapshot(): AiAgentRunTraceSnapshot;\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    appendUserMessage(content: string): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
+            "targetName": "Readonly"
           }
-        },
-        {
-          "name": "subscribe",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "listener",
+              "name": "snapshot",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRunTraceListener",
+                "name": "AiAgentRunTraceSnapshot",
                 "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts"
               }
-            }
-          ],
-          "type": {
-            "type": "reflection",
-            "declaration": {
-              "signatures": [
+            },
+            {
+              "name": "subscribe",
+              "parameters": [
                 {
-                  "parameters": [],
+                  "name": "listener",
                   "type": {
-                    "type": "intrinsic",
-                    "name": "void"
+                    "type": "reference",
+                    "name": "AiAgentRunTraceListener",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-run-trace.d.ts"
                   }
                 }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "listener": {
-                "$ref": "#/$defs/AiAgentRunTraceListener"
+              ],
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "() => void"
-          }
-        },
-        {
-          "name": "appendUserMessage",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "content",
+              "name": "appendUserMessage",
+              "parameters": [
+                {
+                  "name": "content",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "content": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "appendDelta",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "delta",
+              "name": "appendDelta",
+              "parameters": [
+                {
+                  "name": "delta",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "delta": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "appendReasoning",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "text",
+              "name": "appendReasoning",
+              "parameters": [
+                {
+                  "name": "text",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "text": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "appendEvent",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "event",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "event": {
-                "type": "object",
-                "title": "AiAgentStreamEvent"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "appendToolCall",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "record",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "record": {
-                "type": "object",
-                "title": "AiAgentToolCallRecord"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "appendError",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "message",
+              "name": "appendEvent",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentStreamEvent",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "markAborted",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "message",
+              "name": "appendToolCall",
+              "parameters": [
+                {
+                  "name": "record",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentToolCallRecord",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "finish",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "reset",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "appendError",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "markAborted",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "finish",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "reset",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

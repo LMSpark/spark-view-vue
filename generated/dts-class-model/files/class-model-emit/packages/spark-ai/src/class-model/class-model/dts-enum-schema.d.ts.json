@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/dts-enum-schema",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-enum-schema.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-enum-schema.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/dts-enum-schema",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-enum-schema\n职责：从 TypeScript enum 成员 AST 提取 const JSON Schema，补足 .d.ts 中不会保留的 enum initializer 语义。\n边界：只处理 enum 成员 initializer 到 schema 的映射，不创建 Program、不写 bundle、不处理非 enum 声明。\nAI用途：排查 enum 产物的 const/自增数值为什么这样生成时，用本模块确认 AST 到 JSON Schema 的规则。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "EnumMemberConstSchemaResult"
+    ]
+  },
+  "$defs": {
+    "EnumMemberConstSchemaResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "EnumMemberConstSchemaResult",
+      "properties": {
+        "schema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "nextAutoIndex": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "generatedAt": "2026-06-14T13:57:42.747Z",
+  "models": {
+    "EnumMemberConstSchemaResult": {
+      "name": "EnumMemberConstSchemaResult",
+      "jsdoc": "Enum Member Const Schema 的提取结果。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-enum-schema.d.ts",
+        "line": 10,
+        "className": "EnumMemberConstSchemaResult",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    schema: AiJsonSchema;\n    nextAutoIndex: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    schema: AiJsonSchema;\n    nextAutoIndex: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "schema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "nextAutoIndex",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

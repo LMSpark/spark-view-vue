@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:core/capability-keys",
     "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
@@ -22,49 +22,30 @@
       "PageCssScopeCapability"
     ]
   },
-  "symbols": [
-    "SubtreeFieldPolicy",
-    "ThemeMode",
-    "ThemeCapability",
-    "ModuleContextItem",
-    "ModuleContext",
-    "ModuleContextCapability",
-    "PageComponentInstanceEntry",
-    "PageComponentApiEntry",
-    "PageComponentRegistry",
-    "PageCssScopeCapability"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.973Z",
   "$defs": {
     "SubtreeFieldPolicy": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "SubtreeFieldPolicy",
-      "description": "子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。"
+      "const": "unrestricted"
     },
     "ThemeMode": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ThemeMode",
-      "description": "主题模式"
+      "enum": [
+        "light",
+        "dark",
+        "auto"
+      ]
     },
     "ThemeCapability": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ThemeCapability",
-      "description": "主题服务能力接口（最小契约，不含 Vue 响应式）",
       "properties": {
         "current": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "light"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dark"
-              ]
-            }
+          "enum": [
+            "light",
+            "dark"
           ]
         },
         "mode": {
@@ -73,12 +54,31 @@
         "isDark": {
           "type": "boolean"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.setMode.params": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "$ref": "#/$defs/ThemeMode"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setMode.return": true,
+        "method.toggle.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.toggle.return": true
       }
     },
     "ModuleContextItem": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ModuleContextItem",
-      "description": "模块列表项",
       "properties": {
         "id": {
           "anyOf": [
@@ -93,12 +93,17 @@
         "title": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "id",
+        "title"
+      ],
+      "additionalProperties": false
     },
     "ModuleContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ModuleContext",
-      "description": "当前模块上下文快照",
       "properties": {
         "selected": {
           "anyOf": [
@@ -114,22 +119,62 @@
           ]
         },
         "items": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ModuleContextItem"
+          }
         },
         "nodeId": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "selected",
+        "items",
+        "nodeId"
+      ],
+      "additionalProperties": false
     },
     "ModuleContextCapability": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ModuleContextCapability",
-      "description": "MODULE_CONTEXT 能力接口"
+      "$defs": {
+        "method.getCurrent.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCurrent.return": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModuleContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.subscribe.params": {
+          "type": "object",
+          "properties": {
+            "handler": {
+              "type": "object",
+              "title": "(next: ModuleContext | null, prev: ModuleContext | null) => void"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.subscribe.return": {
+          "type": "object",
+          "title": "() => void"
+        }
+      }
     },
     "PageComponentInstanceEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageComponentInstanceEntry",
-      "description": "Page Component Instance Entry 的语义模型。",
       "properties": {
         "id": {
           "type": "string"
@@ -141,12 +186,17 @@
           "type": "object",
           "title": "Record<string, unknown>"
         }
-      }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
     },
     "PageComponentApiEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageComponentApiEntry",
-      "description": "Page Component Api Entry 的语义模型。",
       "properties": {
         "id": {
           "type": "string"
@@ -155,357 +205,427 @@
           "type": "string"
         },
         "api": true
-      }
+      },
+      "required": [
+        "id",
+        "type",
+        "api"
+      ],
+      "additionalProperties": false
     },
     "PageComponentRegistry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageComponentRegistry",
-      "description": "页面内组件实例/API 注册表能力接口"
+      "$defs": {
+        "method.registerInstance.params": {
+          "type": "object",
+          "properties": {
+            "entry": {
+              "$ref": "#/$defs/PageComponentInstanceEntry"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.registerInstance.return": true,
+        "method.unregisterInstance.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.unregisterInstance.return": true,
+        "method.listInstances.params": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.listInstances.return": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PageComponentInstanceEntry"
+          }
+        },
+        "method.getInstance.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getInstance.return": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PageComponentInstanceEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.registerApi.params": {
+          "type": "object",
+          "properties": {
+            "entry": {
+              "$ref": "#/$defs/PageComponentApiEntry"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.registerApi.return": true,
+        "method.unregisterApi.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.unregisterApi.return": true,
+        "method.listApis.params": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.listApis.return": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PageComponentApiEntry"
+          }
+        },
+        "method.getApi.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getApi.return": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "title": "T"
+        },
+        "method.getApisByType.params": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getApisByType.return": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "T"
+          }
+        }
+      }
     },
     "PageCssScopeCapability": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageCssScopeCapability",
-      "description": "页面作用域 CSS 注入能力（由 SparkPageRenderer 提供）"
+      "$defs": {
+        "method.inject.params": {
+          "type": "object",
+          "properties": {
+            "css": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.inject.return": true
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.973Z",
   "models": {
     "SubtreeFieldPolicy": {
-      "kind": "SubtreeFieldPolicy",
-      "className": "SubtreeFieldPolicy",
+      "name": "SubtreeFieldPolicy",
       "jsdoc": "子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。",
-      "shapeKind": "type",
-      "declarationTypeText": "'unrestricted'",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 27,
         "className": "SubtreeFieldPolicy",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'unrestricted'",
+        "members": {}
+      }
     },
     "ThemeMode": {
-      "kind": "ThemeMode",
-      "className": "ThemeMode",
+      "name": "ThemeMode",
       "jsdoc": "主题模式",
-      "shapeKind": "type",
-      "declarationTypeText": "'light' | 'dark' | 'auto'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'light'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'dark'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'auto'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 30,
         "className": "ThemeMode",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'light' | 'dark' | 'auto'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'light'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'dark'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'auto'"
+          }
+        ],
+        "members": {}
+      }
     },
     "ThemeCapability": {
-      "kind": "ThemeCapability",
-      "className": "ThemeCapability",
+      "name": "ThemeCapability",
       "jsdoc": "主题服务能力接口（最小契约，不含 Vue 响应式）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** current 字段。 */\n    readonly current: 'light' | 'dark';\n    /** mode 字段。 */\n    readonly mode: ThemeMode;\n    setMode(mode: ThemeMode): void;\n    /** 是否 is Dark。 */\n    readonly isDark: boolean;\n    toggle(): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 32,
         "className": "ThemeCapability",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "current",
-          "jsdoc": "current 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "light"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "dark"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "mode",
-          "jsdoc": "mode 字段。",
-          "schema": {
-            "$ref": "#/$defs/ThemeMode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isDark",
-          "jsdoc": "是否 is Dark。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "setMode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** current 字段。 */\n    readonly current: 'light' | 'dark';\n    /** mode 字段。 */\n    readonly mode: ThemeMode;\n    setMode(mode: ThemeMode): void;\n    /** 是否 is Dark。 */\n    readonly isDark: boolean;\n    toggle(): void;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "current",
+              "jsdoc": "current 字段。",
+              "readable": true,
+              "writable": false
+            },
             {
               "name": "mode",
-              "type": {
-                "type": "reference",
-                "name": "ThemeMode",
-                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-              }
+              "jsdoc": "mode 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isDark",
+              "jsdoc": "是否 is Dark。",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "mode": {
-                "$ref": "#/$defs/ThemeMode"
+          "methods": [
+            {
+              "name": "setMode",
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "type": "reference",
+                    "name": "ThemeMode",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "toggle",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "toggle",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "ModuleContextItem": {
-      "kind": "ModuleContextItem",
-      "className": "ModuleContextItem",
+      "name": "ModuleContextItem",
       "jsdoc": "模块列表项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string | number;\n    /** 显示标题。 */\n    title: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 43,
         "className": "ModuleContextItem",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "唯一标识。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "title",
-          "jsdoc": "显示标题。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string | number;\n    /** 显示标题。 */\n    title: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "唯一标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "title",
+              "jsdoc": "显示标题。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ModuleContext": {
-      "kind": "ModuleContext",
-      "className": "ModuleContext",
+      "name": "ModuleContext",
       "jsdoc": "当前模块上下文快照",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** selected 字段。 */\n    selected: string | number | null;\n    /** items 字段。 */\n    items: readonly ModuleContextItem[];\n    /** node Id 标识。 */\n    nodeId: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 50,
         "className": "ModuleContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "selected",
-          "jsdoc": "selected 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "items",
-          "jsdoc": "items 字段。",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "nodeId",
-          "jsdoc": "node Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** selected 字段。 */\n    selected: string | number | null;\n    /** items 字段。 */\n    items: readonly ModuleContextItem[];\n    /** node Id 标识。 */\n    nodeId: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "selected",
+              "jsdoc": "selected 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "items",
+              "jsdoc": "items 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "nodeId",
+              "jsdoc": "node Id 标识。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ModuleContextCapability": {
-      "kind": "ModuleContextCapability",
-      "className": "ModuleContextCapability",
+      "name": "ModuleContextCapability",
       "jsdoc": "MODULE_CONTEXT 能力接口",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    getCurrent(): ModuleContext | null;\n    subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 59,
         "className": "ModuleContextCapability",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getCurrent",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "ModuleContext",
-                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/ModuleContext"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "subscribe",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    getCurrent(): ModuleContext | null;\n    subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "handler",
+              "name": "getCurrent",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ModuleContext",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "subscribe",
+              "parameters": [
+                {
+                  "name": "handler",
+                  "type": {
+                    "type": "reflection",
+                    "declaration": {
+                      "signatures": [
+                        {
+                          "parameters": [
+                            {
+                              "name": "next",
+                              "type": {
+                                "type": "union",
+                                "types": [
+                                  {
+                                    "type": "reference",
+                                    "name": "ModuleContext",
+                                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": null
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "prev",
+                              "type": {
+                                "type": "union",
+                                "types": [
+                                  {
+                                    "type": "reference",
+                                    "name": "ModuleContext",
+                                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                                  },
+                                  {
+                                    "type": "literal",
+                                    "value": null
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "void"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
               "type": {
                 "type": "reflection",
                 "declaration": {
                   "signatures": [
                     {
-                      "parameters": [
-                        {
-                          "name": "next",
-                          "type": {
-                            "type": "union",
-                            "types": [
-                              {
-                                "type": "reference",
-                                "name": "ModuleContext",
-                                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-                              },
-                              {
-                                "type": "literal",
-                                "value": null
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "name": "prev",
-                          "type": {
-                            "type": "union",
-                            "types": [
-                              {
-                                "type": "reference",
-                                "name": "ModuleContext",
-                                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-                              },
-                              {
-                                "type": "literal",
-                                "value": null
-                              }
-                            ]
-                          }
-                        }
-                      ],
+                      "parameters": [],
                       "type": {
                         "type": "intrinsic",
                         "name": "void"
@@ -515,496 +635,317 @@
                 }
               }
             }
-          ],
-          "type": {
-            "type": "reflection",
-            "declaration": {
-              "signatures": [
-                {
-                  "parameters": [],
-                  "type": {
-                    "type": "intrinsic",
-                    "name": "void"
-                  }
-                }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "handler": {
-                "type": "object",
-                "title": "(next: ModuleContext | null, prev: ModuleContext | null) => void"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "() => void"
-          }
+          ]
         }
-      ]
+      }
     },
     "PageComponentInstanceEntry": {
-      "kind": "PageComponentInstanceEntry",
-      "className": "PageComponentInstanceEntry",
+      "name": "PageComponentInstanceEntry",
       "jsdoc": "Page Component Instance Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 64,
         "className": "PageComponentInstanceEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "唯一标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "类型标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "props",
-          "jsdoc": "组件属性集合。",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "唯一标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "type",
+              "jsdoc": "类型标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "props",
+              "jsdoc": "组件属性集合。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageComponentApiEntry": {
-      "kind": "PageComponentApiEntry",
-      "className": "PageComponentApiEntry",
+      "name": "PageComponentApiEntry",
       "jsdoc": "Page Component Api Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** api 字段。 */\n    api: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 73,
         "className": "PageComponentApiEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "唯一标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "类型标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "api",
-          "jsdoc": "api 字段。",
-          "schema": true,
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** api 字段。 */\n    api: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "唯一标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "type",
+              "jsdoc": "类型标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "api",
+              "jsdoc": "api 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageComponentRegistry": {
-      "kind": "PageComponentRegistry",
-      "className": "PageComponentRegistry",
+      "name": "PageComponentRegistry",
       "jsdoc": "页面内组件实例/API 注册表能力接口",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    registerInstance(entry: PageComponentInstanceEntry): void;\n    unregisterInstance(id: string): void;\n    listInstances(type?: string): PageComponentInstanceEntry[];\n    getInstance(id: string): PageComponentInstanceEntry | null;\n    registerApi(entry: PageComponentApiEntry): void;\n    unregisterApi(id: string): void;\n    listApis(type?: string): PageComponentApiEntry[];\n    getApi<T = unknown>(id: string): T | null;\n    getApisByType<T = unknown>(type: string): T[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 82,
         "className": "PageComponentRegistry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "registerInstance",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    registerInstance(entry: PageComponentInstanceEntry): void;\n    unregisterInstance(id: string): void;\n    listInstances(type?: string): PageComponentInstanceEntry[];\n    getInstance(id: string): PageComponentInstanceEntry | null;\n    registerApi(entry: PageComponentApiEntry): void;\n    unregisterApi(id: string): void;\n    listApis(type?: string): PageComponentApiEntry[];\n    getApi<T = unknown>(id: string): T | null;\n    getApisByType<T = unknown>(type: string): T[];\n}",
+        "members": {
+          "methods": [
             {
-              "name": "entry",
-              "type": {
-                "type": "reference",
-                "name": "PageComponentInstanceEntry",
-                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "entry": {
-                "$ref": "#/$defs/PageComponentInstanceEntry"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "unregisterInstance",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
+              "name": "registerInstance",
+              "parameters": [
+                {
+                  "name": "entry",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageComponentInstanceEntry",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "listInstances",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "type",
+              "name": "unregisterInstance",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "PageComponentInstanceEntry",
-              "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/PageComponentInstanceEntry"
-            }
-          }
-        },
-        {
-          "name": "getInstance",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "id",
+              "name": "listInstances",
+              "parameters": [
+                {
+                  "name": "type",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PageComponentInstanceEntry",
+                  "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                }
+              }
+            },
+            {
+              "name": "getInstance",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "PageComponentInstanceEntry",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "registerApi",
+              "parameters": [
+                {
+                  "name": "entry",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageComponentApiEntry",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "PageComponentInstanceEntry",
-                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/PageComponentInstanceEntry"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "registerApi",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "entry",
-              "type": {
-                "type": "reference",
-                "name": "PageComponentApiEntry",
-                "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "entry": {
-                "$ref": "#/$defs/PageComponentApiEntry"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "unregisterApi",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
+              "name": "unregisterApi",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "listApis",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "type",
+              "name": "listApis",
+              "parameters": [
+                {
+                  "name": "type",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "PageComponentApiEntry",
-              "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PageComponentApiEntry",
+                  "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                }
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/PageComponentApiEntry"
-            }
-          }
-        },
-        {
-          "name": "getApi",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "id",
+              "name": "getApi",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getApisByType",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "type",
+              "name": "getApisByType",
+              "parameters": [
+                {
+                  "name": "type",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "T",
+                  "refersToTypeParameter": true
+                }
               }
             }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "T",
-              "refersToTypeParameter": true
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": true
-          }
+          ]
         }
-      ]
+      }
     },
     "PageCssScopeCapability": {
-      "kind": "PageCssScopeCapability",
-      "className": "PageCssScopeCapability",
+      "name": "PageCssScopeCapability",
       "jsdoc": "页面作用域 CSS 注入能力（由 SparkPageRenderer 提供）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    inject(css: string): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts",
         "line": 94,
         "className": "PageCssScopeCapability",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "inject",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    inject(css: string): void;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "css",
+              "name": "inject",
+              "parameters": [
+                {
+                  "name": "css",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "css": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/virtual-card-paging",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
@@ -20,32 +20,58 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "VirtualCardViewportExpose",
-    "WheelPageEvent",
-    "VirtualCardPagingOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.406Z",
   "$defs": {
     "VirtualCardViewportExpose": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "VirtualCardViewportExpose",
-      "description": "虚拟卡片视口组件对分页逻辑暴露的滚动能力。"
-    },
-    "WheelPageEvent": {
-      "type": "object",
-      "title": "WheelPageEvent",
-      "description": "只读取滚轮纵向位移的分页事件。",
-      "properties": {
-        "deltaY": {
+      "$defs": {
+        "method.setScrollTop.params": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setScrollTop.return": true,
+        "method.viewportHeight.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.viewportHeight.return": {
+          "type": "number"
+        },
+        "method.viewportScrollTop.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.viewportScrollTop.return": {
           "type": "number"
         }
       }
     },
+    "WheelPageEvent": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "WheelPageEvent",
+      "properties": {
+        "deltaY": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "deltaY"
+      ],
+      "additionalProperties": false
+    },
     "VirtualCardPagingOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "VirtualCardPagingOptions",
-      "description": "r-virtual-card 虚拟分页、缓存和预加载策略配置。",
       "properties": {
         "viewportRef": {
           "type": "object",
@@ -75,415 +101,354 @@
           "type": "object",
           "title": "ComputedRef<RequestState>"
         }
+      },
+      "required": [
+        "viewportRef",
+        "resolvedView",
+        "rows",
+        "total",
+        "page",
+        "pageSize",
+        "requestState"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.pageHeight.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.pageHeight.return": {
+          "type": "number"
+        },
+        "method.mobilePageHeight.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.mobilePageHeight.return": {
+          "type": "number"
+        },
+        "method.mobileBreakpoint.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.mobileBreakpoint.return": {
+          "type": "number"
+        },
+        "method.overscanPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.overscanPages.return": {
+          "type": "number"
+        },
+        "method.prefetchPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.prefetchPages.return": {
+          "type": "number"
+        },
+        "method.maxCachedPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.maxCachedPages.return": {
+          "type": "number"
+        },
+        "method.settleDelay.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.settleDelay.return": {
+          "type": "number"
+        },
+        "method.wheelStepPx.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.wheelStepPx.return": {
+          "type": "number"
+        },
+        "method.maxWheelJumpPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.maxWheelJumpPages.return": {
+          "type": "number"
+        },
+        "method.dispatchPageChange.params": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.dispatchPageChange.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        }
       }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.406Z",
   "models": {
     "VirtualCardViewportExpose": {
-      "kind": "VirtualCardViewportExpose",
-      "className": "VirtualCardViewportExpose",
+      "name": "VirtualCardViewportExpose",
       "jsdoc": "虚拟卡片视口组件对分页逻辑暴露的滚动能力。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 将视口滚动到指定像素位置。 */\n    setScrollTop(value: number): void;\n    /** 返回当前视口高度。 */\n    viewportHeight(): number;\n    /** 返回当前视口滚动位置。 */\n    viewportScrollTop(): number;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
         "line": 4,
         "className": "VirtualCardViewportExpose",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererVirtualCard",
         "componentType": "r-virtual-card",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "setScrollTop",
-          "jsdoc": "将视口滚动到指定像素位置。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 将视口滚动到指定像素位置。 */\n    setScrollTop(value: number): void;\n    /** 返回当前视口高度。 */\n    viewportHeight(): number;\n    /** 返回当前视口滚动位置。 */\n    viewportScrollTop(): number;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "value",
+              "name": "setScrollTop",
+              "jsdoc": "将视口滚动到指定像素位置。",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "viewportHeight",
+              "jsdoc": "返回当前视口高度。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "viewportScrollTop",
+              "jsdoc": "返回当前视口滚动位置。",
               "type": {
                 "type": "intrinsic",
                 "name": "number"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "type": "number"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "viewportHeight",
-          "jsdoc": "返回当前视口高度。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "viewportScrollTop",
-          "jsdoc": "返回当前视口滚动位置。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
+          ]
         }
-      ]
+      }
     },
     "WheelPageEvent": {
-      "kind": "WheelPageEvent",
-      "className": "WheelPageEvent",
+      "name": "WheelPageEvent",
       "jsdoc": "只读取滚轮纵向位移的分页事件。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 滚轮纵向滚动距离，正数向后翻页。 */\n    deltaY: number;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
         "line": 13,
         "className": "WheelPageEvent",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererVirtualCard",
         "componentType": "r-virtual-card",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "deltaY",
-          "jsdoc": "滚轮纵向滚动距离，正数向后翻页。",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 滚轮纵向滚动距离，正数向后翻页。 */\n    deltaY: number;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "deltaY",
+              "jsdoc": "滚轮纵向滚动距离，正数向后翻页。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "VirtualCardPagingOptions": {
-      "kind": "VirtualCardPagingOptions",
-      "className": "VirtualCardPagingOptions",
+      "name": "VirtualCardPagingOptions",
       "jsdoc": "r-virtual-card 虚拟分页、缓存和预加载策略配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 视口组件 ref，用于读取和设置滚动位置。 */\n    viewportRef: Ref<VirtualCardViewportExpose | null>;\n    /** 当前解析出的 DataView。 */\n    resolvedView: ComputedRef<DataView | null>;\n    /** 当前 DataView 行数据。 */\n    rows: ComputedRef<readonly DataRow[]>;\n    /** 当前查询总条数。 */\n    total: ComputedRef<number>;\n    /** DataView 当前页码。 */\n    page: ComputedRef<number>;\n    /** DataView 当前分页大小。 */\n    pageSize: ComputedRef<number>;\n    /** DataView 当前请求状态。 */\n    requestState: ComputedRef<RequestState>;\n    /** 桌面端单页虚拟高度。 */\n    pageHeight: () => number;\n    /** 移动端单页虚拟高度。 */\n    mobilePageHeight: () => number;\n    /** 切换移动端页高的视口宽度阈值。 */\n    mobileBreakpoint: () => number;\n    /** 当前页前后额外渲染的页数。 */\n    overscanPages: () => number;\n    /** 当前页前后预加载的页数。 */\n    prefetchPages: () => number;\n    /** 内存中最多保留的页缓存数量。 */\n    maxCachedPages: () => number;\n    /** 滚动停止后等待加载的毫秒数。 */\n    settleDelay: () => number;\n    /** 滚轮累计多少像素至少跳一页。 */\n    wheelStepPx: () => number;\n    /** 单次滚轮最多跳过的页数。 */\n    maxWheelJumpPages: () => number;\n    /** 通知外层切换到指定页。 */\n    dispatchPageChange: (page: number) => Promise<void>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
         "line": 18,
         "className": "VirtualCardPagingOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererVirtualCard",
         "componentType": "r-virtual-card",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "viewportRef",
-          "jsdoc": "视口组件 ref，用于读取和设置滚动位置。",
-          "schema": {
-            "type": "object",
-            "title": "Ref<VirtualCardViewportExpose | null>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "resolvedView",
-          "jsdoc": "当前解析出的 DataView。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<DataView | null>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rows",
-          "jsdoc": "当前 DataView 行数据。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<readonly DataRow[]>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "total",
-          "jsdoc": "当前查询总条数。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<number>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "page",
-          "jsdoc": "DataView 当前页码。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<number>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "pageSize",
-          "jsdoc": "DataView 当前分页大小。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<number>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "requestState",
-          "jsdoc": "DataView 当前请求状态。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<RequestState>"
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "pageHeight",
-          "jsdoc": "桌面端单页虚拟高度。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "mobilePageHeight",
-          "jsdoc": "移动端单页虚拟高度。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "mobileBreakpoint",
-          "jsdoc": "切换移动端页高的视口宽度阈值。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "overscanPages",
-          "jsdoc": "当前页前后额外渲染的页数。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "prefetchPages",
-          "jsdoc": "当前页前后预加载的页数。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "maxCachedPages",
-          "jsdoc": "内存中最多保留的页缓存数量。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "settleDelay",
-          "jsdoc": "滚动停止后等待加载的毫秒数。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "wheelStepPx",
-          "jsdoc": "滚轮累计多少像素至少跳一页。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "maxWheelJumpPages",
-          "jsdoc": "单次滚轮最多跳过的页数。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "dispatchPageChange",
-          "jsdoc": "通知外层切换到指定页。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 视口组件 ref，用于读取和设置滚动位置。 */\n    viewportRef: Ref<VirtualCardViewportExpose | null>;\n    /** 当前解析出的 DataView。 */\n    resolvedView: ComputedRef<DataView | null>;\n    /** 当前 DataView 行数据。 */\n    rows: ComputedRef<readonly DataRow[]>;\n    /** 当前查询总条数。 */\n    total: ComputedRef<number>;\n    /** DataView 当前页码。 */\n    page: ComputedRef<number>;\n    /** DataView 当前分页大小。 */\n    pageSize: ComputedRef<number>;\n    /** DataView 当前请求状态。 */\n    requestState: ComputedRef<RequestState>;\n    /** 桌面端单页虚拟高度。 */\n    pageHeight: () => number;\n    /** 移动端单页虚拟高度。 */\n    mobilePageHeight: () => number;\n    /** 切换移动端页高的视口宽度阈值。 */\n    mobileBreakpoint: () => number;\n    /** 当前页前后额外渲染的页数。 */\n    overscanPages: () => number;\n    /** 当前页前后预加载的页数。 */\n    prefetchPages: () => number;\n    /** 内存中最多保留的页缓存数量。 */\n    maxCachedPages: () => number;\n    /** 滚动停止后等待加载的毫秒数。 */\n    settleDelay: () => number;\n    /** 滚轮累计多少像素至少跳一页。 */\n    wheelStepPx: () => number;\n    /** 单次滚轮最多跳过的页数。 */\n    maxWheelJumpPages: () => number;\n    /** 通知外层切换到指定页。 */\n    dispatchPageChange: (page: number) => Promise<void>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "viewportRef",
+              "jsdoc": "视口组件 ref，用于读取和设置滚动位置。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "resolvedView",
+              "jsdoc": "当前解析出的 DataView。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "rows",
+              "jsdoc": "当前 DataView 行数据。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "total",
+              "jsdoc": "当前查询总条数。",
+              "readable": true,
+              "writable": true
+            },
             {
               "name": "page",
+              "jsdoc": "DataView 当前页码。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "pageSize",
+              "jsdoc": "DataView 当前分页大小。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "requestState",
+              "jsdoc": "DataView 当前请求状态。",
+              "readable": true,
+              "writable": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "pageHeight",
+              "jsdoc": "桌面端单页虚拟高度。",
               "type": {
                 "type": "intrinsic",
                 "name": "number"
               }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
+            },
+            {
+              "name": "mobilePageHeight",
+              "jsdoc": "移动端单页虚拟高度。",
+              "type": {
                 "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "page": {
-                "type": "number"
+                "name": "number"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
+            {
+              "name": "mobileBreakpoint",
+              "jsdoc": "切换移动端页高的视口宽度阈值。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "overscanPages",
+              "jsdoc": "当前页前后额外渲染的页数。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "prefetchPages",
+              "jsdoc": "当前页前后预加载的页数。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "maxCachedPages",
+              "jsdoc": "内存中最多保留的页缓存数量。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "settleDelay",
+              "jsdoc": "滚动停止后等待加载的毫秒数。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "wheelStepPx",
+              "jsdoc": "滚轮累计多少像素至少跳一页。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "maxWheelJumpPages",
+              "jsdoc": "单次滚轮最多跳过的页数。",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "dispatchPageChange",
+              "jsdoc": "通知外层切换到指定页。",
+              "parameters": [
+                {
+                  "name": "page",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

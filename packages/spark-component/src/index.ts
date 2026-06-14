@@ -351,6 +351,7 @@ export {
   AiSessionTracePanel,
   AiToolApprovalCard,
   AiToolApprovalPanel,
+  SparkAgentPanel,
 } from './ai/index.js'
 
 export type {
@@ -363,10 +364,12 @@ export type {
   AiToolApprovalCardProps,
   AiToolApprovalCardEmits,
   AiToolApprovalPanelProps,
+  SparkAgentPanelProps,
   StreamDisplayEntry,
   ToolCallDisplayItem,
   ReasoningDisplayItem,
   SessionDiagnosticsData,
   SessionDiagnosticIssue,
+  SparkAgentTimelineEvent,
   ToolApprovalDisplayItem,
 } from './ai/index.js'

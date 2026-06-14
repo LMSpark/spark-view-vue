@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/transport/app-sse-events",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
@@ -14,21 +14,49 @@
       "AiAgentAppSseEvent"
     ]
   },
-  "symbols": [
-    "AiAgentAppSseEventName",
-    "AiAgentAppSseEvent"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.917Z",
   "$defs": {
     "AiAgentAppSseEventName": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AiAgentAppSseEventName",
-      "description": "SSE 事件名联合类型。\n预定义的事件名：\npage-config              — 页面配置变更\ndata-batch-job           — 批量数据任务状态\ndata-change              — 数据变更通知\nnotification             — 通用通知\nai-host-run-request      — 定向触发 APP Host run\nai-host-run-result       — APP Host run 执行回执\nllm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）\n`string & {}` 后缀允许业务方扩展自定义事件名，同时保留 IDE 自动补全。"
+      "anyOf": [
+        {
+          "const": "page-config"
+        },
+        {
+          "const": "data-batch-job"
+        },
+        {
+          "const": "data-change"
+        },
+        {
+          "const": "notification"
+        },
+        {
+          "const": "ai-host-run-request"
+        },
+        {
+          "const": "ai-host-run-result"
+        },
+        {
+          "const": "llm-frame"
+        },
+        {
+          "allOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
     },
     "AiAgentAppSseEvent": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentAppSseEvent",
-      "description": "APP SSE 事件结构。\n字段说明：\nname            — 事件名（如 llm-frame）\nok              — 事件是否成功（false 表示 error 事件）\ndata            — 已解析的事件数据（泛型 T）\nrawData         — 原始 JSON 字符串\nrawPayload      — 原始解析荷载（未做类型转换）\nprotocolVersion — 可选协议版本号\ncontext         — API 信封上下文（可选）\nevent           — API 信封事件（可选）",
       "properties": {
         "name": {
           "$ref": "#/$defs/AiAgentAppSseEventName"
@@ -36,7 +64,10 @@
         "ok": {
           "type": "boolean"
         },
-        "data": true,
+        "data": {
+          "type": "object",
+          "title": "T"
+        },
         "rawData": {
           "type": "string"
         },
@@ -45,158 +76,130 @@
           "type": "number"
         },
         "context": {
-          "type": "object",
-          "title": "ApiEnvelopeContext"
+          "$ref": "../../../../spark-utils/src/http/types.d.ts.json#/$defs/ApiEnvelopeContext"
         },
         "event": {
-          "type": "object",
-          "title": "ApiEnvelopeEvent"
+          "$ref": "../../../../spark-utils/src/http/types.d.ts.json#/$defs/ApiEnvelopeEvent"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.917Z",
   "models": {
     "AiAgentAppSseEventName": {
-      "kind": "AiAgentAppSseEventName",
-      "className": "AiAgentAppSseEventName",
+      "name": "AiAgentAppSseEventName",
       "jsdoc": "SSE 事件名联合类型。\n预定义的事件名：\npage-config              — 页面配置变更\ndata-batch-job           — 批量数据任务状态\ndata-change              — 数据变更通知\nnotification             — 通用通知\nai-host-run-request      — 定向触发 APP Host run\nai-host-run-result       — APP Host run 执行回执\nllm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）\n`string & {}` 后缀允许业务方扩展自定义事件名，同时保留 IDE 自动补全。",
-      "shapeKind": "type",
-      "declarationTypeText": "'page-config' | 'data-batch-job' | 'data-change' | 'notification' | 'ai-host-run-request' | 'ai-host-run-result' | 'llm-frame' | (string & {})",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'page-config'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'data-batch-job'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'data-change'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'notification'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'ai-host-run-request'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'ai-host-run-result'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'llm-frame'"
-        },
-        {
-          "kind": "union",
-          "typeText": "(string & {})"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
         "line": 22,
         "className": "AiAgentAppSseEventName",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'page-config' | 'data-batch-job' | 'data-change' | 'notification' | 'ai-host-run-request' | 'ai-host-run-result' | 'llm-frame' | (string & {})",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'page-config'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'data-batch-job'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'data-change'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'notification'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'ai-host-run-request'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'ai-host-run-result'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'llm-frame'"
+          },
+          {
+            "kind": "union",
+            "typeText": "(string & {})"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiAgentAppSseEvent": {
-      "kind": "AiAgentAppSseEvent",
-      "className": "AiAgentAppSseEvent",
+      "name": "AiAgentAppSseEvent",
       "jsdoc": "APP SSE 事件结构。\n字段说明：\nname            — 事件名（如 llm-frame）\nok              — 事件是否成功（false 表示 error 事件）\ndata            — 已解析的事件数据（泛型 T）\nrawData         — 原始 JSON 字符串\nrawPayload      — 原始解析荷载（未做类型转换）\nprotocolVersion — 可选协议版本号\ncontext         — API 信封上下文（可选）\nevent           — API 信封事件（可选）",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: AiAgentAppSseEventName;\n    ok: boolean;\n    data: T;\n    rawData: string;\n    rawPayload: unknown;\n    protocolVersion?: number;\n    context?: ApiEnvelopeContext;\n    event?: ApiEnvelopeEvent;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    name: AiAgentAppSseEventName;\n    ok: boolean;\n    data: T;\n    rawData: string;\n    rawPayload: unknown;\n    protocolVersion?: number;\n    context?: ApiEnvelopeContext;\n    event?: ApiEnvelopeEvent;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
         "line": 36,
         "className": "AiAgentAppSseEvent",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiAgentAppSseEventName"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "ok",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "data",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rawData",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rawPayload",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "protocolVersion",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "context",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ApiEnvelopeContext"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "event",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ApiEnvelopeEvent"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    name: AiAgentAppSseEventName;\n    ok: boolean;\n    data: T;\n    rawData: string;\n    rawPayload: unknown;\n    protocolVersion?: number;\n    context?: ApiEnvelopeContext;\n    event?: ApiEnvelopeEvent;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    name: AiAgentAppSseEventName;\n    ok: boolean;\n    data: T;\n    rawData: string;\n    rawPayload: unknown;\n    protocolVersion?: number;\n    context?: ApiEnvelopeContext;\n    event?: ApiEnvelopeEvent;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "ok",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rawData",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rawPayload",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "protocolVersion",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "context",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "event",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

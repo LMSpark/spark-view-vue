@@ -8,6 +8,7 @@
 export { default as AiSessionTracePanel } from './components/AiSessionTracePanel.vue'
 export { default as AiToolApprovalCard } from './components/AiToolApprovalCard.vue'
 export { default as AiToolApprovalPanel } from './components/AiToolApprovalPanel.vue'
+export { default as SparkAgentPanel } from './components/SparkAgentPanel.vue'
 
 // ── composables ──
 
@@ -20,6 +21,7 @@ export type { SessionToolCallCardProps } from './components/SessionToolCallCard.
 export type { SessionDiagnosticsPanelProps } from './components/SessionDiagnosticsPanel.props'
 export type { AiToolApprovalCardProps, AiToolApprovalCardEmits } from './components/AiToolApprovalCard.props'
 export type { AiToolApprovalPanelProps } from './components/AiToolApprovalPanel.props'
+export type { SparkAgentPanelProps } from './components/SparkAgentPanel.props'
 
 // ── composable 类型 ──
 
@@ -30,5 +32,6 @@ export type {
   ReasoningDisplayItem,
   SessionDiagnosticsData,
   SessionDiagnosticIssue,
+  SparkAgentTimelineEvent,
   ToolApprovalDisplayItem,
 } from './types'

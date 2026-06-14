@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/model-projection
- * 职责：维护 DTS ClassModel 知识链路中的 model-projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 model-projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/class-model/model-projection 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/model-projection 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type {
   AiApiActionMetadata,
@@ -14,7 +14,7 @@ import type {
 } from '../metadata'
 import type {
   AttributeMeta,
-  ClassModel,
+  DtsTypeDeclarationModel,
   ClassModelDocument,
   ConstructorMeta,
   JsDocMeta,
@@ -23,13 +23,13 @@ import type {
 } from './types'
 
 /**
- * 按 kind 从 ClassModel module 取完整 API 元数据（apiRegistry 优先）。
+ * 按 kind 从 DtsTypeDeclarationModel module 取完整 API 元数据（apiRegistry 优先）。
  * 不在 ClassModelDocument 上预存 models；guide 投影时按需调用。
  */
 export function resolveModuleApi(document: ClassModelDocument, kind: string): AiApiObjectMetadata {
   const api = resolveModuleApiOrUndefined(document, kind)
   if (api === undefined) {
-    throw new Error(`ClassModel module API not found for kind "${kind}".`)
+    throw new Error(`DtsTypeDeclarationModel module API not found for kind "${kind}".`)
   }
   return api
 }
@@ -67,27 +67,31 @@ export function listAttributeReachableKinds(document: ClassModelDocument): reado
   return kinds
 }
 
-/** LLM guide 投影：仅当 kind 在属性链上（或为 root）时返回 ClassModel。 */
-export function projectClassModelForGuide(document: ClassModelDocument, kind: string): ClassModel {
+/** LLM guide 投影：仅当 kind 在属性链上（或为 root）时返回 DtsTypeDeclarationModel。 */
+export function projectClassModelForGuide(document: ClassModelDocument, kind: string): DtsTypeDeclarationModel {
   const reachable = new Set(listAttributeReachableKinds(document))
   if (!reachable.has(kind)) {
     throw new Error(
-      `ClassModel kind "${kind}" is not reachable from root "${document.rootKind}" via attribute.api; fix native planning model / ClassModel attribute reflection.`,
+      `DtsTypeDeclarationModel kind "${kind}" is not reachable from root "${document.rootKind}" via attribute.api; fix native planning model / DtsTypeDeclarationModel attribute reflection.`,
     )
   }
   return projectClassModelFromApi(resolveModuleApi(document, kind))
 }
 
-export function projectClassModelFromApi(api: AiApiObjectMetadata): ClassModel {
+export function projectClassModelFromApi(api: AiApiObjectMetadata): DtsTypeDeclarationModel {
   const constructorMeta = createConstructorMeta(api)
   return {
-    kind: api.kind,
-    className: apiClassName(api),
+    name: apiClassName(api),
     jsdoc: jsdocFromMetadata(api.jsdoc, api.description),
+    declarationKind: 'class',
     ...provenanceProperty(api.provenance),
-    ...(constructorMeta === undefined ? {} : { constructorMeta }),
-    attributes: (api.attributes ?? []).map(attribute => createAttributeMeta(attribute)),
-    methods: api.actions.map(action => createMethodMeta(action)),
+    classDecl: {
+      constructorMeta: constructorMeta ?? createDefaultConstructorMeta(api),
+      members: {
+        attributes: (api.attributes ?? []).map(attribute => createAttributeMeta(attribute)),
+        methods: api.actions.map(action => createMethodMeta(action)),
+      },
+    },
   }
 }
 
@@ -142,6 +146,21 @@ function createConstructorMeta(api: AiApiObjectMetadata): ConstructorMeta | unde
     paramsSchema: api.constructorSignature.paramsSchema,
     jsdoc: jsdocFromMetadata(api.constructorSignature.jsdoc, api.constructorSignature.description),
     ...provenanceProperty(api.constructorSignature.provenance),
+  }
+}
+
+function createDefaultConstructorMeta(api: AiApiObjectMetadata): ConstructorMeta {
+  return {
+    signatureText: 'constructor()',
+    parameterStyle: 'positional',
+    parameters: [],
+    paramsSchema: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    },
+    jsdoc: `/** 创建 ${apiClassName(api)} 实例。 */`,
+    ...provenanceProperty(api.provenance),
   }
 }
 

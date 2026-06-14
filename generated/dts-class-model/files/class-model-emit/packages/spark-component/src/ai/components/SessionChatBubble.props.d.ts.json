@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/SessionChatBubble.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
@@ -13,42 +13,18 @@
       "SessionChatBubbleProps"
     ]
   },
-  "symbols": [
-    "SessionChatBubbleProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.367Z",
   "$defs": {
     "SessionChatBubbleProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SessionChatBubbleProps",
-      "description": "Session Chat Bubble Props 的属性契约。",
       "properties": {
         "role": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "user"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "assistant"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "system"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
+          "enum": [
+            "user",
+            "assistant",
+            "system",
+            "error"
           ]
         },
         "content": {
@@ -60,94 +36,57 @@
         "isTyping": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.367Z",
   "models": {
     "SessionChatBubbleProps": {
-      "kind": "SessionChatBubbleProps",
-      "className": "SessionChatBubbleProps",
-      "jsdoc": "Session Chat Bubble Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "name": "SessionChatBubbleProps",
+      "jsdoc": "@module\n@spark-appworks /spark-component:ai/components/SessionChatBubble.props\n职责：维护\n@spark-appworks /spark-component 中 ai/components/SessionChatBubble.props 的模块能力，围绕 SessionChatBubbleProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionChatBubble.props 的声明、导出和使用边界时，从本模块开始。\nSession Chat Bubble Props 的属性契约。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
         "line": 8,
         "className": "SessionChatBubbleProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SessionChatBubble"
       },
-      "attributes": [
-        {
-          "name": "role",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "user"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "assistant"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "system"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "error"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "content",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "timestamp",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isTyping",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "role",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "content",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "timestamp",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isTyping",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

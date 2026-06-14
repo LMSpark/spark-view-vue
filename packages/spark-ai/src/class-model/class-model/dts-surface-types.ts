@@ -1,10 +1,10 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-surface-types
- * 职责：维护 DTS ClassModel 知识链路中的 dts-surface-types 能力，围绕 DtsClassModelSurfaceDocument、ProjectDtsClassModelSurfaceOptions 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 dts-surface-types 能力，围绕 DtsClassModelSurfaceDocument、ProjectDtsClassModelSurfaceOptions 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/class-model/dts-surface-types 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/dts-surface-types 这一段如何生成、加载或投影时，用本模块定位职责。
  */
-import type { ClassModel } from './types'
+import type { DtsTypeDeclarationModel } from './types'
 import type { ClassModelEmitSource } from './class-model-emit-path'
 
 export const DTS_CLASS_MODEL_SURFACE_VERSION = 1 as const
@@ -14,7 +14,7 @@ export type DtsClassModelSurfaceDocument = Readonly<{
   schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION
   source: ClassModelEmitSource
   configPath: string
-  models: Readonly<Record<string, ClassModel>>
+  models: Readonly<Record<string, DtsTypeDeclarationModel>>
   fileIndex: Readonly<Record<string, readonly string[]>>
   generatedAt?: string
 }>

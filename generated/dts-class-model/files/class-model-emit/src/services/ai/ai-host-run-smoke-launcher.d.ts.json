@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/ai/ai-host-run-smoke-launcher.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/ai/ai-host-run-smoke-launcher",
     "sourcePath": "class-model-emit/src/services/ai/ai-host-run-smoke-launcher.d.ts",
@@ -11,7 +11,7 @@
     "jsdocSource": "source-file-jsdoc",
     "symbols": []
   },
-  "symbols": [],
+  "$defs": {},
   "generatedAt": "2026-06-12T01:02:45.776Z",
   "models": {}
 }

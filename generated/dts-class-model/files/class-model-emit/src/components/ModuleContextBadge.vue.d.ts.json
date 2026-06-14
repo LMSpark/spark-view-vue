@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/components/ModuleContextBadge.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:components/ModuleContextBadge",
     "sourcePath": "class-model-emit/src/components/ModuleContextBadge.vue.d.ts",
@@ -13,19 +13,14 @@
       "Props"
     ]
   },
-  "symbols": [
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.638Z",
   "$defs": {
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
       "properties": {
         "config": {
-          "type": "object",
-          "title": "SparkNode"
+          "$ref": "../../packages/spark-data/src/node-tree/spark-node.d.ts.json#/$defs/SparkNode"
         },
         "label": {
           "type": "string"
@@ -33,53 +28,47 @@
         "emptyText": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.638Z",
   "models": {
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 当前模块上下文配置对象。 */\n    config?: SparkNode;\n    /** 徽标前置标签文本。 */\n    label?: string;\n    /** 配置为空时展示的文本。 */\n    emptyText?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/components/ModuleContextBadge.vue.d.ts",
         "line": 3,
         "className": "Props",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "config",
-          "jsdoc": "当前模块上下文配置对象。",
-          "schema": {
-            "type": "object",
-            "title": "SparkNode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "label",
-          "jsdoc": "徽标前置标签文本。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "emptyText",
-          "jsdoc": "配置为空时展示的文本。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 当前模块上下文配置对象。 */\n    config?: SparkNode;\n    /** 徽标前置标签文本。 */\n    label?: string;\n    /** 配置为空时展示的文本。 */\n    emptyText?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "config",
+              "jsdoc": "当前模块上下文配置对象。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "label",
+              "jsdoc": "徽标前置标签文本。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "emptyText",
+              "jsdoc": "配置为空时展示的文本。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

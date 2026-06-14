@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/navigation/useNavigation.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:navigation/useNavigation",
     "sourcePath": "class-model-emit/packages/spark-app/src/navigation/useNavigation.d.ts",
@@ -13,126 +13,121 @@
       "UseNavigationOptions"
     ]
   },
-  "symbols": [
-    "UseNavigationOptions"
-  ],
-  "generatedAt": "2026-06-12T04:50:58.304Z",
   "$defs": {
     "UseNavigationOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UseNavigationOptions",
-      "description": "Use Navigation Options 的调用配置。",
       "properties": {
         "actionRegistry": {
+          "$ref": "action-registry.d.ts.json#/$defs/NavigationActionRegistry"
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.onCrossAppNavigate.params": {
           "type": "object",
-          "title": "NavigationActionRegistry"
+          "properties": {
+            "projectId": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onCrossAppNavigate.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.getHeaders.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getHeaders.return": {
+          "type": "object",
+          "title": "Record<string, string>"
         }
       }
     }
   },
+  "generatedAt": "2026-06-12T04:50:58.304Z",
   "models": {
     "UseNavigationOptions": {
-      "kind": "UseNavigationOptions",
-      "className": "UseNavigationOptions",
+      "name": "UseNavigationOptions",
       "jsdoc": "Use Navigation Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */\n    onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>;\n    /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */\n    getHeaders?: () => Record<string, string>;\n    /** system-action 命令执行器 */\n    actionRegistry?: NavigationActionRegistry;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/useNavigation.d.ts",
         "line": 5,
         "className": "UseNavigationOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "actionRegistry",
-          "jsdoc": "system-action 命令执行器",
-          "schema": {
-            "type": "object",
-            "title": "NavigationActionRegistry"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "onCrossAppNavigate",
-          "jsdoc": "跨应用导航回调：检测到\n@app :projectId/path 格式时调用，由调用方实现项目切换逻辑",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */\n    onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>;\n    /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */\n    getHeaders?: () => Record<string, string>;\n    /** system-action 命令执行器 */\n    actionRegistry?: NavigationActionRegistry;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "projectId",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "path",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
+              "name": "actionRegistry",
+              "jsdoc": "system-action 命令执行器",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "projectId": {
-                "type": "string"
-              },
-              "path": {
-                "type": "string"
+          "methods": [
+            {
+              "name": "onCrossAppNavigate",
+              "jsdoc": "跨应用导航回调：检测到\n@app :projectId/path 格式时调用，由调用方实现项目切换逻辑",
+              "parameters": [
+                {
+                  "name": "projectId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "path",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "getHeaders",
-          "jsdoc": "返回额外请求头（如 Authorization），用于远程上下文数据加载",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Record",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "intrinsic",
-                "name": "string"
+            {
+              "name": "getHeaders",
+              "jsdoc": "返回额外请求头（如 Authorization），用于远程上下文数据加载",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Record<string, string>"
-          }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

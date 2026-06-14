@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/navigation/nav-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:navigation/nav-types",
     "sourcePath": "class-model-emit/packages/spark-app/src/navigation/nav-types.d.ts",
@@ -13,15 +13,11 @@
       "NavigationContext"
     ]
   },
-  "symbols": [
-    "NavigationContext"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.348Z",
   "$defs": {
     "NavigationContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationContext",
-      "description": "Navigation Context 的运行上下文。",
       "properties": {
         "activePath": {
           "type": "object",
@@ -39,268 +35,244 @@
           "type": "object",
           "title": "ComputedRef<NavContextState | null>"
         }
+      },
+      "required": [
+        "activePath",
+        "regionItems",
+        "regionVisibility",
+        "moduleContext"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.navigateTo.params": {
+          "type": "object",
+          "properties": {
+            "node": {
+              "$ref": "../../../spark-project-model/src/navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.navigateTo.return": true,
+        "method.navigateToPath.params": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.navigateToPath.return": true,
+        "method.setContextValue.params": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setContextValue.return": true,
+        "method.isNodeActive.params": {
+          "type": "object",
+          "properties": {
+            "node": {
+              "$ref": "../../../spark-project-model/src/navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.isNodeActive.return": {
+          "type": "boolean"
+        },
+        "method.getBadge.params": {
+          "type": "object",
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getBadge.return": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "method.setBadge.params": {
+          "type": "object",
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setBadge.return": true
       }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.348Z",
   "models": {
     "NavigationContext": {
-      "kind": "NavigationContext",
-      "className": "NavigationContext",
+      "name": "NavigationContext",
       "jsdoc": "Navigation Context 的运行上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 从根到当前叶子的节点路径 */\n    activePath: ComputedRef<ProjectNodeData[]>;\n    /** 各区域的导航项 */\n    regionItems: ComputedRef<RegionItems>;\n    /** 各区域是否可见（有项为 true） */\n    regionVisibility: ComputedRef<RegionVisibility>;\n    /** 当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面） */\n    moduleContext: ComputedRef<NavContextState | null>;\n    /** 导航到指定节点（处理外部链接、重定向、首个叶子等） */\n    navigateTo: (node: ProjectNodeData) => void;\n    /** 导航到指定路径（自动追加租户前缀） */\n    navigateToPath: (path: string) => void;\n    /** 设置当前模块上下文选择器的值 */\n    setContextValue: (value: string | number | null) => void;\n    /** 判断节点是否在活动路径上 */\n    isNodeActive: (node: ProjectNodeData) => boolean;\n    /** 获取节点的角标（运行时动态设定） */\n    getBadge: (nodeId: string) => string | number | undefined;\n    /** 设置节点的角标（运行时 API） */\n    setBadge: (nodeId: string, value: string | number | undefined) => void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/nav-types.d.ts",
         "line": 10,
         "className": "NavigationContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "activePath",
-          "jsdoc": "从根到当前叶子的节点路径",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<ProjectNodeData[]>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "regionItems",
-          "jsdoc": "各区域的导航项",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<RegionItems>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "regionVisibility",
-          "jsdoc": "各区域是否可见（有项为 true）",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<RegionVisibility>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "moduleContext",
-          "jsdoc": "当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面）",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<NavContextState | null>"
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "navigateTo",
-          "jsdoc": "导航到指定节点（处理外部链接、重定向、首个叶子等）",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 从根到当前叶子的节点路径 */\n    activePath: ComputedRef<ProjectNodeData[]>;\n    /** 各区域的导航项 */\n    regionItems: ComputedRef<RegionItems>;\n    /** 各区域是否可见（有项为 true） */\n    regionVisibility: ComputedRef<RegionVisibility>;\n    /** 当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面） */\n    moduleContext: ComputedRef<NavContextState | null>;\n    /** 导航到指定节点（处理外部链接、重定向、首个叶子等） */\n    navigateTo: (node: ProjectNodeData) => void;\n    /** 导航到指定路径（自动追加租户前缀） */\n    navigateToPath: (path: string) => void;\n    /** 设置当前模块上下文选择器的值 */\n    setContextValue: (value: string | number | null) => void;\n    /** 判断节点是否在活动路径上 */\n    isNodeActive: (node: ProjectNodeData) => boolean;\n    /** 获取节点的角标（运行时动态设定） */\n    getBadge: (nodeId: string) => string | number | undefined;\n    /** 设置节点的角标（运行时 API） */\n    setBadge: (nodeId: string, value: string | number | undefined) => void;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "node",
-              "type": {
-                "type": "reference",
-                "name": "ProjectNodeData"
-              }
+              "name": "activePath",
+              "jsdoc": "从根到当前叶子的节点路径",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "regionItems",
+              "jsdoc": "各区域的导航项",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "regionVisibility",
+              "jsdoc": "各区域是否可见（有项为 true）",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "moduleContext",
+              "jsdoc": "当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面）",
+              "readable": true,
+              "writable": true
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "node": {
-                "type": "object",
-                "title": "ProjectNodeData"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "navigateToPath",
-          "jsdoc": "导航到指定路径（自动追加租户前缀）",
-          "parameterStyle": "positional",
-          "parameters": [
+          "methods": [
             {
-              "name": "path",
+              "name": "navigateTo",
+              "jsdoc": "导航到指定节点（处理外部链接、重定向、首个叶子等）",
+              "parameters": [
+                {
+                  "name": "node",
+                  "type": {
+                    "type": "reference",
+                    "name": "ProjectNodeData"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "path": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "setContextValue",
-          "jsdoc": "设置当前模块上下文选择器的值",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "value",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
+              "name": "navigateToPath",
+              "jsdoc": "导航到指定路径（自动追加租户前缀）",
+              "parameters": [
+                {
+                  "name": "path",
+                  "type": {
                     "type": "intrinsic",
                     "name": "string"
-                  },
-                  {
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "setContextValue",
+              "jsdoc": "设置当前模块上下文选择器的值",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "isNodeActive",
+              "jsdoc": "判断节点是否在活动路径上",
+              "parameters": [
+                {
+                  "name": "node",
+                  "type": {
+                    "type": "reference",
+                    "name": "ProjectNodeData"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "getBadge",
+              "jsdoc": "获取节点的角标（运行时动态设定）",
+              "parameters": [
+                {
+                  "name": "nodeId",
+                  "type": {
                     "type": "intrinsic",
-                    "name": "number"
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
+                    "name": "string"
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "isNodeActive",
-          "jsdoc": "判断节点是否在活动路径上",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "node",
-              "type": {
-                "type": "reference",
-                "name": "ProjectNodeData"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "node": {
-                "type": "object",
-                "title": "ProjectNodeData"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "getBadge",
-          "jsdoc": "获取节点的角标（运行时动态设定）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "nodeId",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "intrinsic",
-                "name": "number"
-              },
-              {
-                "type": "intrinsic",
-                "name": "undefined"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "nodeId": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        {
-          "name": "setBadge",
-          "jsdoc": "设置节点的角标（运行时 API）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "nodeId",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "value",
+                }
+              ],
               "type": {
                 "type": "union",
                 "types": [
@@ -318,34 +290,47 @@
                   }
                 ]
               }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "nodeId": {
-                "type": "string"
-              },
-              "value": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "setBadge",
+              "jsdoc": "设置节点的角标（运行时 API）",
+              "parameters": [
+                {
+                  "name": "nodeId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

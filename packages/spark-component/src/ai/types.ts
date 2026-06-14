@@ -50,6 +50,14 @@ export type StreamDisplayEntry =
   | Readonly<{ kind: 'error'; message: string; timestamp: number }>
   | Readonly<{ kind: 'system-message'; content: string; timestamp: number }>
 
+/** AG-UI 事件 timeline 的展示投影。 */
+export type SparkAgentTimelineEvent = Readonly<{
+  sequence: number
+  type: string
+  timestamp: number
+  payloadPreview: string
+}>
+
 // ── 诊断数据 ──
 
 /** Session Diagnostic Issue 的语义模型。 */

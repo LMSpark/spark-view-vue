@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:core/data-view-key",
     "sourcePath": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
@@ -24,72 +24,30 @@
       "ResolvedDataViewCapabilities"
     ]
   },
-  "symbols": [
-    "DataMember",
-    "DataViewKeyDescriptor",
-    "DataViewMemberDescriptor",
-    "DataViewMemberInput",
-    "DataViewMemberObject",
-    "DataViewMemberValue",
-    "DataViewMemberBinding",
-    "DataViewKeyDiagnosticStatus",
-    "DataViewKeyDiagnostic",
-    "DataViewMemberDiagnosticStatus",
-    "DataViewMemberDiagnostic",
-    "ResolvedDataViewCapabilities"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.003Z",
   "$defs": {
     "DataMember": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DataMember",
-      "description": "Data Member 的语义模型。",
-      "properties": {
-        "Rows": {
-          "type": "string"
-        },
-        "Columns": {
-          "type": "string"
-        },
-        "CurrentRow": {
-          "type": "string"
-        },
-        "SelectedRows": {
-          "type": "string"
-        },
-        "AggregateResult": {
-          "type": "string"
-        },
-        "SelectionAggregateResult": {
-          "type": "string"
-        },
-        "Total": {
-          "type": "string"
-        },
-        "Page": {
-          "type": "string"
-        },
-        "PageSize": {
-          "type": "string"
-        },
-        "RequestState": {
-          "type": "string"
-        },
-        "Mutating": {
-          "type": "string"
-        },
-        "LoadingError": {
-          "type": "string"
-        },
-        "MutatingError": {
-          "type": "string"
-        }
-      }
+      "enum": [
+        "rows",
+        "columns",
+        "currentRow",
+        "selectedRows",
+        "aggregateResult",
+        "selectionAggregateResult",
+        "total",
+        "page",
+        "pageSize",
+        "requestState",
+        "mutating",
+        "loadingError",
+        "mutatingError"
+      ]
     },
     "DataViewKeyDescriptor": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewKeyDescriptor",
-      "description": "Data View Key Descriptor 的语义模型。",
       "properties": {
         "scope": {
           "type": "string"
@@ -106,12 +64,18 @@
         "crossPage": {
           "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "tableName",
+        "viewId",
+        "raw"
+      ],
+      "additionalProperties": false
     },
     "DataViewMemberDescriptor": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewMemberDescriptor",
-      "description": "Data View Member Descriptor 的语义模型。",
       "properties": {
         "dataMember": {
           "$ref": "#/$defs/DataMember"
@@ -119,113 +83,78 @@
         "dataField": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "dataMember"
+      ],
+      "additionalProperties": false
     },
     "DataViewMemberInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewMemberInput",
-      "description": "Data View Member Input 的输入数据。",
       "properties": {
         "dataViewKey": {
           "type": "string"
         },
-        "dataMember": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/DataMember"
-            },
-            {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          ]
-        },
+        "dataMember": true,
         "dataField": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "dataViewKey",
+        "dataMember"
+      ],
+      "additionalProperties": false
     },
     "DataViewMemberObject": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewMemberObject",
-      "description": "Data View Member Object 的语义模型。"
-    },
-    "DataViewMemberValue": {
-      "type": "object",
-      "title": "DataViewMemberValue",
-      "description": "Data View Member Value 的语义模型。"
+      "additionalProperties": false
     },
     "DataViewMemberBinding": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewMemberBinding",
-      "description": "Data View Member Binding 的语义模型。",
       "properties": {
         "kind": {
-          "type": "string",
-          "enum": [
-            "value"
-          ]
+          "const": "value"
         },
         "value": {
           "$ref": "#/$defs/DataViewMemberValue"
         },
         "source": {
-          "type": "object",
-          "title": "DataSource"
+          "$ref": "../types.d.ts.json#/$defs/DataSource"
         },
         "descriptor": {
           "$ref": "#/$defs/DataViewMemberDescriptor"
         }
-      }
+      },
+      "required": [
+        "kind",
+        "value",
+        "source",
+        "descriptor"
+      ],
+      "additionalProperties": false
     },
     "DataViewKeyDiagnosticStatus": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DataViewKeyDiagnosticStatus",
-      "description": "Data View Key Diagnostic Status 的语义模型。"
+      "enum": [
+        "ok",
+        "invalid-key",
+        "missing-dataset",
+        "missing-table",
+        "missing-view"
+      ]
     },
     "DataViewKeyDiagnostic": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewKeyDiagnostic",
-      "description": "Data View Key Diagnostic 的诊断信息。",
       "properties": {
         "ok": {
           "type": "boolean"
@@ -249,17 +178,45 @@
         "message": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "ok",
+        "status",
+        "rawKey",
+        "descriptor",
+        "message"
+      ],
+      "additionalProperties": false
     },
     "DataViewMemberDiagnosticStatus": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DataViewMemberDiagnosticStatus",
-      "description": "Data View Member Diagnostic Status 的语义模型。"
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "DataViewKeyDiagnosticStatus"
+        },
+        {
+          "const": "invalid-member"
+        },
+        {
+          "const": "empty-current-row"
+        },
+        {
+          "const": "empty-selection"
+        },
+        {
+          "const": "missing-field"
+        },
+        {
+          "const": "unsupported-data-field"
+        }
+      ]
     },
     "DataViewMemberDiagnostic": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewMemberDiagnostic",
-      "description": "Data View Member Diagnostic 的诊断信息。",
       "properties": {
         "ok": {
           "type": "boolean"
@@ -283,18 +240,25 @@
         "message": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "ok",
+        "status",
+        "rawKey",
+        "descriptor",
+        "message"
+      ],
+      "additionalProperties": false
     },
     "ResolvedDataViewCapabilities": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ResolvedDataViewCapabilities",
-      "description": "Resolved Data View Capabilities 的语义模型。",
       "properties": {
         "dataSource": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataView"
+              "$ref": "../data-view.d.ts.json#/$defs/DataView"
             },
             {
               "type": "null"
@@ -304,758 +268,579 @@
         "dataRow": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataRow"
+              "$ref": "../types.d.ts.json#/$defs/DataRow"
             },
             {
               "type": "null"
             }
           ]
         }
-      }
+      },
+      "required": [
+        "dataSource",
+        "dataRow"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.003Z",
   "models": {
     "DataMember": {
-      "kind": "DataMember",
-      "className": "DataMember",
+      "name": "DataMember",
       "jsdoc": "Data Member 的语义模型。",
-      "shapeKind": "enum",
+      "declarationKind": "enum",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 21,
         "className": "DataMember",
         "declarationKind": "enum"
       },
-      "attributes": [
-        {
-          "name": "Rows",
-          "jsdoc": "Rows 字段。",
-          "schema": {
-            "type": "string"
+      "enumDecl": {
+        "members": [
+          {
+            "name": "Rows",
+            "jsdoc": "Rows 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Columns",
-          "jsdoc": "Columns 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Columns",
+            "jsdoc": "Columns 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "CurrentRow",
-          "jsdoc": "Current Row 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "CurrentRow",
+            "jsdoc": "Current Row 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "SelectedRows",
-          "jsdoc": "Selected Rows 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "SelectedRows",
+            "jsdoc": "Selected Rows 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "AggregateResult",
-          "jsdoc": "Aggregate Result 结果。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "AggregateResult",
+            "jsdoc": "Aggregate Result 结果。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "SelectionAggregateResult",
-          "jsdoc": "Selection Aggregate Result 结果。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "SelectionAggregateResult",
+            "jsdoc": "Selection Aggregate Result 结果。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Total",
-          "jsdoc": "Total 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Total",
+            "jsdoc": "Total 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Page",
-          "jsdoc": "Page 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Page",
+            "jsdoc": "Page 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "PageSize",
-          "jsdoc": "Page Size 大小。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "PageSize",
+            "jsdoc": "Page Size 大小。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "RequestState",
-          "jsdoc": "Request State 状态。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "RequestState",
+            "jsdoc": "Request State 状态。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Mutating",
-          "jsdoc": "Mutating 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Mutating",
+            "jsdoc": "Mutating 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "LoadingError",
-          "jsdoc": "Loading Error 错误信息。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "LoadingError",
+            "jsdoc": "Loading Error 错误信息。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "MutatingError",
-          "jsdoc": "Mutating Error 错误信息。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
+          {
+            "name": "MutatingError",
+            "jsdoc": "Mutating Error 错误信息。",
+            "readable": true,
+            "writable": false
+          }
+        ]
+      }
     },
     "DataViewKeyDescriptor": {
-      "kind": "DataViewKeyDescriptor",
-      "className": "DataViewKeyDescriptor",
+      "name": "DataViewKeyDescriptor",
       "jsdoc": "Data View Key Descriptor 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** DataSet scope, present only for cross-page `#scope` references. */\n    scope?: string;\n    /** DataTable name. */\n    tableName: string;\n    /** DataView id. */\n    viewId: string;\n    /** Original dataViewKey string. */\n    raw: string;\n    /** Whether this key uses the cross-page `#scope` prefix. */\n    crossPage?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 50,
         "className": "DataViewKeyDescriptor",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "scope",
-          "jsdoc": "DataSet scope, present only for cross-page `#scope` references.",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "tableName",
-          "jsdoc": "DataTable name.",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "viewId",
-          "jsdoc": "DataView id.",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "raw",
-          "jsdoc": "Original dataViewKey string.",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "crossPage",
-          "jsdoc": "Whether this key uses the cross-page `#scope` prefix.",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** DataSet scope, present only for cross-page `#scope` references. */\n    scope?: string;\n    /** DataTable name. */\n    tableName: string;\n    /** DataView id. */\n    viewId: string;\n    /** Original dataViewKey string. */\n    raw: string;\n    /** Whether this key uses the cross-page `#scope` prefix. */\n    crossPage?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "scope",
+              "jsdoc": "DataSet scope, present only for cross-page `#scope` references.",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tableName",
+              "jsdoc": "DataTable name.",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "viewId",
+              "jsdoc": "DataView id.",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "raw",
+              "jsdoc": "Original dataViewKey string.",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "crossPage",
+              "jsdoc": "Whether this key uses the cross-page `#scope` prefix.",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DataViewMemberDescriptor": {
-      "kind": "DataViewMemberDescriptor",
-      "className": "DataViewMemberDescriptor",
+      "name": "DataViewMemberDescriptor",
       "jsdoc": "Data View Member Descriptor 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "DataViewKeyDescriptor & {\n    /** DataView output member. */\n    dataMember: DataMember;\n    /** Optional business field/path inside object-shaped members. */\n    dataField?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "DataViewKeyDescriptor",
-          "targetName": "DataViewKeyDescriptor"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** DataView output member. */\n    dataMember: DataMember;\n    /** Optional business field/path inside object-shaped members. */\n    dataField?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 63,
         "className": "DataViewMemberDescriptor",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "dataMember",
-          "jsdoc": "DataView output member.",
-          "schema": {
-            "$ref": "#/$defs/DataMember"
+      "typeAlias": {
+        "declarationTypeText": "DataViewKeyDescriptor & {\n    /** DataView output member. */\n    dataMember: DataMember;\n    /** Optional business field/path inside object-shaped members. */\n    dataField?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "DataViewKeyDescriptor",
+            "targetName": "DataViewKeyDescriptor"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "dataField",
-          "jsdoc": "Optional business field/path inside object-shaped members.",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** DataView output member. */\n    dataMember: DataMember;\n    /** Optional business field/path inside object-shaped members. */\n    dataField?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "dataMember",
+              "jsdoc": "DataView output member.",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "dataField",
+              "jsdoc": "Optional business field/path inside object-shaped members.",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DataViewMemberInput": {
-      "kind": "DataViewMemberInput",
-      "className": "DataViewMemberInput",
+      "name": "DataViewMemberInput",
       "jsdoc": "Data View Member Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** DataView 定位键。 */\n    dataViewKey: string | undefined;\n    /** DataView 成员名。 */\n    dataMember: DataMember | `${DataMember}` | undefined;\n    /** DataView 成员字段路径。 */\n    dataField?: string | undefined;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 70,
         "className": "DataViewMemberInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "dataViewKey",
-          "jsdoc": "DataView 定位键。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "dataMember",
-          "jsdoc": "DataView 成员名。",
-          "schema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/DataMember"
-              },
-              {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "dataField",
-          "jsdoc": "DataView 成员字段路径。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** DataView 定位键。 */\n    dataViewKey: string | undefined;\n    /** DataView 成员名。 */\n    dataMember: DataMember | `${DataMember}` | undefined;\n    /** DataView 成员字段路径。 */\n    dataField?: string | undefined;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "dataViewKey",
+              "jsdoc": "DataView 定位键。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "dataMember",
+              "jsdoc": "DataView 成员名。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "dataField",
+              "jsdoc": "DataView 成员字段路径。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DataViewMemberObject": {
-      "kind": "DataViewMemberObject",
-      "className": "DataViewMemberObject",
+      "name": "DataViewMemberObject",
       "jsdoc": "Data View Member Object 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [key: string]: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 79,
         "className": "DataViewMemberObject",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [key: string]: unknown;\n}",
+        "members": {}
+      }
     },
     "DataViewMemberValue": {
-      "kind": "DataViewMemberValue",
-      "className": "DataViewMemberValue",
+      "name": "DataViewMemberValue",
       "jsdoc": "Data View Member Value 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "DataRow | AggregateResultRow | readonly DataRow[] | readonly DataColumn[] | DataViewMemberObject | readonly unknown[] | string | number | boolean | bigint | symbol | null | undefined | Error",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "DataRow",
-          "targetName": "DataRow"
-        },
-        {
-          "kind": "union",
-          "typeText": "AggregateResultRow",
-          "targetName": "AggregateResultRow"
-        },
-        {
-          "kind": "union",
-          "typeText": "readonly DataRow[]"
-        },
-        {
-          "kind": "union",
-          "typeText": "readonly DataColumn[]"
-        },
-        {
-          "kind": "union",
-          "typeText": "DataViewMemberObject",
-          "targetName": "DataViewMemberObject"
-        },
-        {
-          "kind": "union",
-          "typeText": "readonly unknown[]"
-        },
-        {
-          "kind": "union",
-          "typeText": "string"
-        },
-        {
-          "kind": "union",
-          "typeText": "number"
-        },
-        {
-          "kind": "union",
-          "typeText": "boolean"
-        },
-        {
-          "kind": "union",
-          "typeText": "bigint"
-        },
-        {
-          "kind": "union",
-          "typeText": "symbol"
-        },
-        {
-          "kind": "union",
-          "typeText": "null"
-        },
-        {
-          "kind": "union",
-          "typeText": "undefined"
-        },
-        {
-          "kind": "union",
-          "typeText": "Error",
-          "targetName": "Error"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 83,
         "className": "DataViewMemberValue",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "DataRow | AggregateResultRow | readonly DataRow[] | readonly DataColumn[] | DataViewMemberObject | readonly unknown[] | string | number | boolean | bigint | symbol | null | undefined | Error",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "DataRow",
+            "targetName": "DataRow"
+          },
+          {
+            "kind": "union",
+            "typeText": "AggregateResultRow",
+            "targetName": "AggregateResultRow"
+          },
+          {
+            "kind": "union",
+            "typeText": "readonly DataRow[]"
+          },
+          {
+            "kind": "union",
+            "typeText": "readonly DataColumn[]"
+          },
+          {
+            "kind": "union",
+            "typeText": "DataViewMemberObject",
+            "targetName": "DataViewMemberObject"
+          },
+          {
+            "kind": "union",
+            "typeText": "readonly unknown[]"
+          },
+          {
+            "kind": "union",
+            "typeText": "string"
+          },
+          {
+            "kind": "union",
+            "typeText": "number"
+          },
+          {
+            "kind": "union",
+            "typeText": "boolean"
+          },
+          {
+            "kind": "union",
+            "typeText": "bigint"
+          },
+          {
+            "kind": "union",
+            "typeText": "symbol"
+          },
+          {
+            "kind": "union",
+            "typeText": "null"
+          },
+          {
+            "kind": "union",
+            "typeText": "undefined"
+          },
+          {
+            "kind": "union",
+            "typeText": "Error",
+            "targetName": "Error"
+          }
+        ],
+        "members": {}
+      }
     },
     "DataViewMemberBinding": {
-      "kind": "DataViewMemberBinding",
-      "className": "DataViewMemberBinding",
+      "name": "DataViewMemberBinding",
       "jsdoc": "Data View Member Binding 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'value';\n    /** 当前值。 */\n    value: DataViewMemberValue;\n    /** 来源对象。 */\n    source: DataSource;\n    /** descriptor 字段。 */\n    descriptor: DataViewMemberDescriptor;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 90,
         "className": "DataViewMemberBinding",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "类型判别字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "value"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "value",
-          "jsdoc": "当前值。",
-          "schema": {
-            "$ref": "#/$defs/DataViewMemberValue"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "source",
-          "jsdoc": "来源对象。",
-          "schema": {
-            "type": "object",
-            "title": "DataSource"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "descriptor",
-          "jsdoc": "descriptor 字段。",
-          "schema": {
-            "$ref": "#/$defs/DataViewMemberDescriptor"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'value';\n    /** 当前值。 */\n    value: DataViewMemberValue;\n    /** 来源对象。 */\n    source: DataSource;\n    /** descriptor 字段。 */\n    descriptor: DataViewMemberDescriptor;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "jsdoc": "类型判别字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "value",
+              "jsdoc": "当前值。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "source",
+              "jsdoc": "来源对象。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "descriptor",
+              "jsdoc": "descriptor 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DataViewKeyDiagnosticStatus": {
-      "kind": "DataViewKeyDiagnosticStatus",
-      "className": "DataViewKeyDiagnosticStatus",
+      "name": "DataViewKeyDiagnosticStatus",
       "jsdoc": "Data View Key Diagnostic Status 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'ok' | 'invalid-key' | 'missing-dataset' | 'missing-table' | 'missing-view'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'ok'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'invalid-key'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'missing-dataset'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'missing-table'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'missing-view'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 102,
         "className": "DataViewKeyDiagnosticStatus",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'ok' | 'invalid-key' | 'missing-dataset' | 'missing-table' | 'missing-view'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'ok'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'invalid-key'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'missing-dataset'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'missing-table'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'missing-view'"
+          }
+        ],
+        "members": {}
+      }
     },
     "DataViewKeyDiagnostic": {
-      "kind": "DataViewKeyDiagnostic",
-      "className": "DataViewKeyDiagnostic",
+      "name": "DataViewKeyDiagnostic",
       "jsdoc": "Data View Key Diagnostic 的诊断信息。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** ok 字段。 */\n    ok: boolean;\n    /** 当前状态。 */\n    status: DataViewKeyDiagnosticStatus;\n    /** raw Key 键。 */\n    rawKey: string;\n    /** descriptor 字段。 */\n    descriptor: DataViewKeyDescriptor | null;\n    /** 用户可读消息。 */\n    message: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 104,
         "className": "DataViewKeyDiagnostic",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "ok",
-          "jsdoc": "ok 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "status",
-          "jsdoc": "当前状态。",
-          "schema": {
-            "$ref": "#/$defs/DataViewKeyDiagnosticStatus"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rawKey",
-          "jsdoc": "raw Key 键。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "descriptor",
-          "jsdoc": "descriptor 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/DataViewKeyDescriptor"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "用户可读消息。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** ok 字段。 */\n    ok: boolean;\n    /** 当前状态。 */\n    status: DataViewKeyDiagnosticStatus;\n    /** raw Key 键。 */\n    rawKey: string;\n    /** descriptor 字段。 */\n    descriptor: DataViewKeyDescriptor | null;\n    /** 用户可读消息。 */\n    message: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "ok",
+              "jsdoc": "ok 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "status",
+              "jsdoc": "当前状态。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "rawKey",
+              "jsdoc": "raw Key 键。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "descriptor",
+              "jsdoc": "descriptor 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "message",
+              "jsdoc": "用户可读消息。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DataViewMemberDiagnosticStatus": {
-      "kind": "DataViewMemberDiagnosticStatus",
-      "className": "DataViewMemberDiagnosticStatus",
+      "name": "DataViewMemberDiagnosticStatus",
       "jsdoc": "Data View Member Diagnostic Status 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "DataViewKeyDiagnosticStatus | 'invalid-member' | 'empty-current-row' | 'empty-selection' | 'missing-field' | 'unsupported-data-field'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "DataViewKeyDiagnosticStatus",
-          "targetName": "DataViewKeyDiagnosticStatus"
-        },
-        {
-          "kind": "union",
-          "typeText": "'invalid-member'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'empty-current-row'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'empty-selection'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'missing-field'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'unsupported-data-field'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 117,
         "className": "DataViewMemberDiagnosticStatus",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "DataViewKeyDiagnosticStatus | 'invalid-member' | 'empty-current-row' | 'empty-selection' | 'missing-field' | 'unsupported-data-field'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "DataViewKeyDiagnosticStatus",
+            "targetName": "DataViewKeyDiagnosticStatus"
+          },
+          {
+            "kind": "union",
+            "typeText": "'invalid-member'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'empty-current-row'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'empty-selection'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'missing-field'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'unsupported-data-field'"
+          }
+        ],
+        "members": {}
+      }
     },
     "DataViewMemberDiagnostic": {
-      "kind": "DataViewMemberDiagnostic",
-      "className": "DataViewMemberDiagnostic",
+      "name": "DataViewMemberDiagnostic",
       "jsdoc": "Data View Member Diagnostic 的诊断信息。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** ok 字段。 */\n    ok: boolean;\n    /** 当前状态。 */\n    status: DataViewMemberDiagnosticStatus;\n    /** raw Key 键。 */\n    rawKey: string;\n    /** descriptor 字段。 */\n    descriptor: DataViewMemberDescriptor | null;\n    /** 用户可读消息。 */\n    message: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 119,
         "className": "DataViewMemberDiagnostic",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "ok",
-          "jsdoc": "ok 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "status",
-          "jsdoc": "当前状态。",
-          "schema": {
-            "$ref": "#/$defs/DataViewMemberDiagnosticStatus"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rawKey",
-          "jsdoc": "raw Key 键。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "descriptor",
-          "jsdoc": "descriptor 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/DataViewMemberDescriptor"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "用户可读消息。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** ok 字段。 */\n    ok: boolean;\n    /** 当前状态。 */\n    status: DataViewMemberDiagnosticStatus;\n    /** raw Key 键。 */\n    rawKey: string;\n    /** descriptor 字段。 */\n    descriptor: DataViewMemberDescriptor | null;\n    /** 用户可读消息。 */\n    message: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "ok",
+              "jsdoc": "ok 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "status",
+              "jsdoc": "当前状态。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "rawKey",
+              "jsdoc": "raw Key 键。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "descriptor",
+              "jsdoc": "descriptor 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "message",
+              "jsdoc": "用户可读消息。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ResolvedDataViewCapabilities": {
-      "kind": "ResolvedDataViewCapabilities",
-      "className": "ResolvedDataViewCapabilities",
+      "name": "ResolvedDataViewCapabilities",
       "jsdoc": "Resolved Data View Capabilities 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** Resolved DataView, or null when unavailable. */\n    dataSource: DataView | null;\n    /** Resolved row-like context, or null when unavailable. */\n    dataRow: DataRow | null;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/core/data-view-key.d.ts",
         "line": 135,
         "className": "ResolvedDataViewCapabilities",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "dataSource",
-          "jsdoc": "Resolved DataView, or null when unavailable.",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataView"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "dataRow",
-          "jsdoc": "Resolved row-like context, or null when unavailable.",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataRow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** Resolved DataView, or null when unavailable. */\n    dataSource: DataView | null;\n    /** Resolved row-like context, or null when unavailable. */\n    dataRow: DataRow | null;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "dataSource",
+              "jsdoc": "Resolved DataView, or null when unavailable.",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "dataRow",
+              "jsdoc": "Resolved row-like context, or null when unavailable.",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

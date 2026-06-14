@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/core/json-path.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-json-document:core/json-path",
     "sourcePath": "class-model-emit/packages/spark-json-document/src/core/json-path.d.ts",
@@ -13,39 +13,46 @@
       "JsonPath"
     ]
   },
-  "symbols": [
-    "JsonPath"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.030Z",
   "$defs": {
     "JsonPath": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
       "title": "JsonPath",
-      "description": "JSONPath：路径段数组（string = 对象键，number = 数组索引）"
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ]
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.030Z",
   "models": {
     "JsonPath": {
-      "kind": "JsonPath",
-      "className": "JsonPath",
+      "name": "JsonPath",
       "jsdoc": "JSONPath：路径段数组（string = 对象键，number = 数组索引）",
-      "shapeKind": "type",
-      "declarationTypeText": "Array<string | number>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Array<string | number>",
-          "targetName": "Array"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-path.d.ts",
         "line": 9,
         "className": "JsonPath",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Array<string | number>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Array<string | number>",
+            "targetName": "Array"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }

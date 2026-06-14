@@ -1,4 +1,4 @@
-# ClassModel 签名对齐 TypeDoc JSONOutput 改造清单
+# DtsTypeDeclarationModel 签名对齐 TypeDoc JSONOutput 改造清单
 
 > 状态：设计有效（2026-06）。mutator 回调子模型从 TypeDoc 式 `reflection` 签名树解析。
 > 参考：[TypeDoc JSONOutput](https://typedoc.org/api/modules/JSONOutput.html) · 现状类型 [`types.ts`](../class-model/types.ts)
@@ -12,7 +12,7 @@
 ## 真源优先级（改造后）
 
 ```text
-.d.ts AST (TypeChecker)
+.d.ts AST + declaration text
   → DtsTypeMeta 树 + ParameterReflection[]     ← bundle 持久化 SSOT
   → signatureText（可选，生成期写入，读侧可校验）  ← guide 展示
   → paramsSchema / returnSchema（可选，投影期）   ← FC 校验，可不进 bundle
@@ -239,9 +239,9 @@ PR-5  MethodMeta.type 定稿；signatureText 改派生  ← 已完成
 
 ## 9. 与 native-runtime 边界
 
-- **ClassModel 线**：`.d.ts` → TypeDoc 式 type 树 → methodGuide；mutator 回调首参从 `reflection` 解析。
+- **DtsTypeDeclarationModel 线**：`.d.ts` → TypeDoc 式 type 树 → methodGuide；mutator 回调首参从 `reflection` 解析。
 - **Runtime metadata 线**：运行时执行元数据继续承载 `resultApis`；通过 **同一 .d.ts 声明** 保持语义一致，不要求 JSON 字段同名。
-- **native-runtime**：继续消费 runtime `paramsSchema` / Proxy；ClassModel 改造**不阻塞** script 执行。
+- **native-runtime**：继续消费 runtime `paramsSchema` / Proxy；DtsTypeDeclarationModel 改造**不阻塞** script 执行。
 
 ---
 

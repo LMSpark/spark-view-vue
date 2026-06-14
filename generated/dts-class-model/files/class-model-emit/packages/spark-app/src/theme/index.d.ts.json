@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:theme/index",
     "sourcePath": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
@@ -15,46 +15,51 @@
       "ThemeServiceReactive"
     ]
   },
-  "symbols": [
-    "ThemeCapability",
-    "ThemeServiceOptions",
-    "ThemeServiceReactive"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.951Z",
   "$defs": {
     "ThemeCapability": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ThemeCapability",
-      "description": "Theme Capability 的语义模型。"
+      "$defs": {
+        "method.setStorageScope.params": {
+          "type": "object",
+          "properties": {
+            "scopeKey": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setStorageScope.return": true
+      }
     },
     "ThemeServiceOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ThemeServiceOptions",
-      "description": "主题服务配置",
       "properties": {
         "initialMode": {
-          "type": "object",
-          "title": "ThemeMode"
+          "$ref": "../../../spark-component/src/core/capability-keys.d.ts.json#/$defs/ThemeMode"
         },
         "storageKey": {
           "type": "string"
         },
         "storageScope": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ThemeServiceReactive": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ThemeServiceReactive",
-      "description": "响应式主题服务（内部使用，组件层可直接读 ref）",
       "properties": {
         "modeRef": {
           "type": "object",
@@ -64,178 +69,142 @@
           "type": "object",
           "title": "ComputedRef<boolean>"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.951Z",
   "models": {
     "ThemeCapability": {
-      "kind": "ThemeCapability",
-      "className": "ThemeCapability",
+      "name": "ThemeCapability",
       "jsdoc": "Theme Capability 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "ComponentThemeCapability & {\n    setStorageScope(scopeKey: string | null): void;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "ComponentThemeCapability",
-          "targetName": "ComponentThemeCapability"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    setStorageScope(scopeKey: string | null): void;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
         "line": 29,
         "className": "ThemeCapability",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "setStorageScope",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "ComponentThemeCapability & {\n    setStorageScope(scopeKey: string | null): void;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "ComponentThemeCapability",
+            "targetName": "ComponentThemeCapability"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "{\n    setStorageScope(scopeKey: string | null): void;\n}"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "scopeKey",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
+              "name": "setStorageScope",
+              "parameters": [
+                {
+                  "name": "scopeKey",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
                   }
-                ]
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "scopeKey": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     },
     "ThemeServiceOptions": {
-      "kind": "ThemeServiceOptions",
-      "className": "ThemeServiceOptions",
+      "name": "ThemeServiceOptions",
       "jsdoc": "主题服务配置",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 初始模式（默认 'auto'） */\n    initialMode?: ThemeMode;\n    /** localStorage 存储键名（默认 'spark-theme-mode'） */\n    storageKey?: string;\n    /** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */\n    storageScope?: string | null;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
         "line": 35,
         "className": "ThemeServiceOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "initialMode",
-          "jsdoc": "初始模式（默认 'auto'）",
-          "schema": {
-            "type": "object",
-            "title": "ThemeMode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "storageKey",
-          "jsdoc": "localStorage 存储键名（默认 'spark-theme-mode'）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "storageScope",
-          "jsdoc": "localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}`",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 初始模式（默认 'auto'） */\n    initialMode?: ThemeMode;\n    /** localStorage 存储键名（默认 'spark-theme-mode'） */\n    storageKey?: string;\n    /** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */\n    storageScope?: string | null;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "initialMode",
+              "jsdoc": "初始模式（默认 'auto'）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "storageKey",
+              "jsdoc": "localStorage 存储键名（默认 'spark-theme-mode'）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "storageScope",
+              "jsdoc": "localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}`",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ThemeServiceReactive": {
-      "kind": "ThemeServiceReactive",
-      "className": "ThemeServiceReactive",
+      "name": "ThemeServiceReactive",
       "jsdoc": "响应式主题服务（内部使用，组件层可直接读 ref）",
-      "shapeKind": "type",
-      "declarationTypeText": "ThemeCapability & {\n    /** 响应式当前模式 */\n    readonly modeRef: Ref<ThemeMode>;\n    /** 响应式 isDark */\n    readonly isDarkRef: ComputedRef<boolean>;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "ThemeCapability",
-          "targetName": "ThemeCapability"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 响应式当前模式 */\n    readonly modeRef: Ref<ThemeMode>;\n    /** 响应式 isDark */\n    readonly isDarkRef: ComputedRef<boolean>;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
         "line": 44,
         "className": "ThemeServiceReactive",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "modeRef",
-          "jsdoc": "响应式当前模式",
-          "schema": {
-            "type": "object",
-            "title": "Ref<ThemeMode>"
+      "typeAlias": {
+        "declarationTypeText": "ThemeCapability & {\n    /** 响应式当前模式 */\n    readonly modeRef: Ref<ThemeMode>;\n    /** 响应式 isDark */\n    readonly isDarkRef: ComputedRef<boolean>;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "ThemeCapability",
+            "targetName": "ThemeCapability"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isDarkRef",
-          "jsdoc": "响应式 isDark",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<boolean>"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 响应式当前模式 */\n    readonly modeRef: Ref<ThemeMode>;\n    /** 响应式 isDark */\n    readonly isDarkRef: ComputedRef<boolean>;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "modeRef",
+              "jsdoc": "响应式当前模式",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isDarkRef",
+              "jsdoc": "响应式 isDark",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

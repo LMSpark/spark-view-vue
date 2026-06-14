@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/support/UnregisteredNodeFallback",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
@@ -17,15 +17,11 @@
     "componentLayer": "support",
     "componentDirectory": "support"
   },
-  "symbols": [
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.600Z",
   "$defs": {
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "未注册节点兜底渲染属性。",
       "properties": {
         "node": {
           "type": "object",
@@ -37,57 +33,54 @@
         "description": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "node"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.600Z",
   "models": {
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "未注册节点兜底渲染属性。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 未注册的源节点 */\n    node: SparkNode;\n    /** 提示标题 */\n    title?: string;\n    /** 说明文本 */\n    description?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
         "line": 3,
         "className": "Props",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "UnregisteredNodeFallback",
         "componentLevel": "infrastructure",
         "componentLayer": "support",
         "componentDirectory": "support"
       },
-      "attributes": [
-        {
-          "name": "node",
-          "jsdoc": "未注册的源节点",
-          "schema": {
-            "type": "object",
-            "title": "SparkNode"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "title",
-          "jsdoc": "提示标题",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "description",
-          "jsdoc": "说明文本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 未注册的源节点 */\n    node: SparkNode;\n    /** 提示标题 */\n    title?: string;\n    /** 说明文本 */\n    description?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "node",
+              "jsdoc": "未注册的源节点",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "title",
+              "jsdoc": "提示标题",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "description",
+              "jsdoc": "说明文本",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

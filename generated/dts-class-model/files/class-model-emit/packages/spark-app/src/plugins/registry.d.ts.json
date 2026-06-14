@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:plugins/registry",
     "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
@@ -17,19 +17,11 @@
       "PluginManager"
     ]
   },
-  "symbols": [
-    "PluginConfigItem",
-    "PluginLoader",
-    "PluginInstance",
-    "PluginRegistry",
-    "PluginManager"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.948Z",
   "$defs": {
     "PluginConfigItem": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PluginConfigItem",
-      "description": "插件配置项",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -44,12 +36,16 @@
         "priority": {
           "type": "number"
         }
-      }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
     },
     "PluginLoader": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PluginLoader",
-      "description": "插件加载器定义",
       "properties": {
         "id": {
           "type": "string"
@@ -70,12 +66,29 @@
         "version": {
           "type": "string"
         }
+      },
+      "required": [
+        "id",
+        "name",
+        "module"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.loader.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.loader.return": {
+          "type": "object",
+          "title": "Promise<{\n        default: Plugin;\n    }>"
+        }
       }
     },
     "PluginInstance": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PluginInstance",
-      "description": "插件实例（加载后的结果）",
       "properties": {
         "plugin": {
           "type": "object",
@@ -88,728 +101,706 @@
         "loader": {
           "$ref": "#/$defs/PluginLoader"
         }
-      }
+      },
+      "required": [
+        "plugin",
+        "loader"
+      ],
+      "additionalProperties": false
     },
     "PluginRegistry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PluginRegistry",
-      "description": "Plugin Registry 的语义模型。"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.register.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "loader": {
+              "type": "object",
+              "title": "Omit<PluginLoader, 'id'>"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.register.return": true,
+        "method.registerAll.params": {
+          "type": "object",
+          "properties": {
+            "entries": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "title": "Record<string, Omit<PluginLoader, 'id'>>"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.registerAll.return": true,
+        "method.get.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.get.return": {
+          "$ref": "#/$defs/PluginLoader"
+        },
+        "method.has.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.has.return": {
+          "type": "boolean"
+        },
+        "method.getAll.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getAll.return": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PluginLoader"
+          }
+        },
+        "method.getAllIds.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getAllIds.return": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "method.unregister.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.unregister.return": {
+          "type": "boolean"
+        },
+        "method.clear.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clear.return": true,
+        "method.getStats.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getStats.return": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "number"
+            },
+            "plugins": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "total",
+            "plugins"
+          ],
+          "additionalProperties": false
+        }
+      }
     },
     "PluginManager": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PluginManager",
-      "description": "插件管理器 - 负责加载和管理插件生命周期"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.loadPlugins.params": {
+          "type": "object",
+          "properties": {
+            "pluginConfigs": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "title": "Record<string, boolean | PluginConfigItem>"
+            },
+            "registry": {
+              "$ref": "#/$defs/PluginRegistry"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.loadPlugins.return": {
+          "type": "object",
+          "title": "Promise<PluginInstance[]>"
+        },
+        "method.loadPlugin.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "config": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/$defs/PluginConfigItem"
+                }
+              ]
+            },
+            "registry": {
+              "$ref": "#/$defs/PluginRegistry"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.loadPlugin.return": {
+          "type": "object",
+          "title": "Promise<PluginInstance | null>"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.948Z",
   "models": {
     "PluginConfigItem": {
-      "kind": "PluginConfigItem",
-      "className": "PluginConfigItem",
+      "name": "PluginConfigItem",
       "jsdoc": "插件配置项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 是否启用 */\n    enabled: boolean;\n    /** 插件选项 */\n    options?: Record<string, unknown>;\n    /** 是否懒加载 */\n    lazy?: boolean;\n    /** 优先级（数字越小越先加载） */\n    priority?: number;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
         "line": 16,
         "className": "PluginConfigItem",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "enabled",
-          "jsdoc": "是否启用",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "options",
-          "jsdoc": "插件选项",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "lazy",
-          "jsdoc": "是否懒加载",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "priority",
-          "jsdoc": "优先级（数字越小越先加载）",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 是否启用 */\n    enabled: boolean;\n    /** 插件选项 */\n    options?: Record<string, unknown>;\n    /** 是否懒加载 */\n    lazy?: boolean;\n    /** 优先级（数字越小越先加载） */\n    priority?: number;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "enabled",
+              "jsdoc": "是否启用",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "options",
+              "jsdoc": "插件选项",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "lazy",
+              "jsdoc": "是否懒加载",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "priority",
+              "jsdoc": "优先级（数字越小越先加载）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PluginLoader": {
-      "kind": "PluginLoader",
-      "className": "PluginLoader",
-      "jsdoc": "插件加载器定义",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 插件 ID */\n    id: string;\n    /** 插件名称 */\n    name: string;\n    /** 模块路径或包名 */\n    module: string;\n    /** 动态导入函数 */\n    loader: () => Promise<{\n        default: Plugin;\n    }>;\n    /** 默认配置 */\n    defaultOptions?: Record<string, unknown>;\n    /** 插件描述 */\n    description?: string;\n    /** 插件版本 */\n    version?: string;\n}",
+      "name": "PluginLoader",
+      "jsdoc": "插件配置类型（支持简单布尔值或详细配置）\n插件加载器定义",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
         "line": 32,
         "className": "PluginLoader",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "插件 ID",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "name",
-          "jsdoc": "插件名称",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "module",
-          "jsdoc": "模块路径或包名",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "defaultOptions",
-          "jsdoc": "默认配置",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "description",
-          "jsdoc": "插件描述",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "version",
-          "jsdoc": "插件版本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "loader",
-          "jsdoc": "动态导入函数",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "unknown",
-                "name": "{\n        default: Plugin;\n    }"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 插件 ID */\n    id: string;\n    /** 插件名称 */\n    name: string;\n    /** 模块路径或包名 */\n    module: string;\n    /** 动态导入函数 */\n    loader: () => Promise<{\n        default: Plugin;\n    }>;\n    /** 默认配置 */\n    defaultOptions?: Record<string, unknown>;\n    /** 插件描述 */\n    description?: string;\n    /** 插件版本 */\n    version?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "插件 ID",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "name",
+              "jsdoc": "插件名称",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "module",
+              "jsdoc": "模块路径或包名",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "defaultOptions",
+              "jsdoc": "默认配置",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "description",
+              "jsdoc": "插件描述",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "version",
+              "jsdoc": "插件版本",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "loader",
+              "jsdoc": "动态导入函数",
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "unknown",
+                    "name": "{\n        default: Plugin;\n    }"
+                  }
+                ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<{\n        default: Plugin;\n    }>"
-          }
+            }
+          ]
         }
-      ]
+      }
     },
     "PluginInstance": {
-      "kind": "PluginInstance",
-      "className": "PluginInstance",
+      "name": "PluginInstance",
       "jsdoc": "插件实例（加载后的结果）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 插件对象 */\n    plugin: Plugin;\n    /** 插件选项 */\n    options?: Record<string, unknown>;\n    /** 加载器信息 */\n    loader: PluginLoader;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
         "line": 53,
         "className": "PluginInstance",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "plugin",
-          "jsdoc": "插件对象",
-          "schema": {
-            "type": "object",
-            "title": "Plugin"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "options",
-          "jsdoc": "插件选项",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "loader",
-          "jsdoc": "加载器信息",
-          "schema": {
-            "$ref": "#/$defs/PluginLoader"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 插件对象 */\n    plugin: Plugin;\n    /** 插件选项 */\n    options?: Record<string, unknown>;\n    /** 加载器信息 */\n    loader: PluginLoader;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "plugin",
+              "jsdoc": "插件对象",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "options",
+              "jsdoc": "插件选项",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "loader",
+              "jsdoc": "加载器信息",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PluginRegistry": {
-      "kind": "PluginRegistry",
-      "className": "PluginRegistry",
+      "name": "PluginRegistry",
       "jsdoc": "Plugin Registry 的语义模型。",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
         "line": 62,
         "className": "PluginRegistry",
         "declarationKind": "class"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "register",
-          "jsdoc": "执行 register 操作。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "loader",
-              "type": {
-                "type": "reference",
-                "name": "Omit",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "PluginLoader",
-                    "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-                  },
-                  {
-                    "type": "literal",
-                    "value": "id"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "loader": {
-                "type": "object",
-                "title": "Omit<PluginLoader, 'id'>"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "Plugin Registry 的语义模型。",
+          "signatureText": "constructor()"
         },
-        {
-          "name": "registerAll",
-          "jsdoc": "执行 register All 操作。",
-          "parameterStyle": "positional",
-          "parameters": [
+        "members": {
+          "methods": [
             {
-              "name": "entries",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
+              "name": "register",
+              "jsdoc": "执行 register 操作。",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "loader",
+                  "type": {
                     "type": "reference",
-                    "name": "Record",
+                    "name": "Omit",
                     "typeArguments": [
                       {
-                        "type": "intrinsic",
-                        "name": "string"
+                        "type": "reference",
+                        "name": "PluginLoader",
+                        "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
                       },
                       {
-                        "type": "reference",
-                        "name": "Omit",
-                        "typeArguments": [
-                          {
-                            "type": "reference",
-                            "name": "PluginLoader",
-                            "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-                          },
-                          {
-                            "type": "literal",
-                            "value": "id"
-                          }
-                        ]
+                        "type": "literal",
+                        "value": "id"
                       }
                     ]
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
-                  },
-                  {
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "registerAll",
+              "jsdoc": "执行 register All 操作。",
+              "parameters": [
+                {
+                  "name": "entries",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "Record",
+                        "typeArguments": [
+                          {
+                            "type": "intrinsic",
+                            "name": "string"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Omit",
+                            "typeArguments": [
+                              {
+                                "type": "reference",
+                                "name": "PluginLoader",
+                                "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                              },
+                              {
+                                "type": "literal",
+                                "value": "id"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "get",
+              "jsdoc": "执行 get 操作。",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
                     "type": "intrinsic",
-                    "name": "undefined"
+                    "name": "string"
                   }
-                ]
+                }
+              ],
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PluginLoader",
+                  "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                }
               }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "entries": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "title": "Record<string, Omit<PluginLoader, 'id'>>"
-                  },
-                  {
-                    "type": "null"
+            },
+            {
+              "name": "has",
+              "jsdoc": "执行 has 操作。",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
                   }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "get",
-          "jsdoc": "执行 get 操作。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "optional",
-            "elementType": {
-              "type": "reference",
-              "name": "PluginLoader",
-              "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "name": "boolean"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/PluginLoader"
-          }
-        },
-        {
-          "name": "has",
-          "jsdoc": "执行 has 操作。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "id",
+              "name": "getAll",
+              "jsdoc": "读取 All。",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PluginLoader",
+                  "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                }
+              }
+            },
+            {
+              "name": "getAllIds",
+              "jsdoc": "读取 All Ids。",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "unregister",
+              "jsdoc": "执行 unregister 操作。",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "name": "boolean"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "getAll",
-          "jsdoc": "读取 All。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "PluginLoader",
-              "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/PluginLoader"
-            }
-          }
-        },
-        {
-          "name": "getAllIds",
-          "jsdoc": "读取 All Ids。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "string"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "name": "unregister",
-          "jsdoc": "执行 unregister 操作。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "id",
+              "name": "clear",
+              "jsdoc": "执行 clear 操作。",
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "clear",
-          "jsdoc": "执行 clear 操作。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getStats",
-          "jsdoc": "读取 Stats。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "{\n        total: number;\n        plugins: string[];\n    }"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object"
-          }
+            {
+              "name": "getStats",
+              "jsdoc": "读取 Stats。",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        total: number;\n        plugins: string[];\n    }"
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "PluginManager": {
-      "kind": "PluginManager",
-      "className": "PluginManager",
+      "name": "PluginManager",
       "jsdoc": "插件管理器 - 负责加载和管理插件生命周期",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts",
         "line": 95,
         "className": "PluginManager",
         "declarationKind": "class"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "loadPlugins",
-          "jsdoc": "根据配置加载插件\n@param pluginConfigs - 插件配置对象\n@param registry - 可选的插件注册表实例（默认使用全局注册表）\n@returns 插件实例数组（按优先级排序）",
-          "parameterStyle": "positional",
-          "parameters": [
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "插件管理器 - 负责加载和管理插件生命周期",
+          "signatureText": "constructor()"
+        },
+        "members": {
+          "methods": [
             {
-              "name": "pluginConfigs",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "Record",
-                    "typeArguments": [
+              "name": "loadPlugins",
+              "jsdoc": "根据配置加载插件\n@param pluginConfigs - 插件配置对象\n@param registry - 可选的插件注册表实例（默认使用全局注册表）\n@returns 插件实例数组（按优先级排序）",
+              "parameters": [
+                {
+                  "name": "pluginConfigs",
+                  "type": {
+                    "type": "union",
+                    "types": [
                       {
-                        "type": "intrinsic",
-                        "name": "string"
-                      },
-                      {
-                        "type": "union",
-                        "types": [
+                        "type": "reference",
+                        "name": "Record",
+                        "typeArguments": [
                           {
                             "type": "intrinsic",
-                            "name": "boolean"
+                            "name": "string"
                           },
                           {
-                            "type": "reference",
-                            "name": "PluginConfigItem",
-                            "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                            "type": "union",
+                            "types": [
+                              {
+                                "type": "intrinsic",
+                                "name": "boolean"
+                              },
+                              {
+                                "type": "reference",
+                                "name": "PluginConfigItem",
+                                "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                              }
+                            ]
                           }
                         ]
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "registry",
+                  "type": {
+                    "type": "reference",
+                    "name": "PluginRegistry",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "PluginInstance",
+                      "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "loadPlugin",
+              "jsdoc": "加载单个插件\n@param id - 插件 ID\n@param config - 插件配置\n@param registry - 可选的插件注册表实例（默认使用全局注册表）",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "config",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "boolean"
+                      },
+                      {
+                        "type": "reference",
+                        "name": "PluginConfigItem",
+                        "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
                       }
                     ]
                   },
-                  {
-                    "type": "literal",
-                    "value": null
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "undefined"
+                  "flags": {
+                    "isOptional": true
                   }
-                ]
-              }
-            },
-            {
-              "name": "registry",
-              "type": {
-                "type": "reference",
-                "name": "PluginRegistry",
-                "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "PluginInstance",
-                  "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                },
+                {
+                  "name": "registry",
+                  "type": {
+                    "type": "reference",
+                    "name": "PluginRegistry",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
                 }
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pluginConfigs": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "title": "Record<string, boolean | PluginConfigItem>"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "registry": {
-                "$ref": "#/$defs/PluginRegistry"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<PluginInstance[]>"
-          }
-        },
-        {
-          "name": "loadPlugin",
-          "jsdoc": "加载单个插件\n@param id - 插件 ID\n@param config - 插件配置\n@param registry - 可选的插件注册表实例（默认使用全局注册表）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "config",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "boolean"
-                  },
-                  {
-                    "type": "reference",
-                    "name": "PluginConfigItem",
-                    "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-                  }
-                ]
-              },
-              "flags": {
-                "isOptional": true
-              }
-            },
-            {
-              "name": "registry",
+              ],
               "type": {
                 "type": "reference",
-                "name": "PluginRegistry",
-                "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-              },
-              "flags": {
-                "isOptional": true
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "PluginInstance",
+                        "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "PluginInstance",
-                    "sourcePath": "class-model-emit/packages/spark-app/src/plugins/registry.d.ts"
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
-                  }
-                ]
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "config": {
-                "anyOf": [
-                  {
-                    "type": "boolean"
-                  },
-                  {
-                    "$ref": "#/$defs/PluginConfigItem"
-                  }
-                ]
-              },
-              "registry": {
-                "$ref": "#/$defs/PluginRegistry"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<PluginInstance | null>"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererDivider.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/RendererDivider.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererDivider.props.d.ts",
@@ -18,225 +18,100 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "RDividerProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.429Z",
   "$defs": {
     "RDividerProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RDividerProps",
-      "description": "RDivider Props 的属性契约。",
       "properties": {
         "direction": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "horizontal"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "vertical"
-              ]
-            }
+          "enum": [
+            "horizontal",
+            "vertical"
           ]
         },
         "borderStyle": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "solid"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dashed"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "dotted"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "double"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "none"
-              ]
-            }
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted",
+            "double",
+            "none"
           ]
         },
         "contentPosition": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
+          "enum": [
+            "left",
+            "center",
+            "right"
           ]
         },
         "content": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.429Z",
   "models": {
     "RDividerProps": {
-      "kind": "RDividerProps",
-      "className": "RDividerProps",
+      "name": "RDividerProps",
       "jsdoc": "RDivider Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 分割方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 边框样式 */\n    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none';\n    /** 文本位置（横向模式） */\n    contentPosition?: 'left' | 'center' | 'right';\n    /** 分割线文本 */\n    content?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 分割方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 边框样式 */\n    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none';\n    /** 文本位置（横向模式） */\n    contentPosition?: 'left' | 'center' | 'right';\n    /** 分割线文本 */\n    content?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererDivider.props.d.ts",
         "line": 9,
         "className": "RDividerProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererDivider",
         "componentType": "r-divider",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [
-        {
-          "name": "direction",
-          "jsdoc": "分割方向",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "horizontal"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "vertical"
-                ]
-              }
-            ]
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 分割方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 边框样式 */\n    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none';\n    /** 文本位置（横向模式） */\n    contentPosition?: 'left' | 'center' | 'right';\n    /** 分割线文本 */\n    content?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "borderStyle",
-          "jsdoc": "边框样式",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "solid"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "dashed"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "dotted"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "double"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "none"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "contentPosition",
-          "jsdoc": "文本位置（横向模式）",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "left"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "center"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "right"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "content",
-          "jsdoc": "分割线文本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 分割方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 边框样式 */\n    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none';\n    /** 文本位置（横向模式） */\n    contentPosition?: 'left' | 'center' | 'right';\n    /** 分割线文本 */\n    content?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "direction",
+              "jsdoc": "分割方向",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "borderStyle",
+              "jsdoc": "边框样式",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "contentPosition",
+              "jsdoc": "文本位置（横向模式）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "content",
+              "jsdoc": "分割线文本",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

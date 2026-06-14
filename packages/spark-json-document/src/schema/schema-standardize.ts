@@ -12,6 +12,19 @@
 
 export const JSON_SCHEMA_DRAFT_2020_12 = 'https://json-schema.org/draft/2020-12/schema'
 
+/** Draft 2020-12 `type` 关键字允许的基础 JSON 类型。 */
+type JsonSchemaType =
+  | 'null'
+  | 'boolean'
+  | 'object'
+  | 'array'
+  | 'number'
+  | 'integer'
+  | 'string'
+
+/** JSON Schema enum/const 可承载的 JSON 标量值。 */
+type JsonLiteralValue = string | number | boolean | null
+
 const VALID_SCHEMA_TYPES = new Set([
   'null',
   'boolean',
@@ -23,6 +36,7 @@ const VALID_SCHEMA_TYPES = new Set([
 ])
 
 const SCHEMA_KEY_ORDER = [
+  '$schema',
   '$ref',
   'type',
   'title',
@@ -47,10 +61,12 @@ export type StandardJsonSchema = boolean | StandardJsonSchemaObject
 /** Standard Json Schema Object 的语义模型。 */
 export type StandardJsonSchemaObject = {
   [keyword: string]: unknown
+    /** $schema 字段。 */
+$schema?: string
     /** $ref 字段。 */
 $ref?: string
     /** 类型标识。 */
-type?: string | readonly string[]
+type?: JsonSchemaType | readonly JsonSchemaType[]
     /** properties 字段。 */
 properties?: Readonly<Record<string, StandardJsonSchema>>
     /** 是否必填。 */
@@ -62,9 +78,9 @@ prefixItems?: readonly StandardJsonSchema[]
     /** additional Properties 字段。 */
 additionalProperties?: StandardJsonSchema
     /** enum 字段。 */
-enum?: readonly unknown[]
+enum?: readonly JsonLiteralValue[]
     /** const 字段。 */
-const?: unknown
+const?: JsonLiteralValue
     /** any Of 字段。 */
 anyOf?: readonly StandardJsonSchema[]
     /** one Of 字段。 */
@@ -95,7 +111,7 @@ export function standardizeJsonSchema(value: unknown): StandardJsonSchema {
   const literalOnly = normalizeLiteralOnlySchema(value)
   if (literalOnly !== undefined) return literalOnly
 
-  if (value.type === 'function') return true
+  if ((value as Readonly<Record<string, unknown>>)['type'] === 'function') return true
 
   const nullableUnion = tryStandardizeNullableUnion(value)
   if (nullableUnion !== undefined) return nullableUnion
@@ -115,6 +131,9 @@ export function standardizeJsonSchema(value: unknown): StandardJsonSchema {
 
   const output: StandardJsonSchemaObject = {}
 
+  if (typeof value.$schema === 'string' && value.$schema.trim().length > 0) {
+    output.$schema = value.$schema.trim()
+  }
   if (value.title !== undefined) output.title = value.title
   if (value.description !== undefined) output.description = value.description
 
@@ -230,7 +249,9 @@ function normalizeLiteralOnlySchema(value: StandardJsonSchemaObject): StandardJs
     return sortSchemaKeys(pickLiteralSchemaMeta(value, { type: 'null' }))
   }
   if (value.const !== undefined) {
-    return sortSchemaKeys(pickLiteralSchemaMeta(value, { const: value.const }))
+    return isJsonLiteralValue(value.const)
+      ? sortSchemaKeys(pickLiteralSchemaMeta(value, { const: value.const }))
+      : undefined
   }
   return undefined
 }
@@ -240,6 +261,7 @@ function pickLiteralSchemaMeta(
   body: StandardJsonSchemaObject,
 ): StandardJsonSchemaObject {
   return {
+    ...(source.$schema !== undefined ? { $schema: source.$schema } : {}),
     ...(source.title !== undefined ? { title: source.title } : {}),
     ...(source.description !== undefined ? { description: source.description } : {}),
     ...body,
@@ -280,7 +302,67 @@ function simplifyCombinatorBranches(branches: readonly unknown[]): readonly Stan
   const normalized = branches.map(branch => standardizeJsonSchema(branch))
   const withoutBooleanConsts = collapseBooleanConstBranches(normalized)
   if (withoutBooleanConsts.length === 1) return withoutBooleanConsts
+  const literalUnion = collapseLiteralCombinatorBranches(withoutBooleanConsts)
+  if (literalUnion !== undefined) return [literalUnion]
   return withoutBooleanConsts
+}
+
+function collapseLiteralCombinatorBranches(
+  branches: readonly StandardJsonSchema[],
+): StandardJsonSchemaObject | undefined {
+  const values: JsonLiteralValue[] = []
+  for (const branch of branches) {
+    const branchValues = readLiteralBranchValues(branch)
+    if (branchValues === undefined) return undefined
+    values.push(...branchValues)
+  }
+
+  const uniqueValues = uniqueJsonValues(values)
+  if (uniqueValues.length === 0) return undefined
+  if (uniqueValues.length === 2 && uniqueValues.includes(false) && uniqueValues.includes(true)) {
+    return { type: 'boolean' }
+  }
+  const onlyValue = uniqueValues[0]
+  return uniqueValues.length === 1 && onlyValue !== undefined
+    ? { const: onlyValue }
+    : { enum: uniqueValues }
+}
+
+function readLiteralBranchValues(branch: StandardJsonSchema): readonly JsonLiteralValue[] | undefined {
+  if (!isPlainObject(branch)) return undefined
+  if (!isLiteralOnlyBranch(branch)) return undefined
+  if (branch.const !== undefined) {
+    return isJsonLiteralValue(branch.const) ? [branch.const] : undefined
+  }
+  if (branch.type === 'null') return [null]
+  if (Array.isArray(branch.enum) && branch.enum.length > 0) {
+    return branch.enum.every(isJsonLiteralValue) ? [...branch.enum] : undefined
+  }
+  return undefined
+}
+
+function isLiteralOnlyBranch(branch: StandardJsonSchemaObject): boolean {
+  const allowedKeys = new Set(['type', 'enum', 'const', 'title', 'description'])
+  return Object.keys(branch).every(key => allowedKeys.has(key))
+}
+
+function isJsonLiteralValue(value: unknown): value is JsonLiteralValue {
+  return typeof value === 'string'
+    || typeof value === 'number'
+    || typeof value === 'boolean'
+    || value === null
+}
+
+function uniqueJsonValues(values: readonly JsonLiteralValue[]): readonly JsonLiteralValue[] {
+  const seen = new Set<string>()
+  const result: JsonLiteralValue[] = []
+  for (const value of values) {
+    const key = JSON.stringify(value)
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(value)
+  }
+  return result
 }
 
 function collapseBooleanConstBranches(branches: readonly StandardJsonSchema[]): readonly StandardJsonSchema[] {
@@ -295,13 +377,11 @@ function collapseBooleanConstBranches(branches: readonly StandardJsonSchema[]): 
 
 function readSingleValueConst(
   value: StandardJsonSchemaObject,
-  schemaType: string | readonly string[] | undefined,
+  schemaType: JsonSchemaType | readonly JsonSchemaType[] | undefined,
 ): string | number | boolean | null | undefined {
   if (value.const !== undefined) {
-    if (typeof value.const === 'string' || typeof value.const === 'number' || typeof value.const === 'boolean' || value.const === null) {
-      return value.const
-    }
-    return undefined
+    const constValue: unknown = value.const
+    return isJsonLiteralValue(constValue) ? constValue : undefined
   }
   if (!Array.isArray(value.enum) || value.enum.length !== 1) return undefined
   const onlyValue: unknown = value.enum[0]
@@ -318,14 +398,14 @@ function mapSchemaRecord(record: Readonly<Record<string, unknown>>): Record<stri
   )
 }
 
-function sanitizeSchemaType(typeValue: unknown): string | readonly string[] | undefined {
+function sanitizeSchemaType(typeValue: unknown): JsonSchemaType | readonly JsonSchemaType[] | undefined {
   if (typeof typeValue === 'string') {
-    return VALID_SCHEMA_TYPES.has(typeValue) ? typeValue : undefined
+    return isJsonSchemaType(typeValue) ? typeValue : undefined
   }
   if (!Array.isArray(typeValue) || typeValue.length === 0) return undefined
 
   const normalized = [...new Set(
-    typeValue.filter((item): item is string => typeof item === 'string' && VALID_SCHEMA_TYPES.has(item)),
+    typeValue.filter((item): item is JsonSchemaType => typeof item === 'string' && isJsonSchemaType(item)),
   )]
   if (normalized.length === 0) return undefined
   const firstType = normalized[0]
@@ -333,18 +413,22 @@ function sanitizeSchemaType(typeValue: unknown): string | readonly string[] | un
   return sortUnionTypes(normalized)
 }
 
-function sortUnionTypes(types: readonly string[]): readonly string[] {
-  const order = ['null', 'boolean', 'integer', 'number', 'string', 'array', 'object']
+function isJsonSchemaType(value: string): value is JsonSchemaType {
+  return VALID_SCHEMA_TYPES.has(value)
+}
+
+function sortUnionTypes(types: readonly JsonSchemaType[]): readonly JsonSchemaType[] {
+  const order: readonly JsonSchemaType[] = ['null', 'boolean', 'integer', 'number', 'string', 'array', 'object']
   return [...types].sort((left, right) => order.indexOf(left) - order.indexOf(right))
 }
 
-function isArraySchemaType(typeValue: string | readonly string[] | undefined): boolean {
+function isArraySchemaType(typeValue: JsonSchemaType | readonly JsonSchemaType[] | undefined): boolean {
   if (typeValue === 'array') return true
   return Array.isArray(typeValue) && typeValue.includes('array')
 }
 
 function isRedundantBooleanEnum(
-  typeValue: string | readonly string[] | undefined,
+  typeValue: JsonSchemaType | readonly JsonSchemaType[] | undefined,
   enumValues: readonly unknown[],
 ): boolean {
   if (typeValue !== 'boolean') return false

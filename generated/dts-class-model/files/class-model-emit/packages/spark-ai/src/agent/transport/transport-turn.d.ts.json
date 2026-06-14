@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/transport/transport-turn",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
@@ -13,15 +13,11 @@
       "AiAgentTransportTurn"
     ]
   },
-  "symbols": [
-    "AiAgentTransportTurn"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.918Z",
   "$defs": {
     "AiAgentTransportTurn": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentTransportTurn",
-      "description": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
       "properties": {
         "turnId": {
           "type": "string"
@@ -32,59 +28,51 @@
         "streamKey": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.918Z",
   "models": {
     "AiAgentTransportTurn": {
-      "kind": "AiAgentTransportTurn",
-      "className": "AiAgentTransportTurn",
+      "name": "AiAgentTransportTurn",
       "jsdoc": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
         "line": 9,
         "className": "AiAgentTransportTurn",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "turnId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turnKey",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "streamKey",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "turnId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turnKey",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "streamKey",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

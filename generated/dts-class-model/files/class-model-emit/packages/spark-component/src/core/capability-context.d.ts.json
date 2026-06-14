@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-context.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:core/capability-context",
     "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-context.d.ts",
@@ -13,15 +13,11 @@
       "SparkRuntimeOwner"
     ]
   },
-  "symbols": [
-    "SparkRuntimeOwner"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.972Z",
   "$defs": {
     "SparkRuntimeOwner": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SparkRuntimeOwner",
-      "description": "Spark Runtime Owner 的语义模型。",
       "properties": {
         "parent": {
           "anyOf": [
@@ -34,48 +30,41 @@
           ]
         },
         "pageRoot": true
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.972Z",
   "models": {
     "SparkRuntimeOwner": {
-      "kind": "SparkRuntimeOwner",
-      "className": "SparkRuntimeOwner",
+      "name": "SparkRuntimeOwner",
       "jsdoc": "Spark Runtime Owner 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** parent 字段。 */\n    parent?: SparkRuntimeOwner | null;\n    /** page Root 字段。 */\n    pageRoot?: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/core/capability-context.d.ts",
         "line": 23,
         "className": "SparkRuntimeOwner",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "parent",
-          "jsdoc": "parent 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/SparkRuntimeOwner"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "pageRoot",
-          "jsdoc": "page Root 字段。",
-          "schema": true,
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** parent 字段。 */\n    parent?: SparkRuntimeOwner | null;\n    /** page Root 字段。 */\n    pageRoot?: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "parent",
+              "jsdoc": "parent 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "pageRoot",
+              "jsdoc": "page Root 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

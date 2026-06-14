@@ -139,6 +139,7 @@ type AiAgentHostState = {
 export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
   private readonly state: AiAgentHostState
 
+  /** 用共享 host state 构造不可变门面实例；外部必须通过 create/register/ensure 创建或窄化 Host。 */
   private constructor(state: AiAgentHostState) {
     this.state = state
   }

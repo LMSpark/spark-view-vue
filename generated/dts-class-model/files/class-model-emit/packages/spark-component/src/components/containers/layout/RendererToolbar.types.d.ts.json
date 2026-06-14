@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/RendererToolbar.types",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts",
@@ -20,35 +20,37 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "InlineAlign",
-    "InlineJustify",
-    "RToolbarProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.456Z",
   "$defs": {
     "InlineAlign": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "InlineAlign",
-      "description": "工具栏交叉轴对齐方式。"
+      "enum": [
+        "start",
+        "center",
+        "end",
+        "stretch"
+      ]
     },
     "InlineJustify": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "InlineJustify",
-      "description": "工具栏主轴分布方式。"
+      "enum": [
+        "start",
+        "center",
+        "end",
+        "space-between"
+      ]
     },
     "RToolbarProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RToolbarProps",
-      "description": "`RendererToolbar` Vue 组件公开属性。",
       "properties": {
         "tail": {
-          "type": "object",
-          "title": "RTailProps"
+          "$ref": "../zones/RendererTail.types.d.ts.json#/$defs/RTailProps"
         },
         "position": {
-          "type": "object",
-          "title": "ToolbarPosition"
+          "$ref": "../runtime/container-ui.d.ts.json#/$defs/ToolbarPosition"
         },
         "class": {
           "type": "string"
@@ -79,201 +81,168 @@
         "justify": {
           "$ref": "#/$defs/InlineJustify"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.456Z",
   "models": {
     "InlineAlign": {
-      "kind": "InlineAlign",
-      "className": "InlineAlign",
+      "name": "InlineAlign",
       "jsdoc": "工具栏交叉轴对齐方式。",
-      "shapeKind": "type",
-      "declarationTypeText": "'start' | 'center' | 'end' | 'stretch'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'start'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'center'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'end'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'stretch'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts",
         "line": 11,
         "className": "InlineAlign",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererToolbar",
         "componentType": "r-toolbar",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'start' | 'center' | 'end' | 'stretch'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'start'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'center'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'end'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'stretch'"
+          }
+        ],
+        "members": {}
+      }
     },
     "InlineJustify": {
-      "kind": "InlineJustify",
-      "className": "InlineJustify",
+      "name": "InlineJustify",
       "jsdoc": "工具栏主轴分布方式。",
-      "shapeKind": "type",
-      "declarationTypeText": "'start' | 'center' | 'end' | 'space-between'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'start'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'center'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'end'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'space-between'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts",
         "line": 13,
         "className": "InlineJustify",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererToolbar",
         "componentType": "r-toolbar",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'start' | 'center' | 'end' | 'space-between'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'start'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'center'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'end'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'space-between'"
+          }
+        ],
+        "members": {}
+      }
     },
     "RToolbarProps": {
-      "kind": "RToolbarProps",
-      "className": "RToolbarProps",
+      "name": "RToolbarProps",
       "jsdoc": "`RendererToolbar` Vue 组件公开属性。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & SparkTableModelProps & {\n    /** 尾部动作区（通常放次要按钮） */\n    tail?: RTailProps;\n    /** 工具栏停靠位置 */\n    position?: ToolbarPosition;\n    /** 工具栏附加 class */\n    class?: string;\n    /** 主区内元素间距 */\n    gap?: number | string;\n    /** 主区与尾区间距 */\n    zoneGap?: number | string;\n    /** 交叉轴对齐 */\n    align?: InlineAlign;\n    /** 主轴分布 */\n    justify?: InlineJustify;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "SparkTableModelProps",
-          "targetName": "SparkTableModelProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 尾部动作区（通常放次要按钮） */\n    tail?: RTailProps;\n    /** 工具栏停靠位置 */\n    position?: ToolbarPosition;\n    /** 工具栏附加 class */\n    class?: string;\n    /** 主区内元素间距 */\n    gap?: number | string;\n    /** 主区与尾区间距 */\n    zoneGap?: number | string;\n    /** 交叉轴对齐 */\n    align?: InlineAlign;\n    /** 主轴分布 */\n    justify?: InlineJustify;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts",
         "line": 17,
         "className": "RToolbarProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererToolbar",
         "componentType": "r-toolbar",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [
-        {
-          "name": "tail",
-          "jsdoc": "尾部动作区（通常放次要按钮）",
-          "schema": {
-            "type": "object",
-            "title": "RTailProps"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & SparkTableModelProps & {\n    /** 尾部动作区（通常放次要按钮） */\n    tail?: RTailProps;\n    /** 工具栏停靠位置 */\n    position?: ToolbarPosition;\n    /** 工具栏附加 class */\n    class?: string;\n    /** 主区内元素间距 */\n    gap?: number | string;\n    /** 主区与尾区间距 */\n    zoneGap?: number | string;\n    /** 交叉轴对齐 */\n    align?: InlineAlign;\n    /** 主轴分布 */\n    justify?: InlineJustify;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "position",
-          "jsdoc": "工具栏停靠位置",
-          "schema": {
-            "type": "object",
-            "title": "ToolbarPosition"
+          {
+            "kind": "intersection",
+            "typeText": "SparkTableModelProps",
+            "targetName": "SparkTableModelProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "class",
-          "jsdoc": "工具栏附加 class",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "gap",
-          "jsdoc": "主区内元素间距",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "zoneGap",
-          "jsdoc": "主区与尾区间距",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "align",
-          "jsdoc": "交叉轴对齐",
-          "schema": {
-            "$ref": "#/$defs/InlineAlign"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "justify",
-          "jsdoc": "主轴分布",
-          "schema": {
-            "$ref": "#/$defs/InlineJustify"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 尾部动作区（通常放次要按钮） */\n    tail?: RTailProps;\n    /** 工具栏停靠位置 */\n    position?: ToolbarPosition;\n    /** 工具栏附加 class */\n    class?: string;\n    /** 主区内元素间距 */\n    gap?: number | string;\n    /** 主区与尾区间距 */\n    zoneGap?: number | string;\n    /** 交叉轴对齐 */\n    align?: InlineAlign;\n    /** 主轴分布 */\n    justify?: InlineJustify;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "tail",
+              "jsdoc": "尾部动作区（通常放次要按钮）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "position",
+              "jsdoc": "工具栏停靠位置",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "class",
+              "jsdoc": "工具栏附加 class",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "gap",
+              "jsdoc": "主区内元素间距",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "zoneGap",
+              "jsdoc": "主区与尾区间距",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "align",
+              "jsdoc": "交叉轴对齐",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "justify",
+              "jsdoc": "主轴分布",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

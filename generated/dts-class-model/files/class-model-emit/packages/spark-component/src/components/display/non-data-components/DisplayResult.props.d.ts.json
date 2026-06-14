@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayResult.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/display/non-data-components/DisplayResult.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayResult.props.d.ts",
@@ -18,42 +18,18 @@
     "componentLayer": "static-display",
     "componentDirectory": "display/non-data-components"
   },
-  "symbols": [
-    "RResultProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.510Z",
   "$defs": {
     "RResultProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RResultProps",
-      "description": "RResult Props 的属性契约。",
       "properties": {
         "icon": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            }
+          "enum": [
+            "success",
+            "warning",
+            "info",
+            "error"
           ]
         },
         "title": {
@@ -62,93 +38,63 @@
         "subTitle": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.510Z",
   "models": {
     "RResultProps": {
-      "kind": "RResultProps",
-      "className": "RResultProps",
+      "name": "RResultProps",
       "jsdoc": "RResult Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 结果图标类型 */\n    icon?: 'success' | 'warning' | 'info' | 'error';\n    /** 结果标题 */\n    title?: string;\n    /** 结果副标题 */\n    subTitle?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 结果图标类型 */\n    icon?: 'success' | 'warning' | 'info' | 'error';\n    /** 结果标题 */\n    title?: string;\n    /** 结果副标题 */\n    subTitle?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayResult.props.d.ts",
         "line": 9,
         "className": "RResultProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "DisplayResult",
         "componentType": "r-result",
         "componentLevel": "display",
         "componentLayer": "static-display",
         "componentDirectory": "display/non-data-components"
       },
-      "attributes": [
-        {
-          "name": "icon",
-          "jsdoc": "结果图标类型",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "success"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "warning"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "info"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "error"
-                ]
-              }
-            ]
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 结果图标类型 */\n    icon?: 'success' | 'warning' | 'info' | 'error';\n    /** 结果标题 */\n    title?: string;\n    /** 结果副标题 */\n    subTitle?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "title",
-          "jsdoc": "结果标题",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "subTitle",
-          "jsdoc": "结果副标题",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 结果图标类型 */\n    icon?: 'success' | 'warning' | 'info' | 'error';\n    /** 结果标题 */\n    title?: string;\n    /** 结果副标题 */\n    subTitle?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "icon",
+              "jsdoc": "结果图标类型",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "title",
+              "jsdoc": "结果标题",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "subTitle",
+              "jsdoc": "结果副标题",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/state.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/state",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/state.d.ts",
@@ -17,121 +17,140 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "UnifiedValueBridgeOptions",
-    "CommitValueOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.462Z",
   "$defs": {
     "UnifiedValueBridgeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UnifiedValueBridgeOptions",
-      "description": "Unified Value Bridge Options 的调用配置。",
       "properties": {
         "value": {
-          "type": "object",
-          "title": "ValueRef<TValue | undefined>"
+          "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef"
         },
-        "fallbackValue": true,
+        "fallbackValue": {
+          "type": "object",
+          "title": "TValue"
+        },
         "debounceMs": {
           "type": "number"
         }
+      },
+      "required": [
+        "value",
+        "fallbackValue"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.normalize.params": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "object",
+              "title": "TValue"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.normalize.return": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "method.equals.params": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "object",
+              "title": "TValue"
+            },
+            "b": {
+              "type": "object",
+              "title": "TValue"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.equals.return": {
+          "type": "boolean"
+        },
+        "method.emitValue.params": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "object",
+              "title": "TValue"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.emitValue.return": true
       }
     },
     "CommitValueOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CommitValueOptions",
-      "description": "Commit Value Options 的调用配置。",
       "properties": {
         "emit": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.462Z",
   "models": {
     "UnifiedValueBridgeOptions": {
-      "kind": "UnifiedValueBridgeOptions",
-      "className": "UnifiedValueBridgeOptions",
+      "name": "UnifiedValueBridgeOptions",
       "jsdoc": "Unified Value Bridge Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 当前值。 */\n    value: ValueRef<TValue | undefined>;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** debounce Ms 字段。 */\n    debounceMs?: number;\n    /** normalize 回调。 */\n    normalize?: (value: TValue | undefined) => TValue;\n    /** equals 回调。 */\n    equals?: (a: TValue, b: TValue) => boolean;\n    /** emit Value 回调。 */\n    emitValue?: (value: TValue) => void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/state.d.ts",
         "line": 16,
         "className": "UnifiedValueBridgeOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [
-        {
-          "name": "value",
-          "jsdoc": "当前值。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<TValue | undefined>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "fallbackValue",
-          "jsdoc": "fallback Value 字段。",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "debounceMs",
-          "jsdoc": "debounce Ms 字段。",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "normalize",
-          "jsdoc": "normalize 回调。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 当前值。 */\n    value: ValueRef<TValue | undefined>;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** debounce Ms 字段。 */\n    debounceMs?: number;\n    /** normalize 回调。 */\n    normalize?: (value: TValue | undefined) => TValue;\n    /** equals 回调。 */\n    equals?: (a: TValue, b: TValue) => boolean;\n    /** emit Value 回调。 */\n    emitValue?: (value: TValue) => void;\n}",
+        "members": {
+          "attributes": [
             {
               "name": "value",
-              "type": {
-                "type": "optional",
-                "elementType": {
-                  "type": "reference",
-                  "name": "TValue",
-                  "refersToTypeParameter": true
+              "jsdoc": "当前值。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "fallbackValue",
+              "jsdoc": "fallback Value 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "debounceMs",
+              "jsdoc": "debounce Ms 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "normalize",
+              "jsdoc": "normalize 回调。",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "optional",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "TValue",
+                      "refersToTypeParameter": true
+                    }
+                  }
                 }
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "TValue",
-            "refersToTypeParameter": true
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "equals",
-          "jsdoc": "equals 回调。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "a",
+              ],
               "type": {
                 "type": "reference",
                 "name": "TValue",
@@ -139,86 +158,79 @@
               }
             },
             {
-              "name": "b",
+              "name": "equals",
+              "jsdoc": "equals 回调。",
+              "parameters": [
+                {
+                  "name": "a",
+                  "type": {
+                    "type": "reference",
+                    "name": "TValue",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "b",
+                  "type": {
+                    "type": "reference",
+                    "name": "TValue",
+                    "refersToTypeParameter": true
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "TValue",
-                "refersToTypeParameter": true
+                "type": "intrinsic",
+                "name": "boolean"
               }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "a": true,
-              "b": true
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "emitValue",
-          "jsdoc": "emit Value 回调。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "value",
+              "name": "emitValue",
+              "jsdoc": "emit Value 回调。",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "reference",
+                    "name": "TValue",
+                    "refersToTypeParameter": true
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "TValue",
-                "refersToTypeParameter": true
+                "type": "intrinsic",
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     },
     "CommitValueOptions": {
-      "kind": "CommitValueOptions",
-      "className": "CommitValueOptions",
+      "name": "CommitValueOptions",
       "jsdoc": "Commit Value Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** emit 字段。 */\n    emit?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/state.d.ts",
         "line": 31,
         "className": "CommitValueOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [
-        {
-          "name": "emit",
-          "jsdoc": "emit 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** emit 字段。 */\n    emit?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "emit",
+              "jsdoc": "emit 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

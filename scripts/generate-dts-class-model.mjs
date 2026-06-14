@@ -3,8 +3,8 @@
 // 1. TypeScript + Volar 在内存中生成 .d.ts
 // 2. 每个 .d.ts 生成一个同路径 .d.ts.json（guide SSOT，生产 guide + script 共用）
 // 3. 写入 generated/dts-class-model/manifest.json
-// 4. 写入缺 JSDoc 语义补充日志 semantic-gaps.log / semantic-gaps.json
-// 5. 增量：对照 .dts-manifest.json 源文件 mtime + shard 是否存在，仅变化项重投影落盘（--full 强制全量）
+// 4. 写入缺 JSDoc 语义补充报告 semantic-gaps.json
+// 5. 默认全量：每次重建 DTS ClassModel bundle；需要临时增量时显式传 --incremental
 
 import {
   copyFileSync,
@@ -260,7 +260,6 @@ if (
     publishedResult = {
       manifest: existingManifest,
       manifestPath: existingManifestPath,
-      semanticLogPath: resolve(outputDir, 'semantic-gaps.log'),
       semanticLogJsonPath: existingSemanticJsonPath,
       semanticGapCount: existingSemanticReport?.gapCount ?? 0,
       fileCount: Object.keys(existingManifest?.files ?? {}).length,
@@ -281,11 +280,9 @@ if (
     const manifestPath = existingManifestPath
     writeFileSync(manifestPath, `${JSON.stringify(finalized.manifest, null, 2)}\n`, 'utf8')
     writeFileSync(existingSemanticJsonPath, `${JSON.stringify(finalized.semanticReport, null, 2)}\n`, 'utf8')
-    writeFileSync(resolve(outputDir, 'semantic-gaps.log'), renderSemanticGapLogFromReport(finalized.semanticReport), 'utf8')
     publishedResult = {
       manifest: finalized.manifest,
       manifestPath,
-      semanticLogPath: resolve(outputDir, 'semantic-gaps.log'),
       semanticLogJsonPath: existingSemanticJsonPath,
       semanticGapCount: finalized.semanticGapCount,
       fileCount: finalized.fileCount,
@@ -359,14 +356,13 @@ buildDebugBreak('class-model-generate:complete', {
 
 console.log(`DTS files: ${String(dtsFiles.length)}`)
 if (targetedBuild !== undefined) {
-  console.log(`Targeted per-file JSON: ${String(result.fileCount)}`)
+  console.log(`Targeted per-file JSON: ${String(publishedResult.fileCount)}`)
 }
 console.log(`Wrote ${relative(repoRoot, publishedResult.manifestPath)}`)
 console.log(`Per-file JSON: ${String(publishedResult.fileCount)}`)
 console.log(`ClassModel symbols (incl. duplicates in files): ${String(publishedResult.modelCount)}`)
 console.log(`classIndex entries: ${String(Object.keys(publishedResult.manifest.classIndex).length)}`)
 console.log(`Semantic gaps: ${String(publishedResult.semanticGapCount)}`)
-console.log(`Semantic gap log: ${relative(repoRoot, publishedResult.semanticLogPath)}`)
 console.log(`Semantic gap JSON: ${relative(repoRoot, publishedResult.semanticLogJsonPath)}`)
 if (publishedResult.manifest.duplicates !== undefined && publishedResult.manifest.duplicates.length > 0) {
   console.log(`Duplicate className skipped in classIndex: ${String(publishedResult.manifest.duplicates.length)}`)
@@ -376,11 +372,8 @@ timings.mark('cleanup')
 console.log(renderTimings(timings))
 
 function renderProgress(event) {
-  if (event.phase === 'create-program') {
-    return `Creating TypeScript Program for ${String(event.total ?? 0)} DTS file(s)...`
-  }
-  if (event.phase === 'program-ready') {
-    return 'TypeScript Program ready.'
+  if (event.phase === 'read-files') {
+    return `Reading DTS source text for ${String(event.total ?? 0)} file(s)...`
   }
   if (event.phase === 'project-file') {
     return `Projected DTS file ${String(event.current ?? 0)}/${String(event.total ?? 0)}: ${event.sourcePath ?? ''}`
@@ -696,7 +689,7 @@ function parseCliOptions(args) {
   const sources = []
   let emitBackend = 'compiler-api'
   let checkDiagnostics = false
-  let forceFullRebuild = false
+let forceFullRebuild = true
   let planOnly = false
 
   for (let index = 0; index < args.length; index += 1) {
@@ -707,6 +700,10 @@ function parseCliOptions(args) {
     }
     if (arg === '--full') {
       forceFullRebuild = true
+      continue
+    }
+    if (arg === '--incremental') {
+      forceFullRebuild = false
       continue
     }
     if (arg === '--plan-only') {
@@ -1010,8 +1007,6 @@ function declaresNamedSymbol(node, symbolName) {
     || ts.isInterfaceDeclaration(node)
     || ts.isTypeAliasDeclaration(node)
     || ts.isEnumDeclaration(node)
-    || ts.isFunctionDeclaration(node)
-    || ts.isModuleDeclaration(node)
   ) {
     return node.name?.text === symbolName
   }
@@ -1035,15 +1030,12 @@ function mergeChangedBundle(command) {
     target: readJsonFile(command.result.semanticLogJsonPath),
     targetSourcePaths: command.changedSourcePaths,
   })
-  const semanticLogPath = resolve(command.outputDir, 'semantic-gaps.log')
   const semanticLogJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
   writeFileSync(semanticLogJsonPath, `${JSON.stringify(semanticReport, null, 2)}\n`, 'utf8')
-  writeFileSync(semanticLogPath, renderSemanticGapLogFromReport(semanticReport), 'utf8')
 
   return {
     manifest: mergedManifest,
     manifestPath: existingManifestPath,
-    semanticLogPath,
     semanticLogJsonPath,
     semanticGapCount: semanticReport.gapCount,
     fileCount: Object.keys(mergedManifest.files).length,
@@ -1079,15 +1071,12 @@ function mergeTargetedBundle(command) {
     target: readJsonFile(command.result.semanticLogJsonPath),
     targetSourcePaths,
   })
-  const semanticLogPath = resolve(command.outputDir, 'semantic-gaps.log')
   const semanticLogJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
   writeFileSync(semanticLogJsonPath, `${JSON.stringify(semanticReport, null, 2)}\n`, 'utf8')
-  writeFileSync(semanticLogPath, renderSemanticGapLogFromReport(semanticReport), 'utf8')
 
   return {
     manifest: mergedManifest,
     manifestPath: existingManifestPath,
-    semanticLogPath,
     semanticLogJsonPath,
     semanticGapCount: semanticReport.gapCount,
     fileCount: Object.keys(mergedManifest.files).length,
@@ -1118,7 +1107,7 @@ function rebuildClassIndexFromBundleFiles(outputDir, files) {
   const entries = Object.entries(files).sort(([left], [right]) => left.localeCompare(right))
   for (const [sourcePath, entry] of entries) {
     const shard = readJsonFile(resolve(outputDir, entry.file))
-    for (const className of shard.symbols ?? []) {
+    for (const className of shard.module?.symbols ?? []) {
       const existing = classIndex[className]
       if (existing !== undefined) {
         duplicates.push({
@@ -1168,34 +1157,6 @@ function compareSemanticGaps(left, right) {
     String(left.className ?? '').localeCompare(String(right.className ?? '')),
     String(left.memberName ?? '').localeCompare(String(right.memberName ?? '')),
   ].find(value => value !== 0) ?? 0
-}
-
-function renderSemanticGapLogFromReport(report) {
-  const lines = [
-    '# DTS ClassModel semantic gaps',
-    `gapCount: ${String(report.gapCount)}`,
-    '',
-    'notes:',
-    ...(report.notes ?? []).map(note => `  - ${note}`),
-    '',
-  ]
-  if (report.gapCount === 0) {
-    lines.push('No semantic gaps.')
-    return `${lines.join('\n')}\n`
-  }
-  for (const gap of report.gaps ?? []) {
-    const label = gap.memberName === undefined ? gap.className : `${gap.className}.${gap.memberName}`
-    lines.push(`[${gap.kind}] ${label}`)
-    lines.push(`  reason: ${gap.reason}`)
-    lines.push(`  chainBreak: ${gap.chainBreak}`)
-    lines.push(`  declaration: ${gap.declarationFile}:${String(gap.declarationLine)}`)
-    lines.push(`  source: ${gap.sourceFile}`)
-    lines.push(`  fixHint: ${gap.fixHint}`)
-    if (gap.declarationKind !== undefined) lines.push(`  declarationKind: ${gap.declarationKind}`)
-    if (gap.moduleName !== undefined) lines.push(`  moduleName: ${gap.moduleName}`)
-    lines.push('')
-  }
-  return `${lines.join('\n')}\n`
 }
 
 function copyBundleFile(fromRoot, toRoot, relativeFile) {

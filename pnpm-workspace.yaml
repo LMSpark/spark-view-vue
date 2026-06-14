@@ -15,6 +15,7 @@ catalog:
   ajv: ^8.20.0
   jmespath: 0.16.0
   comlink: ^4.4.2
+  '@ag-ui/core': ^0.0.57
 
   # ── 构建 / 测试 / Lint 工具链 ──
   typescript: ~6.0.3

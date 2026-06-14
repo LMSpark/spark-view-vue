@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type {
+  AiAgentBeforeFunctionCallOptions,
   AiAgentHostRunResult,
   AiAgentStreamEvent,
   AiAgentTaskChatOptions,
@@ -22,8 +23,8 @@ import {
   createAiRunAdapter,
   formatAiRunError,
   noopTraceSink,
-} from '../ai-run-adapter'
-import type { AiRunBeforeFunctionCall, AiRunHost, AiRunTraceSink } from '../ai-run-adapter'
+} from '../../ai/ai-run-adapter'
+import type { AiRunBeforeFunctionCall, AiRunHost, AiRunTraceSink } from '../../ai/ai-run-adapter'
 
 function createTraceSink() {
   return {
@@ -103,9 +104,20 @@ function createToolCallRecord(): AiAgentToolCallRecord {
     args: { pageId: 'home' },
     turnId: 'turn-1',
     round: 1,
+    callId: 'call-1',
     status: 'success',
     result: { ok: true, summary: 'ok' },
     durationMs: 7,
+  }
+}
+
+function createBeforeOptions(): AiAgentBeforeFunctionCallOptions {
+  return {
+    moduleId: 'pageDesign',
+    moduleInstanceId: 'page-1',
+    instanceId: 'page-1',
+    toolName: 'model_script',
+    args: { script: 'return 1' },
   }
 }
 
@@ -158,11 +170,16 @@ describe('createAiRunAdapter', () => {
       }),
     )
     expect(adapter.isRunning()).toBe(false)
+    expect(adapter.snapshot().agUiEvents.map((event) => event.type)).toEqual([
+      'RUN_STARTED',
+      'RUN_FINISHED',
+    ])
   })
 
-  it('forwards host stream callbacks into the optional trace sink', async () => {
+  it('forwards host stream callbacks into trace and AG-UI projections', async () => {
     const event = createStreamEvent('llm-request')
     const toolCall = createToolCallRecord()
+    const eventTypes: string[] = []
     const trace = createTraceSink()
     const result = createRunResult()
     const run = vi.fn(async (
@@ -185,6 +202,7 @@ describe('createAiRunAdapter', () => {
       input: { prompt: 'trace me' },
       trace,
       userMessage: 'trace me',
+      onEvent: (agUiEvent) => eventTypes.push(agUiEvent.type),
     })).resolves.toBe('completed')
 
     expect(trace.reset).toHaveBeenCalledTimes(1)
@@ -194,16 +212,33 @@ describe('createAiRunAdapter', () => {
     expect(trace.appendReasoning).toHaveBeenCalledWith('thinking')
     expect(trace.appendToolCall).toHaveBeenCalledWith(toolCall)
     expect(trace.finish).toHaveBeenCalledTimes(1)
+    expect(adapter.snapshot().trace.entries.map((entry) => entry.kind)).toEqual([
+      'user-message',
+      'assistant-complete',
+      'reasoning',
+      'tool-call',
+    ])
+    expect(eventTypes).toContain('CUSTOM')
+    expect(eventTypes).toContain('TEXT_MESSAGE_START')
+    expect(eventTypes).toContain('TEXT_MESSAGE_CONTENT')
+    expect(eventTypes).toContain('TEXT_MESSAGE_END')
+    expect(eventTypes).toContain('REASONING_MESSAGE_CONTENT')
+    expect(eventTypes).toContain('TOOL_CALL_RESULT')
+    expect(eventTypes.at(-1)).toBe('RUN_FINISHED')
+    expect(adapter.snapshot().timeline.length).toBe(adapter.snapshot().agUiEvents.length)
   })
 
-  it('passes request-scoped beforeFunctionCall through chat options without requiring UI state', async () => {
+  it('wraps beforeFunctionCall as AG-UI approval custom events', async () => {
     const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
     const result = createRunResult()
     const run = vi.fn(async (
       _alias: string,
       _input: AiJsonParams,
-      _chat?: AiAgentTaskChatOptions,
-    ) => result)
+      chat?: AiAgentTaskChatOptions,
+    ) => {
+      await chat?.beforeFunctionCall?.(createBeforeOptions())
+      return result
+    })
     const host: AiRunHost = { run }
     const adapter = createAiRunAdapter()
 
@@ -217,9 +252,19 @@ describe('createAiRunAdapter', () => {
     expect(run).toHaveBeenCalledWith(
       'page-design',
       { prompt: 'approve me' },
-      expect.objectContaining({ beforeFunctionCall }),
+      expect.objectContaining({ beforeFunctionCall: expect.any(Function) }),
     )
-    expect(beforeFunctionCall).not.toHaveBeenCalled()
+    expect(beforeFunctionCall).toHaveBeenCalledWith(createBeforeOptions())
+    const approvalEvents = adapter.snapshot().agUiEvents.filter((event) =>
+      event.type === 'CUSTOM' && (
+        event.name === 'spark.toolApproval.requested'
+        || event.name === 'spark.toolApproval.resolved'
+      ),
+    )
+    expect(approvalEvents.map((event) => event.name)).toEqual([
+      'spark.toolApproval.requested',
+      'spark.toolApproval.resolved',
+    ])
   })
 
   it('appends formatted errors and rethrows non-abort failures', async () => {
@@ -242,6 +287,10 @@ describe('createAiRunAdapter', () => {
     expect(trace.appendError).toHaveBeenCalledWith('formatted: host failed')
     expect(trace.finish).toHaveBeenCalledTimes(1)
     expect(adapter.isRunning()).toBe(false)
+    expect(adapter.snapshot().agUiEvents.at(-1)).toMatchObject({
+      type: 'RUN_ERROR',
+      message: 'formatted: host failed',
+    })
   })
 
   it('aborts an active run without reporting a host error', async () => {
@@ -279,6 +328,11 @@ describe('createAiRunAdapter', () => {
     expect(trace.appendError).not.toHaveBeenCalled()
     expect(trace.finish).toHaveBeenCalledTimes(1)
     expect(adapter.isRunning()).toBe(false)
+    expect(adapter.snapshot().agUiEvents.some((event) => event.type === 'RUN_ERROR')).toBe(false)
+    expect(adapter.snapshot().trace.entries.at(-1)).toMatchObject({
+      kind: 'system-message',
+      content: 'user stopped',
+    })
   })
 
   it('ignores a host result that resolves after abort', async () => {

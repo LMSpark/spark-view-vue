@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSteps/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/RendererSteps/types",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSteps/types.d.ts",
@@ -18,65 +18,73 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "RendererStepsApi"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.448Z",
   "$defs": {
     "RendererStepsApi": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererStepsApi",
-      "description": "Renderer Steps Api 的语义模型。"
-    }
-  },
-  "models": {
-    "RendererStepsApi": {
-      "kind": "RendererStepsApi",
-      "className": "RendererStepsApi",
-      "jsdoc": "Renderer Steps Api 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    getActiveStep(): string | number | undefined;\n    getActiveStepIndex(): number;\n    setActiveStep(index: number): void;\n    nextStep(): void;\n    prevStep(): void;\n    getStepCount(): number;\n    getStepNames(): Array<string | number>;\n    isFirstStep(): boolean;\n    isLastStep(): boolean;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSteps/types.d.ts",
-        "line": 8,
-        "className": "RendererStepsApi",
-        "declarationKind": "type",
-        "componentName": "RendererSteps",
-        "componentType": "r-steps",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getActiveStep",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "intrinsic",
-                "name": "number"
-              },
-              {
-                "type": "intrinsic",
-                "name": "undefined"
-              }
-            ]
+      "$defs": {
+        "method.getActiveStep.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getActiveStep.return": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "method.getActiveStepIndex.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getActiveStepIndex.return": {
+          "type": "number"
+        },
+        "method.setActiveStep.params": {
+          "type": "object",
+          "properties": {
+            "index": {
+              "type": "number"
+            }
           },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
+          "additionalProperties": false
+        },
+        "method.setActiveStep.return": true,
+        "method.nextStep.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.nextStep.return": true,
+        "method.prevStep.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.prevStep.return": true,
+        "method.getStepCount.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getStepCount.return": {
+          "type": "number"
+        },
+        "method.getStepNames.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getStepNames.return": {
+          "type": "array",
+          "items": {
             "anyOf": [
               {
                 "type": "string"
@@ -87,179 +95,146 @@
             ]
           }
         },
-        {
-          "name": "getActiveStepIndex",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
+        "method.isFirstStep.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
         },
-        {
-          "name": "setActiveStep",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        "method.isFirstStep.return": {
+          "type": "boolean"
+        },
+        "method.isLastStep.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.isLastStep.return": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:38:13.448Z",
+  "models": {
+    "RendererStepsApi": {
+      "name": "RendererStepsApi",
+      "jsdoc": "@module\n@spark-appworks /spark-component:components/containers/layout/RendererSteps/types\n职责：集中定义 RendererSteps（r-steps）内部共享的类型契约，描述渲染器状态、事件载荷和运行时数据形态。\n边界：只提供 container/layout-container 的类型层语义，不创建组件实例、不执行 IO，也不承载具体 UI 渲染。\nAI用途：需要判断 renderer steps 的状态结构、事件参数或 zero-code API 形状时，用本模块作为类型入口。\nRenderer Steps Api 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSteps/types.d.ts",
+        "line": 8,
+        "className": "RendererStepsApi",
+        "declarationKind": "typeAlias",
+        "componentName": "RendererSteps",
+        "componentType": "r-steps",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    getActiveStep(): string | number | undefined;\n    getActiveStepIndex(): number;\n    setActiveStep(index: number): void;\n    nextStep(): void;\n    prevStep(): void;\n    getStepCount(): number;\n    getStepNames(): Array<string | number>;\n    isFirstStep(): boolean;\n    isLastStep(): boolean;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "index",
+              "name": "getActiveStep",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "getActiveStepIndex",
               "type": {
                 "type": "intrinsic",
                 "name": "number"
               }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "index": {
-                "type": "number"
+            },
+            {
+              "name": "setActiveStep",
+              "parameters": [
+                {
+                  "name": "index",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "nextStep",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "prevStep",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getStepCount",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "getStepNames",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "intrinsic",
-                  "name": "string"
-                },
-                {
-                  "type": "intrinsic",
-                  "name": "number"
+            {
+              "name": "nextStep",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "prevStep",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "getStepCount",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "getStepNames",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "union",
+                  "types": [
+                    {
+                      "type": "intrinsic",
+                      "name": "string"
+                    },
+                    {
+                      "type": "intrinsic",
+                      "name": "number"
+                    }
+                  ]
                 }
-              ]
+              }
+            },
+            {
+              "name": "isFirstStep",
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "isLastStep",
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
             }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "isFirstStep",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "isLastStep",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

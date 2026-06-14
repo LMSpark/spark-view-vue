@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/ai/ai-delivery-port",
     "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
@@ -17,525 +17,393 @@
       "AiDeliveryResultExtras"
     ]
   },
-  "symbols": [
-    "AiDeliveryMode",
-    "AiDeliveryArtifact",
-    "AiDeliveryResult",
-    "AiDeliveryPort",
-    "AiDeliveryResultExtras"
-  ],
-  "generatedAt": "2026-06-14T03:35:12.994Z",
   "$defs": {
     "AiDeliveryMode": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AiDeliveryMode",
-      "description": "@module app:services/ai-delivery-port\n职责：定义 APP 层 AI 交付端口，把 Working Copy 的 save、trace 和 rollback 统一成可回执的结果。\n边界：只表达应用交付策略，不进入 spark-ai 内核，也不直接理解 pageDesign/projectPlanning 领域细节。\nAI用途：排查 Host Run 结束后如何落盘、如何回执或失败时如何记录交付状态时，用本模块定位统一协议。"
+      "enum": [
+        "manual",
+        "auto"
+      ]
     },
     "AiDeliveryArtifact": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiDeliveryArtifact",
-      "description": "单次交付涉及的文件或导航变更摘要。",
       "properties": {
         "kind": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "page-file"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "navigation"
-              ]
-            }
+          "enum": [
+            "page-file",
+            "navigation"
           ]
         },
         "name": {
           "type": "string"
         },
         "status": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "dirty"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "saved"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "skipped"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "rolledBack"
-              ]
-            }
+          "enum": [
+            "dirty",
+            "saved",
+            "skipped",
+            "rolledBack"
           ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiDeliveryResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiDeliveryResult",
-      "description": "Host Run 结束后的交付回执，包含模式、状态与产物列表。",
       "properties": {
         "mode": {
           "$ref": "#/$defs/AiDeliveryMode"
         },
         "status": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "saved"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "skipped"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "rolledBack"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "failed"
-              ]
-            }
+          "enum": [
+            "saved",
+            "skipped",
+            "rolledBack",
+            "failed"
           ]
         },
         "artifacts": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiDeliveryArtifact"
+          }
         },
         "message": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiDeliveryPort": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiDeliveryPort",
-      "description": "应用层交付端口：负责 save、trace 与 rollback 三阶段契约。",
       "properties": {
         "mode": {
           "$ref": "#/$defs/AiDeliveryMode"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.save.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "type": "object",
+              "title": "TContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.save.return": {
+          "type": "object",
+          "title": "Promise<AiDeliveryResult>"
+        },
+        "method.trace.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "type": "object",
+              "title": "TContext"
+            },
+            "result": {
+              "$ref": "#/$defs/AiDeliveryResult"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.trace.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.rollback.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "type": "object",
+              "title": "TContext"
+            },
+            "error": {
+              "type": "object",
+              "title": "Error"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.rollback.return": {
+          "type": "object",
+          "title": "Promise<AiDeliveryResult>"
+        }
       }
     },
     "AiDeliveryResultExtras": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiDeliveryResultExtras",
-      "description": "附加在 Error 上的交付回执扩展字段。",
       "properties": {
         "delivery": {
           "$ref": "#/$defs/AiDeliveryResult"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:12.994Z",
   "models": {
     "AiDeliveryMode": {
-      "kind": "AiDeliveryMode",
-      "className": "AiDeliveryMode",
+      "name": "AiDeliveryMode",
       "jsdoc": "@module app:services/ai-delivery-port\n职责：定义 APP 层 AI 交付端口，把 Working Copy 的 save、trace 和 rollback 统一成可回执的结果。\n边界：只表达应用交付策略，不进入 spark-ai 内核，也不直接理解 pageDesign/projectPlanning 领域细节。\nAI用途：排查 Host Run 结束后如何落盘、如何回执或失败时如何记录交付状态时，用本模块定位统一协议。",
-      "shapeKind": "type",
-      "declarationTypeText": "'manual' | 'auto'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'manual'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'auto'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
         "line": 7,
         "className": "AiDeliveryMode",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'manual' | 'auto'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'manual'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'auto'"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiDeliveryArtifact": {
-      "kind": "AiDeliveryArtifact",
-      "className": "AiDeliveryArtifact",
+      "name": "AiDeliveryArtifact",
       "jsdoc": "单次交付涉及的文件或导航变更摘要。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
         "line": 9,
         "className": "AiDeliveryArtifact",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "page-file"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "navigation"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "dirty"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "saved"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "skipped"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "rolledBack"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiDeliveryResult": {
-      "kind": "AiDeliveryResult",
-      "className": "AiDeliveryResult",
+      "name": "AiDeliveryResult",
       "jsdoc": "Host Run 结束后的交付回执，包含模式、状态与产物列表。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
         "line": 15,
         "className": "AiDeliveryResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "mode",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiDeliveryMode"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "saved"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "skipped"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "rolledBack"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "failed"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "artifacts",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "mode",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "artifacts",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "message",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiDeliveryPort": {
-      "kind": "AiDeliveryPort",
-      "className": "AiDeliveryPort",
+      "name": "AiDeliveryPort",
       "jsdoc": "应用层交付端口：负责 save、trace 与 rollback 三阶段契约。",
-      "shapeKind": "interface",
+      "declarationKind": "interface",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
         "line": 22,
         "className": "AiDeliveryPort",
         "declarationKind": "interface"
       },
-      "attributes": [
-        {
-          "name": "mode",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiDeliveryMode"
-          },
-          "readable": true,
-          "writable": false
+      "interfaceDecl": {
+        "members": {
+          "attributes": [
+            {
+              "name": "mode",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "save",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "TContext",
+                    "refersToTypeParameter": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AiDeliveryResult",
+                    "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "trace",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "TContext",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "result",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiDeliveryResult",
+                    "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "rollback",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "TContext",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "error",
+                  "type": {
+                    "type": "reference",
+                    "name": "Error"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AiDeliveryResult",
+                    "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ],
-      "methods": [
-        {
-          "name": "save",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "TContext",
-                "refersToTypeParameter": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "AiDeliveryResult",
-                "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiDeliveryResult>"
-          }
-        },
-        {
-          "name": "trace",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "TContext",
-                "refersToTypeParameter": true
-              }
-            },
-            {
-              "name": "result",
-              "type": {
-                "type": "reference",
-                "name": "AiDeliveryResult",
-                "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": true,
-              "result": {
-                "$ref": "#/$defs/AiDeliveryResult"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "rollback",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "TContext",
-                "refersToTypeParameter": true
-              }
-            },
-            {
-              "name": "error",
-              "type": {
-                "type": "reference",
-                "name": "Error"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "AiDeliveryResult",
-                "sourcePath": "class-model-emit/src/services/ai/ai-delivery-port.d.ts"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": true,
-              "error": {
-                "type": "object",
-                "title": "Error"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiDeliveryResult>"
-          }
-        }
-      ]
+      }
     },
     "AiDeliveryResultExtras": {
-      "kind": "AiDeliveryResultExtras",
-      "className": "AiDeliveryResultExtras",
+      "name": "AiDeliveryResultExtras",
       "jsdoc": "附加在 Error 上的交付回执扩展字段。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
         "line": 29,
         "className": "AiDeliveryResultExtras",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "delivery",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiDeliveryResult"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "delivery",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

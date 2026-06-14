@@ -47,6 +47,14 @@ export function assertDraft2020Schema(value: unknown, path = '$'): void {
   throw new Error(`Draft 2020-12 audit failed with ${issues.length} issue(s):\n${sample}`)
 }
 
+function isAllowedSchemaRef(ref: string): boolean {
+  if (ref.includes('#/$defs/')) return true
+  const modelMarker = '#/models/'
+  const markerIndex = ref.indexOf(modelMarker)
+  if (markerIndex >= 0 && ref.endsWith('/jsonSchema')) return true
+  return false
+}
+
 function visitSchema(value: unknown, path: string, issues: Draft2020AuditIssue[]): void {
   if (typeof value === 'boolean') return
   if (!isRecord(value)) {
@@ -56,8 +64,8 @@ function visitSchema(value: unknown, path: string, issues: Draft2020AuditIssue[]
 
   const ref = value['$ref']
   if (typeof ref === 'string') {
-    if (!ref.startsWith('#/$defs/')) {
-      issues.push({ path, rule: 'REF_TARGET', detail: 'schema $ref must target #/$defs/*' })
+    if (!isAllowedSchemaRef(ref)) {
+      issues.push({ path, rule: 'REF_TARGET', detail: 'schema $ref must target #/$defs/*, including cross-file refs' })
     }
     const siblings = Object.keys(value).filter(key => key !== '$ref' && !REF_ANNOTATION_SIBLINGS.has(key))
     if (siblings.length > 0) {
@@ -106,6 +114,9 @@ function visitSchema(value: unknown, path: string, issues: Draft2020AuditIssue[]
     if (branches.length === 1) {
       issues.push({ path, rule: 'SINGLE_COMBINATOR', detail: `${keyword} must not contain a single branch` })
     }
+    if ((keyword === 'anyOf' || keyword === 'oneOf') && isLiteralOnlyCombinator(branches)) {
+      issues.push({ path, rule: 'LITERAL_COMBINATOR_ENUM', detail: `${keyword} literal branches should be a single enum or const schema` })
+    }
     for (const [index, branch] of branches.entries()) {
       visitSchema(branch, `${path}.${keyword}[${index}]`, issues)
     }
@@ -140,6 +151,40 @@ function visitSchema(value: unknown, path: string, issues: Draft2020AuditIssue[]
   if (additionalProperties !== undefined) {
     visitSchema(additionalProperties, `${path}.additionalProperties`, issues)
   }
+  const defs = value['$defs']
+  if (defs !== undefined) {
+    if (!isRecord(defs)) {
+      issues.push({ path: `${path}.$defs`, rule: 'INVALID_DEFS', detail: '$defs must be an object' })
+    } else {
+      for (const [name, definition] of Object.entries(defs)) {
+        visitSchema(definition, `${path}.$defs.${name}`, issues)
+      }
+    }
+  }
   const notSchema = value['not']
   if (notSchema !== undefined) visitSchema(notSchema, `${path}.not`, issues)
+}
+
+function isLiteralOnlyCombinator(branches: readonly unknown[]): boolean {
+  if (branches.length <= 1) return false
+  return branches.every(branch => readLiteralBranchValues(branch) !== undefined)
+}
+
+function readLiteralBranchValues(branch: unknown): readonly unknown[] | undefined {
+  if (!isRecord(branch)) return undefined
+  if (!Object.keys(branch).every(key => key === 'type' || key === 'enum' || key === 'const' || key === 'title' || key === 'description')) {
+    return undefined
+  }
+  if (branch['const'] !== undefined) return [branch['const']]
+  if (branch['type'] === 'null') return [null]
+  const enumValues = branch['enum']
+  if (Array.isArray(enumValues) && enumValues.length > 0) return enumValues.filter(isJsonLiteralValue)
+  return undefined
+}
+
+function isJsonLiteralValue(value: unknown): value is string | number | boolean | null {
+  return typeof value === 'string'
+    || typeof value === 'number'
+    || typeof value === 'boolean'
+    || value === null
 }

@@ -17,11 +17,27 @@ import {
   readDtsClassModelBundleManifest,
   readDtsFileProjectionDocument,
 } from '../class-model/read-dts-class-model-bundle-json'
+import type { DtsTypeDeclarationModel } from '../class-model/types'
 
 const removedReturnTypeField = ['return', 'Type'].join('')
 const removedReturnTypeRefsField = ['return', 'Type', 'Refs'].join('')
 const removedReturnTextField = ['return', 'Type', 'Text'].join('')
 const removedParamsTextField = ['params', 'Type', 'Text'].join('')
+
+function expectClassModel(model: DtsTypeDeclarationModel | undefined, name: string): Extract<DtsTypeDeclarationModel, { declarationKind: 'class' }> {
+  if (model?.declarationKind !== 'class') throw new Error(`Expected class model: ${name}`)
+  return model
+}
+
+function expectInterfaceModel(model: DtsTypeDeclarationModel | undefined, name: string): Extract<DtsTypeDeclarationModel, { declarationKind: 'interface' }> {
+  if (model?.declarationKind !== 'interface') throw new Error(`Expected interface model: ${name}`)
+  return model
+}
+
+function expectTypeAliasModel(model: DtsTypeDeclarationModel | undefined, name: string): Extract<DtsTypeDeclarationModel, { declarationKind: 'typeAlias' }> {
+  if (model?.declarationKind !== 'typeAlias') throw new Error(`Expected type alias model: ${name}`)
+  return model
+}
 
 describe('readDtsClassModelBundleJson', () => {
   it('parses generated manifest with structural validation', () => {
@@ -98,9 +114,15 @@ describe('readDtsClassModelBundleJson', () => {
       const projection = readDtsFileProjectionDocument(raw)
       const rawRecord = raw as {
         models?: Record<string, {
-          methods?: Array<Record<string, unknown>>
+          classDecl?: {
+            constructorMeta?: Record<string, unknown>
+            members?: {
+              methods?: Array<Record<string, unknown>>
+            }
+          }
         }>
       }
+      const sparkModel = expectClassModel(projection.models['SparkAIModel'], 'SparkAIModel')
       expect(projection.schemaVersion).toBe(DTS_FILE_PROJECTION_VERSION)
       expect(projection.module).toMatchObject({
         name: '@spark-appworks/spark-utils:ai-model',
@@ -110,23 +132,29 @@ describe('readDtsClassModelBundleJson', () => {
       })
       expect(projection.symbols).toContain('SparkAIModel')
       expect(projection.generatedAt).toBe(statSync(sourceTsPath).mtime.toISOString())
-      expect(projection.$defs?.['SparkAIModel']).toMatchObject({
+      expect(projection.models['SparkAIModel']?.jsonSchema).toMatchObject({
         type: 'object',
         title: 'SparkAIModel',
       })
       expect(Object.keys(projection.models)).toContain('SparkAIModel')
-      const removeMethod = projection.models['SparkAIModel']?.methods.find(method => method.name === 'remove')
-      const rawRemoveMethod = rawRecord.models?.['SparkAIModel']?.methods
+      expect(rawRecord.models?.['SparkAIModel']?.classDecl?.constructorMeta).not.toHaveProperty('paramsSchema')
+      expect(sparkModel.classDecl.constructorMeta.signatureText).toBe('constructor()')
+      expect(sparkModel.classDecl.constructorMeta.paramsSchema).toMatchObject({
+        type: 'object',
+        properties: {},
+        additionalProperties: false,
+      })
+      const removeMethod = sparkModel.classDecl.members.methods.find(method => method.name === 'remove')
+      const rawRemoveMethod = rawRecord.models?.['SparkAIModel']?.classDecl?.members?.methods
         ?.find(method => method['name'] === 'remove')
       expect(Object.keys(rawRemoveMethod ?? {})).toEqual([
         'name',
         'jsdoc',
-        'parameterStyle',
         'parameters',
         'type',
-        'paramsSchema',
-        'returnSchema',
       ])
+      expect(rawRemoveMethod).not.toHaveProperty('paramsSchema')
+      expect(rawRemoveMethod).not.toHaveProperty('returnSchema')
       expect(rawRemoveMethod).not.toHaveProperty(removedReturnTypeField)
       expect(rawRemoveMethod).not.toHaveProperty('signatureText')
       expect(removeMethod?.signatureText).toContain('remove(moduleId: string): boolean')
@@ -148,7 +176,7 @@ describe('readDtsClassModelBundleJson', () => {
       expect(removeMethod?.returnSchema).toEqual({ type: 'boolean' })
       expect(removeMethod).not.toHaveProperty(removedParamsTextField)
       expect(removeMethod).not.toHaveProperty('provenance')
-      const attachMethod = projection.models['SparkAIModel']?.methods.find(method => method.name === 'attach')
+      const attachMethod = sparkModel.classDecl.members.methods.find(method => method.name === 'attach')
       expect(attachMethod?.signatureText).toContain('attach(model: SparkAIModel): SparkAIModel')
       expect(attachMethod?.parameterStyle).toBe('positional')
       expect(attachMethod?.parameters).toEqual([{
@@ -286,7 +314,8 @@ describe('readDtsClassModelBundleJson', () => {
 
       const projection = projectDtsFileProjection({ repoRoot: tempRoot, absolutePath })
       const model = projection.models['DemoRegistry']
-      const method = model?.methods.find(item => item.name === 'register')
+      const demoRegistry = expectClassModel(model, 'DemoRegistry')
+      const method = demoRegistry.classDecl.members.methods.find(item => item.name === 'register')
 
       expect(model?.jsdoc).toBe('Registry model used by the host.')
       expect(method?.jsdoc).toContain('Registers a business entry.')
@@ -346,16 +375,18 @@ describe('readDtsClassModelBundleJson', () => {
       ].join('\n'), 'utf8')
 
       const projection = projectDtsFileProjection({ repoRoot: tempRoot, absolutePath })
-      expect(projection.models['RDerivedProps']?.declarationRelations).toEqual([
+      const derivedProps = expectInterfaceModel(projection.models['RDerivedProps'], 'RDerivedProps')
+      const textProps = expectTypeAliasModel(projection.models['RTextProps'], 'RTextProps')
+      expect(derivedProps.interfaceDecl.declarationRelations).toEqual([
         {
           kind: 'extends',
           typeText: 'RBaseProps',
           targetName: 'RBaseProps',
         },
       ])
-      expect(projection.models['RTextProps']?.declarationTypeText)
+      expect(textProps.typeAlias.declarationTypeText)
         .toBe('SparkNodeProps & SparkFieldSemanticProps<string>')
-      expect(projection.models['RTextProps']?.declarationRelations).toEqual([
+      expect(textProps.typeAlias.declarationRelations).toEqual([
         {
           kind: 'intersection',
           typeText: 'SparkNodeProps',
@@ -411,7 +442,8 @@ describe('readDtsClassModelBundleJson', () => {
       const registryProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, registryEntry.file), 'utf8')) as unknown,
       )
-      const registerMethod = registryProjection.models['AiAgentRegistry']?.methods.find(method => method.name === 'register')
+      const registryModel = expectClassModel(registryProjection.models['AiAgentRegistry'], 'AiAgentRegistry')
+      const registerMethod = registryModel.classDecl.members.methods.find(method => method.name === 'register')
 
       expect(registerMethod?.signatureText).toBe('register(registration: AiAgentRegistration<TInput>): void')
       expect(registerMethod?.parameterStyle).toBe('positional')
@@ -437,7 +469,6 @@ describe('readDtsClassModelBundleJson', () => {
         properties: {
           registration: {
             $ref: 'registration-types.d.ts.json#/$defs/AiAgentRegistration',
-            title: 'AiAgentRegistration<TInput>',
           },
         },
       })
@@ -498,10 +529,9 @@ describe('readDtsClassModelBundleJson', () => {
       const widgetProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, widgetEntry.file), 'utf8')) as unknown,
       )
-      const widgetModel = widgetProjection.models['Widget']
-      if (widgetModel === undefined) throw new Error('Missing Widget model.')
-      expect(widgetModel.constructorMeta?.signatureText).toContain('constructor(options: WidgetOptions, label?: string)')
-      expect(widgetModel.constructorMeta?.parameters?.map(parameter => parameter.name)).toEqual(['options', 'label'])
+      const widgetModel = expectClassModel(widgetProjection.models['Widget'], 'Widget')
+      expect(widgetModel.classDecl.constructorMeta.signatureText).toContain('constructor(options: WidgetOptions, label?: string)')
+      expect(widgetModel.classDecl.constructorMeta.parameters?.map(parameter => parameter.name)).toEqual(['options', 'label'])
 
       const provider = createDtsBundleClassModelKnowledgeProvider({
         dtsClassModelManifestUrl: pathToFileURL(result.manifestPath).href,
@@ -522,6 +552,95 @@ describe('readDtsClassModelBundleJson', () => {
       await expect(provider.modelGuide({ kind: 'Widget' })).resolves.toContain(
         'constructor(options: WidgetOptions, label?: string)',
       )
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('preserves private constructor metadata from DTS classes', () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-private-constructor-${String(process.pid)}-${String(Date.now())}`)
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/private-host.d.ts'
+    const absolutePath = resolve(tempRoot, sourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(absolutePath), { recursive: true })
+      writeFileSync(absolutePath, [
+        '/** Host with factory-only construction. */',
+        'export class PrivateHost {',
+        '  private constructor()',
+        '  /** Static factory. */',
+        '  static create(): PrivateHost',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [absolutePath],
+        outputDir,
+      })
+      const entry = result.manifest.files[sourcePath]
+      if (entry === undefined) throw new Error(`Missing private host shard entry: ${sourcePath}`)
+      const projection = readDtsFileProjectionDocument(
+        JSON.parse(readFileSync(resolve(outputDir, entry.file), 'utf8')) as unknown,
+      )
+
+      const privateHost = expectClassModel(projection.models['PrivateHost'], 'PrivateHost')
+      expect(privateHost.classDecl.constructorMeta.signatureText).toBe('private constructor()')
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('resolves named import aliases to the original dts symbol', () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-import-alias-${String(process.pid)}-${String(Date.now())}`)
+    const registrationSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts'
+    const registrySourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/business-registry.d.ts'
+    const registrationPath = resolve(tempRoot, registrationSourcePath)
+    const registryPath = resolve(tempRoot, registrySourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(registrationPath), { recursive: true })
+      writeFileSync(registrationPath, [
+        '/** Business registration passed into the host registry. */',
+        'export type AiAgentRegistration = {',
+        '  moduleId: string',
+        '}',
+      ].join('\n'), 'utf8')
+      writeFileSync(registryPath, [
+        "import type { AiAgentRegistration as RegistrationSpec } from './registration-types'",
+        '/** Host registry for AI business registrations. */',
+        'export class AiAgentRegistry {',
+        '  /** Stores a registration for later session resolution. */',
+        '  register(registration: RegistrationSpec): void',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [registrationPath, registryPath],
+        outputDir,
+      })
+      const registryEntry = result.manifest.files[registrySourcePath]
+      if (registryEntry === undefined) throw new Error(`Missing registry shard entry: ${registrySourcePath}`)
+      const registryProjection = readDtsFileProjectionDocument(
+        JSON.parse(readFileSync(resolve(outputDir, registryEntry.file), 'utf8')) as unknown,
+      )
+      const registryModel = expectClassModel(registryProjection.models['AiAgentRegistry'], 'AiAgentRegistry')
+      const registerMethod = registryModel.classDecl.members.methods.find(method => method.name === 'register')
+
+      expect(registerMethod?.parameters?.[0]?.type).toEqual({
+        type: 'reference',
+        name: 'AiAgentRegistration',
+        sourcePath: registrationSourcePath,
+      })
+      expect(registerMethod?.paramsSchema).toMatchObject({
+        type: 'object',
+        properties: {
+          registration: {
+            $ref: 'registration-types.d.ts.json#/$defs/AiAgentRegistration',
+          },
+        },
+      })
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -571,8 +690,9 @@ describe('readDtsClassModelBundleJson', () => {
       )
       const commandModel = hostProjection.models['AiAgentHostEnsureCommand']
       if (commandModel === undefined) throw new Error('Missing AiAgentHostEnsureCommand model.')
-      expect(commandModel.attributes.map(attribute => attribute.name)).toEqual(['moduleId'])
-      expect(commandModel.methods.map(method => method.name)).toEqual(['create'])
+      const commandType = expectTypeAliasModel(commandModel, 'AiAgentHostEnsureCommand')
+      expect(commandType.typeAlias.members.attributes.map(attribute => attribute.name)).toEqual(['moduleId'])
+      expect(commandType.typeAlias.members.methods.map(method => method.name)).toEqual(['create'])
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -724,18 +844,20 @@ describe('readDtsClassModelBundleJson', () => {
       const edgeProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, edgeEntry.file), 'utf8')) as unknown,
       )
-      const nodeDef = nodeProjection.$defs?.['TreeNode']
-      const edgeDef = edgeProjection.$defs?.['TreeEdge']
-      if (nodeDef === undefined) throw new Error('Missing TreeNode schema def.')
-      if (edgeDef === undefined) throw new Error('Missing TreeEdge schema def.')
+      const nodeModel = expectTypeAliasModel(nodeProjection.models['TreeNode'], 'TreeNode')
+      const edgeModel = expectTypeAliasModel(edgeProjection.models['TreeEdge'], 'TreeEdge')
+      expect(nodeModel.jsonSchema?.['$schema']).toBe('https://json-schema.org/draft/2020-12/schema')
+      expect(edgeModel.jsonSchema?.['$schema']).toBe('https://json-schema.org/draft/2020-12/schema')
 
-      expect(nodeDef.properties?.['edges']).toEqual({
+      const nodeEdgesAttr = nodeModel.typeAlias.members.attributes.find(attribute => attribute.name === 'edges')
+      expect(nodeEdgesAttr?.schema).toEqual({
         type: 'array',
         items: {
           $ref: 'tree-edge.d.ts.json#/$defs/TreeEdge',
         },
       })
-      expect(edgeDef.properties?.['child']).toEqual({
+      const edgeChildAttr = edgeModel.typeAlias.members.attributes.find(attribute => attribute.name === 'child')
+      expect(edgeChildAttr?.schema).toEqual({
         $ref: 'tree-node.d.ts.json#/$defs/TreeNode',
       })
 
@@ -747,8 +869,8 @@ describe('readDtsClassModelBundleJson', () => {
 
       expect(reachable).toEqual(['TreeNode', 'TreeEdge'])
       expect(loader.buildLoadedSurface().models).toMatchObject({
-        TreeNode: { className: 'TreeNode' },
-        TreeEdge: { className: 'TreeEdge' },
+        TreeNode: { name: 'TreeNode' },
+        TreeEdge: { name: 'TreeEdge' },
       })
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
@@ -796,7 +918,6 @@ describe('readDtsClassModelBundleJson', () => {
           sourceFile: string
         }>
       }
-      const logText = readFileSync(result.semanticLogPath, 'utf8')
       const gapIds = report.gaps.map(gap => `${gap.kind}:${gap.className}.${gap.memberName ?? '<model>'}`)
 
       expect(report.gapCount).toBe(result.semanticGapCount)
@@ -813,10 +934,6 @@ describe('readDtsClassModelBundleJson', () => {
       expect(report.gaps.find(gap => gap.className === 'RTextProps' && gap.kind === 'model')?.fixHint)
         .toContain('FieldText.props.ts')
       expect(report.notes.join('\n')).toContain('.d.ts')
-      expect(logText).toContain('[model] RTextProps')
-      expect(logText).toContain('reason: missing-jsdoc')
-      expect(logText).toContain('chainBreak:')
-      expect(logText).toContain('component: type=r-text; name=FieldText; level=field-level')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -835,8 +952,8 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('rejects projection missing required class model fields', () => {
     expect(() => readDtsFileProjectionDocument({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
       schemaVersion: DTS_FILE_PROJECTION_VERSION,
-      sourcePath: 'class-model-emit/x.d.ts',
       module: {
         name: 'workspace:x',
         sourcePath: 'class-model-emit/x.d.ts',
@@ -846,13 +963,12 @@ describe('readDtsClassModelBundleJson', () => {
         jsdocSource: 'leading-jsdoc',
         symbols: ['Broken'],
       },
-      symbols: ['Broken'],
+      $defs: {},
       models: {
         Broken: {
-          kind: 'Broken',
         },
       },
-    })).toThrow(/className/)
+    })).toThrow(/name/)
   })
 
   it('projects optional return types and reflection callback parameters (PR-2)', () => {
@@ -894,7 +1010,8 @@ describe('readDtsClassModelBundleJson', () => {
       const registryProjection = projectDtsFileProjection({ repoRoot: tempRoot, absolutePath: registryPath })
       const configPageProjection = projectDtsFileProjection({ repoRoot: tempRoot, absolutePath: configPagePath })
 
-      const getMethod = registryProjection.models['AiAgentRegistry']?.methods.find(method => method.name === 'get')
+      const registryModel = expectClassModel(registryProjection.models['AiAgentRegistry'], 'AiAgentRegistry')
+      const getMethod = registryModel.classDecl.members.methods.find(method => method.name === 'get')
       expect(getMethod?.type).toEqual({
         type: 'optional',
         elementType: {
@@ -910,7 +1027,8 @@ describe('readDtsClassModelBundleJson', () => {
       })
       expect(getMethod).not.toHaveProperty(removedReturnTypeField)
 
-      const editMethod = configPageProjection.models['ConfigPage']?.methods.find(method => method.name === 'editDataSet')
+      const configPageModel = expectClassModel(configPageProjection.models['ConfigPage'], 'ConfigPage')
+      const editMethod = configPageModel.classDecl.members.methods.find(method => method.name === 'editDataSet')
       expect(editMethod?.parameters?.[0]?.type).toEqual({
         type: 'reflection',
         declaration: {

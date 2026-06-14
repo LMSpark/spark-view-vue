@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/SessionToolCallCard.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
@@ -13,57 +13,51 @@
       "SessionToolCallCardProps"
     ]
   },
-  "symbols": [
-    "SessionToolCallCardProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.374Z",
   "$defs": {
     "SessionToolCallCardProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SessionToolCallCardProps",
-      "description": "Session Tool Call Card Props 的属性契约。",
       "properties": {
         "toolCall": {
-          "type": "object",
-          "title": "ToolCallDisplayItem"
+          "$ref": "../types.d.ts.json#/$defs/ToolCallDisplayItem"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.374Z",
   "models": {
     "SessionToolCallCardProps": {
-      "kind": "SessionToolCallCardProps",
-      "className": "SessionToolCallCardProps",
+      "name": "SessionToolCallCardProps",
       "jsdoc": "Session Tool Call Card Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
         "line": 9,
         "className": "SessionToolCallCardProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SessionToolCallCard"
       },
-      "attributes": [
-        {
-          "name": "toolCall",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ToolCallDisplayItem"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "toolCall",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/SessionReasoningBlock.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
@@ -13,15 +13,11 @@
       "SessionReasoningBlockProps"
     ]
   },
-  "symbols": [
-    "SessionReasoningBlockProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.371Z",
   "$defs": {
     "SessionReasoningBlockProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SessionReasoningBlockProps",
-      "description": "Session Reasoning Block Props 的属性契约。",
       "properties": {
         "text": {
           "type": "string"
@@ -32,60 +28,52 @@
         "isActive": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.371Z",
   "models": {
     "SessionReasoningBlockProps": {
-      "kind": "SessionReasoningBlockProps",
-      "className": "SessionReasoningBlockProps",
-      "jsdoc": "Session Reasoning Block Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "name": "SessionReasoningBlockProps",
+      "jsdoc": "@module\n@spark-appworks /spark-component:ai/components/SessionReasoningBlock.props\n职责：维护\n@spark-appworks /spark-component 中 ai/components/SessionReasoningBlock.props 的模块能力，围绕 SessionReasoningBlockProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionReasoningBlock.props 的声明、导出和使用边界时，从本模块开始。\nSession Reasoning Block Props 的属性契约。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
         "line": 8,
         "className": "SessionReasoningBlockProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SessionReasoningBlock"
       },
-      "attributes": [
-        {
-          "name": "text",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "collapsed",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isActive",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "text",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "collapsed",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isActive",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

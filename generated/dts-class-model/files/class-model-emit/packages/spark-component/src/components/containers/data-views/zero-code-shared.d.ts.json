@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/zero-code-shared",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
@@ -16,74 +16,68 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "CreateContainerCrudContextOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.411Z",
   "$defs": {
     "CreateContainerCrudContextOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CreateContainerCrudContextOptions",
-      "description": "Create Container Crud Context Options 的调用配置。",
       "properties": {
         "props": {
           "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
+          "title": "Record<string, unknown>"
         },
         "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
+          "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "eventDefaults": true
-      }
+      },
+      "required": [
+        "props",
+        "resolvedView"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.411Z",
   "models": {
     "CreateContainerCrudContextOptions": {
-      "kind": "CreateContainerCrudContextOptions",
-      "className": "CreateContainerCrudContextOptions",
+      "name": "CreateContainerCrudContextOptions",
       "jsdoc": "Create Container Crud Context Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */\n    eventDefaults?: Parameters<typeof createCrudDispatcher>[1];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
         "line": 11,
         "className": "CreateContainerCrudContextOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "props",
-          "jsdoc": "组件属性集合。",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, unknown>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "resolvedView",
-          "jsdoc": "resolved View 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<DataView | null>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "eventDefaults",
-          "jsdoc": "CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。",
-          "schema": true,
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */\n    eventDefaults?: Parameters<typeof createCrudDispatcher>[1];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "props",
+              "jsdoc": "组件属性集合。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "resolvedView",
+              "jsdoc": "resolved View 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "eventDefaults",
+              "jsdoc": "CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

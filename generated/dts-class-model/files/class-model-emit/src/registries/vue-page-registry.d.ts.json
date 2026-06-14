@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/registries/vue-page-registry.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:registries/vue-page-registry",
     "sourcePath": "class-model-emit/src/registries/vue-page-registry.d.ts",
@@ -15,22 +15,20 @@
       "VuePageEntry"
     ]
   },
-  "symbols": [
-    "PageScope",
-    "VuePageConfigEntry",
-    "VuePageEntry"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.072Z",
   "$defs": {
     "PageScope": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "PageScope",
-      "description": "Page Scope 的语义模型。"
+      "enum": [
+        "public",
+        "tenant",
+        "app"
+      ]
     },
     "VuePageConfigEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "VuePageConfigEntry",
-      "description": "Vue Page Config Entry 的语义模型。",
       "properties": {
         "path": {
           "type": "string"
@@ -53,177 +51,154 @@
         "hidden": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "VuePageEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "VuePageEntry",
-      "description": "Vue Page Entry 的语义模型。"
+      "$defs": {
+        "method.load.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.load.return": {
+          "type": "object",
+          "title": "Promise<{\n        default: Component;\n    }>"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.072Z",
   "models": {
     "PageScope": {
-      "kind": "PageScope",
-      "className": "PageScope",
+      "name": "PageScope",
       "jsdoc": "Page Scope 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'public' | 'tenant' | 'app'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'public'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'tenant'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'app'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/registries/vue-page-registry.d.ts",
         "line": 16,
         "className": "PageScope",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'public' | 'tenant' | 'app'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'public'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'tenant'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'app'"
+          }
+        ],
+        "members": {}
+      }
     },
     "VuePageConfigEntry": {
-      "kind": "VuePageConfigEntry",
-      "className": "VuePageConfigEntry",
+      "name": "VuePageConfigEntry",
       "jsdoc": "Vue Page Config Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/registries/vue-page-registry.d.ts",
         "line": 18,
         "className": "VuePageConfigEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "path",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "title",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "icon",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "description",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "scope",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/PageScope"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "source",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "hidden",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "path",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "title",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "icon",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "description",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "source",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "hidden",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "VuePageEntry": {
-      "kind": "VuePageEntry",
-      "className": "VuePageEntry",
+      "name": "VuePageEntry",
       "jsdoc": "Vue Page Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/registries/vue-page-registry.d.ts",
         "line": 28,
         "className": "VuePageEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "load",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "unknown",
-                "name": "{\n        default: Component;\n    }"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<{\n        default: Component;\n    }>"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
+            "targetName": "Readonly"
           }
+        ],
+        "members": {
+          "methods": [
+            {
+              "name": "load",
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "unknown",
+                    "name": "{\n        default: Component;\n    }"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

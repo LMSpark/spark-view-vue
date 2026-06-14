@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/auth/AuthService.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:auth/AuthService",
     "sourcePath": "class-model-emit/packages/spark-app/src/auth/AuthService.d.ts",
@@ -13,165 +13,245 @@
       "AuthService"
     ]
   },
-  "symbols": [
-    "AuthService"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.933Z",
   "$defs": {
     "AuthService": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AuthService",
-      "description": "认证服务实现类\n架构特点：\n- 单例模式（通过工厂函数创建）\n- 支持 Mock 模式（开发环境）\n- 自动 Token 刷新\n- 完整的生命周期钩子\n- 错误处理和日志记录"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "$ref": "types.d.ts.json#/$defs/AuthConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.initialize.params": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "$ref": "types.d.ts.json#/$defs/AuthConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.initialize.return": true,
+        "method.login.params": {
+          "type": "object",
+          "properties": {
+            "credentials": {
+              "$ref": "types.d.ts.json#/$defs/LoginCredentials"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.login.return": {
+          "type": "object",
+          "title": "Promise<AuthResult>"
+        },
+        "method.logout.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.logout.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.checkAuth.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.checkAuth.return": {
+          "type": "object",
+          "title": "Promise<AuthResult | null>"
+        },
+        "method.isAuthenticated.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.isAuthenticated.return": {
+          "type": "boolean"
+        },
+        "method.getToken.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getToken.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.setToken.params": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setToken.return": true,
+        "method.clearToken.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearToken.return": true,
+        "method.destroy.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.destroy.return": true,
+        "method.refreshToken.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.refreshToken.return": {
+          "type": "object",
+          "title": "Promise<string>"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.933Z",
   "models": {
     "AuthService": {
-      "kind": "AuthService",
-      "className": "AuthService",
+      "name": "AuthService",
       "jsdoc": "认证服务实现类\n架构特点：\n- 单例模式（通过工厂函数创建）\n- 支持 Mock 模式（开发环境）\n- 自动 Token 刷新\n- 完整的生命周期钩子\n- 错误处理和日志记录",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/auth/AuthService.d.ts",
         "line": 30,
         "className": "AuthService",
         "declarationKind": "class"
       },
-      "constructorMeta": {
-        "jsdoc": "创建 AuthService 实例\n@param config 可选的认证配置。如果不提供，将使用默认配置或延迟初始化\n@example\n```typescript\n// 使用默认配置（延迟初始化）\nconst auth = new AuthService()\n// 使用自定义配置\nconst auth = new AuthService({\napiBaseUrl: '/api',\nenableMock: true,\ntokenStorage: 'sessionStorage'\n})\n```",
-        "signatureText": "constructor(config?: AuthConfig)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "config",
-            "type": {
-              "type": "reference",
-              "name": "unknown"
-            },
-            "flags": {
-              "isOptional": true
-            }
-          }
-        ],
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "config": {
-              "type": "object",
-              "title": "AuthConfig"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "initialize",
-          "jsdoc": "初始化认证服务\n@param config 认证配置\n@throws {Error} 如果已初始化\n@example ```typescript\nauthService.initialize({\n  apiBaseUrl: '/api',\n  enableMock: import.meta.env.DEV,\n  onLoginSuccess: (user) => console.log('登录成功:', user.username)\n})\n```",
-          "parameterStyle": "positional",
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 AuthService 实例\n@param config 可选的认证配置。如果不提供，将使用默认配置或延迟初始化\n@example ```typescript\n// 使用默认配置（延迟初始化）\nconst auth = new AuthService()\n// 使用自定义配置\nconst auth = new AuthService({\napiBaseUrl: '/api',\nenableMock: true,\ntokenStorage: 'sessionStorage'\n})\n```",
+          "signatureText": "constructor(config?: AuthConfig)",
           "parameters": [
             {
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "unknown"
+                "name": "AuthConfig",
+                "sourcePath": "class-model-emit/packages/spark-app/src/auth/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "config": {
-                "type": "object",
-                "title": "AuthConfig"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         },
-        {
-          "name": "login",
-          "jsdoc": "用户登录\n@param credentials 登录凭据\n@returns 认证结果（包含用户信息、租户信息、环境信息）\n@throws {Error} 登录失败时抛出异常\n@example ```typescript\ntry {\n  const result = await authService.login({\n    username: 'admin',\n    password: '123456'\n  })\n  console.log('登录成功:', result.user.username)\n} catch (error) {\n  console.error('登录失败:', error.message)\n}\n```",
-          "parameterStyle": "positional",
-          "parameters": [
+        "members": {
+          "methods": [
             {
-              "name": "credentials",
+              "name": "initialize",
+              "jsdoc": "初始化认证服务\n@param config 认证配置\n@throws 如果已初始化\n@example ```typescript\nauthService.initialize({\napiBaseUrl: '/api',\nenableMock: import.meta.env.DEV,\nonLoginSuccess: (user) => console.log('登录成功:', user.username)\n})\n```",
+              "parameters": [
+                {
+                  "name": "config",
+                  "type": {
+                    "type": "reference",
+                    "name": "AuthConfig",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/auth/types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "credentials": {
-                "type": "object",
-                "title": "LoginCredentials"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AuthResult>"
-          }
-        },
-        {
-          "name": "logout",
-          "jsdoc": "用户登出\n@throws {Error} 登出 API 调用失败时抛出异常（但仍会清除本地 Token）\n@example ```typescript\ntry {\n  await authService.logout()\n  console.log('登出成功')\n} catch (error) {\n  console.error('登出失败:', error.message)\n}\n```",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
                 "type": "intrinsic",
                 "name": "void"
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "checkAuth",
-          "jsdoc": "检查认证状态\n@returns 认证结果或 null（未认证）\n@example ```typescript\nconst authResult = await authService.checkAuth()\nif (authResult) {\n  console.log('用户已认证:', authResult.user.username)\n} else {\n  console.log('用户未认证')\n}\n```",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
+            },
+            {
+              "name": "login",
+              "jsdoc": "用户登录\n@param credentials 登录凭据\n@returns 认证结果（包含用户信息、租户信息、环境信息）\n@throws 登录失败时抛出异常\n@example ```typescript\ntry {\nconst result = await authService.login({\nusername: 'admin',\npassword: '123456'\n})\nconsole.log('登录成功:', result.user.username)\n} catch (error) {\nconsole.error('登录失败:', error.message)\n}\n```",
+              "parameters": [
+                {
+                  "name": "credentials",
+                  "type": {
+                    "type": "reference",
+                    "name": "LoginCredentials",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/auth/types.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AuthResult",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/auth/types.d.ts"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "logout",
+              "jsdoc": "用户登出\n@throws 登出 API 调用失败时抛出异常（但仍会清除本地 Token）\n@example ```typescript\ntry {\nawait authService.logout()\nconsole.log('登出成功')\n} catch (error) {\nconsole.error('登出失败:', error.message)\n}\n```",
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "checkAuth",
+              "jsdoc": "检查认证状态\n@returns 认证结果或 null（未认证）\n@example ```typescript\nconst authResult = await authService.checkAuth()\nif (authResult) {\nconsole.log('用户已认证:', authResult.user.username)\n} else {\nconsole.log('用户未认证')\n}\n```",
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "AuthResult",
+                        "sourcePath": "class-model-emit/packages/spark-app/src/auth/types.d.ts"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "isAuthenticated",
+              "jsdoc": "检查是否已认证\n@returns 是否已认证\n@note 这是一个同步方法，不会发起网络请求",
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "getToken",
+              "jsdoc": "获取当前 Token\n@returns Token 字符串或 null",
+              "type": {
                 "type": "union",
                 "types": [
                   {
-                    "type": "reference",
-                    "name": "unknown"
+                    "type": "intrinsic",
+                    "name": "string"
                   },
                   {
                     "type": "literal",
@@ -179,156 +259,57 @@
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AuthResult | null>"
-          }
-        },
-        {
-          "name": "isAuthenticated",
-          "jsdoc": "检查是否已认证\n@returns 是否已认证\n@note 这是一个同步方法，不会发起网络请求",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "getToken",
-          "jsdoc": "获取当前 Token\n@returns Token 字符串或 null",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "setToken",
-          "jsdoc": "设置 Token\n@param token Token 字符串",
-          "parameterStyle": "positional",
-          "parameters": [
+            },
             {
-              "name": "token",
+              "name": "setToken",
+              "jsdoc": "设置 Token\n@param token Token 字符串",
+              "parameters": [
+                {
+                  "name": "token",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "token": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "clearToken",
-          "jsdoc": "清除 Token",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "destroy",
-          "jsdoc": "销毁认证服务，释放所有资源\n- 清除 Token\n- 清除并发刷新锁\n- 移除所有生命周期钩子引用\n- 标记为未初始化（后续调用将静默返回或抛出）",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "refreshToken",
-          "jsdoc": "刷新 Token\n内置并发锁：多个并发调用会共享同一个刷新请求，\n避免多个 refresh 请求同时发出导致 refresh token 被消耗。\n@returns 新的 Token\n@throws {Error} 刷新失败时抛出异常",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
+            {
+              "name": "clearToken",
+              "jsdoc": "清除 Token",
+              "type": {
                 "type": "intrinsic",
-                "name": "string"
+                "name": "void"
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<string>"
-          }
+            },
+            {
+              "name": "destroy",
+              "jsdoc": "销毁认证服务，释放所有资源\n- 清除 Token\n- 清除并发刷新锁\n- 移除所有生命周期钩子引用\n- 标记为未初始化（后续调用将静默返回或抛出）",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "refreshToken",
+              "jsdoc": "刷新 Token\n内置并发锁：多个并发调用会共享同一个刷新请求，\n避免多个 refresh 请求同时发出导致 refresh token 被消耗。\n@returns 新的 Token\n@throws 刷新失败时抛出异常",
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

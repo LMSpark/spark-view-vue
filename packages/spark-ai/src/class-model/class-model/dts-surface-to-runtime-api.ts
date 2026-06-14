@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-surface-to-runtime-api
  * 职责：把 guide bundle 已加载的 DtsClassModelSurfaceDocument 映射为 AiRuntimeApiMetadataJson，供 model_script 与 guide 共用同一份 JSON shard。
- * 边界：只做 JSON surface → runtime API metadata 的薄映射，不访问 TypeChecker，也不读取 runtime/manifest.json。
+ * 边界：只做 JSON surface → runtime API metadata 的薄映射，不访问语义求值器，也不读取 runtime/manifest.json。
  * AI用途：确认 script 执行契约是否直接来自 guide manifest shard 中的 paramsSchema / returnSchema。
  */
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
@@ -12,8 +12,9 @@ import type {
   AiRuntimeApiMetadataJson,
 } from '../metadata'
 import { resolveMethodReturnType } from './dts-type-meta-ops'
+import { parseModelJsonSchemaRef } from './model-json-schema-ref'
 import type { DtsClassModelSurfaceDocument } from './dts-surface-types'
-import type { ClassModel, DtsTypeMeta } from './types'
+import type { AttributeMeta, DtsTypeDeclarationModel, ConstructorMeta, DtsTypeMeta, MethodMeta } from './types'
 
 type MutableAiApiObjectMetadata = {
   className: string
@@ -53,14 +54,14 @@ function createApiObjectMetadataFromSurface(
 
     const model = surface.models[className]
     if (model === undefined) {
-      throw new Error(`DTS ClassModel surface missing class "${className}".`)
+      throw new Error(`DTS DtsTypeDeclarationModel surface missing class "${className}".`)
     }
 
-    const constructorMeta = model.constructorMeta
+    const constructorMeta = runtimeConstructor(model)
     const api: MutableAiApiObjectMetadata = {
-      className: model.className,
-      kind: model.kind,
-      name: model.className,
+      className: model.name,
+      kind: model.name,
+      name: model.name,
       description: summarizeJsDoc(model.jsdoc),
       ...(model.jsdoc.trim().length === 0 ? {} : { jsdoc: model.jsdoc }),
       ...(model.provenance === undefined ? {} : { provenance: model.provenance }),
@@ -71,7 +72,7 @@ function createApiObjectMetadataFromSurface(
               description: summarizeJsDoc(constructorMeta.jsdoc),
               ...(constructorMeta.jsdoc.trim().length === 0 ? {} : { jsdoc: constructorMeta.jsdoc }),
               ...(constructorMeta.provenance === undefined ? {} : { provenance: constructorMeta.provenance }),
-              paramsSchema: requiredConstructorParamsSchema(model.className, constructorMeta),
+              paramsSchema: requiredConstructorParamsSchema(model.name, constructorMeta),
             },
           }),
       actions: [],
@@ -79,21 +80,21 @@ function createApiObjectMetadataFromSurface(
     }
     cache.set(className, api)
 
-    api.attributes = model.attributes.map(attribute => ({
+    api.attributes = runtimeAttributes(model).map(attribute => ({
       name: attribute.name,
       description: summarizeJsDoc(attribute.jsdoc),
       ...(attribute.jsdoc.trim().length === 0 ? {} : { jsdoc: attribute.jsdoc }),
       ...(attribute.provenance === undefined ? {} : { provenance: attribute.provenance }),
-      schema: attribute.schema,
+      schema: attribute.schema ?? true,
       readable: attribute.readable,
       writable: attribute.writable,
-      ...apiRefProperty(surface, attribute.schema, toApi),
+      ...apiRefProperty(surface, attribute.schema ?? true, toApi),
     }))
 
-    api.actions = model.methods
+    api.actions = runtimeMethods(model)
       .filter(method => !method.name.startsWith('static '))
       .map((method) => {
-        const paramsSchema = requiredMethodParamsSchema(model.className, method)
+        const paramsSchema = requiredMethodParamsSchema(model.name, method)
         return {
           name: method.name,
           methodName: method.name,
@@ -143,7 +144,7 @@ function apiRefProperty(
 
 function resultApiProperty(
   surface: DtsClassModelSurfaceDocument,
-  method: ClassModel['methods'][number],
+  method: MethodMeta,
   toApi: (className: string) => AiApiObjectMetadata,
 ): { resultApis?: ReadonlyArray<{ resultPath: readonly string[]; api: AiApiObjectMetadata }> } {
   const className = resolveMethodReturnClassName(surface, method)
@@ -152,7 +153,7 @@ function resultApiProperty(
     : { resultApis: [{ resultPath: [], api: toApi(className) }] }
 }
 
-function requiredMethodParamsSchema(className: string, method: ClassModel['methods'][number]): AiJsonSchemaObject {
+function requiredMethodParamsSchema(className: string, method: MethodMeta): AiJsonSchemaObject {
   if (method.paramsSchema === undefined) {
     throw new Error(
       `DTS method "${className}.${method.name}" must preserve executable paramsSchema in the guide bundle shard.`,
@@ -163,7 +164,7 @@ function requiredMethodParamsSchema(className: string, method: ClassModel['metho
 
 function requiredConstructorParamsSchema(
   className: string,
-  constructorMeta: NonNullable<ClassModel['constructorMeta']>,
+  constructorMeta: ConstructorMeta,
 ): AiJsonSchemaObject {
   if (constructorMeta.paramsSchema === undefined) {
     throw new Error(
@@ -175,10 +176,28 @@ function requiredConstructorParamsSchema(
 
 function resolveMethodReturnClassName(
   surface: DtsClassModelSurfaceDocument,
-  method: ClassModel['methods'][number],
+  method: MethodMeta,
 ): string | undefined {
   return resolveClassNameFromDtsType(surface, resolveMethodReturnType(method))
     ?? resolveSchemaClassName(surface, method.returnSchema)
+}
+
+function runtimeConstructor(model: DtsTypeDeclarationModel): ConstructorMeta | undefined {
+  return model.declarationKind === 'class' ? model.classDecl.constructorMeta : undefined
+}
+
+function runtimeAttributes(model: DtsTypeDeclarationModel): readonly AttributeMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.attributes
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.attributes
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.attributes
+  return model.enumDecl.members
+}
+
+function runtimeMethods(model: DtsTypeDeclarationModel): readonly MethodMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.methods
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.methods
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.methods
+  return []
 }
 
 function resolveClassNameFromDtsType(
@@ -230,6 +249,10 @@ function resolveClassNameFromSchemaRef(
   ref: unknown,
 ): string | undefined {
   if (typeof ref !== 'string' || ref.length === 0) return undefined
+  const fromModelRef = parseModelJsonSchemaRef(ref)
+  if (fromModelRef !== undefined && surface.models[fromModelRef] !== undefined) {
+    return fromModelRef
+  }
   const marker = '#/$defs/'
   const markerIndex = ref.indexOf(marker)
   if (markerIndex < 0) return undefined

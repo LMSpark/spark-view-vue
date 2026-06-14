@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler
- * 职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import { expose, type Endpoint } from 'comlink'
 import {
@@ -67,7 +67,7 @@ export function createClassModelKnowledgeWorkerApi(
 
   function requireState(): Promise<ClassModelKnowledgeWorkerState> {
     if (statePromise === undefined) {
-      throw new Error('ClassModel knowledge worker has not been initialized.')
+      throw new Error('DtsTypeDeclarationModel knowledge worker has not been initialized.')
     }
     return statePromise
   }
@@ -122,7 +122,7 @@ async function createWorkerStateFromInitInput(
 async function defaultFetchJson(url: string): Promise<unknown> {
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Failed to load ClassModel knowledge JSON: ${url} ${String(response.status)}`)
+    throw new Error(`Failed to load DtsTypeDeclarationModel knowledge JSON: ${url} ${String(response.status)}`)
   }
   return response.json()
 }

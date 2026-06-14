@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldTimeSelect.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/data-components/FieldTimeSelect.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldTimeSelect.props.d.ts",
@@ -18,15 +18,11 @@
     "componentLayer": "data-field",
     "componentDirectory": "fields/data-components"
   },
-  "symbols": [
-    "RTimeSelectProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.581Z",
   "$defs": {
     "RTimeSelectProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RTimeSelectProps",
-      "description": "RTime Select Props 的属性契约。",
       "properties": {
         "start": {
           "type": "string"
@@ -43,91 +39,80 @@
         "maxTime": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.581Z",
   "models": {
     "RTimeSelectProps": {
-      "kind": "RTimeSelectProps",
-      "className": "RTimeSelectProps",
+      "name": "RTimeSelectProps",
       "jsdoc": "RTime Select Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & SparkFieldSemanticProps<string> & {\n    /** 可选时间段的起始时间。 */\n    start?: string;\n    /** 可选时间段的结束时间。 */\n    end?: string;\n    /** 相邻时间选项之间的步长。 */\n    step?: string;\n    /** 可选择的最小时间。 */\n    minTime?: string;\n    /** 可选择的最大时间。 */\n    maxTime?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "SparkFieldSemanticProps<string>",
-          "targetName": "SparkFieldSemanticProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 可选时间段的起始时间。 */\n    start?: string;\n    /** 可选时间段的结束时间。 */\n    end?: string;\n    /** 相邻时间选项之间的步长。 */\n    step?: string;\n    /** 可选择的最小时间。 */\n    minTime?: string;\n    /** 可选择的最大时间。 */\n    maxTime?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldTimeSelect.props.d.ts",
         "line": 9,
         "className": "RTimeSelectProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "FieldTimeSelect",
         "componentType": "r-time-select",
         "componentLevel": "field-level",
         "componentLayer": "data-field",
         "componentDirectory": "fields/data-components"
       },
-      "attributes": [
-        {
-          "name": "start",
-          "jsdoc": "可选时间段的起始时间。",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & SparkFieldSemanticProps<string> & {\n    /** 可选时间段的起始时间。 */\n    start?: string;\n    /** 可选时间段的结束时间。 */\n    end?: string;\n    /** 相邻时间选项之间的步长。 */\n    step?: string;\n    /** 可选择的最小时间。 */\n    minTime?: string;\n    /** 可选择的最大时间。 */\n    maxTime?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "end",
-          "jsdoc": "可选时间段的结束时间。",
-          "schema": {
-            "type": "string"
+          {
+            "kind": "intersection",
+            "typeText": "SparkFieldSemanticProps<string>",
+            "targetName": "SparkFieldSemanticProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "step",
-          "jsdoc": "相邻时间选项之间的步长。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "minTime",
-          "jsdoc": "可选择的最小时间。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "maxTime",
-          "jsdoc": "可选择的最大时间。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 可选时间段的起始时间。 */\n    start?: string;\n    /** 可选时间段的结束时间。 */\n    end?: string;\n    /** 相邻时间选项之间的步长。 */\n    step?: string;\n    /** 可选择的最小时间。 */\n    minTime?: string;\n    /** 可选择的最大时间。 */\n    maxTime?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "start",
+              "jsdoc": "可选时间段的起始时间。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "end",
+              "jsdoc": "可选时间段的结束时间。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "step",
+              "jsdoc": "相邻时间选项之间的步长。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "minTime",
+              "jsdoc": "可选择的最小时间。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "maxTime",
+              "jsdoc": "可选择的最大时间。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

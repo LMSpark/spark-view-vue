@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/binding/build-page-children.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/binding/build-page-children",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/binding/build-page-children.d.ts",
@@ -14,21 +14,17 @@
       "BuildPageChildrenOptions"
     ]
   },
-  "symbols": [
-    "PageScriptCaller",
-    "BuildPageChildrenOptions"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.983Z",
   "$defs": {
     "PageScriptCaller": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageScriptCaller",
-      "description": "页面脚本函数调用签名。"
+      "additionalProperties": false
     },
     "BuildPageChildrenOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "BuildPageChildrenOptions",
-      "description": "buildPageChildren 运行时依赖。",
       "properties": {
         "callFunc": {
           "$ref": "#/$defs/PageScriptCaller"
@@ -37,59 +33,60 @@
           "type": "object",
           "title": "ActionExecutionContext"
         }
-      }
+      },
+      "required": [
+        "callFunc",
+        "actionCtx"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.983Z",
   "models": {
     "PageScriptCaller": {
-      "kind": "PageScriptCaller",
-      "className": "PageScriptCaller",
+      "name": "PageScriptCaller",
       "jsdoc": "页面脚本函数调用签名。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/binding/build-page-children.d.ts",
         "line": 23,
         "className": "PageScriptCaller",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
+        "members": {}
+      }
     },
     "BuildPageChildrenOptions": {
-      "kind": "BuildPageChildrenOptions",
-      "className": "BuildPageChildrenOptions",
+      "name": "BuildPageChildrenOptions",
       "jsdoc": "buildPageChildren 运行时依赖。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */\n    callFunc: PageScriptCaller;\n    /** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */\n    actionCtx: ActionExecutionContext;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/binding/build-page-children.d.ts",
         "line": 27,
         "className": "BuildPageChildrenOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "callFunc",
-          "jsdoc": "脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。",
-          "schema": {
-            "$ref": "#/$defs/PageScriptCaller"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "actionCtx",
-          "jsdoc": "动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。",
-          "schema": {
-            "type": "object",
-            "title": "ActionExecutionContext"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */\n    callFunc: PageScriptCaller;\n    /** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */\n    actionCtx: ActionExecutionContext;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "callFunc",
+              "jsdoc": "脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "actionCtx",
+              "jsdoc": "动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/views/tenant/Settings.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:views/tenant/Settings",
     "sourcePath": "class-model-emit/src/views/tenant/Settings.vue.d.ts",
@@ -11,7 +11,7 @@
     "jsdocSource": "source-file-jsdoc",
     "symbols": []
   },
-  "symbols": [],
+  "$defs": {},
   "generatedAt": "2026-06-11T12:38:13.691Z",
   "models": {}
 }

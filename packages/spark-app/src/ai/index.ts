@@ -19,6 +19,9 @@ export type {
   AiRunBeforeFunctionCall,
   AiRunErrorFormatter,
   AiRunHost,
+  AiRunListener,
+  AiRunSnapshot,
+  AiRunTimelineEvent,
   AiRunTraceSink,
 } from './ai-run-adapter'
 

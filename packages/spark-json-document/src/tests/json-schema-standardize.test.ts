@@ -1,8 +1,29 @@
 import { describe, expect, it } from 'vitest'
 
+import { auditDraft2020Schema } from '../schema/schema-draft2020-audit'
 import { standardizeJsonSchema } from '../schema/schema-standardize'
 
 describe('standardizeJsonSchema', () => {
+  it('preserves Draft 2020-12 schema header on document roots', () => {
+    expect(standardizeJsonSchema({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object',
+    })).toEqual({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object',
+      additionalProperties: true,
+    })
+    expect(standardizeJsonSchema({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      title: 'Only',
+      const: 'only',
+    })).toEqual({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      title: 'Only',
+      const: 'only',
+    })
+  })
+
   it('unwraps single-branch combinators and preserves direct $ref', () => {
     expect(standardizeJsonSchema({
       anyOf: [{ $ref: '#/$defs/HttpEndpoint' }],
@@ -92,6 +113,14 @@ describe('standardizeJsonSchema', () => {
     expect(standardizeJsonSchema({ type: 'null', const: null })).toEqual({ type: 'null' })
     expect(standardizeJsonSchema({
       anyOf: [
+        { const: false },
+        { const: true },
+      ],
+    })).toEqual({
+      type: 'boolean',
+    })
+    expect(standardizeJsonSchema({
+      anyOf: [
         { type: 'null', const: null },
         { $ref: '#/$defs/Error' },
       ],
@@ -100,6 +129,31 @@ describe('standardizeJsonSchema', () => {
         { type: 'null' },
         { $ref: '#/$defs/Error' },
       ],
+    })
+  })
+
+  it('collapses literal-only combinators into enum or const schemas', () => {
+    const legacyLiteralUnion = {
+      anyOf: [
+        { type: 'string', enum: ['error'] },
+        { type: 'string', enum: ['warn'] },
+        { type: 'string', enum: ['info'] },
+      ],
+    }
+
+    expect(standardizeJsonSchema(legacyLiteralUnion)).toEqual({
+      enum: ['error', 'warn', 'info'],
+    })
+    expect(auditDraft2020Schema(legacyLiteralUnion).map(issue => issue.rule)).toContain('LITERAL_COMBINATOR_ENUM')
+    expect(auditDraft2020Schema(standardizeJsonSchema(legacyLiteralUnion))).toEqual([])
+
+    expect(standardizeJsonSchema({
+      oneOf: [
+        { const: 'ready' },
+        { type: 'string', enum: ['ready'] },
+      ],
+    })).toEqual({
+      const: 'ready',
     })
   })
 })

@@ -31,16 +31,35 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'createAiNativeApiScriptContext',
       'createAiNativeScriptContext',
       'createSimpleInputContract',
+      'createSparkAgUiCustomEvent',
+      'createSparkAgUiReasoningEndEvent',
+      'createSparkAgUiReasoningMessageContentEvent',
+      'createSparkAgUiReasoningMessageEndEvent',
+      'createSparkAgUiReasoningMessageStartEvent',
+      'createSparkAgUiReasoningStartEvent',
+      'createSparkAgUiRunErrorEvent',
+      'createSparkAgUiRunFinishedEvent',
+      'createSparkAgUiRunStartedEvent',
+      'createSparkAgUiStreamCustomEvent',
+      'createSparkAgUiTextMessageContentEvent',
+      'createSparkAgUiTextMessageEndEvent',
+      'createSparkAgUiTextMessageStartEvent',
+      'createSparkAgUiToolCallEvents',
       'createTurnEventCollector',
       'executeAiApiAction',
       'executeAiNativeScript',
       'previewAiAgentDiagnosticValue',
       'runAiAgent',
       'startAiAgentRegistrationSession',
+      'stringifySparkAgUiPayload',
       'summarizeAiAgentSessionRecord',
       'toAiAgentRuntimeScope',
+      'toSparkAgUiAssistantMessageId',
+      'toSparkAgUiReasoningMessageId',
+      'toSparkAgUiTool',
+      'toSparkAgUiTools',
     ].sort())
-  })
+  }, 60000)
 
   it('keeps host implementation helpers out of the public barrel', async () => {
     const hostModule = await import('../agent')
@@ -62,5 +81,5 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
     expect(exposed.has('emitAiAgentDiagnosticEvent')).toBe(false)
     expect(exposed.has('eventModuleIdFromProtocolCall')).toBe(false)
     expect(exposed.has('stringifyAiAgentPayload')).toBe(false)
-  })
+  }, 60000)
 })

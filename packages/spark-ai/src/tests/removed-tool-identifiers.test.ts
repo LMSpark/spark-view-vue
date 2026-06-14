@@ -1,5 +1,5 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const REMOVED_TOOL_NAMES = [
@@ -76,9 +76,19 @@ function findRemovedToolMatches(repoRoot: string): Array<{ file: string, matches
   return violations
 }
 
+function findWorkspaceRoot(startDir: string): string {
+  let current = startDir
+  for (;;) {
+    if (existsSync(join(current, 'pnpm-workspace.yaml'))) return current
+    const parent = dirname(current)
+    if (parent === current) return startDir
+    current = parent
+  }
+}
+
 describe('removed tool identifiers', () => {
   it('has no LLM-visible removed tool literals outside allowlist', () => {
-    const repoRoot = process.cwd()
+    const repoRoot = findWorkspaceRoot(process.cwd())
     const violations = findRemovedToolMatches(repoRoot)
 
     expect(violations).toEqual([])

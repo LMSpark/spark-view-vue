@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/project-planning/project-planning-host-run-provider",
     "sourcePath": "class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts",
@@ -13,68 +13,58 @@
       "ProjectPlanningDeliveryContext"
     ]
   },
-  "symbols": [
-    "ProjectPlanningDeliveryContext"
-  ],
-  "generatedAt": "2026-06-14T03:35:14.840Z",
   "$defs": {
     "ProjectPlanningDeliveryContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectPlanningDeliveryContext",
-      "description": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
       "properties": {
         "editor": {
-          "type": "object",
-          "title": "ProjectWorkspace"
+          "$ref": "../../../packages/spark-project-model/src/project/project-workspace.d.ts.json#/$defs/ProjectWorkspace"
         },
         "saveNavigationAfterRun": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:14.840Z",
   "models": {
     "ProjectPlanningDeliveryContext": {
-      "kind": "ProjectPlanningDeliveryContext",
-      "className": "ProjectPlanningDeliveryContext",
+      "name": "ProjectPlanningDeliveryContext",
       "jsdoc": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts",
         "line": 19,
         "className": "ProjectPlanningDeliveryContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "editor",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ProjectWorkspace"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "saveNavigationAfterRun",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "editor",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "saveNavigationAfterRun",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

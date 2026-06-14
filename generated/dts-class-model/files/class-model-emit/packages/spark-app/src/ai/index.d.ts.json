@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/ai/index.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:ai/index",
     "sourcePath": "class-model-emit/packages/spark-app/src/ai/index.d.ts",
@@ -11,7 +11,7 @@
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
-  "symbols": [],
-  "generatedAt": "2026-06-11T12:38:13.345Z",
+  "$defs": {},
+  "generatedAt": "2026-06-14T08:40:55.016Z",
   "models": {}
 }

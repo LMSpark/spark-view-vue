@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/class-model-artifacts/artifact-urls.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:class-model-artifacts/artifact-urls",
     "sourcePath": "class-model-emit/src/class-model-artifacts/artifact-urls.d.ts",
@@ -11,7 +11,7 @@
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
-  "symbols": [],
+  "$defs": {},
   "generatedAt": "2026-06-13T23:20:55.900Z",
   "models": {}
 }

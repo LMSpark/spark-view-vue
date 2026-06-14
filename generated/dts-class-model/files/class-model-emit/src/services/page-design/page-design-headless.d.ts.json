@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/page-design/page-design-headless.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/page-design/page-design-headless",
     "sourcePath": "class-model-emit/src/services/page-design/page-design-headless.d.ts",
@@ -13,47 +13,46 @@
       "PageDesignEditorResolveContext"
     ]
   },
-  "symbols": [
-    "PageDesignEditorResolveContext"
-  ],
-  "generatedAt": "2026-06-14T03:35:14.497Z",
   "$defs": {
     "PageDesignEditorResolveContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignEditorResolveContext",
-      "description": "Page Design Editor Resolve Context 的运行上下文。",
       "properties": {
         "moduleInstanceId": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "moduleInstanceId"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:14.497Z",
   "models": {
     "PageDesignEditorResolveContext": {
-      "kind": "PageDesignEditorResolveContext",
-      "className": "PageDesignEditorResolveContext",
+      "name": "PageDesignEditorResolveContext",
       "jsdoc": "Page Design Editor Resolve Context 的运行上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    moduleInstanceId: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-headless.d.ts",
         "line": 9,
         "className": "PageDesignEditorResolveContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "moduleInstanceId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    moduleInstanceId: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "moduleInstanceId",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

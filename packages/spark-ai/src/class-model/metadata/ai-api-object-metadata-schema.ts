@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/metadata/ai-api-object-metadata-schema
  * 职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/ai-api-object-metadata-schema 的 AiApiActionFailureMode、AiApiActionExample、AiApiActionAntiExample 等 11 个公开类型语义。
- * 边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。
+ * 边界：只服务 spark-ai 包内部的 Agent/DtsTypeDeclarationModel 能力，不直接耦合应用页面或 Vue 组件。
  * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
  */
 
@@ -114,7 +114,7 @@ export type AiApiResultApiRef = Readonly<{
   $ref?: string
 }>
 
-/** 运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。 */
+/** 运行时 API 元数据：由 DTS DtsTypeDeclarationModel 或显式注册入口投影出脚本可执行的 API surface。 */
 export type AiRuntimeApiMetadataJson = Readonly<{
   schemaVersion: 1 | 2
   rootApi: AiApiObjectMetadata

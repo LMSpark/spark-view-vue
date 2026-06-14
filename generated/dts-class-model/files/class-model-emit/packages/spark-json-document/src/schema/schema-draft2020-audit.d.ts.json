@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-draft2020-audit.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-json-document:schema/schema-draft2020-audit",
     "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-draft2020-audit.d.ts",
@@ -13,15 +13,11 @@
       "Draft2020AuditIssue"
     ]
   },
-  "symbols": [
-    "Draft2020AuditIssue"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.616Z",
   "$defs": {
     "Draft2020AuditIssue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Draft2020AuditIssue",
-      "description": "Draft2020 Audit Issue 的语义模型。",
       "properties": {
         "path": {
           "type": "string"
@@ -32,59 +28,51 @@
         "detail": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T13:30:49.407Z",
   "models": {
     "Draft2020AuditIssue": {
-      "kind": "Draft2020AuditIssue",
-      "className": "Draft2020AuditIssue",
+      "name": "Draft2020AuditIssue",
       "jsdoc": "Draft2020 Audit Issue 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    path: string;\n    rule: string;\n    detail: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    path: string;\n    rule: string;\n    detail: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-draft2020-audit.d.ts",
         "line": 2,
         "className": "Draft2020AuditIssue",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "path",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rule",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "detail",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    path: string;\n    rule: string;\n    detail: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    path: string;\n    rule: string;\n    detail: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "path",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rule",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "detail",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

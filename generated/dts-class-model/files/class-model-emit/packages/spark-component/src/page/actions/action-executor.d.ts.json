@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/actions/action-executor.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/actions/action-executor",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/actions/action-executor.d.ts",
@@ -13,77 +13,63 @@
       "ActionExecutionOptions"
     ]
   },
-  "symbols": [
-    "ActionExecutionOptions"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.978Z",
   "$defs": {
     "ActionExecutionOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ActionExecutionOptions",
-      "description": "Action Execution Options 的调用配置。",
       "properties": {
         "eventArgs": {
           "type": "array",
           "items": true
         },
         "control": {
-          "type": "object",
-          "title": "ActionExecutionControl"
+          "$ref": "action-types.d.ts.json#/$defs/ActionExecutionControl"
         },
         "scope": {
-          "type": "object",
-          "title": "ActionExecutionScope"
+          "$ref": "action-types.d.ts.json#/$defs/ActionExecutionScope"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.978Z",
   "models": {
     "ActionExecutionOptions": {
-      "kind": "ActionExecutionOptions",
-      "className": "ActionExecutionOptions",
+      "name": "ActionExecutionOptions",
       "jsdoc": "Action Execution Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 原始事件参数（如行数据、CancellableControl 等） */\n    eventArgs?: unknown[];\n    /** 流程控制信号（cancelDefault 时置 cancel=true） */\n    control?: ActionExecutionControl;\n    /** 执行作用域（行内动作注入的当前行 + formApi 等） */\n    scope?: ActionExecutionScope;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/actions/action-executor.d.ts",
         "line": 28,
         "className": "ActionExecutionOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "eventArgs",
-          "jsdoc": "原始事件参数（如行数据、CancellableControl 等）",
-          "schema": {
-            "type": "array",
-            "items": true
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "control",
-          "jsdoc": "流程控制信号（cancelDefault 时置 cancel=true）",
-          "schema": {
-            "type": "object",
-            "title": "ActionExecutionControl"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "scope",
-          "jsdoc": "执行作用域（行内动作注入的当前行 + formApi 等）",
-          "schema": {
-            "type": "object",
-            "title": "ActionExecutionScope"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 原始事件参数（如行数据、CancellableControl 等） */\n    eventArgs?: unknown[];\n    /** 流程控制信号（cancelDefault 时置 cancel=true） */\n    control?: ActionExecutionControl;\n    /** 执行作用域（行内动作注入的当前行 + formApi 等） */\n    scope?: ActionExecutionScope;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "eventArgs",
+              "jsdoc": "原始事件参数（如行数据、CancellableControl 等）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "control",
+              "jsdoc": "流程控制信号（cancelDefault 时置 cancel=true）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "jsdoc": "执行作用域（行内动作注入的当前行 + formApi 等）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

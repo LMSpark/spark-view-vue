@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/support/beforeRender.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/support/beforeRender",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/support/beforeRender.d.ts",
@@ -18,17 +18,11 @@
     "componentLayer": "support",
     "componentDirectory": "support"
   },
-  "symbols": [
-    "BeforeRenderContext",
-    "BeforeRenderState",
-    "MergeBeforeRenderOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.599Z",
   "$defs": {
     "BeforeRenderContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "BeforeRenderContext",
-      "description": "onBeforeRender 同步钩子接收到的节点渲染上下文。",
       "properties": {
         "id": {
           "type": "string"
@@ -47,8 +41,7 @@
         "row": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataRow"
+              "$ref": "../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
             },
             {
               "type": "null"
@@ -62,8 +55,7 @@
         "dataSource": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataView"
+              "$ref": "../../../../spark-data/src/data-view.d.ts.json#/$defs/DataView"
             },
             {
               "type": "null"
@@ -71,18 +63,34 @@
           ]
         },
         "modelPermission": {
-          "type": "object",
-          "title": "ModelPermission"
+          "$ref": "../../../../spark-data/src/types.d.ts.json#/$defs/ModelPermission"
         },
         "host": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
         }
-      }
+      },
+      "required": [
+        "type",
+        "props"
+      ],
+      "additionalProperties": false
     },
     "BeforeRenderState": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "BeforeRenderState",
-      "description": "onBeforeRender 解析后的渲染决策。",
       "properties": {
         "visible": {
           "type": "boolean"
@@ -91,211 +99,167 @@
           "type": "object",
           "title": "Record<string, unknown>"
         }
-      }
+      },
+      "required": [
+        "visible",
+        "propsPatch"
+      ],
+      "additionalProperties": false
     },
     "MergeBeforeRenderOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "MergeBeforeRenderOptions",
-      "description": "合并 beforeRender 补丁时的控制选项。",
       "properties": {
         "markResolved": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.599Z",
   "models": {
     "BeforeRenderContext": {
-      "kind": "BeforeRenderContext",
-      "className": "BeforeRenderContext",
+      "name": "BeforeRenderContext",
       "jsdoc": "onBeforeRender 同步钩子接收到的节点渲染上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 当前节点 id。 */\n    id?: string | undefined;\n    /** 当前节点组件类型。 */\n    type: string;\n    /** 当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。 */\n    props: Record<string, unknown>;\n    /** 当前节点子节点配置。 */\n    children?: SparkNodeChildren | undefined;\n    /** 当前节点所在行上下文。 */\n    row?: DataRow | null | undefined;\n    /** 当前节点绑定的任意业务数据。 */\n    data?: unknown;\n    /** 当前节点在重复渲染集合中的索引。 */\n    index?: number | undefined;\n    /** 当前节点可访问的 DataView 数据源。 */\n    dataSource?: DataView | null | undefined;\n    /** 当前节点所在模型的权限配置。 */\n    modelPermission?: ModelPermission | undefined;\n    /** 当前渲染宿主信息。 */\n    host?: {\n        /** 宿主组件类型；缺失时为空。 */\n        type: string | null;\n    } | undefined;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/support/beforeRender.d.ts",
         "line": 11,
         "className": "BeforeRenderContext",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "infrastructure",
         "componentLayer": "support",
         "componentDirectory": "support"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "当前节点 id。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "type",
-          "jsdoc": "当前节点组件类型。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "props",
-          "jsdoc": "当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "children",
-          "jsdoc": "当前节点子节点配置。",
-          "schema": {
-            "type": "object",
-            "title": "SparkNodeChildren"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "row",
-          "jsdoc": "当前节点所在行上下文。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataRow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "data",
-          "jsdoc": "当前节点绑定的任意业务数据。",
-          "schema": true,
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "index",
-          "jsdoc": "当前节点在重复渲染集合中的索引。",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "dataSource",
-          "jsdoc": "当前节点可访问的 DataView 数据源。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataView"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "modelPermission",
-          "jsdoc": "当前节点所在模型的权限配置。",
-          "schema": {
-            "type": "object",
-            "title": "ModelPermission"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "host",
-          "jsdoc": "当前渲染宿主信息。",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 当前节点 id。 */\n    id?: string | undefined;\n    /** 当前节点组件类型。 */\n    type: string;\n    /** 当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。 */\n    props: Record<string, unknown>;\n    /** 当前节点子节点配置。 */\n    children?: SparkNodeChildren | undefined;\n    /** 当前节点所在行上下文。 */\n    row?: DataRow | null | undefined;\n    /** 当前节点绑定的任意业务数据。 */\n    data?: unknown;\n    /** 当前节点在重复渲染集合中的索引。 */\n    index?: number | undefined;\n    /** 当前节点可访问的 DataView 数据源。 */\n    dataSource?: DataView | null | undefined;\n    /** 当前节点所在模型的权限配置。 */\n    modelPermission?: ModelPermission | undefined;\n    /** 当前渲染宿主信息。 */\n    host?: {\n        /** 宿主组件类型；缺失时为空。 */\n        type: string | null;\n    } | undefined;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "当前节点 id。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "jsdoc": "当前节点组件类型。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "props",
+              "jsdoc": "当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "children",
+              "jsdoc": "当前节点子节点配置。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "row",
+              "jsdoc": "当前节点所在行上下文。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "jsdoc": "当前节点绑定的任意业务数据。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "index",
+              "jsdoc": "当前节点在重复渲染集合中的索引。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "dataSource",
+              "jsdoc": "当前节点可访问的 DataView 数据源。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "modelPermission",
+              "jsdoc": "当前节点所在模型的权限配置。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "host",
+              "jsdoc": "当前渲染宿主信息。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "BeforeRenderState": {
-      "kind": "BeforeRenderState",
-      "className": "BeforeRenderState",
+      "name": "BeforeRenderState",
       "jsdoc": "onBeforeRender 解析后的渲染决策。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 节点最终是否可见。 */\n    visible: boolean;\n    /** 需要合并回节点 props 的补丁。 */\n    propsPatch: Record<string, unknown>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/support/beforeRender.d.ts",
         "line": 37,
         "className": "BeforeRenderState",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "infrastructure",
         "componentLayer": "support",
         "componentDirectory": "support"
       },
-      "attributes": [
-        {
-          "name": "visible",
-          "jsdoc": "节点最终是否可见。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "propsPatch",
-          "jsdoc": "需要合并回节点 props 的补丁。",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 节点最终是否可见。 */\n    visible: boolean;\n    /** 需要合并回节点 props 的补丁。 */\n    propsPatch: Record<string, unknown>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "visible",
+              "jsdoc": "节点最终是否可见。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "propsPatch",
+              "jsdoc": "需要合并回节点 props 的补丁。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "MergeBeforeRenderOptions": {
-      "kind": "MergeBeforeRenderOptions",
-      "className": "MergeBeforeRenderOptions",
+      "name": "MergeBeforeRenderOptions",
       "jsdoc": "合并 beforeRender 补丁时的控制选项。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。 */\n    markResolved?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/support/beforeRender.d.ts",
         "line": 44,
         "className": "MergeBeforeRenderOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "infrastructure",
         "componentLayer": "support",
         "componentDirectory": "support"
       },
-      "attributes": [
-        {
-          "name": "markResolved",
-          "jsdoc": "是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。 */\n    markResolved?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "markResolved",
+              "jsdoc": "是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

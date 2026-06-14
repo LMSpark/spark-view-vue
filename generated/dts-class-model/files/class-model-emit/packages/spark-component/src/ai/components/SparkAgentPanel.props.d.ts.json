@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SparkAgentPanel.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SparkAgentPanel.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SparkAgentPanel.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SparkAgentPanel.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SparkAgentPanel.props\n职责：定义 SparkAgentPanel 组合壳 props。\n边界：只描述现有 AI trace UI 与 AG-UI timeline 投影的组合输入。\nAI用途：接入 AG-UI 事件展示时，用本模块确认组件输入契约。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkAgentPanelProps"
+    ]
+  },
+  "$defs": {
+    "SparkAgentPanelProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "SparkAgentPanelProps",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "../types.d.ts.json#/$defs/StreamDisplayEntry"
+          }
+        },
+        "isStreaming": {
+          "type": "boolean"
+        },
+        "isReasoning": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "$ref": "../types.d.ts.json#/$defs/SessionDiagnosticsData"
+        },
+        "timelineEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "../types.d.ts.json#/$defs/SparkAgentTimelineEvent"
+          }
+        },
+        "showTimeline": {
+          "type": "boolean"
+        },
+        "height": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        },
+        "timelineEmptyText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "generatedAt": "2026-06-14T13:58:22.056Z",
+  "models": {
+    "SparkAgentPanelProps": {
+      "name": "SparkAgentPanelProps",
+      "jsdoc": "SparkAgentPanel 的组合输入，复用既有 trace UI，并可选展示 AG-UI timeline 摘要。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/ai/components/SparkAgentPanel.props.d.ts",
+        "line": 9,
+        "className": "SparkAgentPanelProps",
+        "declarationKind": "typeAlias",
+        "componentName": "SparkAgentPanel"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    timelineEvents?: readonly SparkAgentTimelineEvent[];\n    showTimeline?: boolean;\n    height?: string;\n    emptyText?: string;\n    timelineEmptyText?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    timelineEvents?: readonly SparkAgentTimelineEvent[];\n    showTimeline?: boolean;\n    height?: string;\n    emptyText?: string;\n    timelineEmptyText?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "entries",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isStreaming",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isReasoning",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "diagnostics",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "timelineEvents",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "showTimeline",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "height",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "emptyText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "timelineEmptyText",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

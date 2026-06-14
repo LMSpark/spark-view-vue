@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldRate.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/data-components/FieldRate.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldRate.props.d.ts",
@@ -18,68 +18,65 @@
     "componentLayer": "data-field",
     "componentDirectory": "fields/data-components"
   },
-  "symbols": [
-    "RRateProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.569Z",
   "$defs": {
     "RRateProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RRateProps",
-      "description": "RRate Props 的属性契约。",
       "properties": {
         "allowHalf": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.569Z",
   "models": {
     "RRateProps": {
-      "kind": "RRateProps",
-      "className": "RRateProps",
+      "name": "RRateProps",
       "jsdoc": "RRate Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & SparkMaxNumericFieldProps<number> & {\n    /** 是否允许选择半星。 */\n    allowHalf?: boolean;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "SparkMaxNumericFieldProps<number>",
-          "targetName": "SparkMaxNumericFieldProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 是否允许选择半星。 */\n    allowHalf?: boolean;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldRate.props.d.ts",
         "line": 9,
         "className": "RRateProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "FieldRate",
         "componentType": "r-rate",
         "componentLevel": "field-level",
         "componentLayer": "data-field",
         "componentDirectory": "fields/data-components"
       },
-      "attributes": [
-        {
-          "name": "allowHalf",
-          "jsdoc": "是否允许选择半星。",
-          "schema": {
-            "type": "boolean"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & SparkMaxNumericFieldProps<number> & {\n    /** 是否允许选择半星。 */\n    allowHalf?: boolean;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "SparkMaxNumericFieldProps<number>",
+            "targetName": "SparkMaxNumericFieldProps"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 是否允许选择半星。 */\n    allowHalf?: boolean;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "allowHalf",
+              "jsdoc": "是否允许选择半星。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

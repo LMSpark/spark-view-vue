@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/SessionStreamView.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
@@ -13,18 +13,17 @@
       "SessionStreamViewProps"
     ]
   },
-  "symbols": [
-    "SessionStreamViewProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.373Z",
   "$defs": {
     "SessionStreamViewProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SessionStreamViewProps",
-      "description": "Session Stream View Props 的属性契约。",
       "properties": {
         "entries": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "../types.d.ts.json#/$defs/StreamDisplayEntry"
+          }
         },
         "isStreaming": {
           "type": "boolean"
@@ -35,69 +34,57 @@
         "emptyText": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.373Z",
   "models": {
     "SessionStreamViewProps": {
-      "kind": "SessionStreamViewProps",
-      "className": "SessionStreamViewProps",
+      "name": "SessionStreamViewProps",
       "jsdoc": "Session Stream View Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
         "line": 9,
         "className": "SessionStreamViewProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SessionStreamView"
       },
-      "attributes": [
-        {
-          "name": "entries",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "isStreaming",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "isReasoning",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "emptyText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "entries",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isStreaming",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isReasoning",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "emptyText",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

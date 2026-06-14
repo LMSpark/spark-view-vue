@@ -1,18 +1,18 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types
- * 职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。
+ * 职责：定义 DTS DtsTypeDeclarationModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。
  * 边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。
  * AI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和协议边界。
  */
+import type { AiJsonSchemaObject } from '../../json'
 import type {
-  ClassModel,
+  DtsTypeDeclarationModel,
   ComponentClassModelLayer,
   ComponentClassModelLevel,
   SourceProvenanceMeta,
 } from './types'
-import type { AiJsonSchemaObject } from '../../json'
 
-export const DTS_FILE_PROJECTION_VERSION = 1 as const
+export const DTS_FILE_PROJECTION_VERSION = 3 as const
 export const DTS_CLASS_MODEL_BUNDLE_PROTOCOL = 'spark-appworks.dts-class-model.bundle' as const
 export const DTS_CLASS_MODEL_BUNDLE_VERSION = 1 as const
 
@@ -22,8 +22,18 @@ export type DtsFileProjectionDocument = Readonly<{
   sourcePath: string
   module: DtsFileModuleSemanticMeta
   symbols: readonly string[]
-  $defs?: Readonly<Record<string, AiJsonSchemaObject>>
-  models: Readonly<Record<string, ClassModel>>
+  models: Readonly<Record<string, DtsTypeDeclarationModel>>
+  /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */
+  generatedAt?: string
+}>
+
+/** Dts File Projection Bundle Json 是写盘 shard 的精简形态；声明 schema 统一放入顶层 $defs。 */
+export type DtsFileProjectionBundleJson = Readonly<{
+  $schema: 'https://json-schema.org/draft/2020-12/schema'
+  schemaVersion: typeof DTS_FILE_PROJECTION_VERSION
+  module: DtsFileModuleSemanticMeta
+  $defs: Readonly<Record<string, AiJsonSchemaObject>>
+  models: Readonly<Record<string, unknown>>
   /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */
   generatedAt?: string
 }>

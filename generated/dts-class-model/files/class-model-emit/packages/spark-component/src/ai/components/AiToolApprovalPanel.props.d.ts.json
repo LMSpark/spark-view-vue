@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/AiToolApprovalPanel.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
@@ -13,67 +13,62 @@
       "AiToolApprovalPanelProps"
     ]
   },
-  "symbols": [
-    "AiToolApprovalPanelProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.365Z",
   "$defs": {
     "AiToolApprovalPanelProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiToolApprovalPanelProps",
-      "description": "Ai Tool Approval Panel Props 的属性契约。",
       "properties": {
         "pending": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "../types.d.ts.json#/$defs/ToolApprovalDisplayItem"
+          }
         },
         "emptyText": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.365Z",
   "models": {
     "AiToolApprovalPanelProps": {
-      "kind": "AiToolApprovalPanelProps",
-      "className": "AiToolApprovalPanelProps",
+      "name": "AiToolApprovalPanelProps",
       "jsdoc": "Ai Tool Approval Panel Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
         "line": 9,
         "className": "AiToolApprovalPanelProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "AiToolApprovalPanel"
       },
-      "attributes": [
-        {
-          "name": "pending",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "emptyText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "pending",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "emptyText",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

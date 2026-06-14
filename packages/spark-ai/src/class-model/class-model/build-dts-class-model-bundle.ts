@@ -1,10 +1,10 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/build-dts-class-model-bundle
- * 职责：把内存 emit 的 DTS 文件投影成 ClassModel JSON bundle，生成 manifest、per-file shard 和 semantic-gaps 日志。
+ * 职责：把内存 emit 的 DTS 文件投影成 DtsTypeDeclarationModel JSON bundle，生成 manifest、per-file shard 和 semantic-gaps 日志。
  * 边界：只负责编译期索引生成和语义缺口报告，不在运行时解析业务数据，也不替代源文件 JSDoc。
  * AI用途：需要重建知识索引、定位 JSDoc 断链或验证模块/成员语义闭环时，用本模块作为编译入口。
  */
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, posix, resolve } from 'node:path'
 
 import ts from 'typescript'
@@ -12,27 +12,31 @@ import ts from 'typescript'
 import {
   DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
   DTS_CLASS_MODEL_BUNDLE_VERSION,
+  DTS_FILE_PROJECTION_VERSION,
   type DtsFileModuleSemanticMeta,
   type DtsClassModelSemanticGap,
   type DtsClassModelSemanticGapKind,
   type DtsClassModelSemanticGapReport,
   type DtsClassModelBundleManifest,
+  type DtsFileProjectionBundleJson,
   type DtsFileProjectionDocument,
 } from './dts-bundle-types'
-import type { AttributeMeta, ClassModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
+import type { AttributeMeta, DtsTypeDeclarationModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from './dts-type-meta-ops'
 import {
   isClassModelEmitPath,
   sourceFileFromEmitPath,
 } from './class-model-emit-path'
-import { normalizeRepoPath, resolveAliasedSymbol, declarationNameText } from './dts-ast-utils'
+import { normalizeRepoPath } from './dts-ast-utils'
 import { projectDtsSourceFileProjection } from './project-from-declarations'
+import { attachModelJsonSchemas } from './class-model-to-json-schema'
+import { stripRedundantModelSchemas } from './class-model-schema-projection'
+import { modelJsonSchemaRefForBundleFile } from './model-json-schema-ref'
 
 /** Build Dts Class Model Bundle Progress Phase 的语义模型。 */
 export type BuildDtsClassModelBundleProgressPhase =
-  | 'create-program'
-  | 'program-ready'
+  | 'read-files'
   | 'project-file'
   | 'write-semantic-gaps'
   | 'write-manifest'
@@ -55,7 +59,7 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
   exportedOnly?: boolean
   onProgress?: (event: BuildDtsClassModelBundleProgress) => void
   progressInterval?: number
-  /** 仅投影并落盘这些 emit 源路径；rootFiles 仍可包含依赖闭包供 TypeChecker 解析。 */
+  /** 仅投影并落盘这些 emit 源路径；rootFiles 仍可包含依赖闭包供 import 正则寻址。 */
   projectOnlySourcePaths?: ReadonlySet<string>
   /** 未重投影 shard 的 className 索引，供 $ref 解析跨文件类型引用。 */
   knownProjectedClassNamesBySourcePath?: ReadonlyMap<string, ReadonlySet<string>>
@@ -65,7 +69,6 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
 export type BuildDtsClassModelBundleResult = Readonly<{
   manifest: DtsClassModelBundleManifest
   manifestPath: string
-  semanticLogPath: string
   semanticLogJsonPath: string
   semanticGapCount: number
   fileCount: number
@@ -74,7 +77,7 @@ export type BuildDtsClassModelBundleResult = Readonly<{
 
 type CreateSemanticGapCommand = Readonly<{
   kind: Exclude<DtsClassModelSemanticGapKind, 'module'>
-  model: ClassModel
+  model: DtsTypeDeclarationModel
   provenance: SourceProvenanceMeta | undefined
   memberName?: string
 }>
@@ -95,6 +98,7 @@ type BundleSchemaRefContext = Readonly<{
   currentSourcePath: string
   currentBundleFile: string
   projectedClassNamesBySourcePath: ReadonlyMap<string, ReadonlySet<string>>
+  classNameSourceIndex: ReadonlyMap<string, string | undefined>
   typeReferenceIndex: ReadonlyMap<string, ReadonlyMap<string, TypeReferenceTarget>>
 }>
 
@@ -109,12 +113,13 @@ export function buildDtsClassModelBundle(
     const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
     return isClassModelEmitPath(sourcePath)
   })
+  const knownSourcePaths = new Set(rootFiles.map(absolutePath => normalizeRepoPath(absolutePath, repoRoot)))
+  for (const sourcePath of options.knownProjectedClassNamesBySourcePath?.keys() ?? []) {
+    knownSourcePaths.add(sourcePath)
+  }
   const total = rootFiles.length
   const progressInterval = options.progressInterval ?? 50
-  reportProgress(options, { phase: 'create-program', total })
-  const program = createBundleProjectionProgram(rootFiles, options.compilerHost)
-  const checker = program.getTypeChecker()
-  reportProgress(options, { phase: 'program-ready', total })
+  reportProgress(options, { phase: 'read-files', total })
   const files: Record<string, DtsClassModelBundleManifest['files'][string]> = {}
   const classIndex: Record<string, DtsClassModelBundleManifest['classIndex'][string]> = {}
   const duplicates: Array<{ className: string; keptFile: string; skippedFile: string }> = []
@@ -129,11 +134,11 @@ export function buildDtsClassModelBundle(
     if (options.projectOnlySourcePaths !== undefined && !options.projectOnlySourcePaths.has(sourcePath)) {
       continue
     }
-    const sourceFile = resolveProgramSourceFile(program, absolutePath)
+    const sourceFile = readDtsSourceFile(absolutePath, options.compilerHost)
     const typeReferenceTargets = collectDtsTypeReferenceTargets({
-      checker,
-      repoRoot,
+      sourcePath,
       sourceFile,
+      knownSourcePaths,
     })
     if (typeReferenceTargets.size > 0) typeReferenceIndex.set(sourcePath, typeReferenceTargets)
 
@@ -141,7 +146,6 @@ export function buildDtsClassModelBundle(
       repoRoot,
       absolutePath,
       sourceFile,
-      checker,
       exportedOnly: options.exportedOnly ?? false,
     })
     const bundleFile = dtsSourcePathToBundleRelativeJson(sourcePath)
@@ -198,11 +202,13 @@ export function buildDtsClassModelBundle(
       new Set(Object.keys(projectedFile.projection.models)),
     )
   }
+  const classNameSourceIndex = buildClassNameSourceIndex(projectedClassNamesBySourcePath)
   for (const projectedFile of projectedFiles) {
     const compactProjection = compactDtsFileProjectionForBundle(projectedFile.projection, {
       currentSourcePath: projectedFile.sourcePath,
       currentBundleFile: projectedFile.bundleFile,
       projectedClassNamesBySourcePath,
+      classNameSourceIndex,
       typeReferenceIndex,
     })
     mkdirSync(dirname(projectedFile.outputPath), { recursive: true })
@@ -210,10 +216,8 @@ export function buildDtsClassModelBundle(
   }
 
   const semanticReport = createSemanticGapReport(semanticGaps)
-  const semanticLogPath = resolve(outputDir, 'semantic-gaps.log')
   const semanticLogJsonPath = resolve(outputDir, 'semantic-gaps.json')
   reportProgress(options, { phase: 'write-semantic-gaps', total })
-  writeFileSync(semanticLogPath, renderSemanticGapLog(semanticReport), 'utf8')
   writeFileSync(semanticLogJsonPath, `${JSON.stringify(semanticReport, null, 2)}\n`, 'utf8')
 
   const manifest: DtsClassModelBundleManifest = {
@@ -228,13 +232,11 @@ export function buildDtsClassModelBundle(
   mkdirSync(outputDir, { recursive: true })
   reportProgress(options, { phase: 'write-manifest', total })
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
-  assertBundleFilesExist(outputDir, files)
   reportProgress(options, { phase: 'done', total })
 
   return {
     manifest,
     manifestPath,
-    semanticLogPath,
     semanticLogJsonPath,
     semanticGapCount: semanticReport.gapCount,
     fileCount: projectedCount,
@@ -244,74 +246,98 @@ export function buildDtsClassModelBundle(
 
 export { dtsSourcePathToBundleRelativeJson, resolveDtsBundleRelativeUrl } from './dts-bundle-url'
 
-function createBundleProjectionProgram(rootFiles: readonly string[], compilerHost?: ts.CompilerHost): ts.Program {
-  return ts.createProgram({
-    rootNames: rootFiles.map(file => resolve(file)),
-    options: {
-      allowJs: false,
-      declaration: true,
-      emitDeclarationOnly: true,
-      skipLibCheck: true,
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.ES2022,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-    },
-    ...(compilerHost === undefined ? {} : { host: compilerHost }),
-  })
-}
-
-function resolveProgramSourceFile(program: ts.Program, absolutePath: string): ts.SourceFile {
+function readDtsSourceFile(absolutePath: string, compilerHost: ts.CompilerHost | undefined): ts.SourceFile {
   const resolvedPath = resolve(absolutePath)
-  const direct = program.getSourceFile(resolvedPath)
-  if (direct !== undefined) return direct
-
-  const sourceFile = program.getSourceFiles().find(candidate => {
-    return normalizeSourceFileKey(candidate.fileName) === normalizeSourceFileKey(resolvedPath)
-  })
+  const sourceFile = compilerHost?.getSourceFile(
+    resolvedPath,
+    ts.ScriptTarget.ES2022,
+    undefined,
+    true,
+  )
   if (sourceFile !== undefined) return sourceFile
-
-  throw new Error(`DTS source file not found in shared TypeScript program: ${resolvedPath}`)
+  const text = compilerHost?.readFile(resolvedPath) ?? readFileSync(resolvedPath, 'utf8')
+  return ts.createSourceFile(resolvedPath, text, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS)
 }
 
 function collectDtsTypeReferenceTargets(command: {
-  checker: ts.TypeChecker
-  repoRoot: string
+  sourcePath: string
   sourceFile: ts.SourceFile
+  knownSourcePaths: ReadonlySet<string>
 }): ReadonlyMap<string, TypeReferenceTarget> {
-  const { checker, repoRoot, sourceFile } = command
+  const { sourcePath, sourceFile, knownSourcePaths } = command
   const targets = new Map<string, TypeReferenceTarget>()
-  const visit = (node: ts.Node): void => {
-    if (ts.isTypeReferenceNode(node)) {
-      const target = resolveDtsTypeReferenceTarget(checker, repoRoot, node)
-      if (target !== undefined) targets.set(node.getText(sourceFile), target)
+  const text = sourceFile.getFullText()
+  for (const importMatch of text.matchAll(/import\s+(?:type\s+)?([^'"]+?)\s+from\s+['"]([^'"]+)['"]/gu)) {
+    const bindingsText = importMatch[1]?.trim()
+    const moduleSpecifier = importMatch[2]
+    if (bindingsText === undefined || moduleSpecifier === undefined) continue
+    const targetSourcePath = resolveDtsModuleSpecifierSourcePath(sourcePath, moduleSpecifier, knownSourcePaths)
+    if (targetSourcePath === undefined) continue
+
+    const namedBindings = /^\{(?<body>[\s\S]*)\}$/u.exec(bindingsText)
+    if (namedBindings?.groups?.['body'] !== undefined) {
+      for (const binding of namedBindings.groups['body'].split(',')) {
+        const parsed = parseNamedImportBinding(binding)
+        if (parsed === undefined) continue
+        targets.set(parsed.localName, {
+          targetName: parsed.importedName,
+          targetSourcePath,
+        })
+      }
+      continue
     }
-    ts.forEachChild(node, visit)
+
+    const namespaceBinding = /^\*\s+as\s+(?<name>[A-Za-z_$][\w$]*)$/u.exec(bindingsText)
+    if (namespaceBinding?.groups?.['name'] !== undefined) {
+      targets.set(`${namespaceBinding.groups['name']}.*`, {
+        targetName: '*',
+        targetSourcePath,
+      })
+      continue
+    }
+
+    const defaultBinding = /^(?<name>[A-Za-z_$][\w$]*)$/u.exec(bindingsText)
+    if (defaultBinding?.groups?.['name'] !== undefined) {
+      targets.set(defaultBinding.groups['name'], {
+        targetName: defaultBinding.groups['name'],
+        targetSourcePath,
+      })
+    }
   }
-  visit(sourceFile)
   return targets
 }
 
-function resolveDtsTypeReferenceTarget(
-  checker: ts.TypeChecker,
-  repoRoot: string,
-  node: ts.TypeReferenceNode,
-): TypeReferenceTarget | undefined {
-  const symbol = resolveAliasedSymbol(checker, checker.getSymbolAtLocation(node.typeName))
-  const declaration = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
-  if (declaration === undefined) return undefined
-  const targetSourcePath = normalizeRepoPath(declaration.getSourceFile().fileName, repoRoot)
-  if (!isClassModelEmitPath(targetSourcePath)) return undefined
-  const targetName = declarationNameText(declaration) ?? symbol?.name
-  if (targetName === undefined || targetName.length === 0 || targetName === '__type') return undefined
+function parseNamedImportBinding(binding: string): { importedName: string; localName: string } | undefined {
+  const normalized = binding.trim().replace(/^type\s+/u, '')
+  if (normalized.length === 0) return undefined
+  const match = /^(?<imported>[A-Za-z_$][\w$]*)(?:\s+as\s+(?<local>[A-Za-z_$][\w$]*))?$/u.exec(normalized)
+  const importedName = match?.groups?.['imported']
+  if (importedName === undefined) return undefined
   return {
-    targetName,
-    targetSourcePath,
+    importedName,
+    localName: match?.groups?.['local'] ?? importedName,
   }
 }
 
-function normalizeSourceFileKey(fileName: string): string {
-  const resolved = resolve(fileName)
-  return ts.sys.useCaseSensitiveFileNames ? resolved : resolved.toLowerCase()
+function resolveDtsModuleSpecifierSourcePath(
+  currentSourcePath: string,
+  moduleSpecifier: string,
+  knownSourcePaths: ReadonlySet<string>,
+): string | undefined {
+  if (!moduleSpecifier.startsWith('.')) return undefined
+  const base = posix.normalize(posix.join(posix.dirname(currentSourcePath), moduleSpecifier.replace(/\\/g, '/')))
+  for (const candidate of dtsModuleSourcePathCandidates(base)) {
+    if (knownSourcePaths.has(candidate)) return candidate
+  }
+  return undefined
+}
+
+function dtsModuleSourcePathCandidates(base: string): readonly string[] {
+  if (/\.d\.[cm]?ts$/u.test(base)) return [base]
+  if (base.endsWith(".vue")) return [`${base}.d.ts`]
+  if (/\.[cm]?js$/u.test(base)) return [base.replace(/\.[cm]?js$/u, '.d.ts')]
+  if (/\.[cm]?ts$/u.test(base)) return [base.replace(/\.[cm]?ts$/u, '.d.ts')]
+  return [`${base}.d.ts`, `${base}/index.d.ts`]
 }
 
 function shouldReportFileProgress(current: number, total: number, interval: number): boolean {
@@ -328,51 +354,186 @@ function reportProgress(
   options.onProgress?.(event)
 }
 
-function assertBundleFilesExist(
-  outputDir: string,
-  files: DtsClassModelBundleManifest['files'],
-): void {
-  const missing: string[] = []
-  for (const [sourcePath, entry] of Object.entries(files)) {
-    if (!existsSync(resolve(outputDir, entry.file))) missing.push(sourcePath)
-  }
-  if (missing.length > 0) {
-    throw new Error([
-      `DTS ClassModel bundle is missing ${String(missing.length)} shard file(s).`,
-      ...missing.slice(0, 20).map(sourcePath => `- ${sourcePath}`),
-      ...(missing.length > 20 ? [`... ${String(missing.length - 20)} more`] : []),
-    ].join('\n'))
-  }
-}
-
 function compactDtsFileProjectionForBundle(
   projection: DtsFileProjectionDocument,
   refContext: BundleSchemaRefContext,
-): DtsFileProjectionDocument {
-  const models: Record<string, ClassModel> = {}
+): DtsFileProjectionBundleJson {
+  const models: Record<string, DtsTypeDeclarationModel> = {}
   for (const [className, model] of Object.entries(projection.models)) {
     models[className] = compactClassModelForBundle(model, refContext)
   }
-  const schemaDefs = createSchemaDefsForBundle(models, refContext)
+  const modelsWithJsonSchema = attachModelJsonSchemas(models)
+  const persistedModels: Record<string, unknown> = {}
+  const schemaDefs: Record<string, AiJsonSchemaObject> = {}
+  for (const [className, model] of Object.entries(modelsWithJsonSchema)) {
+    const stripped = stripRedundantModelSchemas(model)
+    const jsonSchema = compactPersistedJsonSchemaForBundle(stripped)
+    if (jsonSchema !== undefined) schemaDefs[className] = jsonSchema
+    persistedModels[className] = compactPersistedClassModelForBundle(stripped)
+  }
   return {
-    schemaVersion: projection.schemaVersion,
-    sourcePath: projection.sourcePath,
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    schemaVersion: DTS_FILE_PROJECTION_VERSION,
     module: projection.module,
-    symbols: projection.symbols,
+    $defs: schemaDefs,
     ...(projection.generatedAt === undefined ? {} : { generatedAt: projection.generatedAt }),
-    ...(Object.keys(schemaDefs).length === 0 ? {} : { $defs: schemaDefs }),
-    models,
+    models: persistedModels,
   }
 }
 
-function compactClassModelForBundle(model: ClassModel, refContext: BundleSchemaRefContext): ClassModel {
+function compactPersistedClassModelForBundle(model: DtsTypeDeclarationModel): Record<string, unknown> {
+  return {
+    name: model.name,
+    jsdoc: model.jsdoc,
+    declarationKind: model.declarationKind,
+    ...(model.provenance === undefined ? {} : { provenance: model.provenance }),
+    ...compactPersistedShapePayloadForBundle(model),
+  }
+}
+
+function compactPersistedShapePayloadForBundle(model: DtsTypeDeclarationModel): Record<string, unknown> {
+  if (model.declarationKind === 'class') {
+    const payload = model.classDecl
+    const attributes = payload.members.attributes.map(compactPersistedAttributeMetaForBundle)
+    const methods = payload.members.methods.map(compactPersistedMethodMetaForBundle)
+    return {
+      classDecl: {
+        constructorMeta: compactPersistedConstructorMetaForBundle(payload.constructorMeta),
+        ...(payload.declarationRelations === undefined ? {} : { declarationRelations: payload.declarationRelations }),
+        members: {
+          ...(attributes.length === 0 ? {} : { attributes }),
+          ...(methods.length === 0 ? {} : { methods }),
+        },
+      },
+    }
+  }
+  if (model.declarationKind === 'interface') {
+    const payload = model.interfaceDecl
+    const attributes = payload.members.attributes.map(compactPersistedAttributeMetaForBundle)
+    const methods = payload.members.methods.map(compactPersistedMethodMetaForBundle)
+    return {
+      interfaceDecl: {
+        ...(payload.declarationRelations === undefined ? {} : { declarationRelations: payload.declarationRelations }),
+        members: {
+          ...(attributes.length === 0 ? {} : { attributes }),
+          ...(methods.length === 0 ? {} : { methods }),
+        },
+      },
+    }
+  }
+  if (model.declarationKind === 'typeAlias') {
+    const payload = model.typeAlias
+    const attributes = payload.members.attributes.map(compactPersistedAttributeMetaForBundle)
+    const methods = payload.members.methods.map(compactPersistedMethodMetaForBundle)
+    return {
+      typeAlias: {
+        declarationTypeText: payload.declarationTypeText,
+        ...(payload.declarationRelations === undefined ? {} : { declarationRelations: payload.declarationRelations }),
+        members: {
+          ...(attributes.length === 0 ? {} : { attributes }),
+          ...(methods.length === 0 ? {} : { methods }),
+        },
+      },
+    }
+  }
+  return {
+    enumDecl: {
+      members: model.enumDecl.members.map(compactPersistedAttributeMetaForBundle),
+    },
+  }
+}
+
+function compactPersistedJsonSchemaForBundle(model: DtsTypeDeclarationModel): AiJsonSchemaObject | undefined {
+  if (model.jsonSchema === undefined) return undefined
+  const jsonSchema: Record<string, unknown> = { ...model.jsonSchema }
+  const description = jsonSchema['description']
+  const modelDescription = model.jsdoc.trim()
+  if (typeof description === 'string' && description === modelDescription) {
+    delete jsonSchema['description']
+  }
+  return jsonSchema
+}
+
+function compactPersistedConstructorMetaForBundle(constructorMeta: ConstructorMeta): Record<string, unknown> {
+  return {
+    ...(constructorMeta.jsdoc.length === 0 ? {} : { jsdoc: constructorMeta.jsdoc }),
+    ...(constructorMeta.signatureText === undefined ? {} : { signatureText: constructorMeta.signatureText }),
+    ...(constructorMeta.parameterStyle === undefined || constructorMeta.parameterStyle === 'positional'
+      ? {}
+      : { parameterStyle: constructorMeta.parameterStyle }),
+    ...(constructorMeta.parameters === undefined || constructorMeta.parameters.length === 0
+      ? {}
+      : { parameters: constructorMeta.parameters }),
+    ...(constructorMeta.provenance === undefined ? {} : { provenance: constructorMeta.provenance }),
+  }
+}
+
+function compactPersistedAttributeMetaForBundle(attribute: AttributeMeta): Record<string, unknown> {
+  return {
+    name: attribute.name,
+    ...(attribute.jsdoc.length === 0 ? {} : { jsdoc: attribute.jsdoc }),
+    readable: attribute.readable,
+    writable: attribute.writable,
+    ...(attribute.provenance === undefined ? {} : { provenance: attribute.provenance }),
+  }
+}
+
+function compactPersistedMethodMetaForBundle(method: MethodMeta): Record<string, unknown> {
+  return {
+    name: method.name,
+    ...(method.jsdoc.length === 0 ? {} : { jsdoc: method.jsdoc }),
+    ...(method.parameterStyle === undefined || method.parameterStyle === 'positional' ? {} : { parameterStyle: method.parameterStyle }),
+    ...(method.parameters === undefined || method.parameters.length === 0 ? {} : { parameters: method.parameters }),
+    ...(method.type === undefined ? {} : { type: method.type }),
+    ...(method.signatureText === undefined ? {} : { signatureText: method.signatureText }),
+    ...(method.takesContext === undefined ? {} : { takesContext: method.takesContext }),
+    ...(method.provenance === undefined ? {} : { provenance: method.provenance }),
+  }
+}
+
+function compactClassModelForBundle(model: DtsTypeDeclarationModel, refContext: BundleSchemaRefContext): DtsTypeDeclarationModel {
+  if (model.declarationKind === 'class') {
+    return {
+      ...model,
+      classDecl: {
+        ...model.classDecl,
+        constructorMeta: compactConstructorMetaForBundle(model.classDecl.constructorMeta, refContext),
+        members: {
+          attributes: model.classDecl.members.attributes.map(attribute => compactAttributeMetaForBundle(attribute, refContext)),
+          methods: model.classDecl.members.methods.map(method => compactMethodMetaForBundle(method, refContext)),
+        },
+      },
+    }
+  }
+  if (model.declarationKind === 'interface') {
+    return {
+      ...model,
+      interfaceDecl: {
+        ...model.interfaceDecl,
+        members: {
+          attributes: model.interfaceDecl.members.attributes.map(attribute => compactAttributeMetaForBundle(attribute, refContext)),
+          methods: model.interfaceDecl.members.methods.map(method => compactMethodMetaForBundle(method, refContext)),
+        },
+      },
+    }
+  }
+  if (model.declarationKind === 'typeAlias') {
+    return {
+      ...model,
+      typeAlias: {
+        ...model.typeAlias,
+        members: {
+          attributes: model.typeAlias.members.attributes.map(attribute => compactAttributeMetaForBundle(attribute, refContext)),
+          methods: model.typeAlias.members.methods.map(method => compactMethodMetaForBundle(method, refContext)),
+        },
+      },
+    }
+  }
   return {
     ...model,
-    ...(model.constructorMeta === undefined
-      ? {}
-      : { constructorMeta: compactConstructorMetaForBundle(model.constructorMeta, refContext) }),
-    attributes: model.attributes.map(attribute => compactAttributeMetaForBundle(attribute, refContext)),
-    methods: model.methods.map(method => compactMethodMetaForBundle(method, refContext)),
+    enumDecl: {
+      members: model.enumDecl.members.map(attribute => compactAttributeMetaForBundle(attribute, refContext)),
+    },
   }
 }
 
@@ -406,7 +567,7 @@ function compactAttributeMetaForBundle(
   return {
     name: attribute.name,
     jsdoc: attribute.jsdoc,
-    schema: referenceRequiredSchemaForBundle(attribute.schema, refContext),
+    schema: referenceRequiredSchemaForBundle(attribute.schema ?? true, refContext),
     readable: attribute.readable,
     writable: attribute.writable,
   }
@@ -449,34 +610,6 @@ function compactMethodMetaForBundle(method: MethodMeta, refContext: BundleSchema
 
 function isJsonSchemaObject(schema: AiJsonSchema | undefined): schema is AiJsonSchemaObject {
   return schema !== undefined && schema !== true && schema !== false && typeof schema === 'object' && !Array.isArray(schema)
-}
-
-function createSchemaDefsForBundle(
-  models: Readonly<Record<string, ClassModel>>,
-  refContext: BundleSchemaRefContext,
-): Record<string, AiJsonSchemaObject> {
-  const defs: Record<string, AiJsonSchemaObject> = {}
-  for (const [className, model] of Object.entries(models)) {
-    defs[className] = classModelSchemaDefForBundle(model, refContext)
-  }
-  return defs
-}
-
-function classModelSchemaDefForBundle(
-  model: ClassModel,
-  refContext: BundleSchemaRefContext,
-): AiJsonSchemaObject {
-  const properties: Record<string, AiJsonSchema> = {}
-  for (const attribute of model.attributes) {
-    if (!attribute.readable) continue
-    properties[attribute.name] = referenceRequiredSchemaForBundle(attribute.schema, refContext)
-  }
-  return {
-    type: 'object',
-    title: model.className,
-    ...(model.jsdoc.trim().length === 0 ? {} : { description: model.jsdoc.trim() }),
-    ...(Object.keys(properties).length === 0 ? {} : { properties }),
-  }
 }
 
 function referenceRequiredSchemaForBundle(
@@ -538,7 +671,7 @@ function directSchemaRefForBundle(
   const dtsTarget = dtsTypeReferenceTargetForBundle(title, refContext)
   if (dtsTarget !== undefined) {
     return {
-      $ref: schemaRefForBundleFile(
+      $ref: modelJsonSchemaRefForBundleFile(
         refContext.currentBundleFile,
         dtsSourcePathToBundleRelativeJson(dtsTarget.targetSourcePath).replace(/\\/g, '/'),
         dtsTarget.targetName,
@@ -554,9 +687,74 @@ function dtsTypeReferenceTargetForBundle(
   refContext: BundleSchemaRefContext,
 ): TypeReferenceTarget | undefined {
   const sourceTargets = refContext.typeReferenceIndex.get(refContext.currentSourcePath)
-  const target = sourceTargets?.get(title)
-  if (target === undefined) return undefined
-  return refTargetExists(target, refContext) ? target : undefined
+  const direct = sourceTargets?.get(title)
+  if (direct !== undefined && refTargetExists(direct, refContext)) return direct
+
+  const parsed = parseDtsReferenceTitle(title)
+  if (parsed === undefined) return undefined
+
+  const imported = sourceTargets?.get(parsed.localName)
+  if (imported !== undefined) {
+    const target = {
+      targetName: imported.targetName,
+      targetSourcePath: imported.targetSourcePath,
+    }
+    return refTargetExists(target, refContext) ? target : undefined
+  }
+
+  if (parsed.namespaceName !== undefined) {
+    const namespaceTarget = sourceTargets?.get(`${parsed.namespaceName}.*`)
+    if (namespaceTarget !== undefined) {
+      const target = {
+        targetName: parsed.localName,
+        targetSourcePath: namespaceTarget.targetSourcePath,
+      }
+      return refTargetExists(target, refContext) ? target : undefined
+    }
+  }
+
+  const currentFileModels = refContext.projectedClassNamesBySourcePath.get(refContext.currentSourcePath)
+  if (currentFileModels?.has(parsed.localName) === true) {
+    return {
+      targetName: parsed.localName,
+      targetSourcePath: refContext.currentSourcePath,
+    }
+  }
+
+  const uniqueSourcePath = refContext.classNameSourceIndex.get(parsed.localName)
+  if (uniqueSourcePath !== undefined) {
+    return {
+      targetName: parsed.localName,
+      targetSourcePath: uniqueSourcePath,
+    }
+  }
+  return undefined
+}
+
+function buildClassNameSourceIndex(
+  projectedClassNamesBySourcePath: ReadonlyMap<string, ReadonlySet<string>>,
+): ReadonlyMap<string, string | undefined> {
+  const index = new Map<string, string | undefined>()
+  for (const [sourcePath, classNames] of projectedClassNamesBySourcePath.entries()) {
+    for (const className of classNames) {
+      if (index.has(className)) {
+        index.set(className, undefined)
+      } else {
+        index.set(className, sourcePath)
+      }
+    }
+  }
+  return index
+}
+
+function parseDtsReferenceTitle(title: string): { namespaceName?: string; localName: string } | undefined {
+  const match = /^(?:(?<namespace>[A-Za-z_$][\w$]*)\.)?(?<local>[A-Za-z_$][\w$]*)/u.exec(title.trim())
+  const localName = match?.groups?.['local']
+  if (localName === undefined || localName.length === 0) return undefined
+  const namespaceName = match?.groups?.['namespace']
+  return namespaceName === undefined
+    ? { localName }
+    : { namespaceName, localName }
 }
 
 function refTargetExists(
@@ -578,21 +776,6 @@ function isTypeReferencePlaceholderSchema(schema: AiJsonSchemaObject): boolean {
     && schema.$ref === undefined
 }
 
-function schemaRefForBundleFile(
-  currentBundleFile: string,
-  targetBundleFile: string | undefined,
-  className: string,
-): string {
-  const pointer = `#/$defs/${jsonPointerToken(className)}`
-  if (targetBundleFile === undefined || targetBundleFile === currentBundleFile) return pointer
-  const relativePath = posix.relative(posix.dirname(currentBundleFile), targetBundleFile)
-  return `${relativePath}${pointer}`
-}
-
-function jsonPointerToken(value: string): string {
-  return value.replaceAll('~', '~0').replaceAll('/', '~1')
-}
-
 function collectSemanticGaps(projection: DtsFileProjectionDocument): readonly DtsClassModelSemanticGap[] {
   const gaps: DtsClassModelSemanticGap[] = []
   if (
@@ -606,7 +789,7 @@ function collectSemanticGaps(projection: DtsFileProjectionDocument): readonly Dt
     if (isMissingJsDoc(model.jsdoc)) {
       gaps.push(createSemanticGap({ kind: 'model', model, provenance: model.provenance }))
     }
-    const constructorMeta = model.constructorMeta
+    const constructorMeta = model.declarationKind === 'class' ? model.classDecl.constructorMeta : undefined
     if (constructorMeta !== undefined && isMissingJsDoc(constructorMeta.jsdoc)) {
       gaps.push(createSemanticGap({
         kind: 'constructor',
@@ -645,7 +828,7 @@ function createSemanticGap(command: CreateSemanticGapCommand): DtsClassModelSema
   const sourceFile = sourceFileFromEmitPath(declarationFile)
   return {
     kind,
-    className: model.className,
+    className: model.name,
     ...(memberName === undefined ? {} : { memberName }),
     reason: 'missing-jsdoc',
     chainBreak: describeSemanticGapChainBreak(kind, model, memberName),
@@ -670,9 +853,9 @@ function isWeakModuleJsDoc(jsdoc: string): boolean {
   const normalized = jsdoc.trim()
   if (normalized.length === 0) return false
   if (!hasModuleSemanticSections(normalized)) return true
-  return /^@module\s+[^\n]+\n(?:@spark-appworks\/[^\s]+|app|workspace) 的 [^\n]+ 模块。\n导出 ClassModel symbol:/u.test(normalized)
+  return /^@module\s+[^\n]+\n(?:@spark-appworks\/[^\s]+|app|workspace) 的 [^\n]+ 模块。\n导出 DtsTypeDeclarationModel symbol:/u.test(normalized)
     || /^@module\s+[^\n]+\n[^\n]+ 模块，属于 SPARK component [^\n]+。\n组件目录:/u.test(normalized)
-    || /^@module\s+[^\n]+\n[^\n]+\n该 DTS shard 当前不导出 ClassModel symbol。$/u.test(normalized)
+    || /^@module\s+[^\n]+\n[^\n]+\n该 DTS shard 当前不导出 DtsTypeDeclarationModel symbol。$/u.test(normalized)
 }
 
 function hasModuleSemanticSections(jsdoc: string): boolean {
@@ -700,16 +883,16 @@ function describeModuleSemanticGapChainBreak(module: DtsFileModuleSemanticMeta):
 
 function describeSemanticGapChainBreak(
   kind: DtsClassModelSemanticGapKind,
-  model: ClassModel,
+  model: DtsTypeDeclarationModel,
   memberName: string | undefined,
 ): string {
   if (kind === 'model') {
-    return `${model.className} 的模型语义链在首次声明处断开：声明没有 JSDoc。`
+    return `${model.name} 的模型语义链在首次声明处断开：声明没有 JSDoc。`
   }
   if (kind === 'constructor') {
-    return `${model.className}.constructor 的构造语义链断开：构造签名没有 JSDoc。`
+    return `${model.name}.constructor 的构造语义链断开：构造签名没有 JSDoc。`
   }
-  return `${model.className}.${memberName ?? '<unknown>'} 的成员语义链断开：${kind} 声明没有 JSDoc。`
+  return `${model.name}.${memberName ?? '<unknown>'} 的成员语义链断开：${kind} 声明没有 JSDoc。`
 }
 
 function createSemanticGapReport(
@@ -733,45 +916,4 @@ function compareSemanticGaps(left: DtsClassModelSemanticGap, right: DtsClassMode
     || left.className.localeCompare(right.className)
     || left.kind.localeCompare(right.kind)
     || (left.memberName ?? '').localeCompare(right.memberName ?? '')
-}
-
-function renderSemanticGapLog(report: DtsClassModelSemanticGapReport): string {
-  const lines = [
-    '# DTS ClassModel semantic gaps',
-    `gapCount: ${String(report.gapCount)}`,
-    '',
-    'notes:',
-    ...report.notes.map(note => `  - ${note}`),
-    '',
-  ]
-  if (report.gapCount === 0) {
-    lines.push('No missing JSDoc semantic gaps found.', '')
-    return lines.join('\n')
-  }
-  for (const gap of report.gaps) {
-    const member = gap.kind === 'module'
-      ? gap.moduleName ?? gap.className
-      : gap.memberName === undefined ? gap.className : `${gap.className}.${gap.memberName}`
-    lines.push(`[${gap.kind}] ${member}`)
-    lines.push(`  reason: ${gap.reason}`)
-    lines.push(`  chainBreak: ${gap.chainBreak}`)
-    lines.push(`  declaration: ${gap.declarationFile}:${String(gap.declarationLine)}`)
-    lines.push(`  source: ${gap.sourceFile}`)
-    lines.push(`  fixHint: ${gap.fixHint}`)
-    const component = renderSemanticGapComponent(gap)
-    if (component.length > 0) lines.push(`  component: ${component}`)
-    if (gap.declarationKind !== undefined) lines.push(`  declarationKind: ${gap.declarationKind}`)
-    lines.push('')
-  }
-  return lines.join('\n')
-}
-
-function renderSemanticGapComponent(gap: DtsClassModelSemanticGap): string {
-  return [
-    gap.componentType === undefined ? undefined : `type=${gap.componentType}`,
-    gap.componentName === undefined ? undefined : `name=${gap.componentName}`,
-    gap.componentLevel === undefined ? undefined : `level=${gap.componentLevel}`,
-    gap.componentLayer === undefined ? undefined : `layer=${gap.componentLayer}`,
-    gap.componentDirectory === undefined ? undefined : `directory=${gap.componentDirectory}`,
-  ].filter(part => part !== undefined).join('; ')
 }

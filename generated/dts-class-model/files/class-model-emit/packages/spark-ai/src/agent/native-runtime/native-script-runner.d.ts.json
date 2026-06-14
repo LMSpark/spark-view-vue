@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/native-runtime/native-script-runner",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
@@ -15,24 +15,16 @@
       "AiNativeScriptRunCommand"
     ]
   },
-  "symbols": [
-    "AiNativeRuntimeSchemaDefs",
-    "AiNativeScriptContextCommand",
-    "AiNativeScriptRunCommand"
-  ],
-  "generatedAt": "2026-06-14T01:03:51.192Z",
   "$defs": {
-    "AiNativeRuntimeSchemaDefs": {
-      "type": "object",
-      "title": "AiNativeRuntimeSchemaDefs",
-      "description": "Ai Native Runtime Schema Defs 的语义模型。"
-    },
     "AiNativeScriptContextCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiNativeScriptContextCommand",
-      "description": "Ai Native Script Context Command 的命令参数。",
       "properties": {
-        "instance": true,
+        "instance": {
+          "type": "object",
+          "title": "TInstance"
+        },
         "metadata": {
           "type": "object",
           "title": "AiRuntimeApiMetadataJson"
@@ -44,137 +36,124 @@
         "schemaDefs": {
           "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiNativeScriptRunCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiNativeScriptRunCommand",
-      "description": "Ai Native Script Run Command 的命令参数。",
       "properties": {
         "script": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T01:03:51.192Z",
   "models": {
     "AiNativeRuntimeSchemaDefs": {
-      "kind": "AiNativeRuntimeSchemaDefs",
-      "className": "AiNativeRuntimeSchemaDefs",
+      "name": "AiNativeRuntimeSchemaDefs",
       "jsdoc": "Ai Native Runtime Schema Defs 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<Record<string, AiJsonSchema>>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<Record<string, AiJsonSchema>>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
         "line": 12,
         "className": "AiNativeRuntimeSchemaDefs",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<Record<string, AiJsonSchema>>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<Record<string, AiJsonSchema>>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiNativeScriptContextCommand": {
-      "kind": "AiNativeScriptContextCommand",
-      "className": "AiNativeScriptContextCommand",
+      "name": "AiNativeScriptContextCommand",
       "jsdoc": "Ai Native Script Context Command 的命令参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
         "line": 14,
         "className": "AiNativeScriptContextCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "instance",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "metadata",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiRuntimeApiMetadataJson"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "host",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentRuntimeHostContext"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "schemaDefs",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "instance",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "metadata",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "host",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schemaDefs",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiNativeScriptRunCommand": {
-      "kind": "AiNativeScriptRunCommand",
-      "className": "AiNativeScriptRunCommand",
+      "name": "AiNativeScriptRunCommand",
       "jsdoc": "Ai Native Script Run Command 的命令参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "AiNativeScriptContextCommand<TInstance> & Readonly<{\n    script: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AiNativeScriptContextCommand<TInstance>",
-          "targetName": "AiNativeScriptContextCommand"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "Readonly<{\n    script: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
         "line": 21,
         "className": "AiNativeScriptRunCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "script",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "AiNativeScriptContextCommand<TInstance> & Readonly<{\n    script: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AiNativeScriptContextCommand<TInstance>",
+            "targetName": "AiNativeScriptContextCommand"
           },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    script: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "script",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

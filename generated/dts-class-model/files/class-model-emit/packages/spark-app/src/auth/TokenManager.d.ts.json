@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/auth/TokenManager.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:auth/TokenManager",
     "sourcePath": "class-model-emit/packages/spark-app/src/auth/TokenManager.d.ts",
@@ -13,150 +13,141 @@
       "TokenManager"
     ]
   },
-  "symbols": [
-    "TokenManager"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.934Z",
   "$defs": {
     "TokenManager": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TokenManager",
-      "description": "统一令牌管理器\n提供跨平台的令牌存储、管理和检索功能。支持多种存储后端，\n自动适应不同的运行环境（浏览器、服务端、测试环境）。\n@class\n@example ```typescript\nconst manager = new TokenManager('localStorage', 'auth_token')\nmanager.setToken('jwt-token-here')\nconsole.log(manager.getToken()) // 'jwt-token-here'\n```"
-    }
-  },
-  "models": {
-    "TokenManager": {
-      "kind": "TokenManager",
-      "className": "TokenManager",
-      "jsdoc": "统一令牌管理器\n提供跨平台的令牌存储、管理和检索功能。支持多种存储后端，\n自动适应不同的运行环境（浏览器、服务端、测试环境）。\n@class\n@example ```typescript\nconst manager = new TokenManager('localStorage', 'auth_token')\nmanager.setToken('jwt-token-here')\nconsole.log(manager.getToken()) // 'jwt-token-here'\n```",
-      "shapeKind": "class",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-app/src/auth/TokenManager.d.ts",
-        "line": 56,
-        "className": "TokenManager",
-        "declarationKind": "class"
-      },
-      "constructorMeta": {
-        "jsdoc": "创建 TokenManager 实例\n@param storage - 存储类型，默认为 'localStorage'\n@param tokenKey - 存储键名，默认为 'spark_token'\n@example\n```typescript\n// 默认配置\nconst manager = new TokenManager()\n// 自定义存储类型\nconst sessionManager = new TokenManager('sessionStorage')\n// 自定义键名\nconst customManager = new TokenManager('cookie', 'my_app_token')\n```",
-        "signatureText": "constructor(storage?: TokenStorage, tokenKey?: string)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "storage",
-            "type": {
-              "type": "reference",
-              "name": "unknown"
-            },
-            "flags": {
-              "isOptional": true
-            }
-          },
-          {
-            "name": "tokenKey",
-            "type": {
-              "type": "intrinsic",
-              "name": "string"
-            },
-            "flags": {
-              "isOptional": true
-            }
-          }
-        ],
-        "paramsSchema": {
+      "$defs": {
+        "constructor.params": {
           "type": "object",
           "properties": {
             "storage": {
-              "type": "object",
-              "title": "TokenStorage"
+              "$ref": "types.d.ts.json#/$defs/TokenStorage"
             },
             "tokenKey": {
               "type": "string"
             }
           },
           "additionalProperties": false
-        }
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getToken",
-          "jsdoc": "获取当前存储的令牌\n根据配置的存储类型和当前运行环境，检索存储的令牌。\n在服务端或测试环境中自动使用内存存储。\n@returns 令牌字符串或 null（如果不存在）\n@example ```typescript\nconst token = tokenManager.getToken()\nif (token) {\n  console.log('Token found:', token)\n} else {\n  console.log('No token stored')\n}\n```",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
         },
-        {
-          "name": "setToken",
-          "jsdoc": "设置令牌到存储中\n将令牌存储到配置的存储后端。在服务端或测试环境中\n自动使用内存存储。\n@param token - 要存储的令牌字符串\n@example ```typescript\ntokenManager.setToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...')\nconsole.log('Token stored successfully')\n```",
-          "parameterStyle": "positional",
+        "method.getToken.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getToken.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.setToken.params": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setToken.return": true,
+        "method.clearToken.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearToken.return": true
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:48:50.934Z",
+  "models": {
+    "TokenManager": {
+      "name": "TokenManager",
+      "jsdoc": "统一令牌管理器\n提供跨平台的令牌存储、管理和检索功能。支持多种存储后端，\n自动适应不同的运行环境（浏览器、服务端、测试环境）。\n@class\n@example ```typescript\nconst manager = new TokenManager('localStorage', 'auth_token')\nmanager.setToken('jwt-token-here')\nconsole.log(manager.getToken()) // 'jwt-token-here'\n```",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/auth/TokenManager.d.ts",
+        "line": 56,
+        "className": "TokenManager",
+        "declarationKind": "class"
+      },
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "=============================================================================\n构造函数\n=============================================================================\n创建 TokenManager 实例\n@param storage - 存储类型，默认为 'localStorage'\n@param tokenKey - 存储键名，默认为 'spark_token'\n@example ```typescript\n// 默认配置\nconst manager = new TokenManager()\n// 自定义存储类型\nconst sessionManager = new TokenManager('sessionStorage')\n// 自定义键名\nconst customManager = new TokenManager('cookie', 'my_app_token')\n```",
+          "signatureText": "constructor(storage?: TokenStorage, tokenKey?: string)",
           "parameters": [
             {
-              "name": "token",
+              "name": "storage",
+              "type": {
+                "type": "reference",
+                "name": "TokenStorage",
+                "sourcePath": "class-model-emit/packages/spark-app/src/auth/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "tokenKey",
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "token": {
-                "type": "string"
+          ]
+        },
+        "members": {
+          "methods": [
+            {
+              "name": "getToken",
+              "jsdoc": "=============================================================================\n公共 API 方法\n=============================================================================\n获取当前存储的令牌\n根据配置的存储类型和当前运行环境，检索存储的令牌。\n在服务端或测试环境中自动使用内存存储。\n@returns 令牌字符串或 null（如果不存在）\n@example ```typescript\nconst token = tokenManager.getToken()\nif (token) {\nconsole.log('Token found:', token)\n} else {\nconsole.log('No token stored')\n}\n```",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "clearToken",
-          "jsdoc": "清除存储的令牌\n从当前存储后端中移除令牌。在服务端或测试环境中\n清除内存存储。\n@example ```typescript\ntokenManager.clearToken()\nconsole.log('Token cleared')\n```",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "setToken",
+              "jsdoc": "设置令牌到存储中\n将令牌存储到配置的存储后端。在服务端或测试环境中\n自动使用内存存储。\n@param token - 要存储的令牌字符串\n@example ```typescript\ntokenManager.setToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...')\nconsole.log('Token stored successfully')\n```",
+              "parameters": [
+                {
+                  "name": "token",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "clearToken",
+              "jsdoc": "清除存储的令牌\n从当前存储后端中移除令牌。在服务端或测试环境中\n清除内存存储。\n@example ```typescript\ntokenManager.clearToken()\nconsole.log('Token cleared')\n```",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

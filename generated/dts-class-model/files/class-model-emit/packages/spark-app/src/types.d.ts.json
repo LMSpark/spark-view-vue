@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:types",
     "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts",
@@ -24,31 +24,20 @@
       "ErrorType"
     ]
   },
-  "symbols": [
-    "AppEnvironment",
-    "UserInfo",
-    "TenantInfo",
-    "EnvironmentInfo",
-    "AppContext",
-    "AppConfig",
-    "BootstrapContext",
-    "BootstrapOptions",
-    "RouterGuardOptions",
-    "ErrorHandlerOptions",
-    "ErrorContext",
-    "ErrorType"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.952Z",
   "$defs": {
     "AppEnvironment": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AppEnvironment",
-      "description": "应用环境"
+      "enum": [
+        "development",
+        "production",
+        "test"
+      ]
     },
     "UserInfo": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UserInfo",
-      "description": "用户信息",
       "properties": {
         "userId": {
           "type": "string"
@@ -77,12 +66,17 @@
             "type": "string"
           }
         }
-      }
+      },
+      "required": [
+        "userId",
+        "username"
+      ],
+      "additionalProperties": false
     },
     "TenantInfo": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TenantInfo",
-      "description": "租户信息",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -103,12 +97,17 @@
             "type": "string"
           }
         }
-      }
+      },
+      "required": [
+        "tenantId",
+        "tenantName"
+      ],
+      "additionalProperties": false
     },
     "EnvironmentInfo": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EnvironmentInfo",
-      "description": "环境信息",
       "properties": {
         "mode": {
           "$ref": "#/$defs/AppEnvironment"
@@ -122,12 +121,18 @@
         "buildTime": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "mode",
+        "apiBaseUrl",
+        "version"
+      ],
+      "additionalProperties": false
     },
     "AppContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AppContext",
-      "description": "应用全局上下文接口\n作用域：整个 SPA 应用\n生命周期：应用启动时创建，应用关闭时销毁（单例）\n用途：\n- 存储应用级全局信息（用户、租户、环境）\n- 提供跨页面共享的配置和状态\n- 支持 SSR/CSR 环境检测\n注意：\n- 此 Context 是应用级单例，所有页面共享\n- 不应存储页面级状态，避免内存泄漏\n- 通过依赖注入（DI）在需要时注入到组件中\n典型使用场景：\n- 权限校验（基于 user/tenant）\n- 环境判断（SSR vs CSR）\n- 全局配置读取",
       "properties": {
         "user": {
           "$ref": "#/$defs/UserInfo"
@@ -145,19 +150,26 @@
         "initializedAt": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "user",
+        "tenant",
+        "env",
+        "config",
+        "initializedAt"
+      ],
+      "additionalProperties": false
     },
     "AppConfig": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AppConfig",
-      "description": "应用配置",
       "properties": {
         "apiBaseUrl": {
           "type": "string"
         },
         "logLevel": {
-          "type": "object",
-          "title": "LogLevel"
+          "$ref": "../../spark-utils/src/logger.d.ts.json#/$defs/LogLevel"
         },
         "enableMock": {
           "type": "boolean"
@@ -169,14 +181,27 @@
           "type": "string"
         },
         "features": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "enableExport": {
+              "type": "boolean"
+            },
+            "enableOffline": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
         }
-      }
+      },
+      "required": [
+        "apiBaseUrl"
+      ],
+      "additionalProperties": false
     },
     "BootstrapContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "BootstrapContext",
-      "description": "Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由",
       "properties": {
         "app": {
           "type": "object",
@@ -187,15 +212,19 @@
           "title": "Router"
         },
         "theme": {
-          "type": "object",
-          "title": "ThemeCapability"
+          "$ref": "theme/index.d.ts.json#/$defs/ThemeCapability"
         }
-      }
+      },
+      "required": [
+        "app",
+        "router"
+      ],
+      "additionalProperties": false
     },
     "BootstrapOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "BootstrapOptions",
-      "description": "初始化选项",
       "properties": {
         "app": {
           "type": "object",
@@ -216,25 +245,124 @@
           "type": "string"
         },
         "themeService": {
+          "$ref": "theme/index.d.ts.json#/$defs/ThemeCapability"
+        }
+      },
+      "required": [
+        "app",
+        "router",
+        "config"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.beforeMount.params": {
           "type": "object",
-          "title": "ThemeCapability"
+          "properties": {
+            "context": {
+              "$ref": "#/$defs/BootstrapContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.beforeMount.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.afterMount.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "#/$defs/BootstrapContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.afterMount.return": {
+          "type": "object",
+          "title": "Promise<void>"
         }
       }
     },
     "RouterGuardOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RouterGuardOptions",
-      "description": "路由守卫选项"
+      "$defs": {
+        "method.checkPermission.params": {
+          "type": "object",
+          "properties": {
+            "permissions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.checkPermission.return": {
+          "type": "boolean"
+        }
+      }
     },
     "ErrorHandlerOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ErrorHandlerOptions",
-      "description": "错误处理选项"
+      "$defs": {
+        "method.onError.params": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "object",
+              "title": "Error"
+            },
+            "context": {
+              "$ref": "#/$defs/ErrorContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onError.return": true,
+        "method.errorClassifier.params": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "object",
+              "title": "Error"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.errorClassifier.return": {
+          "$ref": "#/$defs/ErrorType"
+        },
+        "method.onErrorByType.params": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "$ref": "#/$defs/ErrorType"
+            },
+            "error": {
+              "type": "object",
+              "title": "Error"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onErrorByType.return": true
+      }
     },
     "ErrorContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ErrorContext",
-      "description": "错误上下文接口\n作用域：单次错误发生时的临时上下文\n生命周期：错误捕获时创建，用于错误日志记录和上报\n用途：\n- 记录错误发生的位置和时间\n- 为错误监控和追踪提供结构化信息\n- 支持错误日志聚合和分析\n典型使用场景：\n- 组件渲染失败时记录 source\n- API 请求错误时记录 info 和 timestamp\n- 用户操作异常时进行错误上报",
       "properties": {
         "source": {
           "type": "string"
@@ -248,783 +376,576 @@
         "timestamp": {
           "type": "number"
         }
-      }
+      },
+      "required": [
+        "info",
+        "timestamp"
+      ],
+      "additionalProperties": false
     },
     "ErrorType": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ErrorType",
-      "description": "错误类型",
-      "properties": {
-        "Auth": {
-          "type": "string"
-        },
-        "Permission": {
-          "type": "string"
-        },
-        "Network": {
-          "type": "string"
-        },
-        "Validation": {
-          "type": "string"
-        },
-        "Unknown": {
-          "type": "string"
-        }
-      }
+      "enum": [
+        "AUTH",
+        "PERMISSION",
+        "NETWORK",
+        "VALIDATION",
+        "UNKNOWN"
+      ]
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.952Z",
   "models": {
     "AppEnvironment": {
-      "kind": "AppEnvironment",
-      "className": "AppEnvironment",
+      "name": "AppEnvironment",
       "jsdoc": "应用环境",
-      "shapeKind": "type",
-      "declarationTypeText": "'development' | 'production' | 'test'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'development'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'production'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'test'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 23,
         "className": "AppEnvironment",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'development' | 'production' | 'test'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'development'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'production'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'test'"
+          }
+        ],
+        "members": {}
+      }
     },
     "UserInfo": {
-      "kind": "UserInfo",
-      "className": "UserInfo",
+      "name": "UserInfo",
       "jsdoc": "用户信息",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n    /** avatar 字段。 */\n    avatar?: string;\n    /** roles 字段。 */\n    readonly roles: string[];\n    /** permissions 字段。 */\n    readonly permissions: string[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 28,
         "className": "UserInfo",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "userId",
-          "jsdoc": "user Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "username",
-          "jsdoc": "username 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "displayName",
-          "jsdoc": "display Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "email",
-          "jsdoc": "email 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "avatar",
-          "jsdoc": "avatar 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "roles",
-          "jsdoc": "roles 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n    /** avatar 字段。 */\n    avatar?: string;\n    /** roles 字段。 */\n    readonly roles: string[];\n    /** permissions 字段。 */\n    readonly permissions: string[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "userId",
+              "jsdoc": "user Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "username",
+              "jsdoc": "username 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "displayName",
+              "jsdoc": "display Name 名称。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "email",
+              "jsdoc": "email 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "avatar",
+              "jsdoc": "avatar 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "roles",
+              "jsdoc": "roles 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "permissions",
+              "jsdoc": "permissions 字段。",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "permissions",
-          "jsdoc": "permissions 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "TenantInfo": {
-      "kind": "TenantInfo",
-      "className": "TenantInfo",
+      "name": "TenantInfo",
       "jsdoc": "租户信息",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** tenant Code 字段。 */\n    tenantCode?: string;\n    /** 配置对象。 */\n    config?: Record<string, unknown>;\n    /** features 字段。 */\n    features?: string[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 47,
         "className": "TenantInfo",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tenantName",
-          "jsdoc": "tenant Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tenantCode",
-          "jsdoc": "tenant Code 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "config",
-          "jsdoc": "配置对象。",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "features",
-          "jsdoc": "features 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** tenant Code 字段。 */\n    tenantCode?: string;\n    /** 配置对象。 */\n    config?: Record<string, unknown>;\n    /** features 字段。 */\n    features?: string[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "tenantName",
+              "jsdoc": "tenant Name 名称。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "tenantCode",
+              "jsdoc": "tenant Code 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "config",
+              "jsdoc": "配置对象。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "features",
+              "jsdoc": "features 字段。",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "EnvironmentInfo": {
-      "kind": "EnvironmentInfo",
-      "className": "EnvironmentInfo",
+      "name": "EnvironmentInfo",
       "jsdoc": "环境信息",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** mode 字段。 */\n    mode: AppEnvironment;\n    /** api Base Url 地址。 */\n    apiBaseUrl: string;\n    /** version 字段。 */\n    version: string;\n    /** build Time 字段。 */\n    buildTime?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 62,
         "className": "EnvironmentInfo",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "mode",
-          "jsdoc": "mode 字段。",
-          "schema": {
-            "$ref": "#/$defs/AppEnvironment"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "apiBaseUrl",
-          "jsdoc": "api Base Url 地址。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "version",
-          "jsdoc": "version 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "buildTime",
-          "jsdoc": "build Time 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** mode 字段。 */\n    mode: AppEnvironment;\n    /** api Base Url 地址。 */\n    apiBaseUrl: string;\n    /** version 字段。 */\n    version: string;\n    /** build Time 字段。 */\n    buildTime?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "mode",
+              "jsdoc": "mode 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "apiBaseUrl",
+              "jsdoc": "api Base Url 地址。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "version",
+              "jsdoc": "version 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "buildTime",
+              "jsdoc": "build Time 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AppContext": {
-      "kind": "AppContext",
-      "className": "AppContext",
+      "name": "AppContext",
       "jsdoc": "应用全局上下文接口\n作用域：整个 SPA 应用\n生命周期：应用启动时创建，应用关闭时销毁（单例）\n用途：\n- 存储应用级全局信息（用户、租户、环境）\n- 提供跨页面共享的配置和状态\n- 支持 SSR/CSR 环境检测\n注意：\n- 此 Context 是应用级单例，所有页面共享\n- 不应存储页面级状态，避免内存泄漏\n- 通过依赖注入（DI）在需要时注入到组件中\n典型使用场景：\n- 权限校验（基于 user/tenant）\n- 环境判断（SSR vs CSR）\n- 全局配置读取",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 用户信息 */\n    user: UserInfo;\n    /** 租户信息 */\n    tenant: TenantInfo;\n    /** 环境信息 */\n    env: EnvironmentInfo;\n    /** 全局配置 */\n    config: Record<string, unknown>;\n    /** 初始化时间 */\n    initializedAt: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 93,
         "className": "AppContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "user",
-          "jsdoc": "用户信息",
-          "schema": {
-            "$ref": "#/$defs/UserInfo"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tenant",
-          "jsdoc": "租户信息",
-          "schema": {
-            "$ref": "#/$defs/TenantInfo"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "env",
-          "jsdoc": "环境信息",
-          "schema": {
-            "$ref": "#/$defs/EnvironmentInfo"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "config",
-          "jsdoc": "全局配置",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "initializedAt",
-          "jsdoc": "初始化时间",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 用户信息 */\n    user: UserInfo;\n    /** 租户信息 */\n    tenant: TenantInfo;\n    /** 环境信息 */\n    env: EnvironmentInfo;\n    /** 全局配置 */\n    config: Record<string, unknown>;\n    /** 初始化时间 */\n    initializedAt: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "user",
+              "jsdoc": "用户信息",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "tenant",
+              "jsdoc": "租户信息",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "env",
+              "jsdoc": "环境信息",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "config",
+              "jsdoc": "全局配置",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "initializedAt",
+              "jsdoc": "初始化时间",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AppConfig": {
-      "kind": "AppConfig",
-      "className": "AppConfig",
+      "name": "AppConfig",
       "jsdoc": "应用配置",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** API 基础地址 */\n    apiBaseUrl: string;\n    /** 日志级别 */\n    logLevel?: LogLevel;\n    /** 是否启用 Mock */\n    enableMock?: boolean;\n    /** 是否启用远程配置加载 */\n    enableRemoteConfig?: boolean;\n    /** 应用版本 */\n    version?: string;\n    /** 功能开关 */\n    features?: {\n        enableExport?: boolean;\n        enableOffline?: boolean;\n    };\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 108,
         "className": "AppConfig",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "apiBaseUrl",
-          "jsdoc": "API 基础地址",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "logLevel",
-          "jsdoc": "日志级别",
-          "schema": {
-            "type": "object",
-            "title": "LogLevel"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "enableMock",
-          "jsdoc": "是否启用 Mock",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "enableRemoteConfig",
-          "jsdoc": "是否启用远程配置加载",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "version",
-          "jsdoc": "应用版本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "features",
-          "jsdoc": "功能开关",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** API 基础地址 */\n    apiBaseUrl: string;\n    /** 日志级别 */\n    logLevel?: LogLevel;\n    /** 是否启用 Mock */\n    enableMock?: boolean;\n    /** 是否启用远程配置加载 */\n    enableRemoteConfig?: boolean;\n    /** 应用版本 */\n    version?: string;\n    /** 功能开关 */\n    features?: {\n        enableExport?: boolean;\n        enableOffline?: boolean;\n    };\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "apiBaseUrl",
+              "jsdoc": "API 基础地址",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "logLevel",
+              "jsdoc": "日志级别",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enableMock",
+              "jsdoc": "是否启用 Mock",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enableRemoteConfig",
+              "jsdoc": "是否启用远程配置加载",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "version",
+              "jsdoc": "应用版本",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "features",
+              "jsdoc": "功能开关",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "BootstrapContext": {
-      "kind": "BootstrapContext",
-      "className": "BootstrapContext",
+      "name": "BootstrapContext",
       "jsdoc": "Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由",
-      "shapeKind": "type",
-      "declarationTypeText": "AppContext & {\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 主题服务（仅在启用 theme 选项时存在） */\n    theme?: ThemeCapability;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AppContext",
-          "targetName": "AppContext"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 主题服务（仅在启用 theme 选项时存在） */\n    theme?: ThemeCapability;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 128,
         "className": "BootstrapContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "app",
-          "jsdoc": "Vue 应用实例",
-          "schema": {
-            "type": "object",
-            "title": "App"
+      "typeAlias": {
+        "declarationTypeText": "AppContext & {\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 主题服务（仅在启用 theme 选项时存在） */\n    theme?: ThemeCapability;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AppContext",
+            "targetName": "AppContext"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "router",
-          "jsdoc": "Vue Router 实例",
-          "schema": {
-            "type": "object",
-            "title": "Router"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "theme",
-          "jsdoc": "主题服务（仅在启用 theme 选项时存在）",
-          "schema": {
-            "type": "object",
-            "title": "ThemeCapability"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 主题服务（仅在启用 theme 选项时存在） */\n    theme?: ThemeCapability;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "app",
+              "jsdoc": "Vue 应用实例",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "router",
+              "jsdoc": "Vue Router 实例",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "theme",
+              "jsdoc": "主题服务（仅在启用 theme 选项时存在）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "BootstrapOptions": {
-      "kind": "BootstrapOptions",
-      "className": "BootstrapOptions",
+      "name": "BootstrapOptions",
       "jsdoc": "初始化选项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 应用配置 */\n    config: AppConfig;\n    /** 认证配置（可选，不提供则使用 authenticate 函数） */\n    auth?: AuthConfig;\n    /** 挂载目标元素选择器（默认 '#app'） */\n    mountTarget?: string;\n    /** 主题服务实例（由 start() 创建并传入，或手动传入） */\n    themeService?: ThemeCapability;\n    /** 挂载前钩子 */\n    beforeMount?: (context: BootstrapContext) => void | Promise<void>;\n    /** 挂载后钩子 */\n    afterMount?: (context: BootstrapContext) => void | Promise<void>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 139,
         "className": "BootstrapOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "app",
-          "jsdoc": "Vue 应用实例",
-          "schema": {
-            "type": "object",
-            "title": "App"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "router",
-          "jsdoc": "Vue Router 实例",
-          "schema": {
-            "type": "object",
-            "title": "Router"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "config",
-          "jsdoc": "应用配置",
-          "schema": {
-            "$ref": "#/$defs/AppConfig"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "auth",
-          "jsdoc": "认证配置（可选，不提供则使用 authenticate 函数）",
-          "schema": {
-            "type": "object",
-            "title": "AuthConfig"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "mountTarget",
-          "jsdoc": "挂载目标元素选择器（默认 '#app'）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "themeService",
-          "jsdoc": "主题服务实例（由 start() 创建并传入，或手动传入）",
-          "schema": {
-            "type": "object",
-            "title": "ThemeCapability"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "beforeMount",
-          "jsdoc": "挂载前钩子",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 应用配置 */\n    config: AppConfig;\n    /** 认证配置（可选，不提供则使用 authenticate 函数） */\n    auth?: AuthConfig;\n    /** 挂载目标元素选择器（默认 '#app'） */\n    mountTarget?: string;\n    /** 主题服务实例（由 start() 创建并传入，或手动传入） */\n    themeService?: ThemeCapability;\n    /** 挂载前钩子 */\n    beforeMount?: (context: BootstrapContext) => void | Promise<void>;\n    /** 挂载后钩子 */\n    afterMount?: (context: BootstrapContext) => void | Promise<void>;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "BootstrapContext",
-                "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
-              }
+              "name": "app",
+              "jsdoc": "Vue 应用实例",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "router",
+              "jsdoc": "Vue Router 实例",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "config",
+              "jsdoc": "应用配置",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "auth",
+              "jsdoc": "认证配置（可选，不提供则使用 authenticate 函数）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "mountTarget",
+              "jsdoc": "挂载目标元素选择器（默认 '#app'）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "themeService",
+              "jsdoc": "主题服务实例（由 start() 创建并传入，或手动传入）",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+          "methods": [
+            {
+              "name": "beforeMount",
+              "jsdoc": "挂载前钩子",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "BootstrapContext",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
                   {
                     "type": "intrinsic",
                     "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "$ref": "#/$defs/BootstrapContext"
-              }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "afterMount",
-          "jsdoc": "挂载后钩子",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "context",
+              "name": "afterMount",
+              "jsdoc": "挂载后钩子",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "BootstrapContext",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "BootstrapContext",
-                "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+                "type": "union",
+                "types": [
                   {
                     "type": "intrinsic",
                     "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "$ref": "#/$defs/BootstrapContext"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
+            }
+          ]
         }
-      ]
+      }
     },
     "RouterGuardOptions": {
-      "kind": "RouterGuardOptions",
-      "className": "RouterGuardOptions",
+      "name": "RouterGuardOptions",
       "jsdoc": "路由守卫选项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 自定义权限检查 */\n    checkPermission?: (permissions: string[], required: string[]) => boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 160,
         "className": "RouterGuardOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "checkPermission",
-          "jsdoc": "自定义权限检查",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 自定义权限检查 */\n    checkPermission?: (permissions: string[], required: string[]) => boolean;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "permissions",
-              "type": {
-                "type": "array",
-                "elementType": {
-                  "type": "intrinsic",
-                  "name": "string"
+              "name": "checkPermission",
+              "jsdoc": "自定义权限检查",
+              "parameters": [
+                {
+                  "name": "permissions",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "intrinsic",
+                      "name": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "required",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "intrinsic",
+                      "name": "string"
+                    }
+                  }
                 }
-              }
-            },
-            {
-              "name": "required",
+              ],
               "type": {
-                "type": "array",
-                "elementType": {
-                  "type": "intrinsic",
-                  "name": "string"
-                }
+                "type": "intrinsic",
+                "name": "boolean"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "permissions": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "required": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
+          ]
         }
-      ]
+      }
     },
     "ErrorHandlerOptions": {
-      "kind": "ErrorHandlerOptions",
-      "className": "ErrorHandlerOptions",
+      "name": "ErrorHandlerOptions",
       "jsdoc": "错误处理选项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 错误回调 */\n    onError?: (error: Error, context: ErrorContext) => void;\n    /** 自定义错误分类 */\n    errorClassifier?: (error: Error) => ErrorType;\n    /** 错误类型处理回调（消费层实现 UI 交互） */\n    onErrorByType?: (type: ErrorType, error: Error) => void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 167,
         "className": "ErrorHandlerOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "onError",
-          "jsdoc": "错误回调",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 错误回调 */\n    onError?: (error: Error, context: ErrorContext) => void;\n    /** 自定义错误分类 */\n    errorClassifier?: (error: Error) => ErrorType;\n    /** 错误类型处理回调（消费层实现 UI 交互） */\n    onErrorByType?: (type: ErrorType, error: Error) => void;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "error",
+              "name": "onError",
+              "jsdoc": "错误回调",
+              "parameters": [
+                {
+                  "name": "error",
+                  "type": {
+                    "type": "reference",
+                    "name": "Error"
+                  }
+                },
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "ErrorContext",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "Error"
+                "type": "intrinsic",
+                "name": "void"
               }
             },
             {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "ErrorContext",
-                "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "error": {
-                "type": "object",
-                "title": "Error"
-              },
-              "context": {
-                "$ref": "#/$defs/ErrorContext"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "errorClassifier",
-          "jsdoc": "自定义错误分类",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "error",
-              "type": {
-                "type": "reference",
-                "name": "Error"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "ErrorType",
-            "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "error": {
-                "type": "object",
-                "title": "Error"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/ErrorType"
-          }
-        },
-        {
-          "name": "onErrorByType",
-          "jsdoc": "错误类型处理回调（消费层实现 UI 交互）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "type",
+              "name": "errorClassifier",
+              "jsdoc": "自定义错误分类",
+              "parameters": [
+                {
+                  "name": "error",
+                  "type": {
+                    "type": "reference",
+                    "name": "Error"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
                 "name": "ErrorType",
@@ -1032,145 +953,120 @@
               }
             },
             {
-              "name": "error",
+              "name": "onErrorByType",
+              "jsdoc": "错误类型处理回调（消费层实现 UI 交互）",
+              "parameters": [
+                {
+                  "name": "type",
+                  "type": {
+                    "type": "reference",
+                    "name": "ErrorType",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/types.d.ts"
+                  }
+                },
+                {
+                  "name": "error",
+                  "type": {
+                    "type": "reference",
+                    "name": "Error"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "Error"
+                "type": "intrinsic",
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "$ref": "#/$defs/ErrorType"
-              },
-              "error": {
-                "type": "object",
-                "title": "Error"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     },
     "ErrorContext": {
-      "kind": "ErrorContext",
-      "className": "ErrorContext",
+      "name": "ErrorContext",
       "jsdoc": "错误上下文接口\n作用域：单次错误发生时的临时上下文\n生命周期：错误捕获时创建，用于错误日志记录和上报\n用途：\n- 记录错误发生的位置和时间\n- 为错误监控和追踪提供结构化信息\n- 支持错误日志聚合和分析\n典型使用场景：\n- 组件渲染失败时记录 source\n- API 请求错误时记录 info 和 timestamp\n- 用户操作异常时进行错误上报",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 错误来源（组件名） */\n    source?: string;\n    /** 组件文件路径（Vue SFC __file） */\n    file?: string;\n    /** 错误信息 */\n    info: string;\n    /** 时间戳 */\n    timestamp: number;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 191,
         "className": "ErrorContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "source",
-          "jsdoc": "错误来源（组件名）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "file",
-          "jsdoc": "组件文件路径（Vue SFC __file）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "info",
-          "jsdoc": "错误信息",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "timestamp",
-          "jsdoc": "时间戳",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 错误来源（组件名） */\n    source?: string;\n    /** 组件文件路径（Vue SFC __file） */\n    file?: string;\n    /** 错误信息 */\n    info: string;\n    /** 时间戳 */\n    timestamp: number;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "source",
+              "jsdoc": "错误来源（组件名）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "file",
+              "jsdoc": "组件文件路径（Vue SFC __file）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "info",
+              "jsdoc": "错误信息",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "timestamp",
+              "jsdoc": "时间戳",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ErrorType": {
-      "kind": "ErrorType",
-      "className": "ErrorType",
+      "name": "ErrorType",
       "jsdoc": "错误类型",
-      "shapeKind": "enum",
+      "declarationKind": "enum",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/types.d.ts",
         "line": 204,
         "className": "ErrorType",
         "declarationKind": "enum"
       },
-      "attributes": [
-        {
-          "name": "Auth",
-          "jsdoc": "Auth 字段。",
-          "schema": {
-            "type": "string"
+      "enumDecl": {
+        "members": [
+          {
+            "name": "Auth",
+            "jsdoc": "Auth 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Permission",
-          "jsdoc": "Permission 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Permission",
+            "jsdoc": "Permission 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Network",
-          "jsdoc": "Network 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Network",
+            "jsdoc": "Network 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Validation",
-          "jsdoc": "Validation 字段。",
-          "schema": {
-            "type": "string"
+          {
+            "name": "Validation",
+            "jsdoc": "Validation 字段。",
+            "readable": true,
+            "writable": false
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "Unknown",
-          "jsdoc": "Unknown 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
+          {
+            "name": "Unknown",
+            "jsdoc": "Unknown 字段。",
+            "readable": true,
+            "writable": false
+          }
+        ]
+      }
     }
   }
 }

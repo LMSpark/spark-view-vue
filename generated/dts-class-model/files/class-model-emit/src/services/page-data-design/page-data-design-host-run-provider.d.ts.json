@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/page-data-design/page-data-design-host-run-provider.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/page-data-design/page-data-design-host-run-provider",
     "sourcePath": "class-model-emit/src/services/page-data-design/page-data-design-host-run-provider.d.ts",
@@ -13,15 +13,11 @@
       "PageDataDesignHostInput"
     ]
   },
-  "symbols": [
-    "PageDataDesignHostInput"
-  ],
-  "generatedAt": "2026-06-12T01:06:49.056Z",
   "$defs": {
     "PageDataDesignHostInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDataDesignHostInput",
-      "description": "Page Data Design Host Input 的输入数据。",
       "properties": {
         "pageId": {
           "type": "string"
@@ -44,95 +40,71 @@
         "dataRequirement": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-12T01:06:49.056Z",
   "models": {
     "PageDataDesignHostInput": {
-      "kind": "PageDataDesignHostInput",
-      "className": "PageDataDesignHostInput",
+      "name": "PageDataDesignHostInput",
       "jsdoc": "Page Data Design Host Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    pageId: string;\n    description: string;\n    effectiveDescription: string;\n    projectId?: string;\n    planningTitle?: string;\n    planningPath?: string;\n    dataRequirement?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    pageId: string;\n    description: string;\n    effectiveDescription: string;\n    projectId?: string;\n    planningTitle?: string;\n    planningPath?: string;\n    dataRequirement?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-data-design/page-data-design-host-run-provider.d.ts",
         "line": 21,
         "className": "PageDataDesignHostInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "pageId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "effectiveDescription",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "planningTitle",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "planningPath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "dataRequirement",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    pageId: string;\n    description: string;\n    effectiveDescription: string;\n    projectId?: string;\n    planningTitle?: string;\n    planningPath?: string;\n    dataRequirement?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    pageId: string;\n    description: string;\n    effectiveDescription: string;\n    projectId?: string;\n    planningTitle?: string;\n    planningPath?: string;\n    dataRequirement?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "pageId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "description",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "effectiveDescription",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "projectId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "planningTitle",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "planningPath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "dataRequirement",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

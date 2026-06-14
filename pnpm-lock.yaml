@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@ag-ui/core':
+      specifier: ^0.0.57
+      version: 0.0.57
     '@element-plus/icons-vue':
       specifier: ^2.3.2
       version: 2.3.2
@@ -195,6 +198,9 @@ importers:
 
   packages/spark-ai:
     dependencies:
+      '@ag-ui/core':
+        specifier: 'catalog:'
+        version: 0.0.57
       '@spark-appworks/spark-json-document':
         specifier: workspace:*
         version: link:../spark-json-document
@@ -522,6 +528,9 @@ importers:
         version: 8.0.16(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
 
 packages:
+
+  '@ag-ui/core@0.0.57':
+    resolution: {integrity: sha512-gho1OWjNE6E3Rl7ZEZ1wr2CEpUHjLFU0FqzCZZk439TicLu+BfLCMkMokB07bMGlRmbJ60hM6LW60iOVauCx+Q==}
 
   '@asamuzakjp/css-color@5.1.11':
     resolution: {integrity: sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg==}
@@ -2934,7 +2943,14 @@ packages:
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
 snapshots:
+
+  '@ag-ui/core@0.0.57':
+    dependencies:
+      zod: 3.25.76
 
   '@asamuzakjp/css-color@5.1.11':
     dependencies:

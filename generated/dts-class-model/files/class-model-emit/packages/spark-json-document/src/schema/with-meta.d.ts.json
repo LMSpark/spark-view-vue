@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/with-meta.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-json-document:schema/with-meta",
     "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/with-meta.d.ts",
@@ -13,32 +13,30 @@
       "JsonSchemaNode"
     ]
   },
-  "symbols": [
-    "JsonSchemaNode"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.617Z",
   "$defs": {
     "JsonSchemaNode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonSchemaNode",
-      "description": "schema/with-meta.ts — JSON Schema 节点添加 title/description 元数据"
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.617Z",
   "models": {
     "JsonSchemaNode": {
-      "kind": "JsonSchemaNode",
-      "className": "JsonSchemaNode",
-      "jsdoc": "schema/with-meta.ts — JSON Schema 节点添加 title/description 元数据",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [key: string]: unknown;\n}",
+      "name": "JsonSchemaNode",
+      "jsdoc": "@module\n@spark-appworks /spark-json-document:schema/with-meta\n职责：提供 JSON 文档和 schema 处理中的 with-meta 能力，围绕 JsonSchemaNode 管理 schema 标准化、解析、校验或树策略。\n边界：只处理 JSON/schema/tree 抽象，不依赖 SPARK 页面运行时，也不直接操作业务 DataSet。\nAI用途：生成或校验 JSON 配置结构时，用本模块确认 schema/with-meta 的 schema 语义。\nschema/with-meta.ts — JSON Schema 节点添加 title/description 元数据",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/with-meta.d.ts",
         "line": 10,
         "className": "JsonSchemaNode",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [key: string]: unknown;\n}",
+        "members": {}
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:validation",
     "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts",
@@ -17,19 +17,11 @@
       "DataValidator"
     ]
   },
-  "symbols": [
-    "ValidationError",
-    "ValidationResult",
-    "RowValidator",
-    "DataSchema",
-    "DataValidator"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.027Z",
   "$defs": {
     "ValidationError": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ValidationError",
-      "description": "校验错误",
       "properties": {
         "field": {
           "type": "string"
@@ -41,12 +33,18 @@
           "type": "string"
         },
         "value": true
-      }
+      },
+      "required": [
+        "field",
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
     },
     "ValidationResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ValidationResult",
-      "description": "校验结果",
       "properties": {
         "valid": {
           "type": "boolean"
@@ -57,203 +55,45 @@
             "$ref": "#/$defs/ValidationError"
           }
         }
-      }
+      },
+      "required": [
+        "valid",
+        "errors"
+      ],
+      "additionalProperties": false
     },
     "RowValidator": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RowValidator",
-      "description": "行级校验函数"
+      "additionalProperties": false
     },
     "DataSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataSchema",
-      "description": "数据模式（包含列定义和校验规则）",
       "properties": {
         "columns": {
           "type": "array",
           "items": {
-            "type": "object",
-            "title": "DataColumn"
+            "$ref": "types.d.ts.json#/$defs/DataColumn"
           }
         },
         "validate": {
           "$ref": "#/$defs/RowValidator"
         }
-      }
+      },
+      "required": [
+        "columns"
+      ],
+      "additionalProperties": false
     },
     "DataValidator": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataValidator",
-      "description": "数据校验器\n基于数据模式（列定义 + 自定义规则）校验行数据"
-    }
-  },
-  "models": {
-    "ValidationError": {
-      "kind": "ValidationError",
-      "className": "ValidationError",
-      "jsdoc": "校验错误",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 字段名 */\n    field: string;\n    /** 错误消息 */\n    message: string;\n    /** 错误代码 */\n    code: string;\n    /** 实际值 */\n    value?: unknown;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
-        "line": 17,
-        "className": "ValidationError",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "field",
-          "jsdoc": "字段名",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "错误消息",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "code",
-          "jsdoc": "错误代码",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "value",
-          "jsdoc": "实际值",
-          "schema": true,
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
-    },
-    "ValidationResult": {
-      "kind": "ValidationResult",
-      "className": "ValidationResult",
-      "jsdoc": "校验结果",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 是否有效 */\n    valid: boolean;\n    /** 错误列表 */\n    errors: ValidationError[];\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
-        "line": 30,
-        "className": "ValidationResult",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "valid",
-          "jsdoc": "是否有效",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "errors",
-          "jsdoc": "错误列表",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/ValidationError"
-            }
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": []
-    },
-    "RowValidator": {
-      "kind": "RowValidator",
-      "className": "RowValidator",
-      "jsdoc": "行级校验函数",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    (row: DataRow): ValidationError[] | null;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
-        "line": 39,
-        "className": "RowValidator",
-        "declarationKind": "type"
-      },
-      "attributes": [],
-      "methods": []
-    },
-    "DataSchema": {
-      "kind": "DataSchema",
-      "className": "DataSchema",
-      "jsdoc": "数据模式（包含列定义和校验规则）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 列定义 */\n    columns: DataColumn[];\n    /** 自定义行级校验 */\n    validate?: RowValidator;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
-        "line": 45,
-        "className": "DataSchema",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "columns",
-          "jsdoc": "列定义",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "DataColumn"
-            }
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "validate",
-          "jsdoc": "自定义行级校验",
-          "schema": {
-            "$ref": "#/$defs/RowValidator"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
-    },
-    "DataValidator": {
-      "kind": "DataValidator",
-      "className": "DataValidator",
-      "jsdoc": "数据校验器\n基于数据模式（列定义 + 自定义规则）校验行数据",
-      "shapeKind": "class",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
-        "line": 56,
-        "className": "DataValidator",
-        "declarationKind": "class"
-      },
-      "constructorMeta": {
-        "jsdoc": "创建 Data Validator 实例。",
-        "signatureText": "constructor(schema: DataSchema)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "schema",
-            "type": {
-              "type": "reference",
-              "name": "DataSchema",
-              "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
-            }
-          }
-        ],
-        "paramsSchema": {
+      "$defs": {
+        "constructor.params": {
           "type": "object",
           "properties": {
             "schema": {
@@ -261,166 +101,310 @@
             }
           },
           "additionalProperties": false
-        }
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "validate",
-          "jsdoc": "校验单行数据\n@param row - 行数据\n@returns 校验结果",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "row",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
+        },
+        "method.validate.params": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.validate.return": {
+          "$ref": "#/$defs/ValidationResult"
+        },
+        "method.validateBatch.params": {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "types.d.ts.json#/$defs/DataRow"
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "ValidationResult",
-            "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
           },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
+          "additionalProperties": false
+        },
+        "method.validateBatch.return": {
+          "type": "array",
+          "items": {
             "$ref": "#/$defs/ValidationResult"
           }
         },
-        {
-          "name": "validateBatch",
-          "jsdoc": "批量校验多行数据\n@param rows - 行数据数组\n@returns 每行的校验结果",
-          "parameterStyle": "positional",
+        "method.isValid.params": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.isValid.return": {
+          "type": "boolean"
+        },
+        "method.getFirstError.params": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getFirstError.return": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidationError"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:48:51.027Z",
+  "models": {
+    "ValidationError": {
+      "name": "ValidationError",
+      "jsdoc": "校验错误",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
+        "line": 17,
+        "className": "ValidationError",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 字段名 */\n    field: string;\n    /** 错误消息 */\n    message: string;\n    /** 错误代码 */\n    code: string;\n    /** 实际值 */\n    value?: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "field",
+              "jsdoc": "字段名",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "message",
+              "jsdoc": "错误消息",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "code",
+              "jsdoc": "错误代码",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "value",
+              "jsdoc": "实际值",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "ValidationResult": {
+      "name": "ValidationResult",
+      "jsdoc": "校验结果",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
+        "line": 30,
+        "className": "ValidationResult",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 是否有效 */\n    valid: boolean;\n    /** 错误列表 */\n    errors: ValidationError[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "valid",
+              "jsdoc": "是否有效",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "errors",
+              "jsdoc": "错误列表",
+              "readable": true,
+              "writable": true
+            }
+          ]
+        }
+      }
+    },
+    "RowValidator": {
+      "name": "RowValidator",
+      "jsdoc": "行级校验函数",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
+        "line": 39,
+        "className": "RowValidator",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    (row: DataRow): ValidationError[] | null;\n}",
+        "members": {}
+      }
+    },
+    "DataSchema": {
+      "name": "DataSchema",
+      "jsdoc": "数据模式（包含列定义和校验规则）",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
+        "line": 45,
+        "className": "DataSchema",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 列定义 */\n    columns: DataColumn[];\n    /** 自定义行级校验 */\n    validate?: RowValidator;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "columns",
+              "jsdoc": "列定义",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "validate",
+              "jsdoc": "自定义行级校验",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "DataValidator": {
+      "name": "DataValidator",
+      "jsdoc": "数据校验器\n基于数据模式（列定义 + 自定义规则）校验行数据",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/validation.d.ts",
+        "line": 56,
+        "className": "DataValidator",
+        "declarationKind": "class"
+      },
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 Data Validator 实例。",
+          "signatureText": "constructor(schema: DataSchema)",
           "parameters": [
             {
-              "name": "rows",
+              "name": "schema",
+              "type": {
+                "type": "reference",
+                "name": "DataSchema",
+                "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
+              }
+            }
+          ]
+        },
+        "members": {
+          "methods": [
+            {
+              "name": "validate",
+              "jsdoc": "校验单行数据\n@param row - 行数据\n@returns 校验结果",
+              "parameters": [
+                {
+                  "name": "row",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "ValidationResult",
+                "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
+              }
+            },
+            {
+              "name": "validateBatch",
+              "jsdoc": "批量校验多行数据\n@param rows - 行数据数组\n@returns 每行的校验结果",
+              "parameters": [
+                {
+                  "name": "rows",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "DataRow",
+                      "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                    }
+                  }
+                }
+              ],
               "type": {
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "unknown"
-                }
-              }
-            }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "ValidationResult",
-              "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "rows": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "title": "DataRow"
+                  "name": "ValidationResult",
+                  "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
                 }
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/ValidationResult"
-            }
-          }
-        },
-        {
-          "name": "isValid",
-          "jsdoc": "快速校验（只返回是否有效）\n@param row - 行数据\n@returns 是否有效",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "row",
+              "name": "isValid",
+              "jsdoc": "快速校验（只返回是否有效）\n@param row - 行数据\n@returns 是否有效",
+              "parameters": [
+                {
+                  "name": "row",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "type": "object",
-                "title": "DataRow"
+                "type": "intrinsic",
+                "name": "boolean"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "getFirstError",
-          "jsdoc": "获取第一个错误\n@param row - 行数据\n@returns 第一个错误或 null",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "row",
+              "name": "getFirstError",
+              "jsdoc": "获取第一个错误\n@param row - 行数据\n@returns 第一个错误或 null",
+              "parameters": [
+                {
+                  "name": "row",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ValidationError",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "ValidationError",
-                "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/ValidationError"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

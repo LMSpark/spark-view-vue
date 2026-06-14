@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/create-passthrough.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/create-passthrough",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/create-passthrough.d.ts",
@@ -13,49 +13,45 @@
       "PassthroughOptions"
     ]
   },
-  "symbols": [
-    "PassthroughOptions"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.967Z",
   "$defs": {
     "PassthroughOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PassthroughOptions",
-      "description": "透传组件配置",
       "properties": {
         "propDefaults": {
           "type": "object",
           "title": "Record<string, unknown>"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.967Z",
   "models": {
     "PassthroughOptions": {
-      "kind": "PassthroughOptions",
-      "className": "PassthroughOptions",
+      "name": "PassthroughOptions",
       "jsdoc": "透传组件配置",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 属性默认值，key 为透传给目标渲染节点的 prop 名。 */\n    propDefaults?: Record<string, unknown>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/create-passthrough.d.ts",
         "line": 19,
         "className": "PassthroughOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "propDefaults",
-          "jsdoc": "属性默认值，key 为透传给目标渲染节点的 prop 名。",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 属性默认值，key 为透传给目标渲染节点的 prop 名。 */\n    propDefaults?: Record<string, unknown>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "propDefaults",
+              "jsdoc": "属性默认值，key 为透传给目标渲染节点的 prop 名。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

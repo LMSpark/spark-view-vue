@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/zones/RendererHeader.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/zones/RendererHeader",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/zones/RendererHeader.vue.d.ts",
@@ -16,7 +16,7 @@
     "componentLayer": "zone-container",
     "componentDirectory": "containers/zones"
   },
-  "symbols": [],
+  "$defs": {},
   "generatedAt": "2026-06-11T12:38:13.479Z",
   "models": {}
 }

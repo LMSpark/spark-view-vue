@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-type-meta-ops.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/class-model/dts-type-meta-ops",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-type-meta-ops.d.ts",
@@ -11,7 +11,7 @@
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
-  "symbols": [],
+  "$defs": {},
   "generatedAt": "2026-06-11T22:40:00.130Z",
   "models": {}
 }

@@ -40,7 +40,9 @@ describe('dts-surface-to-runtime-api', () => {
       const shard = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, manifestEntry!.file), 'utf8')) as unknown,
       )
-      const openChild = shard.models['ScriptContractRoot']?.methods.find(method => method.name === 'openChild')
+      const scriptContractRoot = shard.models['ScriptContractRoot']
+      if (scriptContractRoot?.declarationKind !== 'class') throw new Error('expected class model')
+      const openChild = scriptContractRoot.classDecl.members.methods.find(method => method.name === 'openChild')
       expect(openChild?.paramsSchema).toMatchObject({
         type: 'object',
         properties: {

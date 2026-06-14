@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererPopconfirm.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/RendererPopconfirm.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererPopconfirm.props.d.ts",
@@ -18,15 +18,11 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "RPopconfirmProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.438Z",
   "$defs": {
     "RPopconfirmProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RPopconfirmProps",
-      "description": "RPopconfirm Props 的属性契约。",
       "properties": {
         "title": {
           "type": "string"
@@ -38,95 +34,25 @@
           "type": "string"
         },
         "confirmButtonType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            }
+          "enum": [
+            "",
+            "default",
+            "primary",
+            "success",
+            "warning",
+            "info",
+            "danger"
           ]
         },
         "cancelButtonType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                ""
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "default"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "primary"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "danger"
-              ]
-            }
+          "enum": [
+            "",
+            "default",
+            "primary",
+            "success",
+            "warning",
+            "info",
+            "danger"
           ]
         },
         "icon": {
@@ -151,224 +77,105 @@
             }
           ]
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.438Z",
   "models": {
     "RPopconfirmProps": {
-      "kind": "RPopconfirmProps",
-      "className": "RPopconfirmProps",
+      "name": "RPopconfirmProps",
       "jsdoc": "RPopconfirm Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 确认框标题 */\n    title?: string;\n    /** 确认按钮文案 */\n    confirmButtonText?: string;\n    /** 取消按钮文案 */\n    cancelButtonText?: string;\n    /** 确认按钮类型 */\n    confirmButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 取消按钮类型 */\n    cancelButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 图标名称 */\n    icon?: string;\n    /** 图标颜色 */\n    iconColor?: string;\n    /** 是否隐藏图标 */\n    hideIcon?: boolean;\n    /** 自动隐藏延迟（毫秒） */\n    hideAfter?: number;\n    /** 浮层宽度 */\n    width?: number | string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 确认框标题 */\n    title?: string;\n    /** 确认按钮文案 */\n    confirmButtonText?: string;\n    /** 取消按钮文案 */\n    cancelButtonText?: string;\n    /** 确认按钮类型 */\n    confirmButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 取消按钮类型 */\n    cancelButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 图标名称 */\n    icon?: string;\n    /** 图标颜色 */\n    iconColor?: string;\n    /** 是否隐藏图标 */\n    hideIcon?: boolean;\n    /** 自动隐藏延迟（毫秒） */\n    hideAfter?: number;\n    /** 浮层宽度 */\n    width?: number | string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererPopconfirm.props.d.ts",
         "line": 9,
         "className": "RPopconfirmProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererPopconfirm",
         "componentType": "r-popconfirm",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [
-        {
-          "name": "title",
-          "jsdoc": "确认框标题",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 确认框标题 */\n    title?: string;\n    /** 确认按钮文案 */\n    confirmButtonText?: string;\n    /** 取消按钮文案 */\n    cancelButtonText?: string;\n    /** 确认按钮类型 */\n    confirmButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 取消按钮类型 */\n    cancelButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 图标名称 */\n    icon?: string;\n    /** 图标颜色 */\n    iconColor?: string;\n    /** 是否隐藏图标 */\n    hideIcon?: boolean;\n    /** 自动隐藏延迟（毫秒） */\n    hideAfter?: number;\n    /** 浮层宽度 */\n    width?: number | string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "confirmButtonText",
-          "jsdoc": "确认按钮文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "cancelButtonText",
-          "jsdoc": "取消按钮文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "confirmButtonType",
-          "jsdoc": "确认按钮类型",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  ""
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "default"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "primary"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "success"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "warning"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "info"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "danger"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "cancelButtonType",
-          "jsdoc": "取消按钮类型",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  ""
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "default"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "primary"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "success"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "warning"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "info"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "danger"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "icon",
-          "jsdoc": "图标名称",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "iconColor",
-          "jsdoc": "图标颜色",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "hideIcon",
-          "jsdoc": "是否隐藏图标",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "hideAfter",
-          "jsdoc": "自动隐藏延迟（毫秒）",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "width",
-          "jsdoc": "浮层宽度",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 确认框标题 */\n    title?: string;\n    /** 确认按钮文案 */\n    confirmButtonText?: string;\n    /** 取消按钮文案 */\n    cancelButtonText?: string;\n    /** 确认按钮类型 */\n    confirmButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 取消按钮类型 */\n    cancelButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 图标名称 */\n    icon?: string;\n    /** 图标颜色 */\n    iconColor?: string;\n    /** 是否隐藏图标 */\n    hideIcon?: boolean;\n    /** 自动隐藏延迟（毫秒） */\n    hideAfter?: number;\n    /** 浮层宽度 */\n    width?: number | string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "title",
+              "jsdoc": "确认框标题",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "confirmButtonText",
+              "jsdoc": "确认按钮文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "cancelButtonText",
+              "jsdoc": "取消按钮文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "confirmButtonType",
+              "jsdoc": "确认按钮类型",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "cancelButtonType",
+              "jsdoc": "取消按钮类型",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "icon",
+              "jsdoc": "图标名称",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "iconColor",
+              "jsdoc": "图标颜色",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "hideIcon",
+              "jsdoc": "是否隐藏图标",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "hideAfter",
+              "jsdoc": "自动隐藏延迟（毫秒）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "width",
+              "jsdoc": "浮层宽度",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

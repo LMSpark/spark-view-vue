@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/session/session-diagnostics",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
@@ -15,26 +15,16 @@
       "AiAgentSessionTranscriptOptions"
     ]
   },
-  "symbols": [
-    "AiAgentSessionSummary",
-    "AiAgentSessionTranscriptEntry",
-    "AiAgentSessionTranscriptOptions"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.908Z",
   "$defs": {
     "AiAgentSessionSummary": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentSessionSummary",
-      "description": "Ai Agent Session Summary 的语义模型。",
       "properties": {
         "status": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         },
         "historyCount": {
@@ -50,61 +40,42 @@
           "type": "number"
         },
         "functionNames": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "lastAssistantText": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentSessionTranscriptEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentSessionTranscriptEntry",
-      "description": "Ai Agent Session Transcript Entry 的语义模型。",
       "properties": {
         "seq": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "number"
           ]
         },
         "id": {
           "type": "string"
         },
         "timestamp": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         },
         "kind": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "message"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "functionCall"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "unknown"
-              ]
-            }
+          "enum": [
+            "message",
+            "functionCall",
+            "unknown"
           ]
         },
         "direction": {
@@ -131,308 +102,197 @@
         "result": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentSessionTranscriptOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentSessionTranscriptOptions",
-      "description": "Ai Agent Session Transcript Options 的调用配置。",
       "properties": {
         "contentLimit": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.908Z",
   "models": {
     "AiAgentSessionSummary": {
-      "kind": "AiAgentSessionSummary",
-      "className": "AiAgentSessionSummary",
+      "name": "AiAgentSessionSummary",
       "jsdoc": "Ai Agent Session Summary 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
         "line": 9,
         "className": "AiAgentSessionSummary",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "historyCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "messageCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "toolCallCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "failedToolCallCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "functionNames",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "lastAssistantText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "historyCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "messageCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolCallCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "failedToolCallCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "functionNames",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "lastAssistantText",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentSessionTranscriptEntry": {
-      "kind": "AiAgentSessionTranscriptEntry",
-      "className": "AiAgentSessionTranscriptEntry",
+      "name": "AiAgentSessionTranscriptEntry",
       "jsdoc": "Ai Agent Session Transcript Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
         "line": 19,
         "className": "AiAgentSessionTranscriptEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "seq",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "id",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "timestamp",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "message"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "functionCall"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "unknown"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "direction",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "role",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "source",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "toolName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "content",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "args",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "result",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "seq",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "id",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "timestamp",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "direction",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "role",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "source",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "content",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "args",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "result",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentSessionTranscriptOptions": {
-      "kind": "AiAgentSessionTranscriptOptions",
-      "className": "AiAgentSessionTranscriptOptions",
+      "name": "AiAgentSessionTranscriptOptions",
       "jsdoc": "Ai Agent Session Transcript Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    contentLimit?: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    contentLimit?: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
         "line": 34,
         "className": "AiAgentSessionTranscriptOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "contentLimit",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    contentLimit?: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    contentLimit?: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "contentLimit",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

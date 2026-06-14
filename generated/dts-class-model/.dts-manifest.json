@@ -1,10 +1,25 @@
 {
   "schemaVersion": 1,
   "entries": {
+    "class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.d.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T11:58:57.660Z"
+    },
+    "class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-types.d.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/agent/ag-ui/ag-ui-types.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T11:58:36.711Z"
+    },
+    "class-model-emit/packages/spark-ai/src/agent/ag-ui/index.d.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/ag-ui/index.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/agent/ag-ui/index.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T08:11:51.500Z"
+    },
     "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/ai-host.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T01:03:51.209Z"
+      "sourceModifiedAt": "2026-06-14T13:57:55.658Z"
     },
     "class-model-emit/packages/spark-ai/src/agent/business/business-kit.d.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/business-kit.ts",
@@ -64,7 +79,7 @@
     "class-model-emit/packages/spark-ai/src/agent/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/agent/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/agent/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T12:34:04.351Z"
+      "sourceModifiedAt": "2026-06-14T08:11:51.502Z"
     },
     "class-model-emit/packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.d.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts",
@@ -174,57 +189,82 @@
     "class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T03:14:23.811Z"
+      "sourceModifiedAt": "2026-06-14T13:21:15.438Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/build-index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/build-index.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:24:53.518Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.692Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-fs.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-fs.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:57:42.742Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T05:45:53.752Z"
+      "sourceModifiedAt": "2026-06-14T13:47:45.446Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-json-schema-def-keys.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-json-schema-def-keys.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-json-schema-def-keys.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:57:42.744Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-schema-projection.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-schema-projection.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-schema-projection.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:57:42.746Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:47:29.379Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/consistency.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/consistency.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/consistency.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.841Z"
+      "sourceModifiedAt": "2026-06-14T13:02:05.213Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-ast-utils.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-ast-utils.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-ast-utils.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T21:56:29.897Z"
+      "sourceModifiedAt": "2026-06-14T10:09:12.075Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:53:50.653Z"
+      "sourceModifiedAt": "2026-06-14T13:21:05.248Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-url.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-url.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:24:53.588Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.884Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:51:56.650Z"
+      "sourceModifiedAt": "2026-06-14T13:02:05.234Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-enum-schema.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-enum-schema.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-enum-schema.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:57:42.747Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.d.ts.json",
-      "sourceModifiedAt": "2026-06-12T05:54:17.692Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.895Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T01:09:31.882Z"
+      "sourceModifiedAt": "2026-06-14T13:02:05.255Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-surface-types.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T22:28:08.309Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.902Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-type-meta-ops.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-type-meta-ops.ts",
@@ -234,167 +274,177 @@
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-type-schema.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-type-schema.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-type-schema.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:45:51.088Z"
+      "sourceModifiedAt": "2026-06-14T11:47:42.350Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/from-runtime-metadata.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/from-runtime-metadata.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/from-runtime-metadata.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:25:30.892Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.907Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:24:37.554Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.910Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/json-schema-emit.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/json-schema-emit.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/json-schema-emit.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:57:42.749Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/json-schema-to-type.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/json-schema-to-type.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/json-schema-to-type.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.886Z"
+      "sourceModifiedAt": "2026-06-14T13:20:24.849Z"
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/model-json-schema-ref.d.ts": {
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/model-json-schema-ref.ts",
+      "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/model-json-schema-ref.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:57:42.751Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/model-projection.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/model-projection.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/model-projection.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:45:18.597Z"
+      "sourceModifiedAt": "2026-06-14T13:02:05.294Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:53:45.915Z"
+      "sourceModifiedAt": "2026-06-14T13:47:29.384Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:54:10.558Z"
+      "sourceModifiedAt": "2026-06-14T13:21:39.689Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/reflection-connectivity.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/reflection-connectivity.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/reflection-connectivity.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:25:30.907Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.939Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/signature-renderer.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/signature-renderer.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/signature-renderer.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T01:03:51.211Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.943Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/types.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T01:03:51.211Z"
+      "sourceModifiedAt": "2026-06-14T13:04:58.995Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:24:37.502Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.666Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T21:09:36.122Z"
+      "sourceModifiedAt": "2026-06-14T13:13:17.376Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T20:44:50.308Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.732Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/knowledge/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/knowledge/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T20:46:34.193Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.754Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T22:01:14.899Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.803Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T20:54:01.875Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.824Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T20:51:30.570Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.819Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:45:18.587Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.727Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/metadata/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:25:30.932Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.757Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/metadata/json-schema-dereference.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/json-schema-dereference.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/json-schema-dereference.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:26:12.437Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.798Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/metadata-graph.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.921Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.809Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:43:46.877Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.815Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.924Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.829Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts.json",
-      "sourceModifiedAt": "2026-06-12T05:39:09.362Z"
+      "sourceModifiedAt": "2026-06-14T13:02:05.190Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/projection/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/projection/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/projection/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.865Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.704Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:25:30.915Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.849Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/recovery/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/recovery/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/recovery/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.908Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.833Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/runtime/class-model-runtime.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts.json",
-      "sourceModifiedAt": "2026-06-12T05:39:08.159Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.853Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/runtime/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/runtime/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/runtime/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-12T05:39:06.501Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.837Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-schema-recovery.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/tools/class-model-tool-schema-recovery.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-schema-recovery.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.870Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.840Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/tools/class-model-tool-specs.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts.json",
-      "sourceModifiedAt": "2026-06-13T12:34:12.589Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.863Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/tools/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/tools/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/tools/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.856Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.867Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/tools/tool-names.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/tools/tool-names.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/tools/tool-names.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T22:00:24.853Z"
+      "sourceModifiedAt": "2026-06-14T13:01:40.870Z"
     },
     "class-model-emit/packages/spark-ai/src/index.d.ts": {
       "sourceFile": "packages/spark-ai/src/index.ts",
@@ -429,12 +479,12 @@
     "class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts": {
       "sourceFile": "packages/spark-app/src/ai/ai-run-adapter.ts",
       "shardFile": "files/class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.931Z"
+      "sourceModifiedAt": "2026-06-14T13:58:22.052Z"
     },
     "class-model-emit/packages/spark-app/src/ai/index.d.ts": {
       "sourceFile": "packages/spark-app/src/ai/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-app/src/ai/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.345Z"
+      "sourceModifiedAt": "2026-06-14T08:40:55.016Z"
     },
     "class-model-emit/packages/spark-app/src/ai/tool-approval-bridge.d.ts": {
       "sourceFile": "packages/spark-app/src/ai/tool-approval-bridge.ts",
@@ -484,7 +534,7 @@
     "class-model-emit/packages/spark-app/src/config/loader.d.ts": {
       "sourceFile": "packages/spark-app/src/config/loader.ts",
       "shardFile": "files/class-model-emit/packages/spark-app/src/config/loader.d.ts.json",
-      "sourceModifiedAt": "2026-06-12T20:26:57.885Z"
+      "sourceModifiedAt": "2026-06-14T13:57:55.662Z"
     },
     "class-model-emit/packages/spark-app/src/config/types.d.ts": {
       "sourceFile": "packages/spark-app/src/config/types.ts",
@@ -509,7 +559,7 @@
     "class-model-emit/packages/spark-app/src/index.d.ts": {
       "sourceFile": "packages/spark-app/src/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-app/src/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.943Z"
+      "sourceModifiedAt": "2026-06-14T08:41:13.346Z"
     },
     "class-model-emit/packages/spark-app/src/logger/index.d.ts": {
       "sourceFile": "packages/spark-app/src/logger/index.ts",
@@ -731,15 +781,25 @@
       "shardFile": "files/class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.vue.d.ts.json",
       "sourceModifiedAt": "2026-06-11T12:38:13.375Z"
     },
+    "class-model-emit/packages/spark-component/src/ai/components/SparkAgentPanel.props.d.ts": {
+      "sourceFile": "packages/spark-component/src/ai/components/SparkAgentPanel.props.ts",
+      "shardFile": "files/class-model-emit/packages/spark-component/src/ai/components/SparkAgentPanel.props.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T13:58:22.056Z"
+    },
+    "class-model-emit/packages/spark-component/src/ai/components/SparkAgentPanel.vue.d.ts": {
+      "sourceFile": "packages/spark-component/src/ai/components/SparkAgentPanel.vue",
+      "shardFile": "files/class-model-emit/packages/spark-component/src/ai/components/SparkAgentPanel.vue.d.ts.json",
+      "sourceModifiedAt": "2026-06-14T08:15:37.420Z"
+    },
     "class-model-emit/packages/spark-component/src/ai/index.d.ts": {
       "sourceFile": "packages/spark-component/src/ai/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-component/src/ai/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.375Z"
+      "sourceModifiedAt": "2026-06-14T08:15:37.422Z"
     },
     "class-model-emit/packages/spark-component/src/ai/types.d.ts": {
       "sourceFile": "packages/spark-component/src/ai/types.ts",
       "shardFile": "files/class-model-emit/packages/spark-component/src/ai/types.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.955Z"
+      "sourceModifiedAt": "2026-06-14T08:48:04.453Z"
     },
     "class-model-emit/packages/spark-component/src/components/containers/data-views/data-row-utils.d.ts": {
       "sourceFile": "packages/spark-component/src/components/containers/data-views/data-row-utils.ts",
@@ -2179,7 +2239,7 @@
     "class-model-emit/packages/spark-component/src/index.d.ts": {
       "sourceFile": "packages/spark-component/src/index.ts",
       "shardFile": "files/class-model-emit/packages/spark-component/src/index.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.975Z"
+      "sourceModifiedAt": "2026-06-14T08:15:37.424Z"
     },
     "class-model-emit/packages/spark-component/src/page/actions/action-data.d.ts": {
       "sourceFile": "packages/spark-component/src/page/actions/action-data.ts",
@@ -2594,7 +2654,7 @@
     "class-model-emit/packages/spark-json-document/src/schema/schema-draft2020-audit.d.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-draft2020-audit.ts",
       "shardFile": "files/class-model-emit/packages/spark-json-document/src/schema/schema-draft2020-audit.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.616Z"
+      "sourceModifiedAt": "2026-06-14T13:30:49.407Z"
     },
     "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-helpers.ts",
@@ -2609,7 +2669,7 @@
     "class-model-emit/packages/spark-json-document/src/schema/schema-standardize.d.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-standardize.ts",
       "shardFile": "files/class-model-emit/packages/spark-json-document/src/schema/schema-standardize.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.616Z"
+      "sourceModifiedAt": "2026-06-14T13:58:22.059Z"
     },
     "class-model-emit/packages/spark-json-document/src/schema/schema-types.d.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-types.ts",
@@ -2619,7 +2679,7 @@
     "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-validator.ts",
       "shardFile": "files/class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:51.038Z"
+      "sourceModifiedAt": "2026-06-14T13:57:55.666Z"
     },
     "class-model-emit/packages/spark-json-document/src/schema/with-meta.d.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/with-meta.ts",

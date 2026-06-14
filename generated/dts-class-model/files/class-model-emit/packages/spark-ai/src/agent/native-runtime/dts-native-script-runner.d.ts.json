@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/native-runtime/dts-native-script-runner",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.d.ts",
@@ -13,17 +13,16 @@
       "DtsNativeScriptRunCommand"
     ]
   },
-  "symbols": [
-    "DtsNativeScriptRunCommand"
-  ],
-  "generatedAt": "2026-06-14T01:09:41.824Z",
   "$defs": {
     "DtsNativeScriptRunCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsNativeScriptRunCommand",
-      "description": "Dts Native Script Run Command 的命令参数。",
       "properties": {
-        "instance": true,
+        "instance": {
+          "type": "object",
+          "title": "TInstance"
+        },
         "manifestUrl": {
           "type": "string"
         },
@@ -37,114 +36,100 @@
         "script": {
           "type": "string"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.fetchJson.params": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.fetchJson.return": {
+          "type": "object",
+          "title": "Promise<unknown>"
+        }
       }
     }
   },
+  "generatedAt": "2026-06-14T01:09:41.824Z",
   "models": {
     "DtsNativeScriptRunCommand": {
-      "kind": "DtsNativeScriptRunCommand",
-      "className": "DtsNativeScriptRunCommand",
+      "name": "DtsNativeScriptRunCommand",
       "jsdoc": "Dts Native Script Run Command 的命令参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.d.ts",
         "line": 12,
         "className": "DtsNativeScriptRunCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "instance",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "manifestUrl",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rootClassName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "host",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentRuntimeHostContext"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "script",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "fetchJson",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
             {
-              "name": "url",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
+              "name": "instance",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "manifestUrl",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootClassName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "host",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "script",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "unknown"
+          "methods": [
+            {
+              "name": "fetchJson",
+              "parameters": [
+                {
+                  "name": "url",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "url": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<unknown>"
-          }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

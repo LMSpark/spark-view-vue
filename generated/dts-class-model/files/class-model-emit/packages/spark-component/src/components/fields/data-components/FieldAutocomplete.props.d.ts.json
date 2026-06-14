@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/data-components/FieldAutocomplete.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts",
@@ -19,21 +19,17 @@
     "componentLayer": "data-field",
     "componentDirectory": "fields/data-components"
   },
-  "symbols": [
-    "FetchSuggestionsCallback",
-    "RAutocompleteProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.542Z",
   "$defs": {
     "FetchSuggestionsCallback": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "FetchSuggestionsCallback",
-      "description": "Fetch Suggestions Callback 的语义模型。"
+      "additionalProperties": false
     },
     "RAutocompleteProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RAutocompleteProps",
-      "description": "RAutocomplete Props 的属性契约。",
       "properties": {
         "triggerOnFocus": {
           "type": "boolean"
@@ -44,133 +40,130 @@
         "valueKey": {
           "type": "string"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.fetchSuggestions.params": {
+          "type": "object",
+          "properties": {
+            "queryString": {
+              "type": "string"
+            },
+            "cb": {
+              "$ref": "#/$defs/FetchSuggestionsCallback"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.fetchSuggestions.return": true
       }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.542Z",
   "models": {
     "FetchSuggestionsCallback": {
-      "kind": "FetchSuggestionsCallback",
-      "className": "FetchSuggestionsCallback",
+      "name": "FetchSuggestionsCallback",
       "jsdoc": "Fetch Suggestions Callback 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    (suggestions: Array<Record<string, unknown>>): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts",
         "line": 9,
         "className": "FetchSuggestionsCallback",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "FieldAutocomplete",
         "componentType": "r-autocomplete",
         "componentLevel": "field-level",
         "componentLayer": "data-field",
         "componentDirectory": "fields/data-components"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    (suggestions: Array<Record<string, unknown>>): void;\n}",
+        "members": {}
+      }
     },
     "RAutocompleteProps": {
-      "kind": "RAutocompleteProps",
-      "className": "RAutocompleteProps",
+      "name": "RAutocompleteProps",
       "jsdoc": "RAutocomplete Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & SparkFieldSemanticProps<string> & {\n    /** 弹出建议面板前是否先基于当前焦点触发一次拉取。 */\n    fetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void;\n    /** 获得焦点时是否立即触发建议查询。 */\n    triggerOnFocus?: boolean;\n    /** 是否默认高亮第一条候选项。 */\n    highlightFirstItem?: boolean;\n    /** 建议项中作为展示值的字段名。 */\n    valueKey?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "SparkFieldSemanticProps<string>",
-          "targetName": "SparkFieldSemanticProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 弹出建议面板前是否先基于当前焦点触发一次拉取。 */\n    fetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void;\n    /** 获得焦点时是否立即触发建议查询。 */\n    triggerOnFocus?: boolean;\n    /** 是否默认高亮第一条候选项。 */\n    highlightFirstItem?: boolean;\n    /** 建议项中作为展示值的字段名。 */\n    valueKey?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts",
         "line": 13,
         "className": "RAutocompleteProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "FieldAutocomplete",
         "componentType": "r-autocomplete",
         "componentLevel": "field-level",
         "componentLayer": "data-field",
         "componentDirectory": "fields/data-components"
       },
-      "attributes": [
-        {
-          "name": "triggerOnFocus",
-          "jsdoc": "获得焦点时是否立即触发建议查询。",
-          "schema": {
-            "type": "boolean"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & SparkFieldSemanticProps<string> & {\n    /** 弹出建议面板前是否先基于当前焦点触发一次拉取。 */\n    fetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void;\n    /** 获得焦点时是否立即触发建议查询。 */\n    triggerOnFocus?: boolean;\n    /** 是否默认高亮第一条候选项。 */\n    highlightFirstItem?: boolean;\n    /** 建议项中作为展示值的字段名。 */\n    valueKey?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "highlightFirstItem",
-          "jsdoc": "是否默认高亮第一条候选项。",
-          "schema": {
-            "type": "boolean"
+          {
+            "kind": "intersection",
+            "typeText": "SparkFieldSemanticProps<string>",
+            "targetName": "SparkFieldSemanticProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "valueKey",
-          "jsdoc": "建议项中作为展示值的字段名。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "fetchSuggestions",
-          "jsdoc": "弹出建议面板前是否先基于当前焦点触发一次拉取。",
-          "parameterStyle": "positional",
-          "parameters": [
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 弹出建议面板前是否先基于当前焦点触发一次拉取。 */\n    fetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void;\n    /** 获得焦点时是否立即触发建议查询。 */\n    triggerOnFocus?: boolean;\n    /** 是否默认高亮第一条候选项。 */\n    highlightFirstItem?: boolean;\n    /** 建议项中作为展示值的字段名。 */\n    valueKey?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
             {
-              "name": "queryString",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
+              "name": "triggerOnFocus",
+              "jsdoc": "获得焦点时是否立即触发建议查询。",
+              "readable": true,
+              "writable": false
             },
             {
-              "name": "cb",
-              "type": {
-                "type": "reference",
-                "name": "FetchSuggestionsCallback",
-                "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts"
-              }
+              "name": "highlightFirstItem",
+              "jsdoc": "是否默认高亮第一条候选项。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "valueKey",
+              "jsdoc": "建议项中作为展示值的字段名。",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "queryString": {
-                "type": "string"
-              },
-              "cb": {
-                "$ref": "#/$defs/FetchSuggestionsCallback"
+          "methods": [
+            {
+              "name": "fetchSuggestions",
+              "jsdoc": "弹出建议面板前是否先基于当前焦点触发一次拉取。",
+              "parameters": [
+                {
+                  "name": "queryString",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "cb",
+                  "type": {
+                    "type": "reference",
+                    "name": "FetchSuggestionsCallback",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

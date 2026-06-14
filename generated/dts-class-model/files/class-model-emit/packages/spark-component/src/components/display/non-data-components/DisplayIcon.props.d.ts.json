@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/display/non-data-components/DisplayIcon.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
@@ -18,15 +18,11 @@
     "componentLayer": "static-display",
     "componentDirectory": "display/non-data-components"
   },
-  "symbols": [
-    "RDisplayIconProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.508Z",
   "$defs": {
     "RDisplayIconProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RDisplayIconProps",
-      "description": "RDisplay Icon Props 的属性契约。",
       "properties": {
         "icon": {
           "type": "string"
@@ -44,75 +40,63 @@
         "color": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.508Z",
   "models": {
     "RDisplayIconProps": {
-      "kind": "RDisplayIconProps",
-      "className": "RDisplayIconProps",
+      "name": "RDisplayIconProps",
       "jsdoc": "RDisplay Icon Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 图标名称（由项目图标注册表解析） */\n    icon?: string;\n    /** 图标大小 */\n    iconSize?: number | string;\n    /** 图标颜色 */\n    color?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 图标名称（由项目图标注册表解析） */\n    icon?: string;\n    /** 图标大小 */\n    iconSize?: number | string;\n    /** 图标颜色 */\n    color?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
         "line": 9,
         "className": "RDisplayIconProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "DisplayIcon",
         "componentType": "display-icon",
         "componentLevel": "display",
         "componentLayer": "static-display",
         "componentDirectory": "display/non-data-components"
       },
-      "attributes": [
-        {
-          "name": "icon",
-          "jsdoc": "图标名称（由项目图标注册表解析）",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 图标名称（由项目图标注册表解析） */\n    icon?: string;\n    /** 图标大小 */\n    iconSize?: number | string;\n    /** 图标颜色 */\n    color?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "iconSize",
-          "jsdoc": "图标大小",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "color",
-          "jsdoc": "图标颜色",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 图标名称（由项目图标注册表解析） */\n    icon?: string;\n    /** 图标大小 */\n    iconSize?: number | string;\n    /** 图标颜色 */\n    color?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "icon",
+              "jsdoc": "图标名称（由项目图标注册表解析）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "iconSize",
+              "jsdoc": "图标大小",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "color",
+              "jsdoc": "图标颜色",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

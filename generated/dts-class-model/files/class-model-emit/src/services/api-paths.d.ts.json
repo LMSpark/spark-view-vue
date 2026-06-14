@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/api-paths.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/api-paths",
     "sourcePath": "class-model-emit/src/services/api-paths.d.ts",
@@ -13,15 +13,11 @@
       "ProjectApiScope"
     ]
   },
-  "symbols": [
-    "ProjectApiScope"
-  ],
-  "generatedAt": "2026-06-14T01:03:51.211Z",
   "$defs": {
     "ProjectApiScope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectApiScope",
-      "description": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -29,43 +25,44 @@
         "projectId": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "projectId"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T01:03:51.211Z",
   "models": {
     "ProjectApiScope": {
-      "kind": "ProjectApiScope",
-      "className": "ProjectApiScope",
-      "jsdoc": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
+      "name": "ProjectApiScope",
+      "jsdoc": "@module app:services/api-paths\n职责：提供应用运行时 service 层的 api paths 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/api-paths.d.ts",
         "line": 13,
         "className": "ProjectApiScope",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "project Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "projectId",
+              "jsdoc": "project Id 标识。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

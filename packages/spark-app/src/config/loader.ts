@@ -136,6 +136,7 @@ export class ConfigLoader {
   private cache = new Map<string, AppFullConfig>()
   private configSource?: ConfigSourceOptions
 
+  /** 私有构造函数，确保运行时配置缓存只通过 getInstance 维护一个进程内单例。 */
   private constructor() {}
 
   /**

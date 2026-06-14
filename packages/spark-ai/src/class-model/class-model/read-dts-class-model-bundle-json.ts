@@ -1,13 +1,14 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json
- * 职责：结构化校验 DTS ClassModel manifest 和 shard JSON，读取 module、model、attribute、method、provenance 与 relation 字段。
+ * 职责：结构化校验 DTS DtsTypeDeclarationModel manifest 和 shard JSON，读取 module、model、attribute、method、provenance 与 relation 字段。
  * 边界：只做 JSON 协议解析和 fail-fast 校验，不生成 bundle、不访问网络，也不修复缺失语义。
  * AI用途：运行时或测试加载 generated/dts-class-model 失败时，用本模块确认是哪一层 JSON 字段不符合协议。
  */
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
+import { assertDraft2020Schema } from '@spark-appworks/spark-json-document'
 import type {
   AttributeMeta,
-  ClassModel,
+  DtsTypeDeclarationModel,
   ClassModelDeclarationRelation,
   ClassModelDeclarationRelationKind,
   ComponentClassModelLayer,
@@ -34,27 +35,25 @@ import {
   DTS_CLASS_MODEL_BUNDLE_VERSION,
   DTS_FILE_PROJECTION_VERSION,
 } from './dts-bundle-types'
+import { hydrateModelSchemasFromJsonSchema } from './class-model-schema-projection'
 import { canRenderMethodSignatureFromTypeTree } from './dts-type-meta-ops'
 import { renderMethodSignatureFromMeta } from './signature-renderer'
 
 const DECLARATION_KINDS = new Set<NonNullable<SourceProvenanceMeta['declarationKind']>>([
   'class',
   'interface',
-  'type',
+  'typeAlias',
   'enum',
   'function',
   'const',
   'component',
 ])
 
-const SHAPE_KINDS = new Set<NonNullable<ClassModel['shapeKind']>>([
+const TYPE_DECLARATION_KINDS = new Set<NonNullable<DtsTypeDeclarationModel['declarationKind']>>([
   'class',
   'interface',
-  'type',
+  'typeAlias',
   'enum',
-  'function',
-  'const',
-  'component',
 ])
 
 const COMPONENT_LEVELS = new Set<ComponentClassModelLevel>([
@@ -155,34 +154,61 @@ export function readDtsClassModelBundleManifest(value: unknown): DtsClassModelBu
 
 export function readDtsFileProjectionDocument(value: unknown): DtsFileProjectionDocument {
   const record = requireJsonRecord(value, 'DTS file projection')
+  const schema = readRequiredString(record, '$schema', 'projection.$schema')
+  if (schema !== 'https://json-schema.org/draft/2020-12/schema') {
+    throw new Error(`Unsupported DTS file projection $schema: ${schema}`)
+  }
   const schemaVersion = readRequiredNumber(record, 'schemaVersion', 'projection.schemaVersion')
   if (schemaVersion !== DTS_FILE_PROJECTION_VERSION) {
     throw new Error(`Unsupported DTS file projection schemaVersion: ${String(schemaVersion)}`)
   }
   const generatedAt = readOptionalString(record, 'generatedAt', 'projection.generatedAt')
-  const sourcePath = readRequiredString(record, 'sourcePath', 'projection.sourcePath')
-  const symbols = readRequiredStringArray(record, 'symbols', 'projection.symbols')
-  const schemaDefs = readOptionalStringKeyedRecord({
-    record,
-    field: '$defs',
-    path: 'projection.$defs',
-    parseEntry: parseJsonSchemaObject,
-  })
+  if (Object.hasOwn(record, 'sourcePath')) {
+    throw new Error('projection.sourcePath is redundant in DTS projection v3; use projection.module.sourcePath.')
+  }
+  if (Object.hasOwn(record, 'symbols')) {
+    throw new Error('projection.symbols is redundant in DTS projection v3; use projection.module.symbols.')
+  }
+  const schemaDefs = readRequiredSchemaDefs(record, '$defs', 'projection.$defs')
+  const module = readRequiredModuleMeta(record, 'module', 'projection.module')
+  const sourcePath = module.sourcePath
+  const symbols = module.symbols
   const models = readRequiredStringKeyedRecord({
     record,
     field: 'models',
     path: 'projection.models',
     parseEntry: parseClassModel,
   })
+  const hydratedModels: Record<string, DtsTypeDeclarationModel> = {}
+  for (const [className, model] of Object.entries(models)) {
+    const jsonSchema = schemaDefs[className]
+    hydratedModels[className] = hydrateModelSchemasFromJsonSchema(
+      jsonSchema === undefined ? model : { ...model, jsonSchema },
+    )
+  }
   return {
     schemaVersion: DTS_FILE_PROJECTION_VERSION,
     sourcePath,
-    module: readRequiredModuleMeta(record, 'module', 'projection.module'),
+    module,
     symbols,
-    ...(schemaDefs === undefined ? {} : { $defs: schemaDefs }),
-    models,
+    models: hydratedModels,
     ...(generatedAt === undefined ? {} : { generatedAt }),
   }
+}
+
+function readRequiredSchemaDefs(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): Readonly<Record<string, AiJsonSchemaObject>> {
+  const defs = readRequiredRecord(record, field, path)
+  const result: Record<string, AiJsonSchemaObject> = {}
+  for (const [name, value] of Object.entries(defs)) {
+    const schema = parseJsonSchemaObject(value, `${path}.${name}`)
+    assertDraft2020Schema(schema, `${path}.${name}`)
+    result[name] = schema
+  }
+  return result
 }
 
 function parseBundleFileEntry(value: unknown, path: string): DtsClassModelBundleFileEntry {
@@ -262,45 +288,191 @@ function parseDuplicateRecord(value: unknown, path: string): DtsClassModelDuplic
   }
 }
 
-function parseClassModel(value: unknown, path: string): ClassModel {
+function parseClassModel(value: unknown, path: string): DtsTypeDeclarationModel {
   const record = requireJsonRecord(value, path)
-  const declarationTypeText = readOptionalString(record, 'declarationTypeText', `${path}.declarationTypeText`)
-  const declarationRelations = readOptionalArray({
+  const name = readRequiredString(record, 'name', `${path}.name`)
+  const declarationKind = readRequiredDeclarationKind({
     record,
+    field: 'declarationKind',
+    path: `${path}.declarationKind`,
+    allowed: TYPE_DECLARATION_KINDS,
+  })
+  if (Object.hasOwn(record, 'rootSchema')) {
+    throw new Error(`${path}.rootSchema is not part of the DTS DtsTypeDeclarationModel bundle contract; use ${path}.jsonSchema.`)
+  }
+  if (Object.hasOwn(record, 'kind')) {
+    throw new Error(`${path}.kind is redundant in DTS projection v3; use ${path}.name.`)
+  }
+  if (Object.hasOwn(record, 'className')) {
+    throw new Error(`${path}.className is redundant in DTS projection v3; use ${path}.name.`)
+  }
+  if (Object.hasOwn(record, 'shapeKind')) {
+    throw new Error(`${path}.shapeKind is not an official DTS declaration discriminator; use ${path}.declarationKind.`)
+  }
+  if (Object.hasOwn(record, 'jsonSchema')) {
+    throw new Error(`${path}.jsonSchema is duplicated; use projection.$defs.${name}.`)
+  }
+  for (const field of ['constructorMeta', 'attributes', 'methods', 'declarationTypeText', 'declarationRelations']) {
+    if (Object.hasOwn(record, field)) {
+      throw new Error(`${path}.${field} is a flat DTS projection field; use the ${declarationKind} shape payload instead.`)
+    }
+  }
+  const jsonSchema = readOptionalJsonSchemaObject(record, 'jsonSchema', `${path}.jsonSchema`)
+  if (jsonSchema !== undefined) {
+    assertDraft2020Schema(jsonSchema, `${path}.jsonSchema`)
+  }
+  const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
+  const common = {
+    name,
+    jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
+    declarationKind,
+    ...(jsonSchema === undefined ? {} : { jsonSchema }),
+    ...(provenance === undefined ? {} : { provenance }),
+  }
+  if (declarationKind === 'class') {
+    return {
+      ...common,
+      declarationKind,
+      classDecl: parseClassDeclarationPayload(record, 'classDecl', `${path}.classDecl`),
+    }
+  }
+  if (declarationKind === 'interface') {
+    return {
+      ...common,
+      declarationKind,
+      interfaceDecl: parseInterfaceDeclarationPayload(record, 'interfaceDecl', `${path}.interfaceDecl`),
+    }
+  }
+  if (declarationKind === 'typeAlias') {
+    return {
+      ...common,
+      declarationKind,
+      typeAlias: parseTypeAliasDeclarationPayload(record, 'typeAlias', `${path}.typeAlias`),
+    }
+  }
+  return {
+    ...common,
+    declarationKind,
+    enumDecl: parseEnumDeclarationPayload(record, 'enumDecl', `${path}.enumDecl`),
+  }
+}
+
+function parseClassDeclarationPayload(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): NonNullable<Extract<DtsTypeDeclarationModel, { declarationKind: 'class' }>['classDecl']> {
+  const payload = readRequiredRecord(record, field, path)
+  rejectFlatPayloadMembers(payload, path)
+  const constructorMeta = readOptionalConstructorMeta(payload, 'constructorMeta', `${path}.constructorMeta`)
+  if (constructorMeta === undefined) throw new Error(`${path}.constructorMeta is required for class models.`)
+  return {
+    constructorMeta,
+    ...declarationRelationsPayloadProperty(payload, path),
+    members: readDeclarationMembers(payload, path),
+  }
+}
+
+function parseInterfaceDeclarationPayload(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): NonNullable<Extract<DtsTypeDeclarationModel, { declarationKind: 'interface' }>['interfaceDecl']> {
+  const payload = readRequiredRecord(record, field, path)
+  rejectFlatPayloadMembers(payload, path)
+  return {
+    ...declarationRelationsPayloadProperty(payload, path),
+    members: readDeclarationMembers(payload, path),
+  }
+}
+
+function parseTypeAliasDeclarationPayload(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): NonNullable<Extract<DtsTypeDeclarationModel, { declarationKind: 'typeAlias' }>['typeAlias']> {
+  const payload = readRequiredRecord(record, field, path)
+  rejectFlatPayloadMembers(payload, path)
+  return {
+    declarationTypeText: readRequiredString(payload, 'declarationTypeText', `${path}.declarationTypeText`),
+    ...declarationRelationsPayloadProperty(payload, path),
+    members: readDeclarationMembers(payload, path),
+  }
+}
+
+function parseEnumDeclarationPayload(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): NonNullable<Extract<DtsTypeDeclarationModel, { declarationKind: 'enum' }>['enumDecl']> {
+  const payload = readRequiredRecord(record, field, path)
+  return {
+    members: readOptionalArray({
+      record: payload,
+      field: 'members',
+      path: `${path}.members`,
+      parseEntry: parseAttributeMeta,
+    }) ?? [],
+  }
+}
+
+function declarationRelationsPayloadProperty(
+  payload: Record<string, unknown>,
+  path: string,
+): { declarationRelations?: readonly ClassModelDeclarationRelation[] } {
+  const declarationRelations = readOptionalArray({
+    record: payload,
     field: 'declarationRelations',
     path: `${path}.declarationRelations`,
     parseEntry: parseDeclarationRelation,
   })
-  const shapeKind = readOptionalDeclarationKind({
-    record,
-    field: 'shapeKind',
-    path: `${path}.shapeKind`,
-    allowed: SHAPE_KINDS,
-  })
-  const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
-  const constructorMeta = readOptionalConstructorMeta(record, 'constructorMeta', `${path}.constructorMeta`)
-  return {
-    kind: readRequiredString(record, 'kind', `${path}.kind`),
-    className: readRequiredString(record, 'className', `${path}.className`),
-    jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
-    ...(declarationTypeText === undefined ? {} : { declarationTypeText }),
-    ...(declarationRelations === undefined ? {} : { declarationRelations }),
-    ...(shapeKind === undefined ? {} : { shapeKind }),
-    ...(provenance === undefined ? {} : { provenance }),
-    ...(constructorMeta === undefined ? {} : { constructorMeta }),
-    attributes: readRequiredArray({
-      record,
-      field: 'attributes',
-      path: `${path}.attributes`,
-      parseEntry: parseAttributeMeta,
-    }),
-    methods: readRequiredArray({
-      record,
-      field: 'methods',
-      path: `${path}.methods`,
-      parseEntry: parseMethodMeta,
-    }),
+  return declarationRelations === undefined ? {} : { declarationRelations }
+}
+
+function rejectFlatPayloadMembers(payload: Record<string, unknown>, path: string): void {
+  for (const field of ['attributes', 'methods']) {
+    if (Object.hasOwn(payload, field)) {
+      throw new Error(`${path}.${field} is a flat declaration payload field; use ${path}.members.${field}.`)
+    }
   }
+}
+
+function readDeclarationMembers(
+  payload: Record<string, unknown>,
+  path: string,
+): { attributes: readonly AttributeMeta[]; methods: readonly MethodMeta[] } {
+  const members = readRequiredRecord(payload, 'members', `${path}.members`)
+  return {
+    attributes: readPayloadAttributes(members, `${path}.members`),
+    methods: readPayloadMethods(members, `${path}.members`),
+  }
+}
+
+function readPayloadAttributes(payload: Record<string, unknown>, path: string): readonly AttributeMeta[] {
+  return readOptionalArray({
+    record: payload,
+    field: 'attributes',
+    path: `${path}.attributes`,
+    parseEntry: parseAttributeMeta,
+  }) ?? []
+}
+
+function readPayloadMethods(payload: Record<string, unknown>, path: string): readonly MethodMeta[] {
+  return readOptionalArray({
+    record: payload,
+    field: 'methods',
+    path: `${path}.methods`,
+    parseEntry: parseMethodMeta,
+  }) ?? []
+}
+
+function readRequiredRecord(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): Record<string, unknown> {
+  if (!Object.hasOwn(record, field)) throw new Error(`${path} is required.`)
+  return requireJsonRecord(record[field], path)
 }
 
 function parseDeclarationRelation(value: unknown, path: string): ClassModelDeclarationRelation {
@@ -323,10 +495,10 @@ function parseAttributeMeta(value: unknown, path: string): AttributeMeta {
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
   return {
     name: readRequiredString(record, 'name', `${path}.name`),
-    schema: readRequiredJsonSchema(record, 'schema', `${path}.schema`),
+    schema: readOptionalJsonSchema(record, 'schema', `${path}.schema`) ?? true,
     readable: readRequiredBoolean(record, 'readable', `${path}.readable`),
     writable: readRequiredBoolean(record, 'writable', `${path}.writable`),
-    jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
+    jsdoc: readOptionalString(record, 'jsdoc', `${path}.jsdoc`) ?? '',
     ...(provenance === undefined ? {} : { provenance }),
   }
 }
@@ -340,23 +512,23 @@ function parseMethodMeta(value: unknown, path: string): MethodMeta {
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
   const core: MethodMeta = {
     name: readRequiredString(record, 'name', `${path}.name`),
-    parameterStyle: readRequiredDeclarationKind({
+    parameterStyle: readOptionalDeclarationKind({
       record,
       field: 'parameterStyle',
       path: `${path}.parameterStyle`,
       allowed: METHOD_PARAMETER_STYLES,
-    }),
-    parameters: readRequiredArray({
+    }) ?? 'positional',
+    parameters: readOptionalArray({
       record,
       field: 'parameters',
       path: `${path}.parameters`,
       parseEntry: parseMethodParameterMeta,
-    }),
+    }) ?? [],
     ...(returnTypeMeta === undefined ? {} : { type: returnTypeMeta }),
     ...(paramsSchema === undefined ? {} : { paramsSchema }),
     ...(returnSchema === undefined ? {} : { returnSchema }),
     ...(takesContext === undefined ? {} : { takesContext }),
-    jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
+    jsdoc: readOptionalString(record, 'jsdoc', `${path}.jsdoc`) ?? '',
     ...(provenance === undefined ? {} : { provenance }),
   }
   const signatureText = readOptionalString(record, 'signatureText', `${path}.signatureText`)
@@ -543,20 +715,20 @@ function parseConstructorMeta(value: unknown, path: string): ConstructorMeta {
   const paramsSchema = readOptionalJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`)
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
   return {
-    jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
+    jsdoc: readOptionalString(record, 'jsdoc', `${path}.jsdoc`) ?? '',
     signatureText: readRequiredString(record, 'signatureText', `${path}.signatureText`),
-    parameterStyle: readRequiredDeclarationKind({
+    parameterStyle: readOptionalDeclarationKind({
       record,
       field: 'parameterStyle',
       path: `${path}.parameterStyle`,
       allowed: METHOD_PARAMETER_STYLES,
-    }),
-    parameters: readRequiredArray({
+    }) ?? 'positional',
+    parameters: readOptionalArray({
       record,
       field: 'parameters',
       path: `${path}.parameters`,
       parseEntry: parseMethodParameterMeta,
-    }),
+    }) ?? [],
     ...(paramsSchema === undefined ? {} : { paramsSchema }),
     ...(provenance === undefined ? {} : { provenance }),
   }
@@ -633,17 +805,6 @@ function readRequiredDeclarationKind<T extends string>(
   throw new Error(`${path} must be one of: ${[...allowed].join(', ')}`)
 }
 
-function readRequiredJsonSchema(
-  record: Record<string, unknown>,
-  field: string,
-  path: string,
-): AiJsonSchema {
-  if (!Object.hasOwn(record, field)) {
-    throw new Error(`${path} is required.`)
-  }
-  return parseJsonSchema(record[field], path)
-}
-
 function readOptionalJsonSchema(
   record: Record<string, unknown>,
   field: string,
@@ -673,22 +834,6 @@ function readRequiredStringKeyedRecord<T>(
   if (!Object.hasOwn(record, field)) {
     throw new Error(`${path} is required.`)
   }
-  const raw = record[field]
-  if (!isJsonRecord(raw)) {
-    throw new Error(`${path} must be an object.`)
-  }
-  const result: Record<string, T> = {}
-  for (const [key, entry] of Object.entries(raw)) {
-    result[key] = parseEntry(entry, `${path}.${key}`)
-  }
-  return result
-}
-
-function readOptionalStringKeyedRecord<T>(
-  command: StringKeyedRecordReadCommand<T>,
-): Record<string, T> | undefined {
-  const { record, field, path, parseEntry } = command
-  if (!Object.hasOwn(record, field)) return undefined
   const raw = record[field]
   if (!isJsonRecord(raw)) {
     throw new Error(`${path} must be an object.`)

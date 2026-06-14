@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/column-validation.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:column-validation",
     "sourcePath": "class-model-emit/packages/spark-data/src/column-validation.d.ts",
@@ -14,97 +14,166 @@
       "ColumnValidationRule"
     ]
   },
-  "symbols": [
-    "ValidationRuleType",
-    "ColumnValidationRule"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.002Z",
   "$defs": {
     "ValidationRuleType": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ValidationRuleType",
-      "description": "验证规则类型"
+      "enum": [
+        "required",
+        "type",
+        "minLength",
+        "maxLength",
+        "min",
+        "max",
+        "pattern"
+      ]
     },
     "ColumnValidationRule": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ColumnValidationRule",
-      "description": "框架无关的验证规则描述符"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "required",
+                "type"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "minLength",
+                "maxLength",
+                "min",
+                "max"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "type",
+            "message",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pattern"
+            },
+            "message": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "message",
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.002Z",
   "models": {
     "ValidationRuleType": {
-      "kind": "ValidationRuleType",
-      "className": "ValidationRuleType",
+      "name": "ValidationRuleType",
       "jsdoc": "验证规则类型",
-      "shapeKind": "type",
-      "declarationTypeText": "'required' | 'type' | 'minLength' | 'maxLength' | 'min' | 'max' | 'pattern'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'required'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'type'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'minLength'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'maxLength'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'min'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'max'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'pattern'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/column-validation.d.ts",
         "line": 17,
         "className": "ValidationRuleType",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'required' | 'type' | 'minLength' | 'maxLength' | 'min' | 'max' | 'pattern'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'required'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'type'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'minLength'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'maxLength'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'min'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'max'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'pattern'"
+          }
+        ],
+        "members": {}
+      }
     },
     "ColumnValidationRule": {
-      "kind": "ColumnValidationRule",
-      "className": "ColumnValidationRule",
+      "name": "ColumnValidationRule",
       "jsdoc": "框架无关的验证规则描述符",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    type: 'required' | 'type';\n    message: string;\n} | {\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n} | {\n    type: 'pattern';\n    message: string;\n    value: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "{\n    type: 'required' | 'type';\n    message: string;\n}"
-        },
-        {
-          "kind": "union",
-          "typeText": "{\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n}"
-        },
-        {
-          "kind": "union",
-          "typeText": "{\n    type: 'pattern';\n    message: string;\n    value: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/column-validation.d.ts",
         "line": 19,
         "className": "ColumnValidationRule",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    type: 'required' | 'type';\n    message: string;\n} | {\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n} | {\n    type: 'pattern';\n    message: string;\n    value: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "{\n    type: 'required' | 'type';\n    message: string;\n}"
+          },
+          {
+            "kind": "union",
+            "typeText": "{\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n}"
+          },
+          {
+            "kind": "union",
+            "typeText": "{\n    type: 'pattern';\n    message: string;\n    value: string;\n}"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }

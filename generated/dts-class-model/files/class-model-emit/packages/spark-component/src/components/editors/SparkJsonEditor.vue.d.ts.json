@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/editors/SparkJsonEditor",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
@@ -19,21 +19,20 @@
     "componentLayer": "editor",
     "componentDirectory": "editors"
   },
-  "symbols": [
-    "SparkJsonEditorMode",
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.519Z",
   "$defs": {
     "SparkJsonEditorMode": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "SparkJsonEditorMode",
-      "description": "JSON 编辑器支持的展示模式。"
+      "enum": [
+        "text",
+        "tree",
+        "table"
+      ]
     },
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。",
       "properties": {
         "modelValue": {
           "type": "string"
@@ -80,26 +79,18 @@
           "type": "boolean"
         },
         "schema": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "JSONSchema"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": [
+            "null",
+            "object"
+          ],
+          "title": "JSONSchema"
         },
         "schemaDefinitions": {
-          "anyOf": [
-            {
-              "type": "object",
-              "title": "JSONSchemaDefinitions"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": [
+            "null",
+            "object"
+          ],
+          "title": "JSONSchemaDefinitions"
         },
         "enableSchemaValidation": {
           "type": "boolean"
@@ -107,220 +98,152 @@
         "enableSchemaEnumRenderer": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.519Z",
   "models": {
     "SparkJsonEditorMode": {
-      "kind": "SparkJsonEditorMode",
-      "className": "SparkJsonEditorMode",
+      "name": "SparkJsonEditorMode",
       "jsdoc": "JSON 编辑器支持的展示模式。",
-      "shapeKind": "type",
-      "declarationTypeText": "'text' | 'tree' | 'table'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'text'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'tree'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'table'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
         "line": 3,
         "className": "SparkJsonEditorMode",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SparkJsonEditor",
         "componentType": "json-editor",
         "componentLevel": "infrastructure",
         "componentLayer": "editor",
         "componentDirectory": "editors"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'text' | 'tree' | 'table'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'text'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'tree'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'table'"
+          }
+        ],
+        "members": {}
+      }
     },
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 编辑模式 */\n    mode?: SparkJsonEditorMode;\n    /** 缩进空格数 */\n    indentation?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否显示主菜单栏 */\n    mainMenuBar?: boolean;\n    /** 是否显示导航栏 */\n    navigationBar?: boolean;\n    /** 是否显示状态栏 */\n    statusBar?: boolean;\n    /** 是否提示格式化 */\n    askToFormat?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: JSONSchema | null;\n    /** JSON Schema 定义引用 */\n    schemaDefinitions?: JSONSchemaDefinitions | null;\n    /** 是否启用 Schema 校验 */\n    enableSchemaValidation?: boolean;\n    /** 是否启用 Schema 枚举渲染 */\n    enableSchemaEnumRenderer?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
         "line": 5,
         "className": "Props",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SparkJsonEditor",
         "componentType": "json-editor",
         "componentLevel": "infrastructure",
         "componentLayer": "editor",
         "componentDirectory": "editors"
       },
-      "attributes": [
-        {
-          "name": "modelValue",
-          "jsdoc": "JSON 字符串内容",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "readOnly",
-          "jsdoc": "是否只读",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "height",
-          "jsdoc": "编辑器高度",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "mode",
-          "jsdoc": "编辑模式",
-          "schema": {
-            "$ref": "#/$defs/SparkJsonEditorMode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "indentation",
-          "jsdoc": "缩进空格数",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "tabSize",
-          "jsdoc": "Tab 缩进空格数",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "mainMenuBar",
-          "jsdoc": "是否显示主菜单栏",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "navigationBar",
-          "jsdoc": "是否显示导航栏",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "statusBar",
-          "jsdoc": "是否显示状态栏",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "askToFormat",
-          "jsdoc": "是否提示格式化",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "schema",
-          "jsdoc": "JSON Schema 校验规则",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "JSONSchema"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "schemaDefinitions",
-          "jsdoc": "JSON Schema 定义引用",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "JSONSchemaDefinitions"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "enableSchemaValidation",
-          "jsdoc": "是否启用 Schema 校验",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "enableSchemaEnumRenderer",
-          "jsdoc": "是否启用 Schema 枚举渲染",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 编辑模式 */\n    mode?: SparkJsonEditorMode;\n    /** 缩进空格数 */\n    indentation?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否显示主菜单栏 */\n    mainMenuBar?: boolean;\n    /** 是否显示导航栏 */\n    navigationBar?: boolean;\n    /** 是否显示状态栏 */\n    statusBar?: boolean;\n    /** 是否提示格式化 */\n    askToFormat?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: JSONSchema | null;\n    /** JSON Schema 定义引用 */\n    schemaDefinitions?: JSONSchemaDefinitions | null;\n    /** 是否启用 Schema 校验 */\n    enableSchemaValidation?: boolean;\n    /** 是否启用 Schema 枚举渲染 */\n    enableSchemaEnumRenderer?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "modelValue",
+              "jsdoc": "JSON 字符串内容",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "readOnly",
+              "jsdoc": "是否只读",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "height",
+              "jsdoc": "编辑器高度",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "mode",
+              "jsdoc": "编辑模式",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "indentation",
+              "jsdoc": "缩进空格数",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tabSize",
+              "jsdoc": "Tab 缩进空格数",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "mainMenuBar",
+              "jsdoc": "是否显示主菜单栏",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "navigationBar",
+              "jsdoc": "是否显示导航栏",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "statusBar",
+              "jsdoc": "是否显示状态栏",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "askToFormat",
+              "jsdoc": "是否提示格式化",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schema",
+              "jsdoc": "JSON Schema 校验规则",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schemaDefinitions",
+              "jsdoc": "JSON Schema 定义引用",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enableSchemaValidation",
+              "jsdoc": "是否启用 Schema 校验",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enableSchemaEnumRenderer",
+              "jsdoc": "是否启用 Schema 枚举渲染",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

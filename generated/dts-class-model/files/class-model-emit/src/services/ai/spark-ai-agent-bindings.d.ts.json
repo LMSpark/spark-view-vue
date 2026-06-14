@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/ai/spark-ai-agent-bindings.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/ai/spark-ai-agent-bindings",
     "sourcePath": "class-model-emit/src/services/ai/spark-ai-agent-bindings.d.ts",
@@ -11,7 +11,7 @@
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
-  "symbols": [],
+  "$defs": {},
   "generatedAt": "2026-06-14T03:35:12.871Z",
   "models": {}
 }

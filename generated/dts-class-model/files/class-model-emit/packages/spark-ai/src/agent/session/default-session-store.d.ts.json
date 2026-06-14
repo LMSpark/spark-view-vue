@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/session/default-session-store",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
@@ -14,101 +14,28 @@
       "DefaultAiAgentSessionStore"
     ]
   },
-  "symbols": [
-    "DefaultAiAgentSessionStoreOptions",
-    "DefaultAiAgentSessionStore"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.906Z",
   "$defs": {
     "DefaultAiAgentSessionStoreOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DefaultAiAgentSessionStoreOptions",
-      "description": "存储选项：允许注入自定义时间源（便于测试）"
+      "$defs": {
+        "method.now.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.now.return": {
+          "type": "number"
+        }
+      }
     },
     "DefaultAiAgentSessionStore": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DefaultAiAgentSessionStore",
-      "description": "Default Ai Agent Session Store 的语义模型。"
-    }
-  },
-  "models": {
-    "DefaultAiAgentSessionStoreOptions": {
-      "kind": "DefaultAiAgentSessionStoreOptions",
-      "className": "DefaultAiAgentSessionStoreOptions",
-      "jsdoc": "存储选项：允许注入自定义时间源（便于测试）",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    now?: () => number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    now?: () => number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
-      "provenance": {
-        "file": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
-        "line": 10,
-        "className": "DefaultAiAgentSessionStoreOptions",
-        "declarationKind": "type"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "now",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        }
-      ]
-    },
-    "DefaultAiAgentSessionStore": {
-      "kind": "DefaultAiAgentSessionStore",
-      "className": "DefaultAiAgentSessionStore",
-      "jsdoc": "Default Ai Agent Session Store 的语义模型。",
-      "shapeKind": "class",
-      "declarationRelations": [
-        {
-          "kind": "extends",
-          "typeText": "AiAgentSessionStore",
-          "targetName": "AiAgentSessionStore"
-        }
-      ],
-      "provenance": {
-        "file": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
-        "line": 14,
-        "className": "DefaultAiAgentSessionStore",
-        "declarationKind": "class"
-      },
-      "constructorMeta": {
-        "jsdoc": "创建 Default Ai Agent Session Store 实例。",
-        "signatureText": "constructor(options?: DefaultAiAgentSessionStoreOptions)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "options",
-            "type": {
-              "type": "reference",
-              "name": "DefaultAiAgentSessionStoreOptions",
-              "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts"
-            },
-            "flags": {
-              "isOptional": true
-            }
-          }
-        ],
-        "paramsSchema": {
+      "$defs": {
+        "constructor.params": {
           "type": "object",
           "properties": {
             "options": {
@@ -116,265 +43,336 @@
             }
           },
           "additionalProperties": false
-        }
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "startSession",
-          "jsdoc": "启动会话：创建新记录或复用已有记录",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
+        },
+        "method.startSession.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
           },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
-              }
+          "additionalProperties": false
+        },
+        "method.startSession.return": {
+          "$ref": "session-types.d.ts.json#/$defs/AiAgentSessionRecord"
+        },
+        "method.stopSession.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
             },
-            "additionalProperties": false
+            "reason": {
+              "type": "string"
+            }
           },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentSessionRecord"
+          "additionalProperties": false
+        },
+        "method.stopSession.return": {
+          "anyOf": [
+            {
+              "$ref": "session-types.d.ts.json#/$defs/AiAgentSessionRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.getSession.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getSession.return": {
+          "anyOf": [
+            {
+              "$ref": "session-types.d.ts.json#/$defs/AiAgentSessionRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.listSessions.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.listSessions.return": {
+          "type": "array",
+          "items": {
+            "$ref": "session-types.d.ts.json#/$defs/AiAgentSessionRecord"
           }
         },
-        {
-          "name": "stopSession",
-          "jsdoc": "停止会话",
-          "parameterStyle": "positional",
-          "parameters": [
+        "method.getSessionHistory.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getSessionHistory.return": {
+          "type": "array",
+          "items": {
+            "$ref": "session-types.d.ts.json#/$defs/AiAgentHistoryEntry"
+          }
+        },
+        "method.appendMessage.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentAppendMessageOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendMessage.return": {
+          "$ref": "session-types.d.ts.json#/$defs/AiAgentMessageHistoryEntry"
+        },
+        "method.appendFunctionCall.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "session-types.d.ts.json#/$defs/AiAgentAppendFunctionCallOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendFunctionCall.return": {
+          "$ref": "session-types.d.ts.json#/$defs/AiAgentFunctionCallHistoryEntry"
+        }
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:48:50.906Z",
+  "models": {
+    "DefaultAiAgentSessionStoreOptions": {
+      "name": "DefaultAiAgentSessionStoreOptions",
+      "jsdoc": "存储选项：允许注入自定义时间源（便于测试）",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+        "line": 10,
+        "className": "DefaultAiAgentSessionStoreOptions",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    now?: () => number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    now?: () => number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "reason",
+              "name": "now",
               "type": {
                 "type": "intrinsic",
-                "name": "string"
+                "name": "number"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "DefaultAiAgentSessionStore": {
+      "name": "DefaultAiAgentSessionStore",
+      "jsdoc": "Default Ai Agent Session Store 的语义模型。",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+        "line": 14,
+        "className": "DefaultAiAgentSessionStore",
+        "declarationKind": "class"
+      },
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 Default Ai Agent Session Store 实例。",
+          "signatureText": "constructor(options?: DefaultAiAgentSessionStoreOptions)",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "DefaultAiAgentSessionStoreOptions",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/default-session-store.d.ts"
               },
               "flags": {
                 "isOptional": true
               }
             }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
-              },
-              "reason": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "AiAgentSessionRecord"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+          ]
         },
-        {
-          "name": "getSession",
-          "jsdoc": "获取会话记录",
-          "parameterStyle": "positional",
-          "parameters": [
+        "declarationRelations": [
+          {
+            "kind": "extends",
+            "typeText": "AiAgentSessionStore",
+            "targetName": "AiAgentSessionStore"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "context",
+              "name": "startSession",
+              "jsdoc": "启动会话：创建新记录或复用已有记录",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
+                "name": "AiAgentSessionRecord",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "AiAgentSessionRecord"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "listSessions",
-          "jsdoc": "列出所有会话（按 startedAt 升序）",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "readonly AiAgentSessionRecord[]"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array"
-          }
-        },
-        {
-          "name": "getSessionHistory",
-          "jsdoc": "获取会话历史（返回深拷贝）",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "context",
+              "name": "stopSession",
+              "jsdoc": "停止会话",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                },
+                {
+                  "name": "reason",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentSessionRecord",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "getSession",
+              "jsdoc": "获取会话记录",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentSessionRecord",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "listSessions",
+              "jsdoc": "列出所有会话（按 startedAt 升序）",
+              "type": {
+                "type": "unknown",
+                "name": "readonly AiAgentSessionRecord[]"
+              }
+            },
+            {
+              "name": "getSessionHistory",
+              "jsdoc": "获取会话历史（返回深拷贝）",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "unknown",
+                "name": "readonly AiAgentHistoryEntry[]"
+              }
+            },
+            {
+              "name": "appendMessage",
+              "jsdoc": "追加消息条目",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentAppendMessageOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "unknown",
-            "name": "readonly AiAgentHistoryEntry[]"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
+                "name": "AiAgentMessageHistoryEntry",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array"
-          }
-        },
-        {
-          "name": "appendMessage",
-          "jsdoc": "追加消息条目",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "options",
+              "name": "appendFunctionCall",
+              "jsdoc": "追加工具调用条目",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentAppendFunctionCallOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
+                "name": "AiAgentFunctionCallHistoryEntry",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts"
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "type": "object",
-                "title": "AiAgentAppendMessageOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentMessageHistoryEntry"
-          }
-        },
-        {
-          "name": "appendFunctionCall",
-          "jsdoc": "追加工具调用条目",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "type": "object",
-                "title": "AiAgentAppendFunctionCallOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentFunctionCallHistoryEntry"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

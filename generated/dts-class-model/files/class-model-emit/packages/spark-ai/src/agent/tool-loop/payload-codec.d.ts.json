@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/tool-loop/payload-codec",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
@@ -13,110 +13,31 @@
       "ToolArgsParseError"
     ]
   },
-  "symbols": [
-    "ToolArgsParseError"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.913Z",
   "$defs": {
     "ToolArgsParseError": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ToolArgsParseError",
-      "description": "Tool Args Parse Error 的错误信息。",
       "properties": {
         "code": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "TOOL_ARGS_INVALID_JSON"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "TOOL_ARGS_NOT_OBJECT"
-              ]
-            }
+          "enum": [
+            "TOOL_ARGS_INVALID_JSON",
+            "TOOL_ARGS_NOT_OBJECT"
           ]
         },
         "raw": {
           "type": "string"
         }
-      }
-    }
-  },
-  "models": {
-    "ToolArgsParseError": {
-      "kind": "ToolArgsParseError",
-      "className": "ToolArgsParseError",
-      "jsdoc": "Tool Args Parse Error 的错误信息。",
-      "shapeKind": "class",
-      "declarationRelations": [
-        {
-          "kind": "extends",
-          "typeText": "Error",
-          "targetName": "Error"
-        }
-      ],
-      "provenance": {
-        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
-        "line": 11,
-        "className": "ToolArgsParseError",
-        "declarationKind": "class"
       },
-      "constructorMeta": {
-        "jsdoc": "创建 Tool Args Parse Error 实例。",
-        "signatureText": "constructor(\n    /** 参数解析失败的稳定错误码。 */\n    code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT', message: string, \n    /** LLM 返回的原始 function.arguments 字符串。 */\n    raw: string)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "code",
-            "type": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "literal",
-                  "value": "TOOL_ARGS_INVALID_JSON"
-                },
-                {
-                  "type": "literal",
-                  "value": "TOOL_ARGS_NOT_OBJECT"
-                }
-              ]
-            }
-          },
-          {
-            "name": "message",
-            "type": {
-              "type": "intrinsic",
-              "name": "string"
-            }
-          },
-          {
-            "name": "raw",
-            "type": {
-              "type": "intrinsic",
-              "name": "string"
-            }
-          }
-        ],
-        "paramsSchema": {
+      "additionalProperties": false,
+      "$defs": {
+        "constructor.params": {
           "type": "object",
           "properties": {
             "code": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "enum": [
-                    "TOOL_ARGS_INVALID_JSON"
-                  ]
-                },
-                {
-                  "type": "string",
-                  "enum": [
-                    "TOOL_ARGS_NOT_OBJECT"
-                  ]
-                }
+              "enum": [
+                "TOOL_ARGS_INVALID_JSON",
+                "TOOL_ARGS_NOT_OBJECT"
               ]
             },
             "message": {
@@ -128,41 +49,82 @@
           },
           "additionalProperties": false
         }
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:48:50.913Z",
+  "models": {
+    "ToolArgsParseError": {
+      "name": "ToolArgsParseError",
+      "jsdoc": "Tool Args Parse Error 的错误信息。",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+        "line": 11,
+        "className": "ToolArgsParseError",
+        "declarationKind": "class"
       },
-      "attributes": [
-        {
-          "name": "code",
-          "jsdoc": "参数解析失败的稳定错误码。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "TOOL_ARGS_INVALID_JSON"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "TOOL_ARGS_NOT_OBJECT"
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 Tool Args Parse Error 实例。",
+          "signatureText": "constructor(\n    /** 参数解析失败的稳定错误码。 */\n    code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT', message: string, \n    /** LLM 返回的原始 function.arguments 字符串。 */\n    raw: string)",
+          "parameters": [
+            {
+              "name": "code",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "literal",
+                    "value": "TOOL_ARGS_INVALID_JSON"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "TOOL_ARGS_NOT_OBJECT"
+                  }
                 ]
               }
-            ]
-          },
-          "readable": true,
-          "writable": false
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "raw",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ]
         },
-        {
-          "name": "raw",
-          "jsdoc": "LLM 返回的原始 function.arguments 字符串。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+        "declarationRelations": [
+          {
+            "kind": "extends",
+            "typeText": "Error",
+            "targetName": "Error"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "code",
+              "jsdoc": "参数解析失败的稳定错误码。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "raw",
+              "jsdoc": "LLM 返回的原始 function.arguments 字符串。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/zones/RendererEditor.types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/zones/RendererEditor.types",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/zones/RendererEditor.types.d.ts",
@@ -18,21 +18,14 @@
     "componentLayer": "zone-container",
     "componentDirectory": "containers/zones"
   },
-  "symbols": [
-    "REditorProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.473Z",
   "$defs": {
     "REditorProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "REditorProps",
-      "description": "`RendererEditor` 运行时公开属性。",
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "r-editor"
-          ]
+          "const": "r-editor"
         },
         "id": {
           "type": "string"
@@ -45,8 +38,7 @@
           }
         },
         "position": {
-          "type": "object",
-          "title": "ToolbarPosition"
+          "$ref": "../runtime/container-ui.d.ts.json#/$defs/ToolbarPosition"
         },
         "width": {
           "anyOf": [
@@ -61,110 +53,81 @@
         "class": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.473Z",
   "models": {
     "REditorProps": {
-      "kind": "REditorProps",
-      "className": "REditorProps",
+      "name": "REditorProps",
       "jsdoc": "`RendererEditor` 运行时公开属性。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 组件类型固定为 `r-editor`。 */\n    type?: 'r-editor';\n    /** 节点标识。 */\n    id?: string;\n    /** 编辑区内容节点列表。 */\n    children?: SparkNode[];\n    /** 编辑区停靠位置 */\n    position?: ToolbarPosition;\n    /** 编辑区宽度 */\n    width?: string | number;\n    /** 编辑区附加 class */\n    class?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 组件类型固定为 `r-editor`。 */\n    type?: 'r-editor';\n    /** 节点标识。 */\n    id?: string;\n    /** 编辑区内容节点列表。 */\n    children?: SparkNode[];\n    /** 编辑区停靠位置 */\n    position?: ToolbarPosition;\n    /** 编辑区宽度 */\n    width?: string | number;\n    /** 编辑区附加 class */\n    class?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/zones/RendererEditor.types.d.ts",
         "line": 13,
         "className": "REditorProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererEditor",
         "componentType": "r-editor",
         "componentLevel": "container",
         "componentLayer": "zone-container",
         "componentDirectory": "containers/zones"
       },
-      "attributes": [
-        {
-          "name": "type",
-          "jsdoc": "组件类型固定为 `r-editor`。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "r-editor"
-            ]
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 组件类型固定为 `r-editor`。 */\n    type?: 'r-editor';\n    /** 节点标识。 */\n    id?: string;\n    /** 编辑区内容节点列表。 */\n    children?: SparkNode[];\n    /** 编辑区停靠位置 */\n    position?: ToolbarPosition;\n    /** 编辑区宽度 */\n    width?: string | number;\n    /** 编辑区附加 class */\n    class?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "id",
-          "jsdoc": "节点标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "children",
-          "jsdoc": "编辑区内容节点列表。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "SparkNode"
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 组件类型固定为 `r-editor`。 */\n    type?: 'r-editor';\n    /** 节点标识。 */\n    id?: string;\n    /** 编辑区内容节点列表。 */\n    children?: SparkNode[];\n    /** 编辑区停靠位置 */\n    position?: ToolbarPosition;\n    /** 编辑区宽度 */\n    width?: string | number;\n    /** 编辑区附加 class */\n    class?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "type",
+              "jsdoc": "组件类型固定为 `r-editor`。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "id",
+              "jsdoc": "节点标识。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "children",
+              "jsdoc": "编辑区内容节点列表。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "position",
+              "jsdoc": "编辑区停靠位置",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "width",
+              "jsdoc": "编辑区宽度",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "class",
+              "jsdoc": "编辑区附加 class",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "position",
-          "jsdoc": "编辑区停靠位置",
-          "schema": {
-            "type": "object",
-            "title": "ToolbarPosition"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "width",
-          "jsdoc": "编辑区宽度",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "class",
-          "jsdoc": "编辑区附加 class",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

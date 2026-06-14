@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/page-design/page-design-business.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/page-design/page-design-business",
     "sourcePath": "class-model-emit/src/services/page-design/page-design-business.d.ts",
@@ -15,17 +15,11 @@
       "EnsurePageDesignBusinessOptions"
     ]
   },
-  "symbols": [
-    "PageDesignRunInput",
-    "ResolvePageDesignPlanningContextOptions",
-    "EnsurePageDesignBusinessOptions"
-  ],
-  "generatedAt": "2026-06-13T23:11:15.498Z",
   "$defs": {
     "PageDesignRunInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignRunInput",
-      "description": "Page Design Run Input 的输入数据。",
       "properties": {
         "pageId": {
           "type": "string"
@@ -46,12 +40,10 @@
           "type": "string"
         },
         "mode": {
-          "type": "object",
-          "title": "PageDesignRunMode"
+          "$ref": "page-design-gates.d.ts.json#/$defs/PageDesignRunMode"
         },
         "allowedOperations": {
-          "type": "object",
-          "title": "PageDesignAllowedOperations"
+          "$ref": "page-design-gates.d.ts.json#/$defs/PageDesignAllowedOperations"
         },
         "preserveExistingInteractions": {
           "type": "boolean"
@@ -59,235 +51,218 @@
         "strictImplGate": {
           "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "pageId",
+        "description",
+        "effectiveDescription"
+      ],
+      "additionalProperties": false
     },
     "ResolvePageDesignPlanningContextOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ResolvePageDesignPlanningContextOptions",
-      "description": "Resolve Page Design Planning Context Options 的调用配置。",
       "properties": {
         "fallbackDescription": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "EnsurePageDesignBusinessOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EnsurePageDesignBusinessOptions",
-      "description": "Ensure Page Design Business Options 的调用配置。",
       "properties": {
         "host": {
-          "type": "object",
-          "title": "AiAgentHost"
+          "$ref": "../../../packages/spark-ai/src/agent/business/ai-host.d.ts.json#/$defs/AiAgentHost"
         },
         "knowledge": {
+          "$ref": "../../../packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts.json#/$defs/ClassModelKnowledgeProvider"
+        }
+      },
+      "required": [
+        "host"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.getPageDesignEditor.params": {
           "type": "object",
-          "title": "ClassModelKnowledgeProvider"
+          "properties": {
+            "context": {
+              "type": "object",
+              "properties": {
+                "moduleInstanceId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "moduleInstanceId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getPageDesignEditor.return": {
+          "$ref": "../../../packages/spark-project-model/src/project/project-workspace.d.ts.json#/$defs/ProjectWorkspace"
         }
       }
     }
   },
+  "generatedAt": "2026-06-13T23:11:15.498Z",
   "models": {
     "PageDesignRunInput": {
-      "kind": "PageDesignRunInput",
-      "className": "PageDesignRunInput",
+      "name": "PageDesignRunInput",
       "jsdoc": "Page Design Run Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** description 字段。 */\n    description: string;\n    /** readPlanningProjection 的 effectiveDescription；runner 必填。 */\n    effectiveDescription: string;\n    /** 项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。 */\n    projectId?: string;\n    /** planning Title 字段。 */\n    planningTitle?: string;\n    /** planning Path 路径。 */\n    planningPath?: string;\n    /** mode 字段。 */\n    mode?: PageDesignRunMode;\n    /** allowed Operations 字段。 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** preserve Existing Interactions 字段。 */\n    preserveExistingInteractions?: boolean;\n    /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */\n    strictImplGate?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-business.d.ts",
         "line": 23,
         "className": "PageDesignRunInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "pageId",
-          "jsdoc": "page Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "description 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "effectiveDescription",
-          "jsdoc": "readPlanningProjection 的 effectiveDescription；runner 必填。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "planningTitle",
-          "jsdoc": "planning Title 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "planningPath",
-          "jsdoc": "planning Path 路径。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "mode",
-          "jsdoc": "mode 字段。",
-          "schema": {
-            "type": "object",
-            "title": "PageDesignRunMode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "allowedOperations",
-          "jsdoc": "allowed Operations 字段。",
-          "schema": {
-            "type": "object",
-            "title": "PageDesignAllowedOperations"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "preserveExistingInteractions",
-          "jsdoc": "preserve Existing Interactions 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "strictImplGate",
-          "jsdoc": "未声明 implGate 时 fail-fast；生产 runner 建议 true。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** description 字段。 */\n    description: string;\n    /** readPlanningProjection 的 effectiveDescription；runner 必填。 */\n    effectiveDescription: string;\n    /** 项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。 */\n    projectId?: string;\n    /** planning Title 字段。 */\n    planningTitle?: string;\n    /** planning Path 路径。 */\n    planningPath?: string;\n    /** mode 字段。 */\n    mode?: PageDesignRunMode;\n    /** allowed Operations 字段。 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** preserve Existing Interactions 字段。 */\n    preserveExistingInteractions?: boolean;\n    /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */\n    strictImplGate?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "pageId",
+              "jsdoc": "page Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "description",
+              "jsdoc": "description 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "effectiveDescription",
+              "jsdoc": "readPlanningProjection 的 effectiveDescription；runner 必填。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "projectId",
+              "jsdoc": "项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "planningTitle",
+              "jsdoc": "planning Title 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "planningPath",
+              "jsdoc": "planning Path 路径。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "mode",
+              "jsdoc": "mode 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "allowedOperations",
+              "jsdoc": "allowed Operations 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "preserveExistingInteractions",
+              "jsdoc": "preserve Existing Interactions 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "strictImplGate",
+              "jsdoc": "未声明 implGate 时 fail-fast；生产 runner 建议 true。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ResolvePageDesignPlanningContextOptions": {
-      "kind": "ResolvePageDesignPlanningContextOptions",
-      "className": "ResolvePageDesignPlanningContextOptions",
+      "name": "ResolvePageDesignPlanningContextOptions",
       "jsdoc": "Resolve Page Design Planning Context Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。 */\n    fallbackDescription?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-business.d.ts",
         "line": 46,
         "className": "ResolvePageDesignPlanningContextOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "fallbackDescription",
-          "jsdoc": "仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。 */\n    fallbackDescription?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "fallbackDescription",
+              "jsdoc": "仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "EnsurePageDesignBusinessOptions": {
-      "kind": "EnsurePageDesignBusinessOptions",
-      "className": "EnsurePageDesignBusinessOptions",
+      "name": "EnsurePageDesignBusinessOptions",
       "jsdoc": "Ensure Page Design Business Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 宿主运行时信息。 */\n    host: AiAgentHost;\n    /** get Page Design Editor 回调。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n    /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-business.d.ts",
         "line": 51,
         "className": "EnsurePageDesignBusinessOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "host",
-          "jsdoc": "宿主运行时信息。",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentHost"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "knowledge",
-          "jsdoc": "Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。",
-          "schema": {
-            "type": "object",
-            "title": "ClassModelKnowledgeProvider"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "getPageDesignEditor",
-          "jsdoc": "get Page Design Editor 回调。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 宿主运行时信息。 */\n    host: AiAgentHost;\n    /** get Page Design Editor 回调。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n    /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "context",
-              "type": {
-                "type": "unknown",
-                "name": "{\n        moduleInstanceId: string;\n    }"
-              }
+              "name": "host",
+              "jsdoc": "宿主运行时信息。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "knowledge",
+              "jsdoc": "Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "reference",
-            "name": "ProjectWorkspace"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object"
+          "methods": [
+            {
+              "name": "getPageDesignEditor",
+              "jsdoc": "get Page Design Editor 回调。",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "unknown",
+                    "name": "{\n        moduleInstanceId: string;\n    }"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "ProjectWorkspace"
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "ProjectWorkspace"
-          }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

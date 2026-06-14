@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/RendererTree/types",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/types.d.ts",
@@ -18,331 +18,48 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "RendererTreeApi"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.400Z",
   "$defs": {
     "RendererTreeApi": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererTreeApi",
-      "description": "Renderer Tree Api 的语义模型。"
-    }
-  },
-  "models": {
-    "RendererTreeApi": {
-      "kind": "RendererTreeApi",
-      "className": "RendererTreeApi",
-      "jsdoc": "Renderer Tree Api 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "BaseCrudContainerApi & {\n    getTreeData(): DataRow[];\n    getNativeTree(): unknown;\n    getCurrentNode(): DataRow | null;\n    setCurrentKey(key: string | number): void;\n    expandToNode(key: string | number): Promise<void>;\n    filter(keyword: string): void;\n    getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): DataRow[];\n    getCheckedKeys(): Array<string | number>;\n    setCheckedKeys(keys: Array<string | number>): void;\n    moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>;\n    appendNode(parentKey: string | number | null, nodeData: DataRow): void;\n    insertBefore(refKey: string | number, nodeData: DataRow): void;\n    insertAfter(refKey: string | number, nodeData: DataRow): void;\n    updateNode(key: string | number, patch: Partial<DataRow>): boolean;\n    removeNode(key: string | number): boolean;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "BaseCrudContainerApi",
-          "targetName": "BaseCrudContainerApi"
+      "$defs": {
+        "method.getTreeData.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
         },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    getTreeData(): DataRow[];\n    getNativeTree(): unknown;\n    getCurrentNode(): DataRow | null;\n    setCurrentKey(key: string | number): void;\n    expandToNode(key: string | number): Promise<void>;\n    filter(keyword: string): void;\n    getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): DataRow[];\n    getCheckedKeys(): Array<string | number>;\n    setCheckedKeys(keys: Array<string | number>): void;\n    moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>;\n    appendNode(parentKey: string | number | null, nodeData: DataRow): void;\n    insertBefore(refKey: string | number, nodeData: DataRow): void;\n    insertAfter(refKey: string | number, nodeData: DataRow): void;\n    updateNode(key: string | number, patch: Partial<DataRow>): boolean;\n    removeNode(key: string | number): boolean;\n}"
-        }
-      ],
-      "provenance": {
-        "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/types.d.ts",
-        "line": 10,
-        "className": "RendererTreeApi",
-        "declarationKind": "type",
-        "componentName": "RendererTree",
-        "componentType": "r-tree",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getTreeData",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "DataRow"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "DataRow"
-            }
+        "method.getTreeData.return": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
           }
         },
-        {
-          "name": "getNativeTree",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+        "method.getNativeTree.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
         },
-        {
-          "name": "getCurrentNode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataRow"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataRow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+        "method.getNativeTree.return": true,
+        "method.getCurrentNode.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
         },
-        {
-          "name": "setCurrentKey",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        "method.getCurrentNode.return": {
+          "anyOf": [
             {
-              "name": "key",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "expandToNode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "key",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "filter",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "keyword",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "keyword": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getCheckedNodes",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "leafOnly",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              },
-              "flags": {
-                "isOptional": true
-              }
+              "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
             },
             {
-              "name": "includeHalfChecked",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              },
-              "flags": {
-                "isOptional": true
-              }
+              "type": "null"
             }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "DataRow"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "leafOnly": {
-                "type": "boolean"
-              },
-              "includeHalfChecked": {
-                "type": "boolean"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "DataRow"
-            }
-          }
+          ]
         },
-        {
-          "name": "getCheckedKeys",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "intrinsic",
-                  "name": "string"
-                },
-                {
-                  "type": "intrinsic",
-                  "name": "number"
-                }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
+        "method.setCurrentKey.params": {
+          "type": "object",
+          "properties": {
+            "key": {
               "anyOf": [
                 {
                   "type": "string"
@@ -352,15 +69,410 @@
                 }
               ]
             }
+          },
+          "additionalProperties": false
+        },
+        "method.setCurrentKey.return": true,
+        "method.expandToNode.params": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.expandToNode.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.filter.params": {
+          "type": "object",
+          "properties": {
+            "keyword": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.filter.return": true,
+        "method.getCheckedNodes.params": {
+          "type": "object",
+          "properties": {
+            "leafOnly": {
+              "type": "boolean"
+            },
+            "includeHalfChecked": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getCheckedNodes.return": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
           }
         },
-        {
-          "name": "setCheckedKeys",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        "method.getCheckedKeys.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCheckedKeys.return": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "method.setCheckedKeys.params": {
+          "type": "object",
+          "properties": {
+            "keys": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setCheckedKeys.return": true,
+        "method.moveNode.params": {
+          "type": "object",
+          "properties": {
+            "nodeId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "newParentId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "index": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.moveNode.return": {
+          "type": "object",
+          "title": "Promise<DataRow | null>"
+        },
+        "method.appendNode.params": {
+          "type": "object",
+          "properties": {
+            "parentKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "nodeData": {
+              "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.appendNode.return": true,
+        "method.insertBefore.params": {
+          "type": "object",
+          "properties": {
+            "refKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "nodeData": {
+              "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.insertBefore.return": true,
+        "method.insertAfter.params": {
+          "type": "object",
+          "properties": {
+            "refKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "nodeData": {
+              "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.insertAfter.return": true,
+        "method.updateNode.params": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "patch": {
+              "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.updateNode.return": {
+          "type": "boolean"
+        },
+        "method.removeNode.params": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.removeNode.return": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:38:13.400Z",
+  "models": {
+    "RendererTreeApi": {
+      "name": "RendererTreeApi",
+      "jsdoc": "Renderer Tree Api 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/types.d.ts",
+        "line": 10,
+        "className": "RendererTreeApi",
+        "declarationKind": "typeAlias",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "typeAlias": {
+        "declarationTypeText": "BaseCrudContainerApi & {\n    getTreeData(): DataRow[];\n    getNativeTree(): unknown;\n    getCurrentNode(): DataRow | null;\n    setCurrentKey(key: string | number): void;\n    expandToNode(key: string | number): Promise<void>;\n    filter(keyword: string): void;\n    getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): DataRow[];\n    getCheckedKeys(): Array<string | number>;\n    setCheckedKeys(keys: Array<string | number>): void;\n    moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>;\n    appendNode(parentKey: string | number | null, nodeData: DataRow): void;\n    insertBefore(refKey: string | number, nodeData: DataRow): void;\n    insertAfter(refKey: string | number, nodeData: DataRow): void;\n    updateNode(key: string | number, patch: Partial<DataRow>): boolean;\n    removeNode(key: string | number): boolean;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "BaseCrudContainerApi",
+            "targetName": "BaseCrudContainerApi"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "{\n    getTreeData(): DataRow[];\n    getNativeTree(): unknown;\n    getCurrentNode(): DataRow | null;\n    setCurrentKey(key: string | number): void;\n    expandToNode(key: string | number): Promise<void>;\n    filter(keyword: string): void;\n    getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): DataRow[];\n    getCheckedKeys(): Array<string | number>;\n    setCheckedKeys(keys: Array<string | number>): void;\n    moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>;\n    appendNode(parentKey: string | number | null, nodeData: DataRow): void;\n    insertBefore(refKey: string | number, nodeData: DataRow): void;\n    insertAfter(refKey: string | number, nodeData: DataRow): void;\n    updateNode(key: string | number, patch: Partial<DataRow>): boolean;\n    removeNode(key: string | number): boolean;\n}"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "keys",
+              "name": "getTreeData",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            },
+            {
+              "name": "getNativeTree",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "getCurrentNode",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "setCurrentKey",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "expandToNode",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "filter",
+              "parameters": [
+                {
+                  "name": "keyword",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "getCheckedNodes",
+              "parameters": [
+                {
+                  "name": "leafOnly",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                },
+                {
+                  "name": "includeHalfChecked",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            },
+            {
+              "name": "getCheckedKeys",
               "type": {
                 "type": "array",
                 "elementType": {
@@ -377,423 +489,271 @@
                   ]
                 }
               }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "keys": {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
+            },
+            {
+              "name": "setCheckedKeys",
+              "parameters": [
+                {
+                  "name": "keys",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "union",
+                      "types": [
+                        {
+                          "type": "intrinsic",
+                          "name": "string"
+                        },
+                        {
+                          "type": "intrinsic",
+                          "name": "number"
+                        }
+                      ]
                     }
-                  ]
+                  }
                 }
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "moveNode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "nodeId",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "newParentId",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            {
-              "name": "index",
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "number"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "DataRow"
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
-                  }
-                ]
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "nodeId": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              },
-              "newParentId": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "index": {
-                "type": "number"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<DataRow | null>"
-          }
-        },
-        {
-          "name": "appendNode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "parentKey",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
+              "name": "moveNode",
+              "parameters": [
+                {
+                  "name": "nodeId",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "newParentId",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "index",
+                  "type": {
                     "type": "intrinsic",
                     "name": "number"
                   },
-                  {
-                    "type": "literal",
-                    "value": null
+                  "flags": {
+                    "isOptional": true
                   }
-                ]
-              }
-            },
-            {
-              "name": "nodeData",
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "DataRow"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "parentKey": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "nodeData": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "insertBefore",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "refKey",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "nodeData",
-              "type": {
-                "type": "reference",
-                "name": "DataRow"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "refKey": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              },
-              "nodeData": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "insertAfter",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "refKey",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "nodeData",
-              "type": {
-                "type": "reference",
-                "name": "DataRow"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "refKey": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              },
-              "nodeData": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "updateNode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "key",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "patch",
-              "type": {
-                "type": "reference",
-                "name": "Partial",
+                "name": "Promise",
                 "typeArguments": [
                   {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "DataRow"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "appendNode",
+              "parameters": [
+                {
+                  "name": "parentKey",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "nodeData",
+                  "type": {
                     "type": "reference",
                     "name": "DataRow"
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              },
-              "patch": {
-                "type": "object",
-                "title": "Partial<DataRow>"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "removeNode",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "key",
+                }
+              ],
               "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
+            {
+              "name": "insertBefore",
+              "parameters": [
+                {
+                  "name": "refKey",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "nodeData",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataRow"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "insertAfter",
+              "parameters": [
+                {
+                  "name": "refKey",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "nodeData",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataRow"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "updateNode",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "patch",
+                  "type": {
+                    "type": "reference",
+                    "name": "Partial",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "DataRow"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "removeNode",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

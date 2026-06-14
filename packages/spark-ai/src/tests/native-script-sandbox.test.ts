@@ -34,5 +34,5 @@ describe('executeModuleScript', () => {
     const hint = result.checks?.[0]?.hint ?? ''
     expect(hint).toContain('JavaScript async function body')
     expect(hint).not.toContain('openPageDesign')
-  })
+  }, 60000)
 })

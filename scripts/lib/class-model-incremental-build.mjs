@@ -1,10 +1,8 @@
 import { existsSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import {
-  readSourceModifiedAtIso,
-  sourceFileFromEmitPath,
-} from '../../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
+import { readSourceModifiedAtIso } from '../../packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts'
+import { sourceFileFromEmitPath } from '../../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
 import { dtsSourcePathToBundleRelativeJson } from '../../packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts'
 
 export const DTS_MANIFEST_SCHEMA_VERSION = 1
@@ -181,7 +179,7 @@ function loadKnownClassNamesBySourcePath(command) {
     const shardPath = resolve(command.outputDir, entry.file)
     if (!existsSync(shardPath)) continue
     const shard = JSON.parse(readFileSync(shardPath, 'utf8'))
-    const classNames = shard.symbols ?? Object.keys(shard.models ?? {})
+    const classNames = shard.module?.symbols ?? []
     known.set(sourcePath, new Set(classNames))
   }
   return known

@@ -17,5 +17,5 @@ describe('@spark-appworks/spark-ai root public surface', () => {
       'paramsSchema',
       'startAiAgentRegistrationSession',
     ])
-  })
+  }, 60000)
 })

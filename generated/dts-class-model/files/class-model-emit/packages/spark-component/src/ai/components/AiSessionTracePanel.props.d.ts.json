@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/AiSessionTracePanel.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
@@ -13,18 +13,17 @@
       "AiSessionTracePanelProps"
     ]
   },
-  "symbols": [
-    "AiSessionTracePanelProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.361Z",
   "$defs": {
     "AiSessionTracePanelProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiSessionTracePanelProps",
-      "description": "AiSessionTracePanel 根组件 Props。\nentries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\nisStreaming   — 是否正在接收流式增量。\nisReasoning   — 是否正在接收推理文本。\ndiagnostics   — 外部诊断投影。永远有值（含空摘要）。\nheight        — 面板高度 CSS 值，默认 '100%'。\nemptyText     — 无 live entries 且诊断投影为空时的占位文本。",
       "properties": {
         "entries": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "../types.d.ts.json#/$defs/StreamDisplayEntry"
+          }
         },
         "isStreaming": {
           "type": "boolean"
@@ -33,8 +32,7 @@
           "type": "boolean"
         },
         "diagnostics": {
-          "type": "object",
-          "title": "SessionDiagnosticsData"
+          "$ref": "../types.d.ts.json#/$defs/SessionDiagnosticsData"
         },
         "height": {
           "type": "string"
@@ -42,88 +40,67 @@
         "emptyText": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.361Z",
   "models": {
     "AiSessionTracePanelProps": {
-      "kind": "AiSessionTracePanelProps",
-      "className": "AiSessionTracePanelProps",
+      "name": "AiSessionTracePanelProps",
       "jsdoc": "AiSessionTracePanel 根组件 Props。\nentries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\nisStreaming   — 是否正在接收流式增量。\nisReasoning   — 是否正在接收推理文本。\ndiagnostics   — 外部诊断投影。永远有值（含空摘要）。\nheight        — 面板高度 CSS 值，默认 '100%'。\nemptyText     — 无 live entries 且诊断投影为空时的占位文本。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    height?: string;\n    emptyText?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    height?: string;\n    emptyText?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
         "line": 18,
         "className": "AiSessionTracePanelProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "AiSessionTracePanel"
       },
-      "attributes": [
-        {
-          "name": "entries",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "isStreaming",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "isReasoning",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "diagnostics",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "SessionDiagnosticsData"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "height",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "emptyText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    height?: string;\n    emptyText?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    height?: string;\n    emptyText?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "entries",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isStreaming",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isReasoning",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "diagnostics",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "height",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "emptyText",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

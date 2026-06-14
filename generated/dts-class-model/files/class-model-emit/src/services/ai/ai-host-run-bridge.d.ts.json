@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/ai/ai-host-run-bridge",
     "sourcePath": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
@@ -16,33 +16,70 @@
       "AiHostRunBridge"
     ]
   },
-  "symbols": [
-    "AiHostRunTarget",
-    "AiHostRunPrepare",
-    "AiHostRunBridgeOptions",
-    "AiHostRunBridge"
-  ],
-  "generatedAt": "2026-06-12T00:59:06.578Z",
   "$defs": {
     "AiHostRunTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiHostRunTarget",
-      "description": "Ai Host Run Target 的语义模型。"
-    },
-    "AiHostRunPrepare": {
-      "type": "object",
-      "title": "AiHostRunPrepare",
-      "description": "Ai Host Run Prepare 的语义模型。"
+      "$defs": {
+        "method.has.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.has.return": {
+          "type": "boolean"
+        },
+        "method.dryRun.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            },
+            "args": true
+          },
+          "additionalProperties": false
+        },
+        "method.dryRun.return": {
+          "$ref": "../../../packages/spark-ai/src/agent/business/ai-host.d.ts.json#/$defs/AiAgentHostDryRunResult"
+        },
+        "method.run.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            },
+            "args": {
+              "type": "object",
+              "title": "AiJsonParams"
+            },
+            "chat": {
+              "$ref": "../../../packages/spark-ai/src/agent/business/business-task.d.ts.json#/$defs/AiAgentTaskChatOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.run.return": {
+          "type": "object",
+          "title": "Promise<AiAgentHostRunResult>"
+        }
+      }
     },
     "AiHostRunBridgeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiHostRunBridgeOptions",
-      "description": "Ai Host Run Bridge Options 的调用配置。",
       "properties": {
-        "host": true,
+        "host": {
+          "type": "object",
+          "title": "THost"
+        },
         "prepareRun": {
-          "$ref": "#/$defs/AiHostRunPrepare",
-          "title": "AiHostRunPrepare<THost>"
+          "$ref": "#/$defs/AiHostRunPrepare"
         },
         "defaultTimeoutMs": {
           "type": "number"
@@ -50,293 +87,232 @@
         "maxParallelRuns": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiHostRunBridge": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiHostRunBridge",
-      "description": "Ai Host Run Bridge 的语义模型。"
+      "$defs": {
+        "method.start.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.start.return": {
+          "type": "object",
+          "title": "() => void"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-12T00:59:06.578Z",
   "models": {
     "AiHostRunTarget": {
-      "kind": "AiHostRunTarget",
-      "className": "AiHostRunTarget",
+      "name": "AiHostRunTarget",
       "jsdoc": "Ai Host Run Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 18,
         "className": "AiHostRunTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "has",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+            "targetName": "Readonly"
           }
-        },
-        {
-          "name": "dryRun",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "alias",
+              "name": "has",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
+                "name": "boolean"
               }
             },
             {
-              "name": "args",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
-              },
-              "args": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentHostDryRunResult"
-          }
-        },
-        {
-          "name": "run",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "args",
+              "name": "dryRun",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "args",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
+                "name": "AiAgentHostDryRunResult"
               }
             },
             {
-              "name": "chat",
+              "name": "run",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "args",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiJsonParams"
+                  }
+                },
+                {
+                  "name": "chat",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentTaskChatOptions"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              },
-              "flags": {
-                "isOptional": true
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentHostRunResult"
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
-              },
-              "args": {
-                "type": "object",
-                "title": "AiJsonParams"
-              },
-              "chat": {
-                "type": "object",
-                "title": "AiAgentTaskChatOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiAgentHostRunResult>"
-          }
+          ]
         }
-      ]
+      }
     },
     "AiHostRunPrepare": {
-      "kind": "AiHostRunPrepare",
-      "className": "AiHostRunPrepare",
+      "name": "AiHostRunPrepare",
       "jsdoc": "Ai Host Run Prepare 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "(event: AiHostRunRequestEvent, host: THost) => AiHostRunTarget | Promise<AiHostRunTarget>",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 24,
         "className": "AiHostRunPrepare",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "(event: AiHostRunRequestEvent, host: THost) => AiHostRunTarget | Promise<AiHostRunTarget>",
+        "members": {}
+      }
     },
     "AiHostRunBridgeOptions": {
-      "kind": "AiHostRunBridgeOptions",
-      "className": "AiHostRunBridgeOptions",
+      "name": "AiHostRunBridgeOptions",
       "jsdoc": "Ai Host Run Bridge Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 26,
         "className": "AiHostRunBridgeOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "host",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "prepareRun",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiHostRunPrepare",
-            "title": "AiHostRunPrepare<THost>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "defaultTimeoutMs",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "maxParallelRuns",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "host",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "prepareRun",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "defaultTimeoutMs",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "maxParallelRuns",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiHostRunBridge": {
-      "kind": "AiHostRunBridge",
-      "className": "AiHostRunBridge",
+      "name": "AiHostRunBridge",
       "jsdoc": "Ai Host Run Bridge 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    start(): () => void;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    start(): () => void;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 33,
         "className": "AiHostRunBridge",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "start",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reflection",
-            "declaration": {
-              "signatures": [
-                {
-                  "parameters": [],
-                  "type": {
-                    "type": "intrinsic",
-                    "name": "void"
-                  }
-                }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "() => void"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    start(): () => void;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    start(): () => void;\n}>",
+            "targetName": "Readonly"
           }
+        ],
+        "members": {
+          "methods": [
+            {
+              "name": "start",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

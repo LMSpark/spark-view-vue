@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/RendererForm/zero-code",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
@@ -18,110 +18,95 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "RendererFormZeroCodeOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.387Z",
   "$defs": {
     "RendererFormZeroCodeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererFormZeroCodeOptions",
-      "description": "Renderer Form Zero Code Options 的调用配置。",
       "properties": {
         "props": {
           "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
+          "title": "Record<string, unknown>"
         },
         "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "formModel": {
           "type": "object",
           "title": "Record<string, unknown>"
         },
         "nativeFormRef": {
-          "type": "object",
-          "title": "ValueRef<unknown>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "logger": {
           "type": "object",
           "title": "LoggerApi"
         }
-      }
+      },
+      "required": [
+        "props",
+        "resolvedView",
+        "formModel",
+        "nativeFormRef",
+        "logger"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.387Z",
   "models": {
     "RendererFormZeroCodeOptions": {
-      "kind": "RendererFormZeroCodeOptions",
-      "className": "RendererFormZeroCodeOptions",
+      "name": "RendererFormZeroCodeOptions",
       "jsdoc": "Renderer Form Zero Code Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** form Model 字段。 */\n    formModel: Record<string, unknown>;\n    /** native Form Ref 字段。 */\n    nativeFormRef: ValueRef<unknown>;\n    /** 诊断日志接口。 */\n    logger: LoggerApi;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
         "line": 12,
         "className": "RendererFormZeroCodeOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererForm",
         "componentType": "r-form",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "props",
-          "jsdoc": "组件属性集合。",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, unknown>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "resolvedView",
-          "jsdoc": "resolved View 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<DataView | null>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "formModel",
-          "jsdoc": "form Model 字段。",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "nativeFormRef",
-          "jsdoc": "native Form Ref 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<unknown>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "logger",
-          "jsdoc": "诊断日志接口。",
-          "schema": {
-            "type": "object",
-            "title": "LoggerApi"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** form Model 字段。 */\n    formModel: Record<string, unknown>;\n    /** native Form Ref 字段。 */\n    nativeFormRef: ValueRef<unknown>;\n    /** 诊断日志接口。 */\n    logger: LoggerApi;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "props",
+              "jsdoc": "组件属性集合。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "resolvedView",
+              "jsdoc": "resolved View 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "formModel",
+              "jsdoc": "form Model 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "nativeFormRef",
+              "jsdoc": "native Form Ref 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "logger",
+              "jsdoc": "诊断日志接口。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

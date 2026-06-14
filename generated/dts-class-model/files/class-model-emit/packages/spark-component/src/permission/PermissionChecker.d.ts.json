@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/permission/PermissionChecker.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:permission/PermissionChecker",
     "sourcePath": "class-model-emit/packages/spark-component/src/permission/PermissionChecker.d.ts",
@@ -13,90 +13,73 @@
       "FieldMaskInput"
     ]
   },
-  "symbols": [
-    "FieldMaskInput"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.996Z",
   "$defs": {
     "FieldMaskInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "FieldMaskInput",
-      "description": "Field Mask Input 的输入数据。",
       "properties": {
         "field": {
           "type": "string"
         },
         "value": true,
         "row": {
-          "type": "object",
-          "title": "DataRow"
+          "$ref": "../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
         },
         "permissionMode": {
           "type": "object",
           "title": "NavPermissionMode"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.996Z",
   "models": {
     "FieldMaskInput": {
-      "kind": "FieldMaskInput",
-      "className": "FieldMaskInput",
+      "name": "FieldMaskInput",
       "jsdoc": "Field Mask Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/permission/PermissionChecker.d.ts",
         "line": 31,
         "className": "FieldMaskInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "field",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "value",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "row",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "DataRow"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "permissionMode",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "NavPermissionMode"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "field",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "value",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "row",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "permissionMode",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

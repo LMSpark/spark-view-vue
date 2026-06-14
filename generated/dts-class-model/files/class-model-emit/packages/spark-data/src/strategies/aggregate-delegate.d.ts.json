@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:strategies/aggregate-delegate",
     "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
@@ -15,163 +15,52 @@
       "AggregateDelegate"
     ]
   },
-  "symbols": [
-    "AggregateDelegateOptions",
-    "AggregateRecomputeOptions",
-    "AggregateDelegate"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.016Z",
   "$defs": {
     "AggregateDelegateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AggregateDelegateOptions",
-      "description": "Aggregate Delegate Options 的调用配置。"
+      "$defs": {
+        "method.getAggregates.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getAggregates.return": {
+          "type": "object",
+          "title": "Record<string, AggregateColumnConfig>"
+        },
+        "method.emitSummaryChanged.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.emitSummaryChanged.return": true,
+        "method.emitSelectionSummaryChanged.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.emitSelectionSummaryChanged.return": true
+      }
     },
     "AggregateRecomputeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AggregateRecomputeOptions",
-      "description": "Aggregate Recompute Options 的调用配置。",
       "properties": {
         "emit": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AggregateDelegate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AggregateDelegate",
-      "description": "视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。\n- `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged\n- `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged"
-    }
-  },
-  "models": {
-    "AggregateDelegateOptions": {
-      "kind": "AggregateDelegateOptions",
-      "className": "AggregateDelegateOptions",
-      "jsdoc": "Aggregate Delegate Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。 */\n    readonly getAggregates: () => Record<string, AggregateColumnConfig>;\n    /** 通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。 */\n    readonly emitSummaryChanged: () => void;\n    /** 通知订阅方仅选中行聚合已更新（selectionAggregateResult）。 */\n    readonly emitSelectionSummaryChanged: () => void;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
-        "line": 17,
-        "className": "AggregateDelegateOptions",
-        "declarationKind": "type"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getAggregates",
-          "jsdoc": "返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Record",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "reference",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Record<string, AggregateColumnConfig>"
-          }
-        },
-        {
-          "name": "emitSummaryChanged",
-          "jsdoc": "通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "emitSelectionSummaryChanged",
-          "jsdoc": "通知订阅方仅选中行聚合已更新（selectionAggregateResult）。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        }
-      ]
-    },
-    "AggregateRecomputeOptions": {
-      "kind": "AggregateRecomputeOptions",
-      "className": "AggregateRecomputeOptions",
-      "jsdoc": "Aggregate Recompute Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** emit 字段。 */\n    readonly emit?: boolean;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
-        "line": 26,
-        "className": "AggregateRecomputeOptions",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "emit",
-          "jsdoc": "emit 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
-    },
-    "AggregateDelegate": {
-      "kind": "AggregateDelegate",
-      "className": "AggregateDelegate",
-      "jsdoc": "视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。\n- `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged\n- `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged",
-      "shapeKind": "class",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
-        "line": 46,
-        "className": "AggregateDelegate",
-        "declarationKind": "class"
-      },
-      "constructorMeta": {
-        "jsdoc": "创建 Aggregate Delegate 实例。",
-        "signatureText": "constructor(options: AggregateDelegateOptions)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "options",
-            "type": {
-              "type": "reference",
-              "name": "AggregateDelegateOptions",
-              "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
-            }
-          }
-        ],
-        "paramsSchema": {
+      "$defs": {
+        "constructor.params": {
           "type": "object",
           "properties": {
             "options": {
@@ -179,126 +68,232 @@
             }
           },
           "additionalProperties": false
-        }
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "recompute",
-          "jsdoc": "全量重算（行数据变更时调用，必须在 `_applyComputedColumns` 之后）。\n@param rows 全部行（已含计算列求值结果）\n@param selectedRows 当前选中行（无选中时传空数组）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "rows",
-              "type": {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "unknown"
-                }
-              }
-            },
-            {
-              "name": "selectedRows",
-              "type": {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "unknown"
-                }
-              }
-            },
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "AggregateRecomputeOptions",
-                "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "rows": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "title": "DataRow"
-                }
-              },
-              "selectedRows": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "title": "DataRow"
-                }
-              },
-              "options": {
-                "$ref": "#/$defs/AggregateRecomputeOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
         },
-        {
-          "name": "recomputeSelection",
-          "jsdoc": "仅重算选中行聚合（选中行变更时调用，行数据本身未变）。\n@param selectedRows 当前选中行",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "selectedRows",
-              "type": {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "unknown"
-                }
+        "method.recompute.params": {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "../types.d.ts.json#/$defs/DataRow"
               }
             },
+            "selectedRows": {
+              "type": "array",
+              "items": {
+                "$ref": "../types.d.ts.json#/$defs/DataRow"
+              }
+            },
+            "options": {
+              "$ref": "#/$defs/AggregateRecomputeOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.recompute.return": true,
+        "method.recomputeSelection.params": {
+          "type": "object",
+          "properties": {
+            "selectedRows": {
+              "type": "array",
+              "items": {
+                "$ref": "../types.d.ts.json#/$defs/DataRow"
+              }
+            },
+            "options": {
+              "$ref": "#/$defs/AggregateRecomputeOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.recomputeSelection.return": true
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:48:51.016Z",
+  "models": {
+    "AggregateDelegateOptions": {
+      "name": "AggregateDelegateOptions",
+      "jsdoc": "Aggregate Delegate Options 的调用配置。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
+        "line": 17,
+        "className": "AggregateDelegateOptions",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。 */\n    readonly getAggregates: () => Record<string, AggregateColumnConfig>;\n    /** 通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。 */\n    readonly emitSummaryChanged: () => void;\n    /** 通知订阅方仅选中行聚合已更新（selectionAggregateResult）。 */\n    readonly emitSelectionSummaryChanged: () => void;\n}",
+        "members": {
+          "methods": [
+            {
+              "name": "getAggregates",
+              "jsdoc": "返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "AggregateColumnConfig",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "emitSummaryChanged",
+              "jsdoc": "通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "emitSelectionSummaryChanged",
+              "jsdoc": "通知订阅方仅选中行聚合已更新（selectionAggregateResult）。",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "AggregateRecomputeOptions": {
+      "name": "AggregateRecomputeOptions",
+      "jsdoc": "Aggregate Recompute Options 的调用配置。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
+        "line": 26,
+        "className": "AggregateRecomputeOptions",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** emit 字段。 */\n    readonly emit?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "emit",
+              "jsdoc": "emit 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "AggregateDelegate": {
+      "name": "AggregateDelegate",
+      "jsdoc": "视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。\n- `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged\n- `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts",
+        "line": 46,
+        "className": "AggregateDelegate",
+        "declarationKind": "class"
+      },
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 Aggregate Delegate 实例。",
+          "signatureText": "constructor(options: AggregateDelegateOptions)",
+          "parameters": [
             {
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "AggregateRecomputeOptions",
+                "name": "AggregateDelegateOptions",
                 "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
-              },
-              "flags": {
-                "isOptional": true
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "selectedRows": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "title": "DataRow"
+          ]
+        },
+        "members": {
+          "methods": [
+            {
+              "name": "recompute",
+              "jsdoc": "全量重算（行数据变更时调用，必须在 `_applyComputedColumns` 之后）。\n@param rows 全部行（已含计算列求值结果）\n@param selectedRows 当前选中行（无选中时传空数组）",
+              "parameters": [
+                {
+                  "name": "rows",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "DataRow",
+                      "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                    }
+                  }
+                },
+                {
+                  "name": "selectedRows",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "DataRow",
+                      "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                    }
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "AggregateRecomputeOptions",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
                 }
-              },
-              "options": {
-                "$ref": "#/$defs/AggregateRecomputeOptions"
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "recomputeSelection",
+              "jsdoc": "仅重算选中行聚合（选中行变更时调用，行数据本身未变）。\n@param selectedRows 当前选中行",
+              "parameters": [
+                {
+                  "name": "selectedRows",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "DataRow",
+                      "sourcePath": "class-model-emit/packages/spark-data/src/types.d.ts"
+                    }
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "AggregateRecomputeOptions",
+                    "sourcePath": "class-model-emit/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

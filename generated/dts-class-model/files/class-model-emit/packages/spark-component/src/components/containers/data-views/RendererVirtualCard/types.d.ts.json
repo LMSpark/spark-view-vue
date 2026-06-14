@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/types",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/types.d.ts",
@@ -18,289 +18,257 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "RendererVirtualCardApi"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.405Z",
   "$defs": {
     "RendererVirtualCardApi": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererVirtualCardApi",
-      "description": "Renderer Virtual Card Api 的语义模型。"
+      "$defs": {
+        "method.getRows.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getRows.return": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+          }
+        },
+        "method.getCachedPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCachedPages.return": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "method.getPendingPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getPendingPages.return": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "method.getVisiblePages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getVisiblePages.return": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "method.getCurrentPage.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCurrentPage.return": {
+          "type": "number"
+        },
+        "method.getTotalPages.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getTotalPages.return": {
+          "type": "number"
+        },
+        "method.getScrollProgress.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getScrollProgress.return": {
+          "type": "string"
+        },
+        "method.getLoadPolicyText.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getLoadPolicyText.return": {
+          "type": "string"
+        },
+        "method.getWheelStatusText.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getWheelStatusText.return": {
+          "type": "string"
+        },
+        "method.scrollToPage.params": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.scrollToPage.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.clearCache.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearCache.return": true
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.405Z",
   "models": {
     "RendererVirtualCardApi": {
-      "kind": "RendererVirtualCardApi",
-      "className": "RendererVirtualCardApi",
+      "name": "RendererVirtualCardApi",
       "jsdoc": "Renderer Virtual Card Api 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "BaseContainerApi & {\n    getRows(): DataRow[];\n    getCachedPages(): number[];\n    getPendingPages(): number[];\n    getVisiblePages(): number[];\n    getCurrentPage(): number;\n    getTotalPages(): number;\n    getScrollProgress(): string;\n    getLoadPolicyText(): string;\n    getWheelStatusText(): string;\n    scrollToPage(page: number): Promise<void>;\n    clearCache(): void;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "BaseContainerApi",
-          "targetName": "BaseContainerApi"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    getRows(): DataRow[];\n    getCachedPages(): number[];\n    getPendingPages(): number[];\n    getVisiblePages(): number[];\n    getCurrentPage(): number;\n    getTotalPages(): number;\n    getScrollProgress(): string;\n    getLoadPolicyText(): string;\n    getWheelStatusText(): string;\n    scrollToPage(page: number): Promise<void>;\n    clearCache(): void;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/types.d.ts",
         "line": 10,
         "className": "RendererVirtualCardApi",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererVirtualCard",
         "componentType": "r-virtual-card",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getRows",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "DataRow"
-            }
+      "typeAlias": {
+        "declarationTypeText": "BaseContainerApi & {\n    getRows(): DataRow[];\n    getCachedPages(): number[];\n    getPendingPages(): number[];\n    getVisiblePages(): number[];\n    getCurrentPage(): number;\n    getTotalPages(): number;\n    getScrollProgress(): string;\n    getLoadPolicyText(): string;\n    getWheelStatusText(): string;\n    scrollToPage(page: number): Promise<void>;\n    clearCache(): void;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "BaseContainerApi",
+            "targetName": "BaseContainerApi"
           },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "DataRow"
-            }
+          {
+            "kind": "intersection",
+            "typeText": "{\n    getRows(): DataRow[];\n    getCachedPages(): number[];\n    getPendingPages(): number[];\n    getVisiblePages(): number[];\n    getCurrentPage(): number;\n    getTotalPages(): number;\n    getScrollProgress(): string;\n    getLoadPolicyText(): string;\n    getWheelStatusText(): string;\n    scrollToPage(page: number): Promise<void>;\n    clearCache(): void;\n}"
           }
-        },
-        {
-          "name": "getCachedPages",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "number"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          }
-        },
-        {
-          "name": "getPendingPages",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "number"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          }
-        },
-        {
-          "name": "getVisiblePages",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "number"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          }
-        },
-        {
-          "name": "getCurrentPage",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "getTotalPages",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
-        },
-        {
-          "name": "getScrollProgress",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "string"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "getLoadPolicyText",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "string"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "getWheelStatusText",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "string"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "scrollToPage",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "page",
+              "name": "getRows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            },
+            {
+              "name": "getCachedPages",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "number"
+                }
+              }
+            },
+            {
+              "name": "getPendingPages",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "number"
+                }
+              }
+            },
+            {
+              "name": "getVisiblePages",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "number"
+                }
+              }
+            },
+            {
+              "name": "getCurrentPage",
               "type": {
                 "type": "intrinsic",
                 "name": "number"
               }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
+            },
+            {
+              "name": "getTotalPages",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            },
+            {
+              "name": "getScrollProgress",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "getLoadPolicyText",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "getWheelStatusText",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "scrollToPage",
+              "parameters": [
+                {
+                  "name": "page",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "clearCache",
+              "type": {
                 "type": "intrinsic",
                 "name": "void"
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "page": {
-                "type": "number"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "clearCache",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

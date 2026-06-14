@@ -1,4 +1,4 @@
-# ClassModel 文档
+# DtsTypeDeclarationModel 文档
 
 | 文档 | 说明 |
 |------|------|

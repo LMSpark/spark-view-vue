@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/class-model-to-json-schema",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/class-model-to-json-schema",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-to-json-schema\n职责：DtsTypeDeclarationModel / DtsFileProjectionDocument / .d.ts 根文件 → 标准 Draft 2020-12 JSON Schema。\n边界：只做结构映射与 emit，不修改 DtsTypeDeclarationModel，也不耦合 bundle 写盘或运行时加载。\nAI用途：LLM 工具参数、表单生成、文档校验的统一 JSON Schema 入口。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "ProjectDtsRootFilesToJsonSchemasOptions",
+      "DtsFileJsonSchemasResult"
+    ]
+  },
+  "$defs": {
+    "ProjectDtsRootFilesToJsonSchemasOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ProjectDtsRootFilesToJsonSchemasOptions",
+      "properties": {
+        "repoRoot": {
+          "type": "string"
+        },
+        "rootFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        },
+        "compilerHost": {
+          "type": "object",
+          "title": "ts.CompilerHost"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DtsFileJsonSchemasResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "DtsFileJsonSchemasResult",
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "schemas": {
+          "type": "object",
+          "title": "Record<string, StandardJsonSchemaObject>"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "generatedAt": "2026-06-14T13:47:29.379Z",
+  "models": {
+    "ProjectDtsRootFilesToJsonSchemasOptions": {
+      "name": "ProjectDtsRootFilesToJsonSchemasOptions",
+      "jsdoc": "Project Dts Root Files To Json Schemas Options 的调用配置。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.d.ts",
+        "line": 12,
+        "className": "ProjectDtsRootFilesToJsonSchemasOptions",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    exportedOnly?: boolean;\n    compilerHost?: ts.CompilerHost;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    exportedOnly?: boolean;\n    compilerHost?: ts.CompilerHost;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "repoRoot",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootFiles",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "exportedOnly",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "compilerHost",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "DtsFileJsonSchemasResult": {
+      "name": "DtsFileJsonSchemasResult",
+      "jsdoc": "单个 .d.ts 文件的 JSON Schema 映射结果。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.d.ts",
+        "line": 19,
+        "className": "DtsFileJsonSchemasResult",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    schemas: Readonly<Record<string, StandardJsonSchemaObject>>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    sourcePath: string;\n    schemas: Readonly<Record<string, StandardJsonSchemaObject>>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "sourcePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schemas",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

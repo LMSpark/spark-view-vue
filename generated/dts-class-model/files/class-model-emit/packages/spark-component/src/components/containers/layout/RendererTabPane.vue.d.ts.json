@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabPane.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/RendererTabPane",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabPane.vue.d.ts",
@@ -18,15 +18,11 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.449Z",
   "$defs": {
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "r-tabs 内部标签页面板属性，描述标签头和内容区布局。",
       "properties": {
         "name": {
           "anyOf": [
@@ -79,152 +75,108 @@
         "index": {
           "type": "number"
         }
-      }
+      },
+      "required": [
+        "index"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.449Z",
   "models": {
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "r-tabs 内部标签页面板属性，描述标签头和内容区布局。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 标签页唯一标识 */\n    name?: string | number;\n    /** 标签页标签文本 */\n    label?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 是否延迟加载 */\n    lazy?: boolean;\n    /** 是否可关闭 */\n    closable?: boolean;\n    /** 标签页体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 标签页唯一标识 */\n    name?: string | number;\n    /** 标签页标签文本 */\n    label?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 是否延迟加载 */\n    lazy?: boolean;\n    /** 是否可关闭 */\n    closable?: boolean;\n    /** 标签页体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabPane.vue.d.ts",
         "line": 3,
         "className": "Props",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTabPane",
         "componentType": "r-tab-pane",
         "componentLevel": "container",
         "componentLayer": "layout-container",
         "componentDirectory": "containers/layout"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "标签页唯一标识",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 标签页唯一标识 */\n    name?: string | number;\n    /** 标签页标签文本 */\n    label?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 是否延迟加载 */\n    lazy?: boolean;\n    /** 是否可关闭 */\n    closable?: boolean;\n    /** 标签页体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "label",
-          "jsdoc": "标签页标签文本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "disabled",
-          "jsdoc": "是否禁用",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "lazy",
-          "jsdoc": "是否延迟加载",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "closable",
-          "jsdoc": "是否可关闭",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "bodyClass",
-          "jsdoc": "标签页体自定义 class",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "gridColumns",
-          "jsdoc": "CSS Grid 列数",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "gridAutoRows",
-          "jsdoc": "栅格行高",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "gridGap",
-          "jsdoc": "栅格间距",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "index",
-          "jsdoc": "在父容器中的位置序号",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 标签页唯一标识 */\n    name?: string | number;\n    /** 标签页标签文本 */\n    label?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 是否延迟加载 */\n    lazy?: boolean;\n    /** 是否可关闭 */\n    closable?: boolean;\n    /** 标签页体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "jsdoc": "标签页唯一标识",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "label",
+              "jsdoc": "标签页标签文本",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "disabled",
+              "jsdoc": "是否禁用",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "lazy",
+              "jsdoc": "是否延迟加载",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "closable",
+              "jsdoc": "是否可关闭",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "bodyClass",
+              "jsdoc": "标签页体自定义 class",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "gridColumns",
+              "jsdoc": "CSS Grid 列数",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "gridAutoRows",
+              "jsdoc": "栅格行高",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "gridGap",
+              "jsdoc": "栅格间距",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "index",
+              "jsdoc": "在父容器中的位置序号",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

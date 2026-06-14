@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/auth.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/auth",
     "sourcePath": "class-model-emit/src/services/auth.d.ts",
@@ -17,19 +17,11 @@
       "RegisterTenantParams"
     ]
   },
-  "symbols": [
-    "AuthUser",
-    "PlatformAdminUserLike",
-    "LoginParams",
-    "RegisterParams",
-    "RegisterTenantParams"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.654Z",
   "$defs": {
     "AuthUser": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AuthUser",
-      "description": "认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
       "properties": {
         "userId": {
           "type": "string"
@@ -58,25 +50,40 @@
         "defaultProjectId": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "userId",
+        "username",
+        "displayName",
+        "email",
+        "avatar",
+        "roles",
+        "tenantId",
+        "defaultProjectId"
+      ],
+      "additionalProperties": false
     },
     "PlatformAdminUserLike": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PlatformAdminUserLike",
-      "description": "Platform Admin User Like 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
         },
         "roles": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "LoginParams": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "LoginParams",
-      "description": "Login Params 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -87,12 +94,18 @@
         "password": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "tenantId",
+        "username",
+        "password"
+      ],
+      "additionalProperties": false
     },
     "RegisterParams": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RegisterParams",
-      "description": "Register Params 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -109,12 +122,18 @@
         "email": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "tenantId",
+        "username",
+        "password"
+      ],
+      "additionalProperties": false
     },
     "RegisterTenantParams": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RegisterTenantParams",
-      "description": "Register Tenant Params 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -128,290 +147,239 @@
         "password": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "tenantId",
+        "tenantName",
+        "username",
+        "password"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.654Z",
   "models": {
     "AuthUser": {
-      "kind": "AuthUser",
-      "className": "AuthUser",
-      "jsdoc": "认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName: string;\n    /** email 字段。 */\n    email: string;\n    /** avatar 字段。 */\n    avatar: string;\n    /** roles 字段。 */\n    roles: string[];\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** default Project Id 标识。 */\n    defaultProjectId: string;\n}",
+      "name": "AuthUser",
+      "jsdoc": "@module app:services/auth\n职责：提供主应用 auth 能力，围绕 AuthUser、PlatformAdminUserLike、LoginParams 等 5 个公开契约 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/auth。\n认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/auth.d.ts",
         "line": 15,
         "className": "AuthUser",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "userId",
-          "jsdoc": "user Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "username",
-          "jsdoc": "username 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "displayName",
-          "jsdoc": "display Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "email",
-          "jsdoc": "email 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "avatar",
-          "jsdoc": "avatar 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "roles",
-          "jsdoc": "roles 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName: string;\n    /** email 字段。 */\n    email: string;\n    /** avatar 字段。 */\n    avatar: string;\n    /** roles 字段。 */\n    roles: string[];\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** default Project Id 标识。 */\n    defaultProjectId: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "userId",
+              "jsdoc": "user Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "username",
+              "jsdoc": "username 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "displayName",
+              "jsdoc": "display Name 名称。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "email",
+              "jsdoc": "email 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "avatar",
+              "jsdoc": "avatar 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "roles",
+              "jsdoc": "roles 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "defaultProjectId",
+              "jsdoc": "default Project Id 标识。",
+              "readable": true,
+              "writable": true
             }
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "defaultProjectId",
-          "jsdoc": "default Project Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PlatformAdminUserLike": {
-      "kind": "PlatformAdminUserLike",
-      "className": "PlatformAdminUserLike",
+      "name": "PlatformAdminUserLike",
       "jsdoc": "Platform Admin User Like 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** roles 字段。 */\n    roles?: readonly string[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/auth.d.ts",
         "line": 34,
         "className": "PlatformAdminUserLike",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "roles",
-          "jsdoc": "roles 字段。",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** roles 字段。 */\n    roles?: readonly string[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "roles",
+              "jsdoc": "roles 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "LoginParams": {
-      "kind": "LoginParams",
-      "className": "LoginParams",
+      "name": "LoginParams",
       "jsdoc": "Login Params 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/auth.d.ts",
         "line": 53,
         "className": "LoginParams",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "username",
-          "jsdoc": "username 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "password",
-          "jsdoc": "password 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "username",
+              "jsdoc": "username 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "password",
+              "jsdoc": "password 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "RegisterParams": {
-      "kind": "RegisterParams",
-      "className": "RegisterParams",
+      "name": "RegisterParams",
       "jsdoc": "Register Params 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/auth.d.ts",
         "line": 63,
         "className": "RegisterParams",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "username",
-          "jsdoc": "username 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "password",
-          "jsdoc": "password 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "displayName",
-          "jsdoc": "display Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "email",
-          "jsdoc": "email 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "username",
+              "jsdoc": "username 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "password",
+              "jsdoc": "password 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "displayName",
+              "jsdoc": "display Name 名称。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "email",
+              "jsdoc": "email 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "RegisterTenantParams": {
-      "kind": "RegisterTenantParams",
-      "className": "RegisterTenantParams",
+      "name": "RegisterTenantParams",
       "jsdoc": "Register Tenant Params 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/auth.d.ts",
         "line": 77,
         "className": "RegisterTenantParams",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "tenantName",
-          "jsdoc": "tenant Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "username",
-          "jsdoc": "username 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "password",
-          "jsdoc": "password 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "tenantName",
+              "jsdoc": "tenant Name 名称。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "username",
+              "jsdoc": "username 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "password",
+              "jsdoc": "password 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

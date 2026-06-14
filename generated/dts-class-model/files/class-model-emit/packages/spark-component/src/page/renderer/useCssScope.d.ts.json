@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/renderer/useCssScope.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/renderer/useCssScope",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/renderer/useCssScope.d.ts",
@@ -13,47 +13,44 @@
       "UseCssScopeOptions"
     ]
   },
-  "symbols": [
-    "UseCssScopeOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.604Z",
   "$defs": {
     "UseCssScopeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UseCssScopeOptions",
-      "description": "CSS 作用域 Composable",
       "properties": {
         "enableScope": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.604Z",
   "models": {
     "UseCssScopeOptions": {
-      "kind": "UseCssScopeOptions",
-      "className": "UseCssScopeOptions",
-      "jsdoc": "CSS 作用域 Composable",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 是否 enable Scope。 */\n    enableScope?: boolean;\n}",
+      "name": "UseCssScopeOptions",
+      "jsdoc": "@module\n@spark-appworks /spark-component:page/renderer/useCssScope\n职责：维护\n@spark-appworks /spark-component 中 page/renderer/useCssScope 的模块能力，围绕 UseCssScopeOptions 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 page/renderer/useCssScope 的声明、导出和使用边界时，从本模块开始。\nCSS 作用域 Composable",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/renderer/useCssScope.d.ts",
         "line": 10,
         "className": "UseCssScopeOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "enableScope",
-          "jsdoc": "是否 enable Scope。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 是否 enable Scope。 */\n    enableScope?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "enableScope",
+              "jsdoc": "是否 enable Scope。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

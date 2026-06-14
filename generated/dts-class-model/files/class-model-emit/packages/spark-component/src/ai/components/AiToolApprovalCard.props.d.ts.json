@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/AiToolApprovalCard.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
@@ -14,125 +14,120 @@
       "AiToolApprovalCardEmits"
     ]
   },
-  "symbols": [
-    "AiToolApprovalCardProps",
-    "AiToolApprovalCardEmits"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.362Z",
   "$defs": {
     "AiToolApprovalCardProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiToolApprovalCardProps",
-      "description": "Ai Tool Approval Card Props 的属性契约。",
       "properties": {
         "request": {
-          "type": "object",
-          "title": "ToolApprovalDisplayItem"
+          "$ref": "../types.d.ts.json#/$defs/ToolApprovalDisplayItem"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiToolApprovalCardEmits": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiToolApprovalCardEmits",
-      "description": "Ai Tool Approval Card Emits 的语义模型。",
       "properties": {
         "allow": {
-          "type": "array"
+          "type": "array",
+          "prefixItems": [
+            true
+          ]
         },
         "reject": {
-          "type": "array"
+          "type": "array",
+          "prefixItems": [
+            true,
+            true
+          ]
         },
         "abort": {
-          "type": "array"
+          "type": "array",
+          "prefixItems": [
+            true,
+            true
+          ]
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.362Z",
   "models": {
     "AiToolApprovalCardProps": {
-      "kind": "AiToolApprovalCardProps",
-      "className": "AiToolApprovalCardProps",
+      "name": "AiToolApprovalCardProps",
       "jsdoc": "Ai Tool Approval Card Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
         "line": 9,
         "className": "AiToolApprovalCardProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "AiToolApprovalCard"
       },
-      "attributes": [
-        {
-          "name": "request",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ToolApprovalDisplayItem"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "request",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiToolApprovalCardEmits": {
-      "kind": "AiToolApprovalCardEmits",
-      "className": "AiToolApprovalCardEmits",
+      "name": "AiToolApprovalCardEmits",
       "jsdoc": "Ai Tool Approval Card Emits 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
         "line": 13,
         "className": "AiToolApprovalCardEmits",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "AiToolApprovalCard"
       },
-      "attributes": [
-        {
-          "name": "allow",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "reject",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "abort",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "allow",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reject",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "abort",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

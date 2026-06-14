@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/business/class-model-agent-adapter",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
@@ -22,29 +22,11 @@
       "ClassModelAgentAdapter"
     ]
   },
-  "symbols": [
-    "ClassModelAgentAdapterConstructor",
-    "ClassModelAgentCompleteActionOptions",
-    "ClassModelAgentCompleteCheck",
-    "ClassModelAgentCompleteAccepted",
-    "ClassModelAgentCompleteRejected",
-    "ClassModelAgentCompleteActionResult",
-    "ClassModelAgentAdapterRegisterCommand",
-    "ClassModelAgentAdapterRegistrationCommand",
-    "ClassModelAgentAdapterRegisterOptions",
-    "ClassModelAgentAdapter"
-  ],
-  "generatedAt": "2026-06-13T22:28:14.643Z",
   "$defs": {
-    "ClassModelAgentAdapterConstructor": {
-      "type": "object",
-      "title": "ClassModelAgentAdapterConstructor",
-      "description": "Class Model Agent Adapter Constructor 的语义模型。"
-    },
     "ClassModelAgentCompleteActionOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentCompleteActionOptions",
-      "description": "agent_complete 调用领域完成方法时的输入。",
       "properties": {
         "summary": {
           "type": "string"
@@ -53,33 +35,19 @@
           "type": "object",
           "title": "AiJsonParams"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelAgentCompleteCheck": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentCompleteCheck",
-      "description": "agent_complete 领域完成方法可返回的检查项。",
       "properties": {
         "level": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warn"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
+          "enum": [
+            "error",
+            "warn",
+            "info"
           ]
         },
         "code": {
@@ -91,18 +59,16 @@
         "hint": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelAgentCompleteAccepted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentCompleteAccepted",
-      "description": "agent_complete 领域完成方法通过时的返回形态。",
       "properties": {
         "ok": {
-          "type": "boolean",
-          "enum": [
-            true
-          ]
+          "const": true
         },
         "completed": {
           "type": "boolean"
@@ -118,20 +84,21 @@
           "title": "AiJsonValue"
         },
         "checks": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClassModelAgentCompleteCheck"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelAgentCompleteRejected": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentCompleteRejected",
-      "description": "agent_complete 领域完成方法拒绝完成时的返回形态。",
       "properties": {
         "ok": {
-          "type": "boolean",
-          "enum": [
-            false
-          ]
+          "const": false
         },
         "code": {
           "type": "string"
@@ -146,84 +113,112 @@
           "type": "string"
         },
         "checks": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClassModelAgentCompleteCheck"
+          }
         },
         "requiredCapabilities": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "missingFacts": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "nextStep": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelAgentCompleteActionResult": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ClassModelAgentCompleteActionResult",
-      "description": "agent_complete 领域完成方法的返回结果。"
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "AiAgentToolResult<AiJsonValue>"
+        },
+        {
+          "type": "object",
+          "title": "ClassModelAgentCompleteAccepted"
+        },
+        {
+          "type": "object",
+          "title": "ClassModelAgentCompleteRejected"
+        },
+        {
+          "type": "object",
+          "title": "AiJsonValue"
+        }
+      ]
     },
     "ClassModelAgentAdapterRegisterCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentAdapterRegisterCommand",
-      "description": "Class Model Agent Adapter Register Command 的命令参数。",
       "properties": {
         "host": {
-          "type": "object",
-          "title": "AiAgentHost"
+          "$ref": "ai-host.d.ts.json#/$defs/AiAgentHost"
         },
         "alias": {
           "type": "string"
         },
         "moduleClass": {
-          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
-          "title": "ClassModelAgentAdapterConstructor<T>"
+          "$ref": "#/$defs/ClassModelAgentAdapterConstructor"
         },
         "metadata": {
           "type": "object",
           "title": "AiRuntimeApiMetadataJson"
         },
         "options": {
-          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
-          "title": "ClassModelAgentAdapterRegisterOptions<T>"
+          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelAgentAdapterRegistrationCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentAdapterRegistrationCommand",
-      "description": "Class Model Agent Adapter Registration Command 的命令参数。",
       "properties": {
         "moduleClass": {
-          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
-          "title": "ClassModelAgentAdapterConstructor<T>"
+          "$ref": "#/$defs/ClassModelAgentAdapterConstructor"
         },
         "metadata": {
           "type": "object",
           "title": "AiRuntimeApiMetadataJson"
         },
         "options": {
-          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
-          "title": "ClassModelAgentAdapterRegisterOptions<T>"
+          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelAgentAdapterRegisterOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentAdapterRegisterOptions",
-      "description": "Class Model Agent Adapter Register Options 的调用配置。",
       "properties": {
         "moduleId": {
           "type": "string"
         },
-        "instance": true,
+        "instance": {
+          "type": "object",
+          "title": "T"
+        },
         "constructArgs": {
-          "type": "array"
+          "type": "array",
+          "items": true
         },
         "jsonSchemaDefs": {
           "type": "object",
-          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          "title": "Record<string, AiJsonSchemaObject>"
         },
         "dtsClassModelManifestUrl": {
           "type": "string"
@@ -236,12 +231,10 @@
           "title": "ClassModelKnowledgeProvider"
         },
         "inputContract": {
-          "type": "object",
-          "title": "AiAgentInputContract"
+          "$ref": "business-task.d.ts.json#/$defs/AiAgentInputContract"
         },
         "sessionStore": {
-          "type": "object",
-          "title": "AiAgentSessionStore"
+          "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentSessionStore"
         },
         "agentCompleteMethodName": {
           "type": "string"
@@ -251,714 +244,697 @@
           "title": "ReadonlySet<string>"
         },
         "planWithoutToolMarkers": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.resolveInstance.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.resolveInstance.return": {
+          "type": "object",
+          "title": "T"
+        },
+        "method.dtsClassModelFetchJson.params": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.dtsClassModelFetchJson.return": {
+          "type": "object",
+          "title": "Promise<unknown>"
+        },
+        "method.systemPrompt.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "context": {
+              "$ref": "scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.systemPrompt.return": {
+          "type": "string"
+        },
+        "method.beforeFunctionCall.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "options": {
+              "$ref": "lifecycle-types.d.ts.json#/$defs/AiAgentBeforeFunctionCallOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.beforeFunctionCall.return": {
+          "anyOf": [
+            {
+              "$ref": "lifecycle-types.d.ts.json#/$defs/AiAgentBeforeFunctionCallDirective"
+            },
+            {
+              "type": "object",
+              "title": "Promise<AiAgentBeforeFunctionCallDirective>"
+            }
+          ]
+        },
+        "method.afterFunctionCall.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "options": {
+              "$ref": "lifecycle-types.d.ts.json#/$defs/AiAgentAfterFunctionCallOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.afterFunctionCall.return": {
+          "anyOf": [
+            {
+              "$ref": "lifecycle-types.d.ts.json#/$defs/AiAgentLifecycleDirective"
+            },
+            {
+              "type": "object",
+              "title": "Promise<AiAgentLifecycleDirective>"
+            }
+          ]
+        },
+        "method.agentCompleteAction.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "options": {
+              "$ref": "#/$defs/ClassModelAgentCompleteActionOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.agentCompleteAction.return": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClassModelAgentCompleteActionResult"
+            },
+            {
+              "type": "object",
+              "title": "Promise<ClassModelAgentCompleteActionResult>"
+            }
+          ]
+        },
+        "method.onStartSession.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "context": {
+              "$ref": "scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onStartSession.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.onEndBusinessInstance.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "context": {
+              "$ref": "scope-types.d.ts.json#/$defs/AiAgentRuntimeContext"
+            },
+            "directive": {
+              "$ref": "lifecycle-types.d.ts.json#/$defs/AiAgentLifecycleDirective"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onEndBusinessInstance.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.releaseModuleInstance.params": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "object",
+              "title": "T"
+            },
+            "moduleInstanceId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.releaseModuleInstance.return": true,
+        "method.toolLoopNudge.params": {
+          "type": "object",
+          "properties": {
+            "context": {
+              "$ref": "registration-types.d.ts.json#/$defs/AiAgentToolLoopNudgeContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.toolLoopNudge.return": {
+          "type": "string"
+        },
+        "method.enrichRecoveryHints.params": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "$ref": "../tool-loop/function-call-recovery-enricher.d.ts.json#/$defs/EnrichFunctionCallFailureCommand"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.enrichRecoveryHints.return": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
     "ClassModelAgentAdapter": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelAgentAdapter",
-      "description": "Class Model Agent Adapter 的语义模型。"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.register.params": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "$ref": "#/$defs/ClassModelAgentAdapterRegisterCommand"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.register.return": {
+          "$ref": "ai-host.d.ts.json#/$defs/AiAgentHost"
+        },
+        "method.createRegistration.params": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "$ref": "#/$defs/ClassModelAgentAdapterRegistrationCommand"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.createRegistration.return": {
+          "$ref": "registration-types.d.ts.json#/$defs/AiAgentRegistration"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-13T22:28:14.643Z",
   "models": {
     "ClassModelAgentAdapterConstructor": {
-      "kind": "ClassModelAgentAdapterConstructor",
-      "className": "ClassModelAgentAdapterConstructor",
+      "name": "ClassModelAgentAdapterConstructor",
       "jsdoc": "Class Model Agent Adapter Constructor 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "new (...args: never[]) => T",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 18,
         "className": "ClassModelAgentAdapterConstructor",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "new (...args: never[]) => T",
+        "members": {}
+      }
     },
     "ClassModelAgentCompleteActionOptions": {
-      "kind": "ClassModelAgentCompleteActionOptions",
-      "className": "ClassModelAgentCompleteActionOptions",
+      "name": "ClassModelAgentCompleteActionOptions",
       "jsdoc": "agent_complete 调用领域完成方法时的输入。",
-      "shapeKind": "type",
-      "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    summary: string;\n    args: AiJsonParams;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AiAgentRuntimeContext",
-          "targetName": "AiAgentRuntimeContext"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "Readonly<{\n    summary: string;\n    args: AiJsonParams;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 20,
         "className": "ClassModelAgentCompleteActionOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "summary",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    summary: string;\n    args: AiJsonParams;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AiAgentRuntimeContext",
+            "targetName": "AiAgentRuntimeContext"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "args",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonParams"
-          },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    summary: string;\n    args: AiJsonParams;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "summary",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "args",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelAgentCompleteCheck": {
-      "kind": "ClassModelAgentCompleteCheck",
-      "className": "ClassModelAgentCompleteCheck",
+      "name": "ClassModelAgentCompleteCheck",
       "jsdoc": "agent_complete 领域完成方法可返回的检查项。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 25,
         "className": "ClassModelAgentCompleteCheck",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "level",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "error"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "warn"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "info"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "code",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "hint",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "level",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "code",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "message",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "hint",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelAgentCompleteAccepted": {
-      "kind": "ClassModelAgentCompleteAccepted",
-      "className": "ClassModelAgentCompleteAccepted",
+      "name": "ClassModelAgentCompleteAccepted",
       "jsdoc": "agent_complete 领域完成方法通过时的返回形态。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    ok: true;\n    completed?: boolean;\n    summary?: string;\n    finalAssistantMessage?: string;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    ok: true;\n    completed?: boolean;\n    summary?: string;\n    finalAssistantMessage?: string;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 32,
         "className": "ClassModelAgentCompleteAccepted",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "ok",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "completed",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "summary",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "finalAssistantMessage",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "data",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonValue"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "checks",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    ok: true;\n    completed?: boolean;\n    summary?: string;\n    finalAssistantMessage?: string;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    ok: true;\n    completed?: boolean;\n    summary?: string;\n    finalAssistantMessage?: string;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "ok",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "completed",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "summary",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "finalAssistantMessage",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "checks",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelAgentCompleteRejected": {
-      "kind": "ClassModelAgentCompleteRejected",
-      "className": "ClassModelAgentCompleteRejected",
+      "name": "ClassModelAgentCompleteRejected",
       "jsdoc": "agent_complete 领域完成方法拒绝完成时的返回形态。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    ok: false;\n    code?: string;\n    msg?: string;\n    message?: string;\n    fix?: string;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    ok: false;\n    code?: string;\n    msg?: string;\n    message?: string;\n    fix?: string;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 41,
         "className": "ClassModelAgentCompleteRejected",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "ok",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "code",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "msg",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "message",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "fix",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "checks",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "requiredCapabilities",
-          "jsdoc": "领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "missingFacts",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "nextStep",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    ok: false;\n    code?: string;\n    msg?: string;\n    message?: string;\n    fix?: string;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    ok: false;\n    code?: string;\n    msg?: string;\n    message?: string;\n    fix?: string;\n    checks?: readonly ClassModelAgentCompleteCheck[];\n    /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "ok",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "code",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "msg",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "message",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fix",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "checks",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "requiredCapabilities",
+              "jsdoc": "领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "missingFacts",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "nextStep",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelAgentCompleteActionResult": {
-      "kind": "ClassModelAgentCompleteActionResult",
-      "className": "ClassModelAgentCompleteActionResult",
+      "name": "ClassModelAgentCompleteActionResult",
       "jsdoc": "agent_complete 领域完成方法的返回结果。",
-      "shapeKind": "type",
-      "declarationTypeText": "AiAgentToolResult<AiJsonValue> | ClassModelAgentCompleteAccepted | ClassModelAgentCompleteRejected | AiJsonValue",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "AiAgentToolResult<AiJsonValue>",
-          "targetName": "AiAgentToolResult"
-        },
-        {
-          "kind": "union",
-          "typeText": "ClassModelAgentCompleteAccepted",
-          "targetName": "ClassModelAgentCompleteAccepted"
-        },
-        {
-          "kind": "union",
-          "typeText": "ClassModelAgentCompleteRejected",
-          "targetName": "ClassModelAgentCompleteRejected"
-        },
-        {
-          "kind": "union",
-          "typeText": "AiJsonValue",
-          "targetName": "AiJsonValue"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 54,
         "className": "ClassModelAgentCompleteActionResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "AiAgentToolResult<AiJsonValue> | ClassModelAgentCompleteAccepted | ClassModelAgentCompleteRejected | AiJsonValue",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "AiAgentToolResult<AiJsonValue>",
+            "targetName": "AiAgentToolResult"
+          },
+          {
+            "kind": "union",
+            "typeText": "ClassModelAgentCompleteAccepted",
+            "targetName": "ClassModelAgentCompleteAccepted"
+          },
+          {
+            "kind": "union",
+            "typeText": "ClassModelAgentCompleteRejected",
+            "targetName": "ClassModelAgentCompleteRejected"
+          },
+          {
+            "kind": "union",
+            "typeText": "AiJsonValue",
+            "targetName": "AiJsonValue"
+          }
+        ],
+        "members": {}
+      }
     },
     "ClassModelAgentAdapterRegisterCommand": {
-      "kind": "ClassModelAgentAdapterRegisterCommand",
-      "className": "ClassModelAgentAdapterRegisterCommand",
+      "name": "ClassModelAgentAdapterRegisterCommand",
       "jsdoc": "Class Model Agent Adapter Register Command 的命令参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 56,
         "className": "ClassModelAgentAdapterRegisterCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "host",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentHost"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "alias",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "moduleClass",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
-            "title": "ClassModelAgentAdapterConstructor<T>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "metadata",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiRuntimeApiMetadataJson"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "options",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
-            "title": "ClassModelAgentAdapterRegisterOptions<T>"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "host",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "alias",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "moduleClass",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "metadata",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "options",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelAgentAdapterRegistrationCommand": {
-      "kind": "ClassModelAgentAdapterRegistrationCommand",
-      "className": "ClassModelAgentAdapterRegistrationCommand",
+      "name": "ClassModelAgentAdapterRegistrationCommand",
       "jsdoc": "Class Model Agent Adapter Registration Command 的命令参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 64,
         "className": "ClassModelAgentAdapterRegistrationCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "moduleClass",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
-            "title": "ClassModelAgentAdapterConstructor<T>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "metadata",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiRuntimeApiMetadataJson"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "options",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
-            "title": "ClassModelAgentAdapterRegisterOptions<T>"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "moduleClass",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "metadata",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "options",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelAgentAdapterRegisterOptions": {
-      "kind": "ClassModelAgentAdapterRegisterOptions",
-      "className": "ClassModelAgentAdapterRegisterOptions",
+      "name": "ClassModelAgentAdapterRegisterOptions",
       "jsdoc": "Class Model Agent Adapter Register Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 70,
         "className": "ClassModelAgentAdapterRegisterOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "moduleId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "instance",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "constructArgs",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "jsonSchemaDefs",
-          "jsdoc": "metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "dtsClassModelManifestUrl",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "rootClassName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "knowledge",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ClassModelKnowledgeProvider"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "inputContract",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentInputContract"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "sessionStore",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentSessionStore"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "agentCompleteMethodName",
-          "jsdoc": "agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "executionToolNames",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ReadonlySet<string>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "planWithoutToolMarkers",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "resolveInstance",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "T",
-            "refersToTypeParameter": true
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "dtsClassModelFetchJson",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "url",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "url": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<unknown>"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。 */\n    agentCompleteMethodName?: string;\n    /** agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。 */\n    agentCompleteAction?: (instance: T, options: ClassModelAgentCompleteActionOptions) => ClassModelAgentCompleteActionResult | Promise<ClassModelAgentCompleteActionResult>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+            "targetName": "Readonly"
           }
-        },
-        {
-          "name": "systemPrompt",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "moduleId",
+              "readable": true,
+              "writable": false
+            },
             {
               "name": "instance",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "constructArgs",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsonSchemaDefs",
+              "jsdoc": "metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "dtsClassModelManifestUrl",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootClassName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "knowledge",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "inputContract",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sessionStore",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "agentCompleteMethodName",
+              "jsdoc": "agent_complete 对应的领域模型方法名；配置后必须在业务实例上实现。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "executionToolNames",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "planWithoutToolMarkers",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "resolveInstance",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
                 "name": "T",
@@ -966,549 +942,407 @@
               }
             },
             {
-              "name": "context",
+              "name": "dtsClassModelFetchJson",
+              "parameters": [
+                {
+                  "name": "url",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "optional",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "string"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "beforeFunctionCall",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "instance",
-              "type": {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
-              }
-            },
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
                 "type": "reference",
                 "name": "Promise",
                 "typeArguments": [
                   {
-                    "type": "reference",
+                    "type": "intrinsic",
                     "name": "unknown"
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "options": {
-                "type": "object",
-                "title": "AiAgentBeforeFunctionCallOptions"
-              }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "AiAgentBeforeFunctionCallDirective"
-              },
-              {
-                "type": "object",
-                "title": "Promise<AiAgentBeforeFunctionCallDirective>"
-              }
-            ]
-          }
-        },
-        {
-          "name": "afterFunctionCall",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "instance",
+              "name": "systemPrompt",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
               }
             },
             {
-              "name": "options",
+              "name": "beforeFunctionCall",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentBeforeFunctionCallOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+                "type": "union",
+                "types": [
                   {
                     "type": "reference",
-                    "name": "unknown"
+                    "name": "AiAgentBeforeFunctionCallDirective",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "AiAgentBeforeFunctionCallDirective",
+                        "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "options": {
-                "type": "object",
-                "title": "AiAgentAfterFunctionCallOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "AiAgentLifecycleDirective"
-              },
-              {
-                "type": "object",
-                "title": "Promise<AiAgentLifecycleDirective>"
-              }
-            ]
-          }
-        },
-        {
-          "name": "agentCompleteAction",
-          "jsdoc": "agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "instance",
-              "type": {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
-              }
             },
             {
-              "name": "options",
+              "name": "afterFunctionCall",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentAfterFunctionCallOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "ClassModelAgentCompleteActionOptions",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts"
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentLifecycleDirective",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "AiAgentLifecycleDirective",
+                        "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                      }
+                    ]
+                  }
+                ]
               }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "ClassModelAgentCompleteActionResult",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+            },
+            {
+              "name": "agentCompleteAction",
+              "jsdoc": "agent_complete 的自定义领域动作；优先级高于 agentCompleteMethodName。",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelAgentCompleteActionOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
                   {
                     "type": "reference",
                     "name": "ClassModelAgentCompleteActionResult",
                     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "ClassModelAgentCompleteActionResult",
+                        "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "options": {
-                "$ref": "#/$defs/ClassModelAgentCompleteActionOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/ClassModelAgentCompleteActionResult"
-              },
-              {
-                "type": "object",
-                "title": "Promise<ClassModelAgentCompleteActionResult>"
-              }
-            ]
-          }
-        },
-        {
-          "name": "onStartSession",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "instance",
-              "type": {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
-              }
             },
             {
-              "name": "context",
+              "name": "onStartSession",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+                "type": "union",
+                "types": [
                   {
                     "type": "intrinsic",
                     "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "onEndBusinessInstance",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "instance",
-              "type": {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
-              }
             },
             {
-              "name": "context",
+              "name": "onEndBusinessInstance",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentRuntimeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                  }
+                },
+                {
+                  "name": "directive",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentLifecycleDirective",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "directive",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+                "type": "union",
+                "types": [
                   {
                     "type": "intrinsic",
                     "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "context": {
-                "type": "object",
-                "title": "AiAgentRuntimeContext"
-              },
-              "directive": {
-                "type": "object",
-                "title": "AiAgentLifecycleDirective"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "releaseModuleInstance",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "instance",
-              "type": {
-                "type": "reference",
-                "name": "T",
-                "refersToTypeParameter": true
-              }
             },
             {
-              "name": "moduleInstanceId",
+              "name": "releaseModuleInstance",
+              "parameters": [
+                {
+                  "name": "instance",
+                  "type": {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "moduleInstanceId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "instance": true,
-              "moduleInstanceId": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "toolLoopNudge",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "context",
+              "name": "toolLoopNudge",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentToolLoopNudgeContext",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "optional",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "string"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "context": {
-                "type": "object",
-                "title": "AiAgentToolLoopNudgeContext"
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "enrichRecoveryHints",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "command",
+              "name": "enrichRecoveryHints",
+              "parameters": [
+                {
+                  "name": "command",
+                  "type": {
+                    "type": "reference",
+                    "name": "EnrichFunctionCallFailureCommand",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.d.ts"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
+                "type": "unknown",
+                "name": "readonly string[]"
               }
             }
-          ],
-          "type": {
-            "type": "unknown",
-            "name": "readonly string[]"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "command": {
-                "type": "object",
-                "title": "EnrichFunctionCallFailureCommand"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array"
-          }
+          ]
         }
-      ]
+      }
     },
     "ClassModelAgentAdapter": {
-      "kind": "ClassModelAgentAdapter",
-      "className": "ClassModelAgentAdapter",
+      "name": "ClassModelAgentAdapter",
       "jsdoc": "Class Model Agent Adapter 的语义模型。",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
         "line": 99,
         "className": "ClassModelAgentAdapter",
         "declarationKind": "class"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "register",
-          "jsdoc": "执行 register 操作。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "command",
-              "type": {
-                "type": "reference",
-                "name": "ClassModelAgentAdapterRegisterCommand",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "T",
-                    "refersToTypeParameter": true
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "command": {
-                "$ref": "#/$defs/ClassModelAgentAdapterRegisterCommand",
-                "title": "ClassModelAgentAdapterRegisterCommand<T>"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentHost"
-          }
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "Class Model Agent Adapter 的语义模型。",
+          "signatureText": "constructor()"
         },
-        {
-          "name": "createRegistration",
-          "jsdoc": "创建 Registration。",
-          "parameterStyle": "positional",
-          "parameters": [
+        "members": {
+          "methods": [
             {
-              "name": "command",
+              "name": "register",
+              "jsdoc": "执行 register 操作。",
+              "parameters": [
+                {
+                  "name": "command",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelAgentAdapterRegisterCommand",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "T",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "ClassModelAgentAdapterRegistrationCommand",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "T",
-                    "refersToTypeParameter": true
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "command": {
-                "$ref": "#/$defs/ClassModelAgentAdapterRegistrationCommand",
-                "title": "ClassModelAgentAdapterRegistrationCommand<T>"
+                "name": "AiAgentHost",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentRegistration"
-          }
+            {
+              "name": "createRegistration",
+              "jsdoc": "创建 Registration。",
+              "parameters": [
+                {
+                  "name": "command",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelAgentAdapterRegistrationCommand",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "T",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "AiAgentRegistration",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/metadata/validate-api-object-metadata
  * 职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/validate-api-object-metadata 的 ApiObjectValidationFinding、AiApiObjectMetadataValidationError语义。
- * 边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。
+ * 边界：只服务 spark-ai 包内部的 Agent/DtsTypeDeclarationModel 能力，不直接耦合应用页面或 Vue 组件。
  * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
  */
 /**

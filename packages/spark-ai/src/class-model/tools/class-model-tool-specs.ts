@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs
- * 职责：维护 DTS ClassModel 知识链路中的 class-model-tool-specs 能力，围绕 ClassModelToolSpec 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 class-model-tool-specs 能力，围绕 ClassModelToolSpec 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-specs 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/tools/class-model-tool-specs 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonSchemaObject } from '../../json'
 import { CLASS_MODEL_TOOL_NAMES, type ClassModelToolName } from './tool-names'
@@ -36,9 +36,9 @@ export function findClassModelToolSpec(toolName: string): ClassModelToolSpec | u
 function buildClassModelQueryTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.query,
-    description: 'Query the ClassModel ClassModel catalog before choosing model, attribute, or method guides.',
+    description: 'Query the DtsTypeDeclarationModel DtsTypeDeclarationModel catalog before choosing model, attribute, or method guides.',
     properties: {
-      kind: { type: 'string', description: 'Optional exact ClassModel kind.' },
+      kind: { type: 'string', description: 'Optional exact DtsTypeDeclarationModel kind.' },
       keyword: { type: 'string', description: 'Optional keyword matched against model/member names and summaries.' },
       includeMembers: { type: 'boolean', description: 'When true, include compact attribute and method summaries.' },
     },
@@ -48,9 +48,9 @@ function buildClassModelQueryTool(): ClassModelToolSpec {
 function buildClassModelGuideTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.modelGuide,
-    description: 'Render one ClassModel as d.ts-like declaration with native JSDoc.',
+    description: 'Render one DtsTypeDeclarationModel as d.ts-like declaration with native JSDoc.',
     properties: {
-      kind: { type: 'string', description: 'ClassModel kind.' },
+      kind: { type: 'string', description: 'DtsTypeDeclarationModel kind.' },
     },
     required: ['kind'],
   })
@@ -59,9 +59,9 @@ function buildClassModelGuideTool(): ClassModelToolSpec {
 function buildClassModelAttributeGuideTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.attributeGuide,
-    description: 'Render one ClassModel attribute declaration with native JSDoc.',
+    description: 'Render one DtsTypeDeclarationModel attribute declaration with native JSDoc.',
     properties: {
-      kind: { type: 'string', description: 'ClassModel kind.' },
+      kind: { type: 'string', description: 'DtsTypeDeclarationModel kind.' },
       attributeName: { type: 'string', description: 'Attribute name.' },
     },
     required: ['kind', 'attributeName'],
@@ -71,9 +71,9 @@ function buildClassModelAttributeGuideTool(): ClassModelToolSpec {
 function buildClassModelActionGuideTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.actionGuide,
-    description: 'Render one ClassModel public action declaration with native JSDoc.',
+    description: 'Render one DtsTypeDeclarationModel public action declaration with native JSDoc.',
     properties: {
-      kind: { type: 'string', description: 'ClassModel kind.' },
+      kind: { type: 'string', description: 'DtsTypeDeclarationModel kind.' },
       actionName: { type: 'string', description: 'Action name.' },
     },
     required: ['kind', 'actionName'],

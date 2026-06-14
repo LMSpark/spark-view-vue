@@ -1,10 +1,11 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader
- * 职责：维护 DTS ClassModel 知识链路中的 dts-class-model-bundle-loader 能力，围绕 DtsClassModelBundleLoaderOptions、DtsClassModelBundleLoader 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 dts-class-model-bundle-loader 能力，围绕 DtsClassModelBundleLoaderOptions、DtsClassModelBundleLoader 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。
  */
-import type { ClassModel, DtsTypeMeta } from './types'
+import type { AiJsonSchema } from '../../json'
+import type { AttributeMeta, DtsTypeDeclarationModel, ConstructorMeta, DtsTypeMeta, MethodMeta } from './types'
 import { resolveMethodReturnType, visitDtsTypeMeta } from './dts-type-meta-ops'
 import type {
   DtsClassModelBundleManifest,
@@ -30,7 +31,7 @@ export type DtsClassModelBundleLoaderOptions = Readonly<{
 export class DtsClassModelBundleLoader {
   private manifestPromise: Promise<DtsClassModelBundleManifest> | undefined
   private readonly filePromises = new Map<string, Promise<DtsFileProjectionDocument>>()
-  private readonly loadedModels = new Map<string, ClassModel>()
+  private readonly loadedModels = new Map<string, DtsTypeDeclarationModel>()
   private readonly loadedFilePaths = new Set<string>()
   private readonly fetchJson: (url: string) => Promise<unknown>
 
@@ -59,7 +60,7 @@ public async reload(): Promise<DtsClassModelBundleManifest> {
   }
 
     /** ensure Class Name 名称。 */
-public async ensureClassName(className: string): Promise<ClassModel> {
+public async ensureClassName(className: string): Promise<DtsTypeDeclarationModel> {
     const cached = this.loadedModels.get(className)
     if (cached !== undefined) return cached
 
@@ -125,7 +126,7 @@ public async ensureReachableClosure(rootClassName: string): Promise<readonly str
 
     /** 执行 build Loaded Surface 操作。 */
 public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
-    const models: Record<string, ClassModel> = {}
+    const models: Record<string, DtsTypeDeclarationModel> = {}
     for (const [className, model] of this.loadedModels.entries()) models[className] = model
     const fileIndex: Record<string, readonly string[]> = {}
     for (const sourcePath of this.loadedFilePaths) fileIndex[sourcePath] = []
@@ -148,9 +149,9 @@ public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
   }
 }
 
-function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: ClassModel): readonly string[] {
+function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: DtsTypeDeclarationModel): readonly string[] {
   const linked = new Set<string>()
-  const constructorMeta = model.constructorMeta
+  const constructorMeta = linkedConstructor(model)
   if (constructorMeta !== undefined) {
     collectFromTypeText(manifest, linked, constructorMeta.signatureText)
     for (const parameter of constructorMeta.parameters ?? []) {
@@ -162,8 +163,8 @@ function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: Clas
       }
     }
   }
-  for (const attribute of model.attributes) collectFromSchema(manifest, linked, attribute.schema)
-  for (const method of model.methods) {
+  for (const attribute of linkedAttributes(model)) collectFromSchema(manifest, linked, attribute.schema ?? true)
+  for (const method of linkedMethods(model)) {
     collectFromTypeText(manifest, linked, method.signatureText)
     for (const parameter of method.parameters ?? []) {
       collectFromDtsType(manifest, linked, parameter.type)
@@ -208,7 +209,7 @@ function collectFromTypeText(
 function collectFromSchema(
   manifest: DtsClassModelBundleManifest,
   linked: Set<string>,
-  schema: ClassModel['attributes'][number]['schema'] | undefined,
+  schema: AiJsonSchema | undefined,
 ): void {
   if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return
   if (typeof schema.$ref === 'string') collectFromTypeText(manifest, linked, schema.$ref)
@@ -218,6 +219,24 @@ function collectFromSchema(
   for (const child of schema.anyOf ?? []) collectFromSchema(manifest, linked, child)
   for (const child of schema.oneOf ?? []) collectFromSchema(manifest, linked, child)
   for (const child of schema.allOf ?? []) collectFromSchema(manifest, linked, child)
+}
+
+function linkedConstructor(model: DtsTypeDeclarationModel): ConstructorMeta | undefined {
+  return model.declarationKind === 'class' ? model.classDecl.constructorMeta : undefined
+}
+
+function linkedAttributes(model: DtsTypeDeclarationModel): readonly AttributeMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.attributes
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.attributes
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.attributes
+  return model.enumDecl.members
+}
+
+function linkedMethods(model: DtsTypeDeclarationModel): readonly MethodMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.methods
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.methods
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.methods
+  return []
 }
 
 function containsTypeReference(typeText: string, className: string): boolean {

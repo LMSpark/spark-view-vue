@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/projection/dts-renderer",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/projection/dts-renderer",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/dts-renderer\n职责：维护 DTS ClassModel 知识链路中的 dts-renderer 能力，围绕 ModelGuideRenderInput、ModelGuide、AttributeGuideRenderInput 等 6 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/dts-renderer\n职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 dts-renderer 能力，围绕 ModelGuideRenderInput、ModelGuide、AttributeGuideRenderInput 等 6 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ModelGuideRenderInput",
@@ -18,34 +18,25 @@
       "MethodGuide"
     ]
   },
-  "symbols": [
-    "ModelGuideRenderInput",
-    "ModelGuide",
-    "AttributeGuideRenderInput",
-    "AttributeGuide",
-    "MethodGuideRenderInput",
-    "MethodGuide"
-  ],
-  "generatedAt": "2026-06-12T05:39:09.362Z",
   "$defs": {
     "ModelGuideRenderInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ModelGuideRenderInput",
-      "description": "Model Guide Render Input 的输入数据。",
       "properties": {
         "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
+          "$ref": "../class-model/types.d.ts.json#/$defs/ClassModelDocument"
         },
         "kind": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ModelGuide": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ModelGuide",
-      "description": "Model Guide 的语义模型。",
       "properties": {
         "kind": {
           "type": "string"
@@ -56,16 +47,16 @@
         "text": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AttributeGuideRenderInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AttributeGuideRenderInput",
-      "description": "Attribute Guide Render Input 的输入数据。",
       "properties": {
         "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
+          "$ref": "../class-model/types.d.ts.json#/$defs/ClassModelDocument"
         },
         "kind": {
           "type": "string"
@@ -73,12 +64,13 @@
         "attributeName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AttributeGuide": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AttributeGuide",
-      "description": "Attribute Guide 的语义模型。",
       "properties": {
         "kind": {
           "type": "string"
@@ -92,16 +84,16 @@
         "text": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "MethodGuideRenderInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "MethodGuideRenderInput",
-      "description": "Method Guide Render Input 的输入数据。",
       "properties": {
         "document": {
-          "type": "object",
-          "title": "ClassModelDocument"
+          "$ref": "../class-model/types.d.ts.json#/$defs/ClassModelDocument"
         },
         "kind": {
           "type": "string"
@@ -109,12 +101,13 @@
         "methodName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "MethodGuide": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "MethodGuide",
-      "description": "Method Guide 的语义模型。",
       "properties": {
         "kind": {
           "type": "string"
@@ -128,321 +121,256 @@
         "text": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T13:02:05.190Z",
   "models": {
     "ModelGuideRenderInput": {
-      "kind": "ModelGuideRenderInput",
-      "className": "ModelGuideRenderInput",
+      "name": "ModelGuideRenderInput",
       "jsdoc": "Model Guide Render Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
         "line": 9,
         "className": "ModelGuideRenderInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "document",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ClassModelDocument"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "document",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ModelGuide": {
-      "kind": "ModelGuide",
-      "className": "ModelGuide",
+      "name": "ModelGuide",
       "jsdoc": "Model Guide 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: string;\n    declaration: string;\n    text: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: string;\n    declaration: string;\n    text: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
         "line": 14,
         "className": "ModelGuide",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declaration",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "text",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: string;\n    declaration: string;\n    text: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: string;\n    declaration: string;\n    text: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declaration",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "text",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AttributeGuideRenderInput": {
-      "kind": "AttributeGuideRenderInput",
-      "className": "AttributeGuideRenderInput",
+      "name": "AttributeGuideRenderInput",
       "jsdoc": "Attribute Guide Render Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    attributeName: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    attributeName: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
         "line": 20,
         "className": "AttributeGuideRenderInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "document",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ClassModelDocument"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "attributeName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    attributeName: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    attributeName: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "document",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "attributeName",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AttributeGuide": {
-      "kind": "AttributeGuide",
-      "className": "AttributeGuide",
+      "name": "AttributeGuide",
       "jsdoc": "Attribute Guide 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: string;\n    attributeName: string;\n    declaration: string;\n    text: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: string;\n    attributeName: string;\n    declaration: string;\n    text: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
         "line": 26,
         "className": "AttributeGuide",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "attributeName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declaration",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "text",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: string;\n    attributeName: string;\n    declaration: string;\n    text: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: string;\n    attributeName: string;\n    declaration: string;\n    text: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "attributeName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declaration",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "text",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "MethodGuideRenderInput": {
-      "kind": "MethodGuideRenderInput",
-      "className": "MethodGuideRenderInput",
+      "name": "MethodGuideRenderInput",
       "jsdoc": "Method Guide Render Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    methodName: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    methodName: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
         "line": 33,
         "className": "MethodGuideRenderInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "document",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ClassModelDocument"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "methodName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    methodName: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    methodName: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "document",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "methodName",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "MethodGuide": {
-      "kind": "MethodGuide",
-      "className": "MethodGuide",
+      "name": "MethodGuide",
       "jsdoc": "Method Guide 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: string;\n    methodName: string;\n    declaration: string;\n    text: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: string;\n    methodName: string;\n    declaration: string;\n    text: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
         "line": 39,
         "className": "MethodGuide",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "methodName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declaration",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "text",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: string;\n    methodName: string;\n    declaration: string;\n    text: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: string;\n    methodName: string;\n    declaration: string;\n    text: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "methodName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declaration",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "text",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

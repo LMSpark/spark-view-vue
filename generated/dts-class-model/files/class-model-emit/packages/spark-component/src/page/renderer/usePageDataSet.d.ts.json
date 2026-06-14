@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/renderer/usePageDataSet",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
@@ -14,145 +14,131 @@
       "UsePageDataSetReturn"
     ]
   },
-  "symbols": [
-    "UsePageDataSetOptions",
-    "UsePageDataSetReturn"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.988Z",
   "$defs": {
     "UsePageDataSetOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UsePageDataSetOptions",
-      "description": "DataSet 管理选项接口",
       "properties": {
         "enableDataSet": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "UsePageDataSetReturn": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UsePageDataSetReturn",
-      "description": "DataSet 管理返回值接口",
       "properties": {
         "dataSet": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataSet"
+              "$ref": "../../../../spark-data/src/dataset.d.ts.json#/$defs/DataSet"
             },
             {
               "type": "null"
             }
           ]
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.initDataSet.params": {
+          "type": "object",
+          "properties": {
+            "ds": {
+              "$ref": "../../../../spark-data/src/dataset.d.ts.json#/$defs/DataSet"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.initDataSet.return": true,
+        "method.clearDataSet.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearDataSet.return": true
       }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.988Z",
   "models": {
     "UsePageDataSetOptions": {
-      "kind": "UsePageDataSetOptions",
-      "className": "UsePageDataSetOptions",
+      "name": "UsePageDataSetOptions",
       "jsdoc": "DataSet 管理选项接口",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 是否 enable Data Set。 */\n    enableDataSet?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
         "line": 11,
         "className": "UsePageDataSetOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "enableDataSet",
-          "jsdoc": "是否 enable Data Set。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 是否 enable Data Set。 */\n    enableDataSet?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "enableDataSet",
+              "jsdoc": "是否 enable Data Set。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "UsePageDataSetReturn": {
-      "kind": "UsePageDataSetReturn",
-      "className": "UsePageDataSetReturn",
+      "name": "UsePageDataSetReturn",
       "jsdoc": "DataSet 管理返回值接口",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 当前 DataSet 实例（getter，无响应式，每次访问返回最新值） */\n    readonly dataSet: DataSet | null;\n    /** 设置 DataSet 实例（必须是已编译好的 DataSet） */\n    initDataSet: (ds: DataSet) => void;\n    /** clear Data Set 回调。 */\n    clearDataSet: () => void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
         "line": 16,
         "className": "UsePageDataSetReturn",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "dataSet",
-          "jsdoc": "当前 DataSet 实例（getter，无响应式，每次访问返回最新值）",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataSet"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "initDataSet",
-          "jsdoc": "设置 DataSet 实例（必须是已编译好的 DataSet）",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 当前 DataSet 实例（getter，无响应式，每次访问返回最新值） */\n    readonly dataSet: DataSet | null;\n    /** 设置 DataSet 实例（必须是已编译好的 DataSet） */\n    initDataSet: (ds: DataSet) => void;\n    /** clear Data Set 回调。 */\n    clearDataSet: () => void;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "ds",
-              "type": {
-                "type": "reference",
-                "name": "DataSet"
-              }
+              "name": "dataSet",
+              "jsdoc": "当前 DataSet 实例（getter，无响应式，每次访问返回最新值）",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "ds": {
-                "type": "object",
-                "title": "DataSet"
+          "methods": [
+            {
+              "name": "initDataSet",
+              "jsdoc": "设置 DataSet 实例（必须是已编译好的 DataSet）",
+              "parameters": [
+                {
+                  "name": "ds",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataSet"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "clearDataSet",
-          "jsdoc": "clear Data Set 回调。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            {
+              "name": "clearDataSet",
+              "jsdoc": "clear Data Set 回调。",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

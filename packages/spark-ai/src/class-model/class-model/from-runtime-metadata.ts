@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/from-runtime-metadata
- * 职责：维护 DTS ClassModel 知识链路中的 from-runtime-metadata 能力，围绕 RuntimeDocumentInput 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 from-runtime-metadata 能力，围绕 RuntimeDocumentInput 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/class-model/from-runtime-metadata 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/from-runtime-metadata 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonSchemaObject } from '../../json'
 import type { AiRuntimeApiMetadataJson } from '../metadata'
@@ -21,7 +21,7 @@ export function createClassModelDocumentFromRuntimeDocument(
 ): ClassModelDocument {
   const module = document.modules[0]
   if (module === undefined) {
-    throw new Error('ClassModel runtime document requires at least one runtime API metadata entry.')
+    throw new Error('DtsTypeDeclarationModel runtime document requires at least one runtime API metadata entry.')
   }
   return createClassModelDocumentFromRuntimeApiMetadata({
     module,

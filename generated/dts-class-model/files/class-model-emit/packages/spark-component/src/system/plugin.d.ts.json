@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/system/plugin.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:system/plugin",
     "sourcePath": "class-model-emit/packages/spark-component/src/system/plugin.d.ts",
@@ -13,49 +13,44 @@
       "SparkPluginOptions"
     ]
   },
-  "symbols": [
-    "SparkPluginOptions"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.000Z",
   "$defs": {
     "SparkPluginOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SparkPluginOptions",
-      "description": "Spark Plugin Options 的调用配置。",
       "properties": {
         "registry": {
-          "type": "object",
-          "title": "ComponentRegistry"
+          "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.000Z",
   "models": {
     "SparkPluginOptions": {
-      "kind": "SparkPluginOptions",
-      "className": "SparkPluginOptions",
+      "name": "SparkPluginOptions",
       "jsdoc": "Spark Plugin Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 自定义注册表（测试/隔离场景用） */\n    registry?: ComponentRegistry;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/system/plugin.d.ts",
         "line": 10,
         "className": "SparkPluginOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "registry",
-          "jsdoc": "自定义注册表（测试/隔离场景用）",
-          "schema": {
-            "type": "object",
-            "title": "ComponentRegistry"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 自定义注册表（测试/隔离场景用） */\n    registry?: ComponentRegistry;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "registry",
+              "jsdoc": "自定义注册表（测试/隔离场景用）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/business/lifecycle-types",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
@@ -18,25 +18,20 @@
       "AiAgentAfterFunctionCallOptions"
     ]
   },
-  "symbols": [
-    "AiAgentBeforeFunctionCallStatus",
-    "AiAgentBeforeFunctionCallDirective",
-    "AiAgentBeforeFunctionCallOptions",
-    "AiAgentLifecycleStatus",
-    "AiAgentLifecycleDirective",
-    "AiAgentAfterFunctionCallOptions"
-  ],
-  "generatedAt": "2026-06-13T12:31:45.739Z",
   "$defs": {
     "AiAgentBeforeFunctionCallStatus": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AiAgentBeforeFunctionCallStatus",
-      "description": "工具调用前置裁决三态：\n'allow'  — 允许本次工具调用继续执行\n'reject' — 拒绝本次工具调用，回灌失败 tool result，当前 turn 可继续\n'abort'  — 中止当前 turn，并进入会话停止流程"
+      "enum": [
+        "allow",
+        "reject",
+        "abort"
+      ]
     },
     "AiAgentBeforeFunctionCallDirective": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentBeforeFunctionCallDirective",
-      "description": "工具调用前置裁决指令。\n字段：\nstatus                — 必填，allow / reject / abort 之一\nreason                — 可选，拒绝或中止原因\nfix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\nfinalAssistantMessage — 可选，abort 时发送给用户的最终消息\nreleaseInstance       — 可选，abort 时是否释放模块实例资源",
       "properties": {
         "status": {
           "$ref": "#/$defs/AiAgentBeforeFunctionCallStatus"
@@ -53,12 +48,13 @@
         "releaseInstance": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentBeforeFunctionCallOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentBeforeFunctionCallOptions",
-      "description": "beforeFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。",
       "properties": {
         "toolName": {
           "type": "string"
@@ -67,17 +63,22 @@
           "type": "object",
           "title": "AiJsonParams"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentLifecycleStatus": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AiAgentLifecycleStatus",
-      "description": "生命周期状态三态：\n'continue' — 继续下一轮工具调用（默认）\n'complete' — 业务目标已达成，正常结束当前 turn\n'abort'    — 业务异常或用户取消，中止当前 turn"
+      "enum": [
+        "continue",
+        "complete",
+        "abort"
+      ]
     },
     "AiAgentLifecycleDirective": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentLifecycleDirective",
-      "description": "生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n字段：\nstatus               — 必填，三态之一\nreason               — 可选，结束原因（complete/abort 时建议提供）\nfinalAssistantMessage — 可选，结束时发送给用户的最终消息\nreleaseInstance      — 可选，是否在结束时释放模块实例资源",
       "properties": {
         "status": {
           "$ref": "#/$defs/AiAgentLifecycleStatus"
@@ -91,12 +92,13 @@
         "releaseInstance": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentAfterFunctionCallOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentAfterFunctionCallOptions",
-      "description": "afterFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的具体信息：\ntoolName — 被调用的工具名称\nargs     — 调用参数（已通过 JSON Schema 校验）\nresult   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）",
       "properties": {
         "toolName": {
           "type": "string"
@@ -106,301 +108,251 @@
           "title": "AiJsonParams"
         },
         "result": {
-          "type": "object",
-          "title": "AiAgentFunctionCallResult<unknown>"
+          "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentFunctionCallResult"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-13T12:31:45.739Z",
   "models": {
     "AiAgentBeforeFunctionCallStatus": {
-      "kind": "AiAgentBeforeFunctionCallStatus",
-      "className": "AiAgentBeforeFunctionCallStatus",
+      "name": "AiAgentBeforeFunctionCallStatus",
       "jsdoc": "工具调用前置裁决三态：\n'allow'  — 允许本次工具调用继续执行\n'reject' — 拒绝本次工具调用，回灌失败 tool result，当前 turn 可继续\n'abort'  — 中止当前 turn，并进入会话停止流程",
-      "shapeKind": "type",
-      "declarationTypeText": "'allow' | 'reject' | 'abort'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'allow'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'reject'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'abort'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
         "line": 16,
         "className": "AiAgentBeforeFunctionCallStatus",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'allow' | 'reject' | 'abort'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'allow'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'reject'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'abort'"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiAgentBeforeFunctionCallDirective": {
-      "kind": "AiAgentBeforeFunctionCallDirective",
-      "className": "AiAgentBeforeFunctionCallDirective",
+      "name": "AiAgentBeforeFunctionCallDirective",
       "jsdoc": "工具调用前置裁决指令。\n字段：\nstatus                — 必填，allow / reject / abort 之一\nreason                — 可选，拒绝或中止原因\nfix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\nfinalAssistantMessage — 可选，abort 时发送给用户的最终消息\nreleaseInstance       — 可选，abort 时是否释放模块实例资源",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
         "line": 27,
         "className": "AiAgentBeforeFunctionCallDirective",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiAgentBeforeFunctionCallStatus"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "reason",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "fix",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "finalAssistantMessage",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "releaseInstance",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reason",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fix",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "finalAssistantMessage",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "releaseInstance",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentBeforeFunctionCallOptions": {
-      "kind": "AiAgentBeforeFunctionCallOptions",
-      "className": "AiAgentBeforeFunctionCallOptions",
+      "name": "AiAgentBeforeFunctionCallOptions",
       "jsdoc": "beforeFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。",
-      "shapeKind": "type",
-      "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AiAgentRuntimeContext",
-          "targetName": "AiAgentRuntimeContext"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
         "line": 40,
         "className": "AiAgentBeforeFunctionCallOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "toolName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AiAgentRuntimeContext",
+            "targetName": "AiAgentRuntimeContext"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "args",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonParams"
-          },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "args",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentLifecycleStatus": {
-      "kind": "AiAgentLifecycleStatus",
-      "className": "AiAgentLifecycleStatus",
+      "name": "AiAgentLifecycleStatus",
       "jsdoc": "生命周期状态三态：\n'continue' — 继续下一轮工具调用（默认）\n'complete' — 业务目标已达成，正常结束当前 turn\n'abort'    — 业务异常或用户取消，中止当前 turn",
-      "shapeKind": "type",
-      "declarationTypeText": "'continue' | 'complete' | 'abort'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'continue'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'complete'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'abort'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
         "line": 50,
         "className": "AiAgentLifecycleStatus",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'continue' | 'complete' | 'abort'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'continue'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'complete'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'abort'"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiAgentLifecycleDirective": {
-      "kind": "AiAgentLifecycleDirective",
-      "className": "AiAgentLifecycleDirective",
+      "name": "AiAgentLifecycleDirective",
       "jsdoc": "生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n字段：\nstatus               — 必填，三态之一\nreason               — 可选，结束原因（complete/abort 时建议提供）\nfinalAssistantMessage — 可选，结束时发送给用户的最终消息\nreleaseInstance      — 可选，是否在结束时释放模块实例资源",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
         "line": 60,
         "className": "AiAgentLifecycleDirective",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/AiAgentLifecycleStatus"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "reason",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "finalAssistantMessage",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "releaseInstance",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reason",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "finalAssistantMessage",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "releaseInstance",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentAfterFunctionCallOptions": {
-      "kind": "AiAgentAfterFunctionCallOptions",
-      "className": "AiAgentAfterFunctionCallOptions",
+      "name": "AiAgentAfterFunctionCallOptions",
       "jsdoc": "afterFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的具体信息：\ntoolName — 被调用的工具名称\nargs     — 调用参数（已通过 JSON Schema 校验）\nresult   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）",
-      "shapeKind": "type",
-      "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AiAgentRuntimeContext",
-          "targetName": "AiAgentRuntimeContext"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
         "line": 75,
         "className": "AiAgentAfterFunctionCallOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "toolName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AiAgentRuntimeContext",
+            "targetName": "AiAgentRuntimeContext"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "args",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonParams"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "result",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentFunctionCallResult<unknown>"
-          },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "args",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "result",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

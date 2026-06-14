@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/script-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:script-types",
     "sourcePath": "class-model-emit/packages/spark-data/src/script-types.d.ts",
@@ -14,45 +14,38 @@
       "FieldRenderState"
     ]
   },
-  "symbols": [
-    "PermissionActionContext",
-    "FieldRenderState"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.015Z",
   "$defs": {
     "PermissionActionContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PermissionActionContext",
-      "description": "权限动作上下文（脚本可用）",
       "properties": {
         "modelPermission": {
-          "type": "object",
-          "title": "ModelPermission"
+          "$ref": "types.d.ts.json#/$defs/ModelPermission"
         },
         "row": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataRow"
+              "$ref": "types.d.ts.json#/$defs/DataRow"
             },
             {
               "type": "null"
             }
           ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "FieldRenderState": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "FieldRenderState",
-      "description": "字段渲染状态（脚本可用）",
       "properties": {
         "field": {
           "type": "string"
         },
         "visibility": {
-          "type": "object",
-          "title": "FieldVisibility"
+          "$ref": "types.d.ts.json#/$defs/FieldVisibility"
         },
         "readable": {
           "type": "boolean"
@@ -66,123 +59,103 @@
         "shouldRender": {
           "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "field",
+        "visibility",
+        "readable",
+        "editable",
+        "displayValue",
+        "shouldRender"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.015Z",
   "models": {
     "PermissionActionContext": {
-      "kind": "PermissionActionContext",
-      "className": "PermissionActionContext",
+      "name": "PermissionActionContext",
       "jsdoc": "权限动作上下文（脚本可用）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** model Permission 字段。 */\n    modelPermission?: ModelPermission;\n    /** 当前行数据。 */\n    row?: DataRow | null;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/script-types.d.ts",
         "line": 15,
         "className": "PermissionActionContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "modelPermission",
-          "jsdoc": "model Permission 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ModelPermission"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "row",
-          "jsdoc": "当前行数据。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataRow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** model Permission 字段。 */\n    modelPermission?: ModelPermission;\n    /** 当前行数据。 */\n    row?: DataRow | null;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "modelPermission",
+              "jsdoc": "model Permission 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "row",
+              "jsdoc": "当前行数据。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "FieldRenderState": {
-      "kind": "FieldRenderState",
-      "className": "FieldRenderState",
+      "name": "FieldRenderState",
       "jsdoc": "字段渲染状态（脚本可用）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** visibility 字段。 */\n    visibility: FieldVisibility;\n    /** readable 字段。 */\n    readable: boolean;\n    /** editable 字段。 */\n    editable: boolean;\n    /** display Value 字段。 */\n    displayValue: string | undefined;\n    /** 是否 should Render。 */\n    shouldRender: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/script-types.d.ts",
         "line": 22,
         "className": "FieldRenderState",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "field",
-          "jsdoc": "field 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "visibility",
-          "jsdoc": "visibility 字段。",
-          "schema": {
-            "type": "object",
-            "title": "FieldVisibility"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "readable",
-          "jsdoc": "readable 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "editable",
-          "jsdoc": "editable 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "displayValue",
-          "jsdoc": "display Value 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "shouldRender",
-          "jsdoc": "是否 should Render。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** visibility 字段。 */\n    visibility: FieldVisibility;\n    /** readable 字段。 */\n    readable: boolean;\n    /** editable 字段。 */\n    editable: boolean;\n    /** display Value 字段。 */\n    displayValue: string | undefined;\n    /** 是否 should Render。 */\n    shouldRender: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "field",
+              "jsdoc": "field 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "visibility",
+              "jsdoc": "visibility 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "readable",
+              "jsdoc": "readable 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "editable",
+              "jsdoc": "editable 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "displayValue",
+              "jsdoc": "display Value 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "shouldRender",
+              "jsdoc": "是否 should Render。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

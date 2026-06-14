@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-json-document:schema/schema-resolution",
     "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
@@ -13,15 +13,11 @@
       "JsonSchemaInfo"
     ]
   },
-  "symbols": [
-    "JsonSchemaInfo"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.036Z",
   "$defs": {
     "JsonSchemaInfo": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonSchemaInfo",
-      "description": "Schema 路径解析结果",
       "properties": {
         "title": {
           "type": "string"
@@ -38,64 +34,59 @@
             "type": "string"
           }
         }
-      }
+      },
+      "required": [
+        "title",
+        "description",
+        "required",
+        "enumValues"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.036Z",
   "models": {
     "JsonSchemaInfo": {
-      "kind": "JsonSchemaInfo",
-      "className": "JsonSchemaInfo",
+      "name": "JsonSchemaInfo",
       "jsdoc": "Schema 路径解析结果",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** description 字段。 */\n    description: string;\n    /** 是否必填。 */\n    required: boolean;\n    /** enum Values 字段。 */\n    enumValues: string[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
         "line": 17,
         "className": "JsonSchemaInfo",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "title",
-          "jsdoc": "显示标题。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "description 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "required",
-          "jsdoc": "是否必填。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "enumValues",
-          "jsdoc": "enum Values 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** description 字段。 */\n    description: string;\n    /** 是否必填。 */\n    required: boolean;\n    /** enum Values 字段。 */\n    enumValues: string[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "title",
+              "jsdoc": "显示标题。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "description",
+              "jsdoc": "description 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "required",
+              "jsdoc": "是否必填。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "enumValues",
+              "jsdoc": "enum Values 字段。",
+              "readable": true,
+              "writable": true
             }
-          },
-          "readable": true,
-          "writable": true
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

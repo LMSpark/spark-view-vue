@@ -1,27 +1,23 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/class-model/project-from-declarations",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/project-from-declarations",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。\n边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不引入额外知识链路。\nAI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n职责：从 TypeScript DTS AST 和声明文本投影 DtsTypeDeclarationModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。\n边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不引入额外知识链路。\nAI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "ProjectDtsSourceFileProjectionOptions"
     ]
   },
-  "symbols": [
-    "ProjectDtsSourceFileProjectionOptions"
-  ],
-  "generatedAt": "2026-06-14T02:53:45.915Z",
   "$defs": {
     "ProjectDtsSourceFileProjectionOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectDtsSourceFileProjectionOptions",
-      "description": "Project Dts Source File Projection Options 的调用配置。",
       "properties": {
         "repoRoot": {
           "type": "string"
@@ -33,86 +29,59 @@
           "type": "object",
           "title": "ts.SourceFile"
         },
-        "checker": {
-          "type": "object",
-          "title": "ts.TypeChecker"
-        },
         "exportedOnly": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T13:47:29.384Z",
   "models": {
     "ProjectDtsSourceFileProjectionOptions": {
-      "kind": "ProjectDtsSourceFileProjectionOptions",
-      "className": "ProjectDtsSourceFileProjectionOptions",
+      "name": "ProjectDtsSourceFileProjectionOptions",
       "jsdoc": "Project Dts Source File Projection Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    checker: ts.TypeChecker;\n    exportedOnly?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    checker: ts.TypeChecker;\n    exportedOnly?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
         "line": 6,
         "className": "ProjectDtsSourceFileProjectionOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "repoRoot",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "absolutePath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sourceFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ts.SourceFile"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "checker",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ts.TypeChecker"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "exportedOnly",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    exportedOnly?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    exportedOnly?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "repoRoot",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "absolutePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sourceFile",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "exportedOnly",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -89,6 +89,7 @@ function unknownArrayParam(error: ErrorObject, key: string): readonly unknown[] 
 
 /** Json Schema Validator 的语义模型。 */
 export class JsonSchemaValidator {
+  /** 静态工具类禁止实例化；所有校验入口必须通过 static 方法共享同一个 AJV 2020 实例。 */
   private constructor() {}
 
   // ── 公共 API ──

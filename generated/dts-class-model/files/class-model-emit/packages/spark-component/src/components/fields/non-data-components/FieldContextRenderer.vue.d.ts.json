@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/non-data-components/FieldContextRenderer",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
@@ -18,15 +18,11 @@
     "componentLayer": "field-support",
     "componentDirectory": "fields/non-data-components"
   },
-  "symbols": [
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.590Z",
   "$defs": {
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "字段上下文渲染器属性，统一描述字段在表格、表单、详情中的展示状态。",
       "properties": {
         "displayLabel": {
           "type": "string"
@@ -53,10 +49,7 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "enum": [
-                "custom"
-              ]
+              "const": "custom"
             }
           ]
         },
@@ -79,61 +72,25 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
+              "const": "left"
             },
             {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
+              "const": "right"
             }
           ]
         },
         "align": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
+          "enum": [
+            "left",
+            "center",
+            "right"
           ]
         },
         "headerAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
+          "enum": [
+            "left",
+            "center",
+            "right"
           ]
         },
         "mergedChildren": {
@@ -163,52 +120,21 @@
         "validationRules": {
           "type": "array",
           "items": {
-            "type": "object",
-            "title": "FormItemRule"
+            "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
           }
         },
         "titleAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
+          "enum": [
+            "left",
+            "center",
+            "right"
           ]
         },
         "valueAlign": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "left"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "center"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "right"
-              ]
-            }
+          "enum": [
+            "left",
+            "center",
+            "right"
           ]
         },
         "headerCellClassName": {
@@ -223,374 +149,183 @@
         "valueClassName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.590Z",
   "models": {
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "字段上下文渲染器属性，统一描述字段在表格、表单、详情中的展示状态。",
-      "shapeKind": "type",
-      "declarationTypeText": "SparkNodeProps & {\n    /** 显示标签 */\n    displayLabel?: string | undefined;\n    /** 字段绑定名 */\n    fieldName?: string | undefined;\n    /** 列宽 */\n    width?: string | number | undefined;\n    /** 表格列是否允许拖动列宽 */\n    resizable?: boolean | undefined;\n    /** 表格列排序能力 */\n    sortable?: boolean | 'custom' | undefined;\n    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */\n    filterable?: boolean | undefined;\n    /** 最小列宽 */\n    minWidth?: string | number | undefined;\n    /** 固定列方向 */\n    fixed?: boolean | 'left' | 'right' | undefined;\n    /** 列对齐 */\n    align?: 'left' | 'center' | 'right' | undefined;\n    /** 表头对齐 */\n    headerAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 子组件配置 */\n    mergedChildren?: SparkNode[] | undefined;\n    /** 当前字段是否隐藏 */\n    isCurrentFieldHidden?: boolean | undefined;\n    /** 当前宿主下字段是否应渲染 */\n    shouldRenderCurrentField?: boolean | undefined;\n    /** 当前显示值 */\n    currentDisplayValue?: string | undefined;\n    /** 表格行级隐藏判断 */\n    isTableCellHidden?: ((row: DataRow) => boolean) | undefined;\n    /** 表格行级显示值获取 */\n    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined;\n    /** 表单验证规则 */\n    validationRules?: FormItemRule[] | undefined;\n    /** 标题对齐（table/detail） */\n    titleAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 值对齐（table/detail） */\n    valueAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 表头 class（table） */\n    headerCellClassName?: string | undefined;\n    /** 单元格 class（table） */\n    cellClassName?: string | undefined;\n    /** 标题 class（detail） */\n    titleClassName?: string | undefined;\n    /** 值 class（detail/table value） */\n    valueClassName?: string | undefined;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "SparkNodeProps",
-          "targetName": "SparkNodeProps"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 显示标签 */\n    displayLabel?: string | undefined;\n    /** 字段绑定名 */\n    fieldName?: string | undefined;\n    /** 列宽 */\n    width?: string | number | undefined;\n    /** 表格列是否允许拖动列宽 */\n    resizable?: boolean | undefined;\n    /** 表格列排序能力 */\n    sortable?: boolean | 'custom' | undefined;\n    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */\n    filterable?: boolean | undefined;\n    /** 最小列宽 */\n    minWidth?: string | number | undefined;\n    /** 固定列方向 */\n    fixed?: boolean | 'left' | 'right' | undefined;\n    /** 列对齐 */\n    align?: 'left' | 'center' | 'right' | undefined;\n    /** 表头对齐 */\n    headerAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 子组件配置 */\n    mergedChildren?: SparkNode[] | undefined;\n    /** 当前字段是否隐藏 */\n    isCurrentFieldHidden?: boolean | undefined;\n    /** 当前宿主下字段是否应渲染 */\n    shouldRenderCurrentField?: boolean | undefined;\n    /** 当前显示值 */\n    currentDisplayValue?: string | undefined;\n    /** 表格行级隐藏判断 */\n    isTableCellHidden?: ((row: DataRow) => boolean) | undefined;\n    /** 表格行级显示值获取 */\n    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined;\n    /** 表单验证规则 */\n    validationRules?: FormItemRule[] | undefined;\n    /** 标题对齐（table/detail） */\n    titleAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 值对齐（table/detail） */\n    valueAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 表头 class（table） */\n    headerCellClassName?: string | undefined;\n    /** 单元格 class（table） */\n    cellClassName?: string | undefined;\n    /** 标题 class（detail） */\n    titleClassName?: string | undefined;\n    /** 值 class（detail/table value） */\n    valueClassName?: string | undefined;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
         "line": 6,
         "className": "Props",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "FieldContextRenderer",
         "componentType": "r-context-renderer",
         "componentLevel": "field-level",
         "componentLayer": "field-support",
         "componentDirectory": "fields/non-data-components"
       },
-      "attributes": [
-        {
-          "name": "displayLabel",
-          "jsdoc": "显示标签",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "SparkNodeProps & {\n    /** 显示标签 */\n    displayLabel?: string | undefined;\n    /** 字段绑定名 */\n    fieldName?: string | undefined;\n    /** 列宽 */\n    width?: string | number | undefined;\n    /** 表格列是否允许拖动列宽 */\n    resizable?: boolean | undefined;\n    /** 表格列排序能力 */\n    sortable?: boolean | 'custom' | undefined;\n    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */\n    filterable?: boolean | undefined;\n    /** 最小列宽 */\n    minWidth?: string | number | undefined;\n    /** 固定列方向 */\n    fixed?: boolean | 'left' | 'right' | undefined;\n    /** 列对齐 */\n    align?: 'left' | 'center' | 'right' | undefined;\n    /** 表头对齐 */\n    headerAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 子组件配置 */\n    mergedChildren?: SparkNode[] | undefined;\n    /** 当前字段是否隐藏 */\n    isCurrentFieldHidden?: boolean | undefined;\n    /** 当前宿主下字段是否应渲染 */\n    shouldRenderCurrentField?: boolean | undefined;\n    /** 当前显示值 */\n    currentDisplayValue?: string | undefined;\n    /** 表格行级隐藏判断 */\n    isTableCellHidden?: ((row: DataRow) => boolean) | undefined;\n    /** 表格行级显示值获取 */\n    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined;\n    /** 表单验证规则 */\n    validationRules?: FormItemRule[] | undefined;\n    /** 标题对齐（table/detail） */\n    titleAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 值对齐（table/detail） */\n    valueAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 表头 class（table） */\n    headerCellClassName?: string | undefined;\n    /** 单元格 class（table） */\n    cellClassName?: string | undefined;\n    /** 标题 class（detail） */\n    titleClassName?: string | undefined;\n    /** 值 class（detail/table value） */\n    valueClassName?: string | undefined;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "SparkNodeProps",
+            "targetName": "SparkNodeProps"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "fieldName",
-          "jsdoc": "字段绑定名",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "width",
-          "jsdoc": "列宽",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "resizable",
-          "jsdoc": "表格列是否允许拖动列宽",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "sortable",
-          "jsdoc": "表格列排序能力",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "custom"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "filterable",
-          "jsdoc": "表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "minWidth",
-          "jsdoc": "最小列宽",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "fixed",
-          "jsdoc": "固定列方向",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "left"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "right"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "align",
-          "jsdoc": "列对齐",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "left"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "center"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "right"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "headerAlign",
-          "jsdoc": "表头对齐",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "left"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "center"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "right"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "mergedChildren",
-          "jsdoc": "子组件配置",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "SparkNode"
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 显示标签 */\n    displayLabel?: string | undefined;\n    /** 字段绑定名 */\n    fieldName?: string | undefined;\n    /** 列宽 */\n    width?: string | number | undefined;\n    /** 表格列是否允许拖动列宽 */\n    resizable?: boolean | undefined;\n    /** 表格列排序能力 */\n    sortable?: boolean | 'custom' | undefined;\n    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */\n    filterable?: boolean | undefined;\n    /** 最小列宽 */\n    minWidth?: string | number | undefined;\n    /** 固定列方向 */\n    fixed?: boolean | 'left' | 'right' | undefined;\n    /** 列对齐 */\n    align?: 'left' | 'center' | 'right' | undefined;\n    /** 表头对齐 */\n    headerAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 子组件配置 */\n    mergedChildren?: SparkNode[] | undefined;\n    /** 当前字段是否隐藏 */\n    isCurrentFieldHidden?: boolean | undefined;\n    /** 当前宿主下字段是否应渲染 */\n    shouldRenderCurrentField?: boolean | undefined;\n    /** 当前显示值 */\n    currentDisplayValue?: string | undefined;\n    /** 表格行级隐藏判断 */\n    isTableCellHidden?: ((row: DataRow) => boolean) | undefined;\n    /** 表格行级显示值获取 */\n    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined;\n    /** 表单验证规则 */\n    validationRules?: FormItemRule[] | undefined;\n    /** 标题对齐（table/detail） */\n    titleAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 值对齐（table/detail） */\n    valueAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 表头 class（table） */\n    headerCellClassName?: string | undefined;\n    /** 单元格 class（table） */\n    cellClassName?: string | undefined;\n    /** 标题 class（detail） */\n    titleClassName?: string | undefined;\n    /** 值 class（detail/table value） */\n    valueClassName?: string | undefined;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "displayLabel",
+              "jsdoc": "显示标签",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fieldName",
+              "jsdoc": "字段绑定名",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "width",
+              "jsdoc": "列宽",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "resizable",
+              "jsdoc": "表格列是否允许拖动列宽",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sortable",
+              "jsdoc": "表格列排序能力",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "filterable",
+              "jsdoc": "表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "minWidth",
+              "jsdoc": "最小列宽",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fixed",
+              "jsdoc": "固定列方向",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "align",
+              "jsdoc": "列对齐",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "headerAlign",
+              "jsdoc": "表头对齐",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "mergedChildren",
+              "jsdoc": "子组件配置",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isCurrentFieldHidden",
+              "jsdoc": "当前字段是否隐藏",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "shouldRenderCurrentField",
+              "jsdoc": "当前宿主下字段是否应渲染",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "currentDisplayValue",
+              "jsdoc": "当前显示值",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "isTableCellHidden",
+              "jsdoc": "表格行级隐藏判断",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "getTableCellDisplayValue",
+              "jsdoc": "表格行级显示值获取",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "validationRules",
+              "jsdoc": "表单验证规则",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "titleAlign",
+              "jsdoc": "标题对齐（table/detail）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "valueAlign",
+              "jsdoc": "值对齐（table/detail）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "headerCellClassName",
+              "jsdoc": "表头 class（table）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "cellClassName",
+              "jsdoc": "单元格 class（table）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "titleClassName",
+              "jsdoc": "标题 class（detail）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "valueClassName",
+              "jsdoc": "值 class（detail/table value）",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isCurrentFieldHidden",
-          "jsdoc": "当前字段是否隐藏",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "shouldRenderCurrentField",
-          "jsdoc": "当前宿主下字段是否应渲染",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "currentDisplayValue",
-          "jsdoc": "当前显示值",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isTableCellHidden",
-          "jsdoc": "表格行级隐藏判断",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "getTableCellDisplayValue",
-          "jsdoc": "表格行级显示值获取",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "validationRules",
-          "jsdoc": "表单验证规则",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "FormItemRule"
-            }
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "titleAlign",
-          "jsdoc": "标题对齐（table/detail）",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "left"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "center"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "right"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "valueAlign",
-          "jsdoc": "值对齐（table/detail）",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "left"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "center"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "right"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "headerCellClassName",
-          "jsdoc": "表头 class（table）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "cellClassName",
-          "jsdoc": "单元格 class（table）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "titleClassName",
-          "jsdoc": "标题 class（detail）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "valueClassName",
-          "jsdoc": "值 class（detail/table value）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

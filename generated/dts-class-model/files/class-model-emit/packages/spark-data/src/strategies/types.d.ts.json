@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/strategies/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:strategies/types",
     "sourcePath": "class-model-emit/packages/spark-data/src/strategies/types.d.ts",
@@ -15,294 +15,231 @@
       "CrudLifecycleEventInput"
     ]
   },
-  "symbols": [
-    "CrudOperation",
-    "CrudLifecycleEvent",
-    "CrudLifecycleEventInput"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.615Z",
   "$defs": {
     "CrudOperation": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "CrudOperation",
-      "description": "CRUD 操作类型"
+      "enum": [
+        "retrieve",
+        "create",
+        "update",
+        "delete",
+        "batchCreate",
+        "batchUpdate",
+        "batchDelete",
+        "import"
+      ]
     },
     "CrudLifecycleEvent": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CrudLifecycleEvent",
-      "description": "CRUD 生命周期事件\n- `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）\n- `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）",
       "properties": {
         "operation": {
           "$ref": "#/$defs/CrudOperation"
         },
         "phase": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "before"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "after"
-              ]
-            }
+          "enum": [
+            "before",
+            "after"
           ]
         },
         "data": true,
         "result": {
-          "type": "object",
-          "title": "CrudResult"
+          "$ref": "../types.d.ts.json#/$defs/CrudResult"
         },
         "cancelled": {
           "type": "boolean"
         }
+      },
+      "required": [
+        "cancelled"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.cancel.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.cancel.return": true
       }
     },
     "CrudLifecycleEventInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CrudLifecycleEventInput",
-      "description": "Crud Lifecycle Event Input 的输入数据。",
       "properties": {
         "operation": {
           "$ref": "#/$defs/CrudOperation"
         },
         "phase": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "before"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "after"
-              ]
-            }
+          "enum": [
+            "before",
+            "after"
           ]
         },
         "data": true,
         "result": {
-          "type": "object",
-          "title": "CrudResult"
+          "$ref": "../types.d.ts.json#/$defs/CrudResult"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.615Z",
   "models": {
     "CrudOperation": {
-      "kind": "CrudOperation",
-      "className": "CrudOperation",
+      "name": "CrudOperation",
       "jsdoc": "CRUD 操作类型",
-      "shapeKind": "type",
-      "declarationTypeText": "'retrieve' | 'create' | 'update' | 'delete' | 'batchCreate' | 'batchUpdate' | 'batchDelete' | 'import'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'retrieve'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'create'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'update'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'delete'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'batchCreate'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'batchUpdate'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'batchDelete'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'import'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/strategies/types.d.ts",
         "line": 9,
         "className": "CrudOperation",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'retrieve' | 'create' | 'update' | 'delete' | 'batchCreate' | 'batchUpdate' | 'batchDelete' | 'import'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'retrieve'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'create'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'update'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'delete'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'batchCreate'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'batchUpdate'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'batchDelete'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'import'"
+          }
+        ],
+        "members": {}
+      }
     },
     "CrudLifecycleEvent": {
-      "kind": "CrudLifecycleEvent",
-      "className": "CrudLifecycleEvent",
+      "name": "CrudLifecycleEvent",
       "jsdoc": "CRUD 生命周期事件\n- `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）\n- `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** operation 字段。 */\n    readonly operation: CrudOperation;\n    /** phase 字段。 */\n    readonly phase: 'before' | 'after';\n    /** 提交的数据（before 阶段为原始入参，after 阶段同前） */\n    readonly data: unknown;\n    /** 操作结果（仅 after 阶段） */\n    result?: CrudResult | undefined;\n    /** 是否已取消（仅 before 阶段有效） */\n    cancelled: boolean;\n    /** 取消操作（仅 before 阶段调用） */\n    cancel(): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/strategies/types.d.ts",
         "line": 16,
         "className": "CrudLifecycleEvent",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "operation",
-          "jsdoc": "operation 字段。",
-          "schema": {
-            "$ref": "#/$defs/CrudOperation"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "phase",
-          "jsdoc": "phase 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "before"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "after"
-                ]
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** operation 字段。 */\n    readonly operation: CrudOperation;\n    /** phase 字段。 */\n    readonly phase: 'before' | 'after';\n    /** 提交的数据（before 阶段为原始入参，after 阶段同前） */\n    readonly data: unknown;\n    /** 操作结果（仅 after 阶段） */\n    result?: CrudResult | undefined;\n    /** 是否已取消（仅 before 阶段有效） */\n    cancelled: boolean;\n    /** 取消操作（仅 before 阶段调用） */\n    cancel(): void;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "operation",
+              "jsdoc": "operation 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "phase",
+              "jsdoc": "phase 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "jsdoc": "提交的数据（before 阶段为原始入参，after 阶段同前）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "result",
+              "jsdoc": "操作结果（仅 after 阶段）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "cancelled",
+              "jsdoc": "是否已取消（仅 before 阶段有效）",
+              "readable": true,
+              "writable": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "cancel",
+              "jsdoc": "取消操作（仅 before 阶段调用）",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "data",
-          "jsdoc": "提交的数据（before 阶段为原始入参，after 阶段同前）",
-          "schema": true,
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "result",
-          "jsdoc": "操作结果（仅 after 阶段）",
-          "schema": {
-            "type": "object",
-            "title": "CrudResult"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "cancelled",
-          "jsdoc": "是否已取消（仅 before 阶段有效）",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
+            }
+          ]
         }
-      ],
-      "methods": [
-        {
-          "name": "cancel",
-          "jsdoc": "取消操作（仅 before 阶段调用）",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        }
-      ]
+      }
     },
     "CrudLifecycleEventInput": {
-      "kind": "CrudLifecycleEventInput",
-      "className": "CrudLifecycleEventInput",
+      "name": "CrudLifecycleEventInput",
       "jsdoc": "Crud Lifecycle Event Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/strategies/types.d.ts",
         "line": 31,
         "className": "CrudLifecycleEventInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "operation",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/CrudOperation"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "phase",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "before"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "after"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "data",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "result",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "CrudResult"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "operation",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "phase",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "result",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

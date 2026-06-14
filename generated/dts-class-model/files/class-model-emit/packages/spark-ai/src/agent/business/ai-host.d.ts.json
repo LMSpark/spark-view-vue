@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/business/ai-host",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
@@ -23,78 +23,64 @@
       "AiAgentHost"
     ]
   },
-  "symbols": [
-    "CreateAiAgentHostOptions",
-    "AiAgentHostRunResult",
-    "AiAgentHostEntryMap",
-    "AiAgentHostRegistrationInput",
-    "AiAgentHostEnsureCommand",
-    "AiAgentHostRegistrationSummary",
-    "AiAgentHostRegistrationDescription",
-    "AiAgentHostDryRunDiagnostic",
-    "AiAgentHostOrchestrationSummary",
-    "AiAgentHostDryRunResult",
-    "AiAgentHost"
-  ],
-  "generatedAt": "2026-06-14T01:03:51.209Z",
   "$defs": {
     "CreateAiAgentHostOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CreateAiAgentHostOptions",
-      "description": "Host 构造选项：必须提供 turnCallbacks（APP 层 I/O 回调），可选 maxToolRounds 安全阀",
       "properties": {
         "turnCallbacks": {
-          "type": "object",
-          "title": "AiAgentTurnCallbacks"
+          "$ref": "../transport/transport-types.d.ts.json#/$defs/AiAgentTurnCallbacks"
         },
         "maxToolRounds": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentHostRunResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHostRunResult",
-      "description": "Host.run() 的返回值：包含创建的 task 和 session",
       "properties": {
         "task": {
-          "type": "object",
-          "title": "AiAgentTask"
+          "$ref": "business-task.d.ts.json#/$defs/AiAgentTask"
         },
         "session": {
-          "type": "object",
-          "title": "AiAgentSession"
+          "$ref": "business-session.d.ts.json#/$defs/AiAgentSession"
         },
         "resultExtras": {
           "type": "object",
-          "title": "Readonly<Record<string, unknown>>"
+          "title": "Record<string, unknown>"
         }
-      }
-    },
-    "AiAgentHostEntryMap": {
-      "type": "object",
-      "title": "AiAgentHostEntryMap",
-      "description": "泛型注册表映射：alias → registration，供泛型类型推断使用"
-    },
-    "AiAgentHostRegistrationInput": {
-      "type": "object",
-      "title": "AiAgentHostRegistrationInput",
-      "description": "从 registration 泛型参数中提取输入类型"
+      },
+      "additionalProperties": false
     },
     "AiAgentHostEnsureCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHostEnsureCommand",
-      "description": "ensure 命令：延迟创建 registration 的工厂指令",
       "properties": {
         "moduleId": {
           "type": "string"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.create.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.create.return": {
+          "$ref": "registration-types.d.ts.json#/$defs/AiAgentRegistration"
+        }
       }
     },
     "AiAgentHostRegistrationSummary": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHostRegistrationSummary",
-      "description": "Ai Agent Host Registration Summary 的语义模型。",
       "properties": {
         "alias": {
           "type": "string"
@@ -109,50 +95,40 @@
           "type": "string"
         },
         "rootKinds": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "moduleCount": {
           "type": "number"
         },
         "status": true
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentHostRegistrationDescription": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHostRegistrationDescription",
-      "description": "Ai Agent Host Registration Description 的语义模型。",
       "properties": {
         "inspectReport": {
           "type": "object",
           "title": "AiAgentToolRuntimeInspectReport"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentHostDryRunDiagnostic": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHostDryRunDiagnostic",
-      "description": "Ai Agent Host Dry Run Diagnostic 的诊断信息。",
       "properties": {
         "level": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warn"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
+          "enum": [
+            "error",
+            "warn",
+            "info"
           ]
         },
         "code": {
@@ -164,12 +140,13 @@
         "fix": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentHostOrchestrationSummary": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHostOrchestrationSummary",
-      "description": "Ai Agent Host Orchestration Summary 的语义模型。",
       "properties": {
         "title": {
           "type": "string"
@@ -183,595 +160,729 @@
         "readonlyStepCount": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentHostDryRunResult": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "AiAgentHostDryRunResult",
-      "description": "Ai Agent Host Dry Run Result 的返回结果。"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "alias": {
+              "type": "string"
+            },
+            "moduleId": {
+              "type": "string"
+            },
+            "normalizedInput": {
+              "type": "object",
+              "title": "AiJsonParams"
+            },
+            "scope": {
+              "type": "object",
+              "title": "AiAgentScope"
+            },
+            "orchestration": {
+              "type": "object",
+              "title": "AiAgentOrchestrationPlan"
+            },
+            "orchestrationSummary": {
+              "type": "object",
+              "title": "AiAgentHostOrchestrationSummary"
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "inspectReport": {
+              "type": "object",
+              "title": "AiAgentToolRuntimeInspectReport"
+            },
+            "diagnostics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AiAgentHostDryRunDiagnostic"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "alias",
+            "moduleId",
+            "normalizedInput",
+            "scope",
+            "orchestration",
+            "orchestrationSummary",
+            "tools",
+            "inspectReport",
+            "diagnostics"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "alias": {
+              "type": "string"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "additionalProperties": false
+            },
+            "diagnostics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "AiAgentHostDryRunDiagnostic"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "alias",
+            "error",
+            "diagnostics"
+          ],
+          "additionalProperties": false
+        }
+      ]
     },
     "AiAgentHost": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentHost",
-      "description": "AI 业务宿主编排器。\n对外暴露四个核心方法：\nregister(alias, registration) — 注册一个业务（别名 + 注册项）\nensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）\nhas(alias)                    — 检查别名是否已注册\nrun(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）\n泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.create.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/CreateAiAgentHostOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.create.return": {
+          "$ref": "#/$defs/AiAgentHost"
+        },
+        "method.register.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "object",
+              "title": "K"
+            },
+            "registration": {
+              "$ref": "registration-types.d.ts.json#/$defs/AiAgentRegistration"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.register.return": {
+          "$ref": "#/$defs/AiAgentHost"
+        },
+        "method.ensure.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "object",
+              "title": "K"
+            },
+            "command": {
+              "$ref": "#/$defs/AiAgentHostEnsureCommand"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.ensure.return": {
+          "$ref": "#/$defs/AiAgentHost"
+        },
+        "method.has.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.has.return": {
+          "type": "boolean"
+        },
+        "method.listRegistrations.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.listRegistrations.return": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiAgentHostRegistrationSummary"
+          }
+        },
+        "method.describe.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.describe.return": {
+          "$ref": "#/$defs/AiAgentHostRegistrationDescription"
+        },
+        "method.listSessions.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.listSessions.return": {
+          "type": "array",
+          "items": {
+            "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentSessionRecord"
+          }
+        },
+        "method.unregister.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.unregister.return": {
+          "$ref": "#/$defs/AiAgentHost"
+        },
+        "method.dryRun.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            },
+            "args": true
+          },
+          "additionalProperties": false
+        },
+        "method.dryRun.return": {
+          "$ref": "#/$defs/AiAgentHostDryRunResult"
+        },
+        "method.run.params": {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "type": "string"
+            },
+            "args": {
+              "type": "object",
+              "title": "TInput"
+            },
+            "chat": {
+              "$ref": "business-task.d.ts.json#/$defs/AiAgentTaskChatOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.run.return": {
+          "type": "object",
+          "title": "Promise<AiAgentHostRunResult>"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-14T13:57:55.658Z",
   "models": {
     "CreateAiAgentHostOptions": {
-      "kind": "CreateAiAgentHostOptions",
-      "className": "CreateAiAgentHostOptions",
+      "name": "CreateAiAgentHostOptions",
       "jsdoc": "Host 构造选项：必须提供 turnCallbacks（APP 层 I/O 回调），可选 maxToolRounds 安全阀",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 16,
         "className": "CreateAiAgentHostOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "turnCallbacks",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTurnCallbacks"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "maxToolRounds",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "turnCallbacks",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "maxToolRounds",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentHostRunResult": {
-      "kind": "AiAgentHostRunResult",
-      "className": "AiAgentHostRunResult",
+      "name": "AiAgentHostRunResult",
       "jsdoc": "Host.run() 的返回值：包含创建的 task 和 session",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    task: AiAgentTask;\n    session: AiAgentSession;\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    task: AiAgentTask;\n    session: AiAgentSession;\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 21,
         "className": "AiAgentHostRunResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "task",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTask"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "session",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentSession"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "resultExtras",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, unknown>>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    task: AiAgentTask;\n    session: AiAgentSession;\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    task: AiAgentTask;\n    session: AiAgentSession;\n    resultExtras?: Readonly<Record<string, unknown>>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "task",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "session",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "resultExtras",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentHostEntryMap": {
-      "kind": "AiAgentHostEntryMap",
-      "className": "AiAgentHostEntryMap",
+      "name": "AiAgentHostEntryMap",
       "jsdoc": "泛型注册表映射：alias → registration，供泛型类型推断使用",
-      "shapeKind": "type",
-      "declarationTypeText": "Record<string, AiAgentRegistration>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Record<string, AiAgentRegistration>",
-          "targetName": "Record"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 27,
         "className": "AiAgentHostEntryMap",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Record<string, AiAgentRegistration>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Record<string, AiAgentRegistration>",
+            "targetName": "Record"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiAgentHostRegistrationInput": {
-      "kind": "AiAgentHostRegistrationInput",
-      "className": "AiAgentHostRegistrationInput",
+      "name": "AiAgentHostRegistrationInput",
       "jsdoc": "从 registration 泛型参数中提取输入类型",
-      "shapeKind": "type",
-      "declarationTypeText": "TRegistration extends AiAgentRegistration<infer TInput> ? TInput : AiJsonParams",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 29,
         "className": "AiAgentHostRegistrationInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "TRegistration extends AiAgentRegistration<infer TInput> ? TInput : AiJsonParams",
+        "members": {}
+      }
     },
     "AiAgentHostEnsureCommand": {
-      "kind": "AiAgentHostEnsureCommand",
-      "className": "AiAgentHostEnsureCommand",
+      "name": "AiAgentHostEnsureCommand",
       "jsdoc": "ensure 命令：延迟创建 registration 的工厂指令",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    moduleId: string;\n    create: () => AiAgentRegistration<TInput>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    moduleId: string;\n    create: () => AiAgentRegistration<TInput>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 31,
         "className": "AiAgentHostEnsureCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "moduleId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "create",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "unknown",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "TInput",
-                "refersToTypeParameter": true
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "AiAgentRegistration<TInput>"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    moduleId: string;\n    create: () => AiAgentRegistration<TInput>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    moduleId: string;\n    create: () => AiAgentRegistration<TInput>;\n}>",
+            "targetName": "Readonly"
           }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "moduleId",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "create",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentRegistration",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "TInput",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "AiAgentHostRegistrationSummary": {
-      "kind": "AiAgentHostRegistrationSummary",
-      "className": "AiAgentHostRegistrationSummary",
+      "name": "AiAgentHostRegistrationSummary",
       "jsdoc": "Ai Agent Host Registration Summary 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    alias: string;\n    moduleId: string;\n    name: string;\n    description: string;\n    rootKinds: readonly string[];\n    moduleCount: number;\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    alias: string;\n    moduleId: string;\n    name: string;\n    description: string;\n    rootKinds: readonly string[];\n    moduleCount: number;\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 36,
         "className": "AiAgentHostRegistrationSummary",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "alias",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "moduleId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rootKinds",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "moduleCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "status",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    alias: string;\n    moduleId: string;\n    name: string;\n    description: string;\n    rootKinds: readonly string[];\n    moduleCount: number;\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    alias: string;\n    moduleId: string;\n    name: string;\n    description: string;\n    rootKinds: readonly string[];\n    moduleCount: number;\n    status: AiAgentToolRuntimeInspectReport['status'];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "alias",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "moduleId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "description",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootKinds",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "moduleCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentHostRegistrationDescription": {
-      "kind": "AiAgentHostRegistrationDescription",
-      "className": "AiAgentHostRegistrationDescription",
+      "name": "AiAgentHostRegistrationDescription",
       "jsdoc": "Ai Agent Host Registration Description 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "AiAgentHostRegistrationSummary & Readonly<{\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AiAgentHostRegistrationSummary",
-          "targetName": "AiAgentHostRegistrationSummary"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "Readonly<{\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 46,
         "className": "AiAgentHostRegistrationDescription",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "inspectReport",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentToolRuntimeInspectReport"
+      "typeAlias": {
+        "declarationTypeText": "AiAgentHostRegistrationSummary & Readonly<{\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AiAgentHostRegistrationSummary",
+            "targetName": "AiAgentHostRegistrationSummary"
           },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    inspectReport: AiAgentToolRuntimeInspectReport;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "inspectReport",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentHostDryRunDiagnostic": {
-      "kind": "AiAgentHostDryRunDiagnostic",
-      "className": "AiAgentHostDryRunDiagnostic",
+      "name": "AiAgentHostDryRunDiagnostic",
       "jsdoc": "Ai Agent Host Dry Run Diagnostic 的诊断信息。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 50,
         "className": "AiAgentHostDryRunDiagnostic",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "level",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "error"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "warn"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "info"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "code",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "fix",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "level",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "code",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "message",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fix",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentHostOrchestrationSummary": {
-      "kind": "AiAgentHostOrchestrationSummary",
-      "className": "AiAgentHostOrchestrationSummary",
+      "name": "AiAgentHostOrchestrationSummary",
       "jsdoc": "Ai Agent Host Orchestration Summary 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    title?: string;\n    userMessageLength: number;\n    systemPromptLength: number;\n    readonlyStepCount: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    title?: string;\n    userMessageLength: number;\n    systemPromptLength: number;\n    readonlyStepCount: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 57,
         "className": "AiAgentHostOrchestrationSummary",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "title",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "userMessageLength",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "systemPromptLength",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "readonlyStepCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    title?: string;\n    userMessageLength: number;\n    systemPromptLength: number;\n    readonlyStepCount: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    title?: string;\n    userMessageLength: number;\n    systemPromptLength: number;\n    readonlyStepCount: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "title",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "userMessageLength",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "systemPromptLength",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "readonlyStepCount",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentHostDryRunResult": {
-      "kind": "AiAgentHostDryRunResult",
-      "className": "AiAgentHostDryRunResult",
+      "name": "AiAgentHostDryRunResult",
       "jsdoc": "Ai Agent Host Dry Run Result 的返回结果。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    ok: true;\n    alias: string;\n    moduleId: string;\n    normalizedInput: AiJsonParams;\n    scope: AiAgentScope;\n    orchestration: AiAgentOrchestrationPlan;\n    orchestrationSummary: AiAgentHostOrchestrationSummary;\n    tools: readonly string[];\n    inspectReport: AiAgentToolRuntimeInspectReport;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n} | {\n    ok: false;\n    alias: string;\n    error: Readonly<{\n        message: string;\n    }>;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    ok: true;\n    alias: string;\n    moduleId: string;\n    normalizedInput: AiJsonParams;\n    scope: AiAgentScope;\n    orchestration: AiAgentOrchestrationPlan;\n    orchestrationSummary: AiAgentHostOrchestrationSummary;\n    tools: readonly string[];\n    inspectReport: AiAgentToolRuntimeInspectReport;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n} | {\n    ok: false;\n    alias: string;\n    error: Readonly<{\n        message: string;\n    }>;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 64,
         "className": "AiAgentHostDryRunResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    ok: true;\n    alias: string;\n    moduleId: string;\n    normalizedInput: AiJsonParams;\n    scope: AiAgentScope;\n    orchestration: AiAgentOrchestrationPlan;\n    orchestrationSummary: AiAgentHostOrchestrationSummary;\n    tools: readonly string[];\n    inspectReport: AiAgentToolRuntimeInspectReport;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n} | {\n    ok: false;\n    alias: string;\n    error: Readonly<{\n        message: string;\n    }>;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    ok: true;\n    alias: string;\n    moduleId: string;\n    normalizedInput: AiJsonParams;\n    scope: AiAgentScope;\n    orchestration: AiAgentOrchestrationPlan;\n    orchestrationSummary: AiAgentHostOrchestrationSummary;\n    tools: readonly string[];\n    inspectReport: AiAgentToolRuntimeInspectReport;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n} | {\n    ok: false;\n    alias: string;\n    error: Readonly<{\n        message: string;\n    }>;\n    diagnostics: readonly AiAgentHostDryRunDiagnostic[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     },
     "AiAgentHost": {
-      "kind": "AiAgentHost",
-      "className": "AiAgentHost",
+      "name": "AiAgentHost",
       "jsdoc": "AI 业务宿主编排器。\n对外暴露四个核心方法：\nregister(alias, registration) — 注册一个业务（别名 + 注册项）\nensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）\nhas(alias)                    — 检查别名是否已注册\nrun(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）\n泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
         "line": 94,
         "className": "AiAgentHost",
         "declarationKind": "class"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "create",
-          "jsdoc": "静态工厂：创建 Host 实例",
-          "parameterStyle": "positional",
-          "parameters": [
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "用共享 host state 构造不可变门面实例；外部必须通过 create/register/ensure 创建或窄化 Host。",
+          "signatureText": "private constructor()"
+        },
+        "members": {
+          "methods": [
             {
-              "name": "options",
+              "name": "create",
+              "jsdoc": "静态工厂：创建 Host 实例",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "CreateAiAgentHostOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "CreateAiAgentHostOptions",
+                "name": "AiAgentHost",
                 "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
               }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "AiAgentHost",
-            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "$ref": "#/$defs/CreateAiAgentHostOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentHost"
-          }
-        },
-        {
-          "name": "register",
-          "jsdoc": "注册一个业务。\n流程：规范化别名 → 查重（重复抛错）→ 写入 registry + 双向映射 → 返回新实例。\n返回类型窄化后的新 Host 实例，旧实例不受影响。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
-              "type": {
-                "type": "reference",
-                "name": "K",
-                "refersToTypeParameter": true
-              }
             },
             {
-              "name": "registration",
-              "type": {
-                "type": "reference",
-                "name": "unknown",
-                "typeArguments": [
-                  {
+              "name": "register",
+              "jsdoc": "注册一个业务。\n流程：规范化别名 → 查重（重复抛错）→ 写入 registry + 双向映射 → 返回新实例。\n返回类型窄化后的新 Host 实例，旧实例不受影响。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
                     "type": "reference",
-                    "name": "TInput",
+                    "name": "K",
                     "refersToTypeParameter": true
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "AiAgentHost",
-            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-            "typeArguments": [
-              {
-                "type": "intersection",
-                "types": [
-                  {
+                },
+                {
+                  "name": "registration",
+                  "type": {
                     "type": "reference",
-                    "name": "TEntries",
-                    "refersToTypeParameter": true
-                  },
-                  {
-                    "type": "reference",
-                    "name": "Record",
+                    "name": "AiAgentRegistration",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
                     "typeArguments": [
                       {
                         "type": "reference",
-                        "name": "K",
+                        "name": "TInput",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "AiAgentHost",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intersection",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "TEntries",
                         "refersToTypeParameter": true
                       },
                       {
                         "type": "reference",
-                        "name": "unknown",
+                        "name": "Record",
                         "typeArguments": [
                           {
                             "type": "reference",
-                            "name": "TInput",
+                            "name": "K",
                             "refersToTypeParameter": true
+                          },
+                          {
+                            "type": "reference",
+                            "name": "AiAgentRegistration",
+                            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+                            "typeArguments": [
+                              {
+                                "type": "reference",
+                                "name": "TInput",
+                                "refersToTypeParameter": true
+                              }
+                            ]
                           }
                         ]
                       }
@@ -779,83 +890,68 @@
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": true,
-              "registration": {
-                "type": "object",
-                "title": "AiAgentRegistration<TInput>"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentHost",
-            "title": "AiAgentHost<TEntries & Record<K, AiAgentRegistration<TInput>>>"
-          }
-        },
-        {
-          "name": "ensure",
-          "jsdoc": "幂等注册（确保存在）。\n三种情况：\n1. alias 已绑定到相同 moduleId → 跳过（幂等）\n2. alias 已绑定到不同 moduleId → 抛错\n3. alias 不存在 → 调用 command.create() 创建并注册",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
-              "type": {
-                "type": "reference",
-                "name": "K",
-                "refersToTypeParameter": true
-              }
             },
             {
-              "name": "command",
-              "type": {
-                "type": "reference",
-                "name": "AiAgentHostEnsureCommand",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-                "typeArguments": [
-                  {
+              "name": "ensure",
+              "jsdoc": "幂等注册（确保存在）。\n三种情况：\n1. alias 已绑定到相同 moduleId → 跳过（幂等）\n2. alias 已绑定到不同 moduleId → 抛错\n3. alias 不存在 → 调用 command.create() 创建并注册",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
                     "type": "reference",
-                    "name": "TInput",
+                    "name": "K",
                     "refersToTypeParameter": true
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "AiAgentHost",
-            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
-            "typeArguments": [
-              {
-                "type": "intersection",
-                "types": [
-                  {
+                },
+                {
+                  "name": "command",
+                  "type": {
                     "type": "reference",
-                    "name": "TEntries",
-                    "refersToTypeParameter": true
-                  },
-                  {
-                    "type": "reference",
-                    "name": "Record",
+                    "name": "AiAgentHostEnsureCommand",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
                     "typeArguments": [
                       {
                         "type": "reference",
-                        "name": "K",
+                        "name": "TInput",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "AiAgentHost",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intersection",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "TEntries",
                         "refersToTypeParameter": true
                       },
                       {
                         "type": "reference",
-                        "name": "unknown",
+                        "name": "Record",
                         "typeArguments": [
                           {
                             "type": "reference",
-                            "name": "TInput",
+                            "name": "K",
                             "refersToTypeParameter": true
+                          },
+                          {
+                            "type": "reference",
+                            "name": "AiAgentRegistration",
+                            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+                            "typeArguments": [
+                              {
+                                "type": "reference",
+                                "name": "TInput",
+                                "refersToTypeParameter": true
+                              }
+                            ]
                           }
                         ]
                       }
@@ -863,340 +959,212 @@
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": true,
-              "command": {
-                "$ref": "#/$defs/AiAgentHostEnsureCommand",
-                "title": "AiAgentHostEnsureCommand<TInput>"
-              }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentHost",
-            "title": "AiAgentHost<TEntries & Record<K, AiAgentRegistration<TInput>>>"
-          }
-        },
-        {
-          "name": "has",
-          "jsdoc": "检查别名是否已注册",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "alias",
+              "name": "has",
+              "jsdoc": "检查别名是否已注册",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
+                "name": "boolean"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "listRegistrations",
-          "jsdoc": "列出 Host 当前暴露的业务入口，用于启动日志、控制台和接入自检。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "readonly AiAgentHostRegistrationSummary[]"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array"
-          }
-        },
-        {
-          "name": "describe",
-          "jsdoc": "查看单个 alias 的注册详情和 runtime.inspect() 结果。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "alias",
+              "name": "listRegistrations",
+              "jsdoc": "列出 Host 当前暴露的业务入口，用于启动日志、控制台和接入自检。",
               "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "optional",
-            "elementType": {
-              "type": "reference",
-              "name": "AiAgentHostRegistrationDescription",
-              "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
+                "type": "unknown",
+                "name": "readonly AiAgentHostRegistrationSummary[]"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentHostRegistrationDescription"
-          }
-        },
-        {
-          "name": "listSessions",
-          "jsdoc": "列出已注册业务的会话记录。传 alias 时只返回该业务，不传则聚合当前 Host 所有业务。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "alias",
+              "name": "describe",
+              "jsdoc": "查看单个 alias 的注册详情和 runtime.inspect() 结果。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "unknown",
-            "name": "readonly AiAgentSessionRecord[]"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "AiAgentHostRegistrationDescription",
+                  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
+                }
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array"
-          }
-        },
-        {
-          "name": "unregister",
-          "jsdoc": "删除一个 alias 及其绑定的业务注册项，主要用于测试、热更新和调试面板。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "alias",
+              "name": "listSessions",
+              "jsdoc": "列出已注册业务的会话记录。传 alias 时只返回该业务，不传则聚合当前 Host 所有业务。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "AiAgentHost",
-            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentHost"
-          }
-        },
-        {
-          "name": "dryRun",
-          "jsdoc": "只验证注册、输入契约、scope、orchestration 和工具清单，不调用 LLM。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
+                "type": "unknown",
+                "name": "readonly AiAgentSessionRecord[]"
               }
             },
             {
-              "name": "args",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "AiAgentHostDryRunResult",
-            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
-              },
-              "args": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/AiAgentHostDryRunResult"
-          }
-        },
-        {
-          "name": "run",
-          "jsdoc": "按已知 alias 运行注册业务，并使用该 alias 推断输入类型。\n按动态 alias 运行注册业务。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
+              "name": "unregister",
+              "jsdoc": "删除一个 alias 及其绑定的业务注册项，主要用于测试、热更新和调试面板。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "K",
-                "refersToTypeParameter": true
+                "name": "AiAgentHost",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
               }
             },
             {
-              "name": "args",
+              "name": "dryRun",
+              "jsdoc": "只验证注册、输入契约、scope、orchestration 和工具清单，不调用 LLM。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "args",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "AiAgentHostRegistrationInput",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
+                "name": "AiAgentHostDryRunResult",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
+              }
+            },
+            {
+              "name": "run",
+              "jsdoc": "运行一个已注册业务。\n这是外部系统触发 AI 能力的主入口。\n流程：解析 alias → 查找 moduleId → 委托 runAiAgent() 执行完整的\n\"创建 task → 启动 session → 发送首轮消息\" 流程。\n按已知 alias 运行注册业务，并使用该 alias 推断输入类型。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "reference",
+                    "name": "K",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "args",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentHostRegistrationInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "unknown",
+                        "name": "TEntries[K]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "chat",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentTaskChatOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
                 "typeArguments": [
                   {
-                    "type": "unknown",
-                    "name": "TEntries[K]"
+                    "type": "reference",
+                    "name": "AiAgentHostRunResult",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
                   }
                 ]
               }
             },
             {
-              "name": "chat",
+              "name": "run",
+              "jsdoc": "按动态 alias 运行注册业务。",
+              "parameters": [
+                {
+                  "name": "alias",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "args",
+                  "type": {
+                    "type": "reference",
+                    "name": "TInput",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "name": "chat",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiAgentTaskChatOptions",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              },
-              "flags": {
-                "isOptional": true
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentHostRunResult",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "AiAgentHostRunResult",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": true,
-              "args": {
-                "$ref": "#/$defs/AiAgentHostRegistrationInput",
-                "title": "AiAgentHostRegistrationInput<TEntries[K]>"
-              },
-              "chat": {
-                "type": "object",
-                "title": "AiAgentTaskChatOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiAgentHostRunResult>"
-          }
-        },
-        {
-          "name": "run",
-          "jsdoc": "按已知 alias 运行注册业务，并使用该 alias 推断输入类型。\n按动态 alias 运行注册业务。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "alias",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "args",
-              "type": {
-                "type": "reference",
-                "name": "TInput",
-                "refersToTypeParameter": true
-              }
-            },
-            {
-              "name": "chat",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "AiAgentHostRunResult",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "alias": {
-                "type": "string"
-              },
-              "args": true,
-              "chat": {
-                "type": "object",
-                "title": "AiAgentTaskChatOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiAgentHostRunResult>"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

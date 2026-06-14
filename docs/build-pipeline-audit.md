@@ -145,7 +145,7 @@ tsconfig.class-model-emit.json
 
 **静态发布**: `tools/vite-plugin-class-model-static.ts` — dev 中间件 + build 拷贝至 `dist/`。
 
-**门禁**: `verify:class-model:full` = generate → `verify-class-model-guide-params-schema.mjs` → `verify-class-model-semantic-gaps.mjs`（gapCount=0）→ verify:class-model（含 incremental 单测）→ typecheck。
+**门禁**: `verify:class-model:full` = generate → `verify-class-model-guide-json-schema.mjs` → `verify-class-model-semantic-gaps.mjs`（gapCount=0）→ verify:class-model（含 incremental 单测）→ typecheck。
 
 ---
 
@@ -274,7 +274,7 @@ Worker fetch('/dts-class-model/manifest.json')
 | `ensure:class-model-bundle.mjs` | ✅ | manifest 缺失时 generate |
 | `artifact-urls.ts` 运行时求值 | ✅ | `getDtsClassModelManifestUrl()` + env |
 | `assertClassModelBundleComplete` | ✅ | build / ensure 前校验 manifest + shard |
-| `assertClassModelGuideParamsSchema` | ✅ | `verify:class-model:full` 校验 paramsSchema |
+| `assertClassModelGuideExecutableSchemas` | ✅ | `verify:class-model:full` 校验 jsonSchema-only 可执行 schema |
 | `class-model-incremental-build` | ✅ | `.dts-manifest.json` mtime 增量；`verify:class-model` 单测 |
 
 ### 遗留问题（低优先级）
@@ -307,7 +307,7 @@ Worker fetch('/dts-class-model/manifest.json')
 ## 十二、后续优先级建议
 
 1. **P3** — `class-model-bundle-assert.test.ts` 扩展更多 semantic-gaps 失败样例（可选）
-2. **P3** — 逐步为 attribute/method 补 JSDoc（不计入 CI 门禁，仅改善 semantic-gaps.log 信息密度）
+2. **P3** — 逐步为 attribute/method 补 JSDoc（不计入 CI 门禁，仅改善 semantic-gaps.json 信息密度）
 3. **P3 — L2 官方增量 emit**：`.cache/class-model-emit/` + `incremental`/`tsBuildInfoFile` + `createIncrementalProgram`，部分变更时跳过未变 `.d.ts` 写出
 
 ---

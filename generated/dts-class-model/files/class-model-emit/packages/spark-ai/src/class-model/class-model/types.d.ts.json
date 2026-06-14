@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/class-model/types",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/class-model/types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/types",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n职责：维护 DTS ClassModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ClassModelDocument",
@@ -16,7 +16,20 @@
       "ComponentClassModelLayer",
       "ClassModelDeclarationRelationKind",
       "ClassModelDeclarationRelation",
-      "ClassModel",
+      "DtsTypeDeclarationKind",
+      "DtsTypeDeclarationBase",
+      "ClassDeclarationMembers",
+      "InterfaceDeclarationMembers",
+      "TypeAliasDeclarationMembers",
+      "ClassDeclarationPayload",
+      "InterfaceDeclarationPayload",
+      "TypeAliasDeclarationPayload",
+      "EnumDeclarationPayload",
+      "ClassDeclarationModel",
+      "InterfaceDeclarationModel",
+      "TypeAliasDeclarationModel",
+      "EnumDeclarationModel",
+      "DtsTypeDeclarationModel",
       "JsDocMeta",
       "ConstructorMeta",
       "AttributeMeta",
@@ -28,51 +41,27 @@
       "MethodMeta"
     ]
   },
-  "symbols": [
-    "ClassModelDocument",
-    "SourceProvenanceMeta",
-    "ComponentClassModelLevel",
-    "ComponentClassModelLayer",
-    "ClassModelDeclarationRelationKind",
-    "ClassModelDeclarationRelation",
-    "ClassModel",
-    "JsDocMeta",
-    "ConstructorMeta",
-    "AttributeMeta",
-    "MethodParameterStyle",
-    "DtsTypeMeta",
-    "DtsReflectionSignature",
-    "DtsReflectionTypeMeta",
-    "MethodParameterMeta",
-    "MethodMeta"
-  ],
-  "generatedAt": "2026-06-14T01:03:51.211Z",
   "$defs": {
     "ClassModelDocument": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelDocument",
-      "description": "ClassModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。",
       "properties": {
-        "schemaVersion": {
-          "type": "number"
-        },
+        "schemaVersion": true,
         "rootKind": {
           "type": "string"
         },
         "module": {
           "type": "object",
           "title": "AiRuntimeApiMetadataJson"
-        },
-        "$defs": {
-          "type": "object",
-          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "SourceProvenanceMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SourceProvenanceMeta",
-      "description": "Source Provenance Meta 的语义模型。",
       "properties": {
         "file": {
           "type": "string"
@@ -105,72 +94,60 @@
           "type": "string"
         },
         "declarationKind": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "class"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "interface"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "type"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "enum"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "function"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "const"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "component"
-              ]
-            }
+          "enum": [
+            "class",
+            "interface",
+            "typeAlias",
+            "enum",
+            "function",
+            "const",
+            "component"
           ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ComponentClassModelLevel": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ComponentClassModelLevel",
-      "description": "Component Class Model Level 的语义模型。"
+      "enum": [
+        "table-level",
+        "container",
+        "field-level",
+        "display",
+        "infrastructure"
+      ]
     },
     "ComponentClassModelLayer": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ComponentClassModelLayer",
-      "description": "Component Class Model Layer 的语义模型。"
+      "enum": [
+        "data-view-container",
+        "layout-container",
+        "zone-container",
+        "data-field",
+        "field-support",
+        "data-display",
+        "static-display",
+        "editor",
+        "support"
+      ]
     },
     "ClassModelDeclarationRelationKind": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ClassModelDeclarationRelationKind",
-      "description": "Class Model Declaration Relation Kind 的语义模型。"
+      "enum": [
+        "alias",
+        "intersection",
+        "union",
+        "extends",
+        "implements"
+      ]
     },
     "ClassModelDeclarationRelation": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelDeclarationRelation",
-      "description": "Class Model Declaration Relation 的语义模型。",
       "properties": {
         "kind": {
           "$ref": "#/$defs/ClassModelDeclarationRelationKind"
@@ -181,97 +158,250 @@
         "targetName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "ClassModel": {
+    "DtsTypeDeclarationKind": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "DtsTypeDeclarationKind",
+      "enum": [
+        "class",
+        "interface",
+        "typeAlias",
+        "enum"
+      ]
+    },
+    "DtsTypeDeclarationBase": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "ClassModel",
-      "description": "guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。",
+      "title": "DtsTypeDeclarationBase",
       "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "className": {
+        "name": {
           "type": "string"
         },
         "jsdoc": {
           "$ref": "#/$defs/JsDocMeta"
         },
+        "declarationKind": {
+          "type": "object",
+          "title": "TDeclarationKind"
+        },
+        "jsonSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClassDeclarationMembers": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ClassDeclarationMembers",
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttributeMeta"
+          }
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodMeta"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "InterfaceDeclarationMembers": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "InterfaceDeclarationMembers",
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttributeMeta"
+          }
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodMeta"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TypeAliasDeclarationMembers": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "TypeAliasDeclarationMembers",
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttributeMeta"
+          }
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodMeta"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClassDeclarationPayload": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ClassDeclarationPayload",
+      "properties": {
+        "constructorMeta": {
+          "$ref": "#/$defs/ConstructorMeta"
+        },
+        "declarationRelations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClassModelDeclarationRelation"
+          }
+        },
+        "members": {
+          "$ref": "#/$defs/ClassDeclarationMembers"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InterfaceDeclarationPayload": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "InterfaceDeclarationPayload",
+      "properties": {
+        "declarationRelations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClassModelDeclarationRelation"
+          }
+        },
+        "members": {
+          "$ref": "#/$defs/InterfaceDeclarationMembers"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TypeAliasDeclarationPayload": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "TypeAliasDeclarationPayload",
+      "properties": {
         "declarationTypeText": {
           "type": "string"
         },
         "declarationRelations": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClassModelDeclarationRelation"
+          }
         },
-        "shapeKind": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "class"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "interface"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "type"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "enum"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "function"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "const"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "component"
-              ]
-            }
-          ]
-        },
-        "provenance": {
-          "$ref": "#/$defs/SourceProvenanceMeta"
-        },
-        "constructorMeta": {
-          "$ref": "#/$defs/ConstructorMeta"
-        },
-        "attributes": {
-          "type": "array"
-        },
-        "methods": {
-          "type": "array"
+        "members": {
+          "$ref": "#/$defs/TypeAliasDeclarationMembers"
         }
-      }
+      },
+      "additionalProperties": false
+    },
+    "EnumDeclarationPayload": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "EnumDeclarationPayload",
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttributeMeta"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClassDeclarationModel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ClassDeclarationModel",
+      "properties": {
+        "classDecl": {
+          "$ref": "#/$defs/ClassDeclarationPayload"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InterfaceDeclarationModel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "InterfaceDeclarationModel",
+      "properties": {
+        "interfaceDecl": {
+          "$ref": "#/$defs/InterfaceDeclarationPayload"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TypeAliasDeclarationModel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "TypeAliasDeclarationModel",
+      "properties": {
+        "typeAlias": {
+          "$ref": "#/$defs/TypeAliasDeclarationPayload"
+        }
+      },
+      "additionalProperties": false
+    },
+    "EnumDeclarationModel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "EnumDeclarationModel",
+      "properties": {
+        "enumDecl": {
+          "$ref": "#/$defs/EnumDeclarationPayload"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DtsTypeDeclarationModel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "DtsTypeDeclarationModel",
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "ClassDeclarationModel"
+        },
+        {
+          "type": "object",
+          "title": "InterfaceDeclarationModel"
+        },
+        {
+          "type": "object",
+          "title": "TypeAliasDeclarationModel"
+        },
+        {
+          "type": "object",
+          "title": "EnumDeclarationModel"
+        }
+      ]
     },
     "JsDocMeta": {
-      "type": "object",
-      "title": "JsDocMeta",
-      "description": "Js Doc Meta 的语义模型。"
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "title": "JsDocMeta"
     },
     "ConstructorMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ConstructorMeta",
-      "description": "Constructor Meta 的语义模型。",
       "properties": {
         "signatureText": {
           "type": "string"
@@ -280,7 +410,10 @@
           "$ref": "#/$defs/MethodParameterStyle"
         },
         "parameters": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodParameterMeta"
+          }
         },
         "paramsSchema": {
           "type": "object",
@@ -292,12 +425,13 @@
         "provenance": {
           "$ref": "#/$defs/SourceProvenanceMeta"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AttributeMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AttributeMeta",
-      "description": "Attribute Meta 的语义模型。",
       "properties": {
         "name": {
           "type": "string"
@@ -318,52 +452,275 @@
         "provenance": {
           "$ref": "#/$defs/SourceProvenanceMeta"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "MethodParameterStyle": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "MethodParameterStyle",
-      "description": "Method Parameter Style 表达 .d.ts 签名的调用形态。\npositional 表示调用方按参数位置传入实参；named 表示签名使用对象解构，调用方传入一个承载命名字段的对象。"
+      "enum": [
+        "positional",
+        "named"
+      ]
     },
     "DtsTypeMeta": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DtsTypeMeta",
-      "description": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/typedoc-signature-alignment.md`](../../docs/typedoc-signature-alignment.md)"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "intrinsic"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "reference"
+            },
+            "name": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            },
+            "refersToTypeParameter": {
+              "type": "boolean"
+            },
+            "typeArguments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DtsTypeMeta"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "array"
+            },
+            "elementType": {
+              "type": "object",
+              "title": "DtsTypeMeta"
+            }
+          },
+          "required": [
+            "type",
+            "elementType"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "union"
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DtsTypeMeta"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "types"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "intersection"
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DtsTypeMeta"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "types"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "literal"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "optional"
+            },
+            "elementType": {
+              "type": "object",
+              "title": "DtsTypeMeta"
+            }
+          },
+          "required": [
+            "type",
+            "elementType"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "rest"
+            },
+            "elementType": {
+              "type": "object",
+              "title": "DtsTypeMeta"
+            }
+          },
+          "required": [
+            "type",
+            "elementType"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "tuple"
+            },
+            "elements": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DtsTypeMeta"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "elements"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "DtsReflectionTypeMeta"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "unknown"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      ]
     },
     "DtsReflectionSignature": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsReflectionSignature",
-      "description": "TypeDoc `ReflectionType` 精简：函数/构造签名。",
       "properties": {
         "parameters": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodParameterMeta"
+          }
         },
         "type": {
           "$ref": "#/$defs/DtsTypeMeta"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsReflectionTypeMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsReflectionTypeMeta",
-      "description": "DTS reflection 类型：承载函数或对象字面量中的签名树，用于回调参数和内联函数类型的递归寻址。",
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "reflection"
-          ]
+          "const": "reflection"
         },
         "declaration": {
           "type": "object",
-          "title": "Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>"
+          "properties": {
+            "signatures": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/DtsReflectionSignature"
+              }
+            }
+          },
+          "required": [
+            "signatures"
+          ],
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
     "MethodParameterMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "MethodParameterMeta",
-      "description": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。",
       "properties": {
         "name": {
           "type": "string"
@@ -373,7 +730,12 @@
         },
         "flags": {
           "type": "object",
-          "title": "Readonly<{\n        isOptional?: boolean;\n    }>"
+          "properties": {
+            "isOptional": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
         },
         "defaultValue": {
           "anyOf": [
@@ -391,12 +753,13 @@
             }
           ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "MethodMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "MethodMeta",
-      "description": "Method Meta 的语义模型。",
       "properties": {
         "name": {
           "type": "string"
@@ -408,7 +771,10 @@
           "$ref": "#/$defs/MethodParameterStyle"
         },
         "parameters": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodParameterMeta"
+          }
         },
         "type": {
           "$ref": "#/$defs/DtsTypeMeta"
@@ -430,1110 +796,1228 @@
         "provenance": {
           "$ref": "#/$defs/SourceProvenanceMeta"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T13:04:58.995Z",
   "models": {
     "ClassModelDocument": {
-      "kind": "ClassModelDocument",
-      "className": "ClassModelDocument",
-      "jsdoc": "ClassModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiRuntimeApiMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiRuntimeApiMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "name": "ClassModelDocument",
+      "jsdoc": "DtsTypeDeclarationModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 DtsTypeDeclarationModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 17,
         "className": "ClassModelDocument",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "schemaVersion",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rootKind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "module",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiRuntimeApiMetadataJson"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "$defs",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiRuntimeApiMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiRuntimeApiMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "schemaVersion",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootKind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "module",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "$defs",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "SourceProvenanceMeta": {
-      "kind": "SourceProvenanceMeta",
-      "className": "SourceProvenanceMeta",
+      "name": "SourceProvenanceMeta",
       "jsdoc": "Source Provenance Meta 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 24,
         "className": "SourceProvenanceMeta",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "file",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "line",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "className",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "memberName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "typeEntryFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentType",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentLevel",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ComponentClassModelLevel"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentLayer",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ComponentClassModelLayer"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentDirectory",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "declarationKind",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "class"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "interface"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "type"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "enum"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "function"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "const"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "component"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component';\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component';\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "file",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "line",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "className",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "memberName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "typeEntryFile",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentType",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLevel",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLayer",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentDirectory",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationKind",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ComponentClassModelLevel": {
-      "kind": "ComponentClassModelLevel",
-      "className": "ComponentClassModelLevel",
+      "name": "ComponentClassModelLevel",
       "jsdoc": "Component Class Model Level 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'table-level' | 'container' | 'field-level' | 'display' | 'infrastructure'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'table-level'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'container'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'field-level'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'display'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'infrastructure'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 38,
         "className": "ComponentClassModelLevel",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'table-level' | 'container' | 'field-level' | 'display' | 'infrastructure'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'table-level'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'container'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'field-level'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'display'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'infrastructure'"
+          }
+        ],
+        "members": {}
+      }
     },
     "ComponentClassModelLayer": {
-      "kind": "ComponentClassModelLayer",
-      "className": "ComponentClassModelLayer",
+      "name": "ComponentClassModelLayer",
       "jsdoc": "Component Class Model Layer 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'data-view-container' | 'layout-container' | 'zone-container' | 'data-field' | 'field-support' | 'data-display' | 'static-display' | 'editor' | 'support'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'data-view-container'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'layout-container'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'zone-container'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'data-field'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'field-support'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'data-display'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'static-display'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'editor'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'support'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 40,
         "className": "ComponentClassModelLayer",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'data-view-container' | 'layout-container' | 'zone-container' | 'data-field' | 'field-support' | 'data-display' | 'static-display' | 'editor' | 'support'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'data-view-container'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'layout-container'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'zone-container'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'data-field'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'field-support'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'data-display'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'static-display'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'editor'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'support'"
+          }
+        ],
+        "members": {}
+      }
     },
     "ClassModelDeclarationRelationKind": {
-      "kind": "ClassModelDeclarationRelationKind",
-      "className": "ClassModelDeclarationRelationKind",
+      "name": "ClassModelDeclarationRelationKind",
       "jsdoc": "Class Model Declaration Relation Kind 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'alias' | 'intersection' | 'union' | 'extends' | 'implements'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'alias'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'intersection'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'union'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'extends'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'implements'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 42,
         "className": "ClassModelDeclarationRelationKind",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'alias' | 'intersection' | 'union' | 'extends' | 'implements'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'alias'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'intersection'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'union'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'extends'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'implements'"
+          }
+        ],
+        "members": {}
+      }
     },
     "ClassModelDeclarationRelation": {
-      "kind": "ClassModelDeclarationRelation",
-      "className": "ClassModelDeclarationRelation",
+      "name": "ClassModelDeclarationRelation",
       "jsdoc": "Class Model Declaration Relation 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 44,
         "className": "ClassModelDeclarationRelation",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ClassModelDeclarationRelationKind"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "typeText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "targetName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "typeText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "targetName",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
-    "ClassModel": {
-      "kind": "ClassModel",
-      "className": "ClassModel",
-      "jsdoc": "guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: string;\n    className: string;\n    jsdoc: JsDocMeta;\n    declarationTypeText?: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    shapeKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n    provenance?: SourceProvenanceMeta;\n    constructorMeta?: ConstructorMeta;\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: string;\n    className: string;\n    jsdoc: JsDocMeta;\n    declarationTypeText?: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    shapeKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n    provenance?: SourceProvenanceMeta;\n    constructorMeta?: ConstructorMeta;\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+    "DtsTypeDeclarationKind": {
+      "name": "DtsTypeDeclarationKind",
+      "jsdoc": "DTS type-space declaration kind；对应官方 Declaration Files 中会创建 type name 的声明。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 50,
-        "className": "ClassModel",
-        "declarationKind": "type"
+        "className": "DtsTypeDeclarationKind",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "'class' | 'interface' | 'typeAlias' | 'enum'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'class'"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "className",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
+          {
+            "kind": "union",
+            "typeText": "'interface'"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "jsdoc",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/JsDocMeta"
+          {
+            "kind": "union",
+            "typeText": "'typeAlias'"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declarationTypeText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "declarationRelations",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "shapeKind",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "class"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "interface"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "type"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "enum"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "function"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "const"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "component"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "provenance",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/SourceProvenanceMeta"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "constructorMeta",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ConstructorMeta"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "attributes",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "methods",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": []
+          {
+            "kind": "union",
+            "typeText": "'enum'"
+          }
+        ],
+        "members": {}
+      }
     },
-    "JsDocMeta": {
-      "kind": "JsDocMeta",
-      "className": "JsDocMeta",
-      "jsdoc": "Js Doc Meta 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "string",
+    "DtsTypeDeclarationBase": {
+      "name": "DtsTypeDeclarationBase",
+      "jsdoc": "DTS Type Declaration Base：所有 type-space 声明共享的最小身份和文档字段。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 63,
-        "className": "JsDocMeta",
-        "declarationKind": "type"
+        "line": 52,
+        "className": "DtsTypeDeclarationBase",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
-    },
-    "ConstructorMeta": {
-      "kind": "ConstructorMeta",
-      "className": "ConstructorMeta",
-      "jsdoc": "Constructor Meta 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
-          "targetName": "Readonly"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    /** 声明模型的唯一名称：class/interface/type/enum 的导出符号名。 */\n    name: string;\n    jsdoc: JsDocMeta;\n    declarationKind: TDeclarationKind;\n    /** bundle shard 持久化的 Draft 2020-12 独立校验文档。 */\n    jsonSchema?: AiJsonSchemaObject;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** 声明模型的唯一名称：class/interface/type/enum 的导出符号名。 */\n    name: string;\n    jsdoc: JsDocMeta;\n    declarationKind: TDeclarationKind;\n    /** bundle shard 持久化的 Draft 2020-12 独立校验文档。 */\n    jsonSchema?: AiJsonSchemaObject;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "jsdoc": "声明模型的唯一名称：class/interface/type/enum 的导出符号名。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsdoc",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationKind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsonSchema",
+              "jsdoc": "bundle shard 持久化的 Draft 2020-12 独立校验文档。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "provenance",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
+      }
+    },
+    "ClassDeclarationMembers": {
+      "name": "ClassDeclarationMembers",
+      "jsdoc": "Class Declaration Members 的语义模型。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 65,
-        "className": "ConstructorMeta",
-        "declarationKind": "type"
+        "line": 62,
+        "className": "ClassDeclarationMembers",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "signatureText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "parameterStyle",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/MethodParameterStyle"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "parameters",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "paramsSchema",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonSchemaObject"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "jsdoc",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/JsDocMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "provenance",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/SourceProvenanceMeta"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "attributes",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "methods",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
-    "AttributeMeta": {
-      "kind": "AttributeMeta",
-      "className": "AttributeMeta",
-      "jsdoc": "Attribute Meta 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+    "InterfaceDeclarationMembers": {
+      "name": "InterfaceDeclarationMembers",
+      "jsdoc": "Interface Declaration Members 的语义模型。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 74,
-        "className": "AttributeMeta",
-        "declarationKind": "type"
+        "line": 67,
+        "className": "InterfaceDeclarationMembers",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "schema",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonSchema"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "readable",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "writable",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "jsdoc",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/JsDocMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "provenance",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/SourceProvenanceMeta"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "attributes",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "methods",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
-    "MethodParameterStyle": {
-      "kind": "MethodParameterStyle",
-      "className": "MethodParameterStyle",
-      "jsdoc": "Method Parameter Style 表达 .d.ts 签名的调用形态。\npositional 表示调用方按参数位置传入实参；named 表示签名使用对象解构，调用方传入一个承载命名字段的对象。",
-      "shapeKind": "type",
-      "declarationTypeText": "'positional' | 'named'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'positional'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'named'"
-        }
-      ],
+    "TypeAliasDeclarationMembers": {
+      "name": "TypeAliasDeclarationMembers",
+      "jsdoc": "Type Alias Declaration Members 的语义模型。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 86,
-        "className": "MethodParameterStyle",
-        "declarationKind": "type"
+        "line": 72,
+        "className": "TypeAliasDeclarationMembers",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
-    },
-    "DtsTypeMeta": {
-      "kind": "DtsTypeMeta",
-      "className": "DtsTypeMeta",
-      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/typedoc-signature-alignment.md`](../../docs/typedoc-signature-alignment.md)",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}> | Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}> | Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}> | DtsReflectionTypeMeta | Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "union",
-          "typeText": "DtsReflectionTypeMeta",
-          "targetName": "DtsReflectionTypeMeta"
-        },
-        {
-          "kind": "union",
-          "typeText": "Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
-          "targetName": "Readonly"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "attributes",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "methods",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
+      }
+    },
+    "ClassDeclarationPayload": {
+      "name": "ClassDeclarationPayload",
+      "jsdoc": "Class Declaration Payload 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 77,
+        "className": "ClassDeclarationPayload",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    constructorMeta: ConstructorMeta;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    members: ClassDeclarationMembers;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    constructorMeta: ConstructorMeta;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    members: ClassDeclarationMembers;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "constructorMeta",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationRelations",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "members",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "InterfaceDeclarationPayload": {
+      "name": "InterfaceDeclarationPayload",
+      "jsdoc": "Interface Declaration Payload 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 83,
+        "className": "InterfaceDeclarationPayload",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    members: InterfaceDeclarationMembers;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    members: InterfaceDeclarationMembers;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "declarationRelations",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "members",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "TypeAliasDeclarationPayload": {
+      "name": "TypeAliasDeclarationPayload",
+      "jsdoc": "Type Alias Declaration Payload 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 88,
+        "className": "TypeAliasDeclarationPayload",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    declarationTypeText: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    members: TypeAliasDeclarationMembers;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    declarationTypeText: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    members: TypeAliasDeclarationMembers;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "declarationTypeText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationRelations",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "members",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "EnumDeclarationPayload": {
+      "name": "EnumDeclarationPayload",
+      "jsdoc": "Enum Declaration Payload 的语义模型。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
         "line": 94,
-        "className": "DtsTypeMeta",
-        "declarationKind": "type"
+        "className": "EnumDeclarationPayload",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    members: readonly AttributeMeta[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    members: readonly AttributeMeta[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "members",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "ClassDeclarationModel": {
+      "name": "ClassDeclarationModel",
+      "jsdoc": "Class Declaration Model 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 98,
+        "className": "ClassDeclarationModel",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "DtsTypeDeclarationBase<'class'> & Readonly<{\n    classDecl: ClassDeclarationPayload;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "DtsTypeDeclarationBase<'class'>",
+            "targetName": "DtsTypeDeclarationBase"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    classDecl: ClassDeclarationPayload;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "classDecl",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "InterfaceDeclarationModel": {
+      "name": "InterfaceDeclarationModel",
+      "jsdoc": "Interface Declaration Model 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 102,
+        "className": "InterfaceDeclarationModel",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "DtsTypeDeclarationBase<'interface'> & Readonly<{\n    interfaceDecl: InterfaceDeclarationPayload;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "DtsTypeDeclarationBase<'interface'>",
+            "targetName": "DtsTypeDeclarationBase"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    interfaceDecl: InterfaceDeclarationPayload;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "interfaceDecl",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "TypeAliasDeclarationModel": {
+      "name": "TypeAliasDeclarationModel",
+      "jsdoc": "Type Alias Declaration Model 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 106,
+        "className": "TypeAliasDeclarationModel",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "DtsTypeDeclarationBase<'typeAlias'> & Readonly<{\n    typeAlias: TypeAliasDeclarationPayload;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "DtsTypeDeclarationBase<'typeAlias'>",
+            "targetName": "DtsTypeDeclarationBase"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    typeAlias: TypeAliasDeclarationPayload;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "typeAlias",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "EnumDeclarationModel": {
+      "name": "EnumDeclarationModel",
+      "jsdoc": "Enum Declaration Model 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 110,
+        "className": "EnumDeclarationModel",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "DtsTypeDeclarationBase<'enum'> & Readonly<{\n    enumDecl: EnumDeclarationPayload;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "DtsTypeDeclarationBase<'enum'>",
+            "targetName": "DtsTypeDeclarationBase"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    enumDecl: EnumDeclarationPayload;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "enumDecl",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "DtsTypeDeclarationModel": {
+      "name": "DtsTypeDeclarationModel",
+      "jsdoc": "guide 投影时的 type-space 声明视图；按 declarationKind 判别，不承载 value/namespace 声明。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 114,
+        "className": "DtsTypeDeclarationModel",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "ClassDeclarationModel | InterfaceDeclarationModel | TypeAliasDeclarationModel | EnumDeclarationModel",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "ClassDeclarationModel",
+            "targetName": "ClassDeclarationModel"
+          },
+          {
+            "kind": "union",
+            "typeText": "InterfaceDeclarationModel",
+            "targetName": "InterfaceDeclarationModel"
+          },
+          {
+            "kind": "union",
+            "typeText": "TypeAliasDeclarationModel",
+            "targetName": "TypeAliasDeclarationModel"
+          },
+          {
+            "kind": "union",
+            "typeText": "EnumDeclarationModel",
+            "targetName": "EnumDeclarationModel"
+          }
+        ],
+        "members": {}
+      }
+    },
+    "JsDocMeta": {
+      "name": "JsDocMeta",
+      "jsdoc": "Js Doc Meta 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 116,
+        "className": "JsDocMeta",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "string",
+        "members": {}
+      }
+    },
+    "ConstructorMeta": {
+      "name": "ConstructorMeta",
+      "jsdoc": "Constructor Meta 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 118,
+        "className": "ConstructorMeta",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "signatureText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "parameterStyle",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "parameters",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "paramsSchema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsdoc",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "provenance",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "AttributeMeta": {
+      "name": "AttributeMeta",
+      "jsdoc": "Attribute Meta 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 127,
+        "className": "AttributeMeta",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    name: string;\n    schema?: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    name: string;\n    schema?: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "readable",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "writable",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsdoc",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "provenance",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "MethodParameterStyle": {
+      "name": "MethodParameterStyle",
+      "jsdoc": "Method Parameter Style 表达 .d.ts 签名的调用形态。\npositional 表示调用方按参数位置传入实参；named 表示签名使用对象解构，调用方传入一个承载命名字段的对象。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 139,
+        "className": "MethodParameterStyle",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "'positional' | 'named'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'positional'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'named'"
+          }
+        ],
+        "members": {}
+      }
+    },
+    "DtsTypeMeta": {
+      "name": "DtsTypeMeta",
+      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/typedoc-signature-alignment.md`](../../docs/typedoc-signature-alignment.md)",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 147,
+        "className": "DtsTypeMeta",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}> | Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}> | Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}> | DtsReflectionTypeMeta | Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}>",
+            "targetName": "Readonly"
+          },
+          {
+            "kind": "union",
+            "typeText": "DtsReflectionTypeMeta",
+            "targetName": "DtsReflectionTypeMeta"
+          },
+          {
+            "kind": "union",
+            "typeText": "Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     },
     "DtsReflectionSignature": {
-      "kind": "DtsReflectionSignature",
-      "className": "DtsReflectionSignature",
+      "name": "DtsReflectionSignature",
       "jsdoc": "TypeDoc `ReflectionType` 精简：函数/构造签名。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 129,
+        "line": 182,
         "className": "DtsReflectionSignature",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "parameters",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/DtsTypeMeta"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "parameters",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DtsReflectionTypeMeta": {
-      "kind": "DtsReflectionTypeMeta",
-      "className": "DtsReflectionTypeMeta",
+      "name": "DtsReflectionTypeMeta",
       "jsdoc": "DTS reflection 类型：承载函数或对象字面量中的签名树，用于回调参数和内联函数类型的递归寻址。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 134,
+        "line": 187,
         "className": "DtsReflectionTypeMeta",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "reflection"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declaration",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declaration",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "MethodParameterMeta": {
-      "kind": "MethodParameterMeta",
-      "className": "MethodParameterMeta",
+      "name": "MethodParameterMeta",
       "jsdoc": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n    flags?: Readonly<{\n        isOptional?: boolean;\n    }>;\n    defaultValue?: string | number | boolean | null;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n    flags?: Readonly<{\n        isOptional?: boolean;\n    }>;\n    defaultValue?: string | number | boolean | null;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 141,
+        "line": 194,
         "className": "MethodParameterMeta",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/DtsTypeMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "flags",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<{\n        isOptional?: boolean;\n    }>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "defaultValue",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n    flags?: Readonly<{\n        isOptional?: boolean;\n    }>;\n    defaultValue?: string | number | boolean | null;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n    flags?: Readonly<{\n        isOptional?: boolean;\n    }>;\n    defaultValue?: string | number | boolean | null;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "flags",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "defaultValue",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "MethodMeta": {
-      "kind": "MethodMeta",
-      "className": "MethodMeta",
+      "name": "MethodMeta",
       "jsdoc": "Method Meta 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 150,
+        "line": 203,
         "className": "MethodMeta",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "signatureText",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "parameterStyle",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/MethodParameterStyle"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "parameters",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "type",
-          "jsdoc": "TypeDoc SignatureReflection.type（返回类型 SSOT）。",
-          "schema": {
-            "$ref": "#/$defs/DtsTypeMeta"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "paramsSchema",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonSchemaObject"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "returnSchema",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonSchema"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "takesContext",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "jsdoc",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/JsDocMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "provenance",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/SourceProvenanceMeta"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "signatureText",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "parameterStyle",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "parameters",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "jsdoc": "TypeDoc SignatureReflection.type（返回类型 SSOT）。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "paramsSchema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "returnSchema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "takesContext",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsdoc",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "provenance",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

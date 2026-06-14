@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/options/option-normalization",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
@@ -14,16 +14,11 @@
       "NormalizeOptionFields"
     ]
   },
-  "symbols": [
-    "FieldOption",
-    "NormalizeOptionFields"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.595Z",
   "$defs": {
     "FieldOption": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "FieldOption",
-      "description": "Field Option 的语义模型。",
       "properties": {
         "label": {
           "type": "string"
@@ -50,12 +45,17 @@
             "$ref": "#/$defs/FieldOption"
           }
         }
-      }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "additionalProperties": false
     },
     "NormalizeOptionFields": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NormalizeOptionFields",
-      "description": "Normalize Option Fields 的语义模型。",
       "properties": {
         "labelField": {
           "type": "string"
@@ -69,126 +69,101 @@
         "disabledField": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "labelField",
+        "valueField",
+        "childrenField",
+        "disabledField"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.595Z",
   "models": {
     "FieldOption": {
-      "kind": "FieldOption",
-      "className": "FieldOption",
-      "jsdoc": "Field Option 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 展示标签。 */\n    label: string;\n    /** 当前值。 */\n    value: string | number | boolean;\n    /** 是否禁用。 */\n    disabled?: boolean;\n    /** 子节点集合。 */\n    children?: FieldOption[];\n}",
+      "name": "FieldOption",
+      "jsdoc": "@module\n@spark-appworks /spark-component:components/fields/options/option-normalization\n职责：维护\n@spark-appworks /spark-component 中 components/fields/options/option-normalization 的模块能力，围绕 FieldOption、NormalizeOptionFields 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/fields/options/option-normalization 的声明、导出和使用边界时，从本模块开始。\nField Option 的语义模型。",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
         "line": 8,
         "className": "FieldOption",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "label",
-          "jsdoc": "展示标签。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "value",
-          "jsdoc": "当前值。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "disabled",
-          "jsdoc": "是否禁用。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "children",
-          "jsdoc": "子节点集合。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/FieldOption"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 展示标签。 */\n    label: string;\n    /** 当前值。 */\n    value: string | number | boolean;\n    /** 是否禁用。 */\n    disabled?: boolean;\n    /** 子节点集合。 */\n    children?: FieldOption[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "label",
+              "jsdoc": "展示标签。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "value",
+              "jsdoc": "当前值。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "disabled",
+              "jsdoc": "是否禁用。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "children",
+              "jsdoc": "子节点集合。",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NormalizeOptionFields": {
-      "kind": "NormalizeOptionFields",
-      "className": "NormalizeOptionFields",
+      "name": "NormalizeOptionFields",
       "jsdoc": "Normalize Option Fields 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** label Field 字段。 */\n    labelField: string;\n    /** value Field 字段。 */\n    valueField: string;\n    /** children Field 字段。 */\n    childrenField: string;\n    /** disabled Field 字段。 */\n    disabledField: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
         "line": 19,
         "className": "NormalizeOptionFields",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "labelField",
-          "jsdoc": "label Field 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "valueField",
-          "jsdoc": "value Field 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "childrenField",
-          "jsdoc": "children Field 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "disabledField",
-          "jsdoc": "disabled Field 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** label Field 字段。 */\n    labelField: string;\n    /** value Field 字段。 */\n    valueField: string;\n    /** children Field 字段。 */\n    childrenField: string;\n    /** disabled Field 字段。 */\n    disabledField: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "labelField",
+              "jsdoc": "label Field 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "valueField",
+              "jsdoc": "value Field 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "childrenField",
+              "jsdoc": "children Field 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "disabledField",
+              "jsdoc": "disabled Field 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

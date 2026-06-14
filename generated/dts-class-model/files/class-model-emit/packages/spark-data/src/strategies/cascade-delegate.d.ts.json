@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:strategies/cascade-delegate",
     "sourcePath": "class-model-emit/packages/spark-data/src/strategies/cascade-delegate.d.ts",
@@ -13,120 +13,112 @@
       "CascadeDelegate"
     ]
   },
-  "symbols": [
-    "CascadeDelegate"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.017Z",
   "$defs": {
     "CascadeDelegate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CascadeDelegate",
-      "description": "Cascade Delegate 的语义模型。"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "$ref": "../data-view.d.ts.json#/$defs/DataView"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setupCascade.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.setupCascade.return": true,
+        "method.teardownCascade.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.teardownCascade.return": true,
+        "method.cancelPendingRequest.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.cancelPendingRequest.return": true,
+        "method.destroy.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.destroy.return": true
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.017Z",
   "models": {
     "CascadeDelegate": {
-      "kind": "CascadeDelegate",
-      "className": "CascadeDelegate",
+      "name": "CascadeDelegate",
       "jsdoc": "Cascade Delegate 的语义模型。",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/strategies/cascade-delegate.d.ts",
         "line": 9,
         "className": "CascadeDelegate",
         "declarationKind": "class"
       },
-      "constructorMeta": {
-        "jsdoc": "创建 Cascade Delegate 实例。",
-        "signatureText": "constructor(host: DataView)",
-        "parameterStyle": "positional",
-        "parameters": [
-          {
-            "name": "host",
-            "type": {
-              "type": "reference",
-              "name": "unknown"
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 Cascade Delegate 实例。",
+          "signatureText": "constructor(host: DataView)",
+          "parameters": [
+            {
+              "name": "host",
+              "type": {
+                "type": "reference",
+                "name": "DataView",
+                "sourcePath": "class-model-emit/packages/spark-data/src/data-view.d.ts"
+              }
             }
-          }
-        ],
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "host": {
-              "type": "object",
-              "title": "DataView"
+          ]
+        },
+        "members": {
+          "methods": [
+            {
+              "name": "setupCascade",
+              "jsdoc": "建立级联监听\n沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →\n按 dependencyType 订阅对应的父视图独立事件。",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "teardownCascade",
+              "jsdoc": "清理全部级联订阅",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "cancelPendingRequest",
+              "jsdoc": "取消待处理的级联请求",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "destroy",
+              "jsdoc": "销毁 — 清理订阅 + 取消待处理请求",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
             }
-          },
-          "additionalProperties": false
+          ]
         }
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "setupCascade",
-          "jsdoc": "建立级联监听\n沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →\n按 dependencyType 订阅对应的父视图独立事件。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "teardownCascade",
-          "jsdoc": "清理全部级联订阅",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "cancelPendingRequest",
-          "jsdoc": "取消待处理的级联请求",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "destroy",
-          "jsdoc": "销毁 — 清理订阅 + 取消待处理请求",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        }
-      ]
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-sandbox.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/native-runtime/native-script-sandbox",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-sandbox.d.ts",
@@ -13,39 +13,30 @@
       "AiNativeScriptSandboxContext"
     ]
   },
-  "symbols": [
-    "AiNativeScriptSandboxContext"
-  ],
+  "$defs": {},
   "generatedAt": "2026-06-14T01:03:51.210Z",
-  "$defs": {
-    "AiNativeScriptSandboxContext": {
-      "type": "object",
-      "title": "AiNativeScriptSandboxContext",
-      "description": "Ai Native Script Sandbox Context 的运行上下文。"
-    }
-  },
   "models": {
     "AiNativeScriptSandboxContext": {
-      "kind": "AiNativeScriptSandboxContext",
-      "className": "AiNativeScriptSandboxContext",
+      "name": "AiNativeScriptSandboxContext",
       "jsdoc": "Ai Native Script Sandbox Context 的运行上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<Record<string, unknown>>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<Record<string, unknown>>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-sandbox.d.ts",
         "line": 17,
         "className": "AiNativeScriptSandboxContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<Record<string, unknown>>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<Record<string, unknown>>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }

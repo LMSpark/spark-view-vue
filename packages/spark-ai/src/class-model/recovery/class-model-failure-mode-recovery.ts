@@ -1,14 +1,14 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/recovery/class-model-failure-mode-recovery
  * 职责：维护 @spark-appworks/spark-ai 中 class-model/recovery/class-model-failure-mode-recovery 的 ClassModelFailureModeRecoveryCommand、ClassModelFailureModeRecoveryContext语义。
- * 边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。
+ * 边界：只服务 spark-ai 包内部的 Agent/DtsTypeDeclarationModel 能力，不直接耦合应用页面或 Vue 组件。
  * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
  */
 /**
- * ClassModel recovery：从构建期动作失败描述派生 RECOVERY_HINT。
+ * DtsTypeDeclarationModel recovery：从构建期动作失败描述派生 RECOVERY_HINT。
  *
- * ClassModel 是知识索引（model_*_guide）；连通性在构建期 fail-fast，无 diagnostics 旁路。
- * recovery 只读动作失败描述，不遍历 ClassModel 图，不在 app 层补链。
+ * DtsTypeDeclarationModel 是知识索引（model_*_guide）；连通性在构建期 fail-fast，无 diagnostics 旁路。
+ * recovery 只读动作失败描述，不遍历 DtsTypeDeclarationModel 图，不在 app 层补链。
  */
 import type {
   AiApiActionFailureMode,

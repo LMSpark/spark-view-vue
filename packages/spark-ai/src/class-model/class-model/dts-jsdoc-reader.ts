@@ -1,59 +1,68 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-jsdoc-reader
- * 职责：从 TypeScript AST 节点读取和清理 JSDoc 注释，统一处理多行注释格式和标签。
- * 边界：只做 JSDoc 文本提取和格式归一化，不解释 JSDoc 语义、不生成 ClassModel 字段。
+ * 职责：从 `.d.ts` AST 节点读取和清理 JSDoc 注释，统一处理多行注释格式和标签。
+ * 边界：只读取节点文本和语法注释，不访问语义求值器、不解释 JSDoc 语义、不生成 DtsTypeDeclarationModel 字段。
  * AI用途：排查 JSDoc 读取丢失或格式错乱时，用本模块确认提取和清理规则。
  */
 import ts from 'typescript'
 
-export function readJsDoc(checker: ts.TypeChecker, node: ts.Node): string {
-  const symbol = readJsDocSymbol(checker, node)
-  if (symbol !== undefined) {
-    const lines = [
-      normalizeJsDocText(ts.displayPartsToString(symbol.getDocumentationComment(checker))),
-      ...symbol.getJsDocTags(checker).map(renderJsDocTag),
-    ].filter(line => line.length > 0)
-    if (lines.length > 0) return lines.join('\n')
+export function readJsDoc(node: ts.Node, sourceFile?: ts.SourceFile): string {
+  const jsDocNodes = readJsDocNodes(node)
+  if (jsDocNodes.length > 0) {
+    return jsDocNodes
+      .map(jsDoc => renderJsDocNode(jsDoc, sourceFile))
+      .filter(text => text.length > 0)
+      .join('\n')
+      .trim()
   }
-  const tags = ts.getJSDocCommentsAndTags(node)
-  if (tags.length === 0) return ''
-  return tags
-    .map(tag => normalizeJsDocText(tag.getText()))
+
+  const resolvedSourceFile = sourceFile ?? node.getSourceFile()
+  const fullText = resolvedSourceFile.getFullText()
+  const ranges = ts.getLeadingCommentRanges(fullText, node.getFullStart()) ?? []
+  return ranges
+    .map(range => fullText.slice(range.pos, range.end))
+    .filter(text => text.trim().startsWith('/**'))
+    .map(cleanJsDocBlock)
     .filter(text => text.length > 0)
     .join('\n')
     .trim()
 }
 
-export function readJsDocSymbol(checker: ts.TypeChecker, node: ts.Node): ts.Symbol | undefined {
-  const name = readDeclarationNameNode(node)
-  if (name !== undefined) {
-    const symbol = checker.getSymbolAtLocation(name)
-    if (symbol !== undefined) return symbol
-  }
-  return checker.getSymbolAtLocation(node)
+function readJsDocNodes(node: ts.Node): readonly ts.JSDoc[] {
+  return (node as ts.Node & { jsDoc?: readonly ts.JSDoc[] }).jsDoc ?? []
 }
 
-export function readDeclarationNameNode(node: ts.Node): ts.Node | undefined {
-  if (
-    ts.isClassDeclaration(node)
-    || ts.isInterfaceDeclaration(node)
-    || ts.isTypeAliasDeclaration(node)
-    || ts.isEnumDeclaration(node)
-    || ts.isFunctionDeclaration(node)
-    || ts.isPropertyDeclaration(node)
-    || ts.isPropertySignature(node)
-    || ts.isMethodDeclaration(node)
-    || ts.isMethodSignature(node)
-    || ts.isEnumMember(node)
-  ) {
-    return node.name
-  }
-  return undefined
+function renderJsDocNode(node: ts.JSDoc, sourceFile: ts.SourceFile | undefined): string {
+  const lines = [
+    normalizeJsDocComment(node.comment, sourceFile),
+    ...[...(node.tags ?? [])].map(tag => renderJsDocTag(tag, sourceFile)),
+  ].filter(line => line.length > 0)
+  return lines.join('\n').trim()
 }
 
-export function renderJsDocTag(tag: ts.JSDocTagInfo): string {
-  const text = tag.text === undefined ? '' : ts.displayPartsToString(tag.text).trim()
-  return text.length === 0 ? `@${tag.name}` : `@${tag.name} ${text}`
+function renderJsDocTag(tag: ts.JSDocTag, sourceFile: ts.SourceFile | undefined): string {
+  const text = normalizeJsDocComment(tag.comment, sourceFile)
+  const name = readJsDocTagName(tag, sourceFile)
+  const body = [name, text].filter(item => item.length > 0).join(' ')
+  const tagName = tag.tagName.getText(sourceFile)
+  return body.length === 0 ? `@${tagName}` : `@${tagName} ${body}`
+}
+
+function readJsDocTagName(tag: ts.JSDocTag, sourceFile: ts.SourceFile | undefined): string {
+  const named = tag as ts.JSDocTag & { name?: ts.EntityName | ts.Identifier }
+  return named.name?.getText(sourceFile) ?? ''
+}
+
+function normalizeJsDocComment(
+  comment: ts.JSDoc['comment'],
+  sourceFile: ts.SourceFile | undefined,
+): string {
+  if (comment === undefined) return ''
+  if (typeof comment === 'string') return normalizeJsDocText(comment)
+  if (Array.isArray(comment)) {
+    return normalizeJsDocText(comment.map(part => part.getText(sourceFile)).join(''))
+  }
+  return normalizeJsDocText(String(comment))
 }
 
 export function normalizeJsDocText(text: string): string {

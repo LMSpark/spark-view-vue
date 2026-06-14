@@ -33,7 +33,7 @@ ClassModel 编译 + 运行时 (generate:class-model-surface)
   详见 docs/build-pipeline-audit.md §五（官方 TS incremental / createIncrementalProgram）
 
 ClassModel 全量门禁 (verify:class-model:full)
-  generate:class-model-surface → verify-class-model-guide-params-schema.mjs → verify:class-model → typecheck
+  generate:class-model-surface → verify-class-model-guide-json-schema.mjs → verify:class-model → typecheck
   （读 packages/*/src，无需先 build:packages）
 ```
 
@@ -60,8 +60,8 @@ ClassModel 全量门禁 (verify:class-model:full)
 - `verify-model-convergence-offline.mjs`：模型收敛离线验收。
 - `generate-dts-class-model.mjs`：ClassModel 编译（内存 emit → JSON bundle；`--model` 增量）。
 - `lib/class-model-knowledge-refresh.mjs`：Node 宿主 refreshBundle 回调（触发 targeted compile）。
-- `lib/class-model-bundle-assert.mjs`：guide manifest + shard 完整性；`assertClassModelGuideParamsSchema` 供全量门禁。
-- `verify-class-model-guide-params-schema.mjs`：`verify:class-model:full` 的 paramsSchema 校验。
+- `lib/class-model-bundle-assert.mjs`：guide manifest + shard 完整性；`assertClassModelGuideExecutableSchemas` 供全量门禁。
+- `verify-class-model-guide-json-schema.mjs`：`verify:class-model:full` 的 jsonSchema-only 校验。
 - ClassModel 编译期 TS API：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
 
 ## 编译管线调试

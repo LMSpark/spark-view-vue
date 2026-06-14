@@ -1,11 +1,19 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/knowledge/class-model-knowledge-service
- * 职责：把 ClassModel surface 转成 query、modelGuide、attributeGuide 和 methodGuide 的可读知识结果。
+ * 职责：把 DtsTypeDeclarationModel surface 转成 query、modelGuide、attributeGuide 和 methodGuide 的可读知识结果。
  * 边界：只做知识检索和文本投影，不执行工具、不修改模型实例，也不读取生成文件系统。
  * AI用途：LLM 需要按 kind/action/attribute 获取模型知识时，用本模块理解查询如何收敛到可见上下文。
  */
-import type { AiJsonValue } from '../../json'
-import type { ClassModel, ClassModelDocument, SourceProvenanceMeta } from '../class-model/types'
+import type { AiJsonSchema, AiJsonValue } from '../../json'
+import type {
+  AttributeMeta,
+  DtsTypeDeclarationModel,
+  ClassModelDeclarationRelation,
+  ClassModelDocument,
+  ConstructorMeta,
+  MethodMeta,
+  SourceProvenanceMeta,
+} from '../class-model/types'
 import type { DtsClassModelSurfaceDocument } from '../class-model/dts-surface-types'
 import type { DtsTypeMeta } from '../class-model/types'
 import { resolveMethodReturnType, visitDtsTypeMeta } from '../class-model/dts-type-meta-ops'
@@ -89,20 +97,20 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
         .map(kind => readSurfaceModel(surface, kind))
         .filter(model => keyword === undefined || modelMatchesKeyword(model, keyword))
         .map(model => ({
-          kind: model.kind,
-          className: model.className,
+          kind: model.name,
+          name: model.name,
           summary: summarizeJsDoc(model.jsdoc),
           ...declarationRelationsProperty(model),
           ...componentProfileProperty(model.provenance),
           ...(input.includeMembers
             ? {
                 ...constructorQueryProperty(model),
-                attributes: model.attributes.map(attribute => ({
+                attributes: knowledgeAttributes(model).map(attribute => ({
                   name: attribute.name,
                   summary: summarizeJsDoc(attribute.jsdoc),
-                  typeText: jsonSchemaToTypeText(attribute.schema),
+                  typeText: jsonSchemaToTypeText(attribute.schema ?? true),
                 })),
-                methods: model.methods.map(method => ({
+                methods: knowledgeMethods(model).map(method => ({
                   name: method.name,
                   summary: summarizeJsDoc(method.jsdoc),
                   signature: renderMethodSignatureFromMeta(method),
@@ -122,22 +130,22 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
       .map(kind => projectClassModelForGuide(document, kind))
       .filter(model => keyword === undefined || modelMatchesKeyword(model, keyword))
       .map(model => ({
-        kind: model.kind,
-        className: model.className,
+        kind: model.name,
+        name: model.name,
         summary: summarizeJsDoc(model.jsdoc),
         ...componentProfileProperty(model.provenance),
         ...(input.includeMembers
           ? {
               ...constructorQueryProperty(model),
-              attributes: model.attributes.map(attribute => ({
+              attributes: knowledgeAttributes(model).map(attribute => ({
                 name: attribute.name,
                 summary: summarizeJsDoc(attribute.jsdoc),
-                  typeText: renderAttributeTypeText(document, model.kind, attribute),
+                  typeText: renderAttributeTypeText(document, model.name, attribute),
               })),
-              methods: model.methods.map(method => ({
+              methods: knowledgeMethods(model).map(method => ({
                 name: method.name,
                 summary: summarizeJsDoc(method.jsdoc),
-                  signature: renderMethodSignature(document, model.kind, method),
+                  signature: renderMethodSignature(document, model.name, method),
               })),
             }
           : {}),
@@ -164,13 +172,13 @@ public modelGuide(input: ClassModelModelGuideInput): string {
 public attributeGuide(input: ClassModelAttributeGuideInput): string {
     if (this.backend.mode === 'surface') {
       const model = readSurfaceModel(this.backend.surface, input.kind)
-      const attribute = model.attributes.find(candidate => candidate.name === input.attributeName)
-      if (attribute === undefined) throw new Error(`ClassModel attribute not found: ${input.kind}.${input.attributeName}`)
+      const attribute = knowledgeAttributes(model).find(candidate => candidate.name === input.attributeName)
+      if (attribute === undefined) throw new Error(`DtsTypeDeclarationModel attribute not found: ${input.kind}.${input.attributeName}`)
       return [
         renderComponentProfile(model.provenance),
         model.jsdoc.trim(),
-        `class ${model.className} {`,
-        indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema)}`),
+        `${modelDeclarationHeader(model)} {`,
+        indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema ?? true)}`),
         '}',
       ].filter(line => line.length > 0).join('\n')
     }
@@ -185,12 +193,12 @@ public attributeGuide(input: ClassModelAttributeGuideInput): string {
 public methodGuide(input: ClassModelMethodGuideInput): string {
     if (this.backend.mode === 'surface') {
       const model = readSurfaceModel(this.backend.surface, input.kind)
-      const method = model.methods.find(candidate => candidate.name === input.methodName)
-      if (method === undefined) throw new Error(`ClassModel method not found: ${input.kind}.${input.methodName}`)
+      const method = knowledgeMethods(model).find(candidate => candidate.name === input.methodName)
+      if (method === undefined) throw new Error(`DtsTypeDeclarationModel method not found: ${input.kind}.${input.methodName}`)
       const chunks = [
         renderComponentProfile(model.provenance),
         model.jsdoc.trim(),
-        `class ${model.className} {`,
+        `${modelDeclarationHeader(model)} {`,
         indent(renderSurfaceMethod(method)),
         '}',
       ]
@@ -216,9 +224,9 @@ function resolveBackend(options: ClassModelKnowledgeServiceOptions): KnowledgeBa
   throw new Error('ClassModelKnowledgeService requires document or surface+rootClassName.')
 }
 
-function readSurfaceModel(surface: DtsClassModelSurfaceDocument, className: string): ClassModel {
+function readSurfaceModel(surface: DtsClassModelSurfaceDocument, className: string): DtsTypeDeclarationModel {
   const model = surface.models[className]
-  if (model === undefined) throw new Error(`ClassModel not found: ${className}`)
+  if (model === undefined) throw new Error(`DtsTypeDeclarationModel not found: ${className}`)
   return model
 }
 
@@ -241,12 +249,12 @@ function listReachableSurfaceClassNames(
   return [...visited]
 }
 
-function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, model: ClassModel): readonly string[] {
+function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, model: DtsTypeDeclarationModel): readonly string[] {
   const linked = new Set<string>()
-  for (const relation of model.declarationRelations ?? []) {
+  for (const relation of knowledgeDeclarationRelations(model)) {
     collectTypeRefs(surface, linked, relation.targetName ?? relation.typeText)
   }
-  const constructorMeta = model.constructorMeta
+  const constructorMeta = knowledgeConstructor(model)
   if (constructorMeta !== undefined) {
     collectTypeRefs(surface, linked, constructorMeta.signatureText)
     for (const parameter of constructorMeta.parameters ?? []) {
@@ -258,8 +266,8 @@ function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, mode
       }
     }
   }
-  for (const attribute of model.attributes) collectSchemaTypeRefs(surface, linked, attribute.schema)
-  for (const method of model.methods) {
+  for (const attribute of knowledgeAttributes(model)) collectSchemaTypeRefs(surface, linked, attribute.schema ?? true)
+  for (const method of knowledgeMethods(model)) {
     collectTypeRefs(surface, linked, method.signatureText)
     for (const parameter of method.parameters ?? []) {
       collectDtsTypeRefs(surface, linked, parameter.type)
@@ -301,7 +309,7 @@ function collectTypeRefs(surface: DtsClassModelSurfaceDocument, linked: Set<stri
 function collectSchemaTypeRefs(
   surface: DtsClassModelSurfaceDocument,
   linked: Set<string>,
-  schema: ClassModel['attributes'][number]['schema'] | undefined,
+  schema: AiJsonSchema | undefined,
 ): void {
   if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return
   if (typeof schema.$ref === 'string') collectTypeRefs(surface, linked, schema.$ref)
@@ -313,27 +321,28 @@ function collectSchemaTypeRefs(
   for (const child of schema.allOf ?? []) collectSchemaTypeRefs(surface, linked, child)
 }
 
-function renderSurfaceClassModel(model: ClassModel): string {
+function renderSurfaceClassModel(model: DtsTypeDeclarationModel): string {
+  const constructorMeta = knowledgeConstructor(model)
   const parts = [
     renderComponentProfile(model.provenance),
     renderDeclarationRelations(model),
     model.jsdoc.trim(),
-    `class ${model.className} {`,
-    ...(model.constructorMeta === undefined
+    `${modelDeclarationHeader(model)} {`,
+    ...(constructorMeta === undefined
       ? []
-      : [indent(renderSurfaceConstructor(model.constructorMeta))]),
-    ...model.attributes.map(attribute => indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema)}`)),
-    ...model.methods.map(method => indent(renderSurfaceMethod(method))),
+      : [indent(renderSurfaceConstructor(constructorMeta))]),
+    ...knowledgeAttributes(model).map(attribute => indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema ?? true)}`)),
+    ...knowledgeMethods(model).map(method => indent(renderSurfaceMethod(method))),
     '}',
   ]
   return parts.filter(part => part.length > 0).join('\n')
 }
 
 function declarationRelationsProperty(
-  model: ClassModel,
+  model: DtsTypeDeclarationModel,
 ): { declarationRelations?: DeclarationRelationQueryRecord[] } {
-  const relations = model.declarationRelations
-  return relations === undefined || relations.length === 0
+  const relations = knowledgeDeclarationRelations(model)
+  return relations.length === 0
     ? {}
     : {
         declarationRelations: relations.map(relation => ({
@@ -350,12 +359,13 @@ type DeclarationRelationQueryRecord = Readonly<{
   targetName?: string
 }>
 
-function renderDeclarationRelations(model: ClassModel): string {
+function renderDeclarationRelations(model: DtsTypeDeclarationModel): string {
   const lines: string[] = []
-  if (model.declarationTypeText !== undefined) {
-    lines.push(`DTS declaration: ${model.className} = ${model.declarationTypeText}`)
+  const declarationTypeText = knowledgeDeclarationTypeText(model)
+  if (declarationTypeText !== undefined) {
+    lines.push(`DTS declaration: ${model.name} = ${declarationTypeText}`)
   }
-  for (const relation of model.declarationRelations ?? []) {
+  for (const relation of knowledgeDeclarationRelations(model)) {
     lines.push(`DTS relation: ${relation.kind} ${relation.typeText}`)
   }
   if (lines.length === 0) return ''
@@ -407,9 +417,9 @@ function renderComponentProfile(provenance: SourceProvenanceMeta | undefined): s
 }
 
 function constructorQueryProperty(
-  model: ClassModel,
+  model: DtsTypeDeclarationModel,
 ): { constructorSignature?: { summary: string; signature: string } } {
-  const constructorMeta = model.constructorMeta
+  const constructorMeta = knowledgeConstructor(model)
   return constructorMeta === undefined
     ? {}
     : {
@@ -420,14 +430,14 @@ function constructorQueryProperty(
       }
 }
 
-function renderSurfaceConstructor(constructorMeta: NonNullable<ClassModel['constructorMeta']>): string {
+function renderSurfaceConstructor(constructorMeta: ConstructorMeta): string {
   return [
     constructorMeta.jsdoc.trim(),
     renderConstructorSignature(constructorMeta),
   ].filter(part => part.length > 0).join('\n')
 }
 
-function renderSurfaceMethod(method: ClassModel['methods'][number]): string {
+function renderSurfaceMethod(method: MethodMeta): string {
   return [
     method.jsdoc.trim(),
     renderMethodSignatureFromMeta(method),
@@ -437,21 +447,56 @@ function renderSurfaceMethod(method: ClassModel['methods'][number]): string {
 type ProjectedModel = ReturnType<typeof projectClassModelForGuide>
 
 function modelMatchesKeyword(model: ProjectedModel, keyword: string): boolean {
+  const constructorMeta = knowledgeConstructor(model)
   const haystacks = [
-    model.kind,
-    model.className,
+    model.name,
+    model.name,
     summarizeJsDoc(model.jsdoc),
     model.provenance?.componentName ?? '',
     model.provenance?.componentType ?? '',
     model.provenance?.componentLevel ?? '',
     model.provenance?.componentLayer ?? '',
     model.provenance?.componentDirectory ?? '',
-    summarizeJsDoc(model.constructorMeta?.jsdoc ?? ''),
-    model.constructorMeta === undefined ? '' : renderConstructorSignature(model.constructorMeta),
-    ...model.attributes.flatMap(attribute => [attribute.name, summarizeJsDoc(attribute.jsdoc)]),
-    ...model.methods.flatMap(method => [method.name, summarizeJsDoc(method.jsdoc)]),
+    summarizeJsDoc(constructorMeta?.jsdoc ?? ''),
+    constructorMeta === undefined ? '' : renderConstructorSignature(constructorMeta),
+    ...knowledgeAttributes(model).flatMap(attribute => [attribute.name, summarizeJsDoc(attribute.jsdoc)]),
+    ...knowledgeMethods(model).flatMap(method => [method.name, summarizeJsDoc(method.jsdoc)]),
   ]
   return haystacks.some(value => value.toLowerCase().includes(keyword))
+}
+
+function modelDeclarationHeader(model: DtsTypeDeclarationModel): string {
+  if (model.declarationKind === 'typeAlias') return `type ${model.name}`
+  return `${model.declarationKind} ${model.name}`
+}
+
+function knowledgeConstructor(model: DtsTypeDeclarationModel): ConstructorMeta | undefined {
+  return model.declarationKind === 'class' ? model.classDecl.constructorMeta : undefined
+}
+
+function knowledgeAttributes(model: DtsTypeDeclarationModel): readonly AttributeMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.attributes
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.attributes
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.attributes
+  return model.enumDecl.members
+}
+
+function knowledgeMethods(model: DtsTypeDeclarationModel): readonly MethodMeta[] {
+  if (model.declarationKind === 'class') return model.classDecl.members.methods
+  if (model.declarationKind === 'interface') return model.interfaceDecl.members.methods
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.members.methods
+  return []
+}
+
+function knowledgeDeclarationRelations(model: DtsTypeDeclarationModel): readonly ClassModelDeclarationRelation[] {
+  if (model.declarationKind === 'class') return model.classDecl.declarationRelations ?? []
+  if (model.declarationKind === 'interface') return model.interfaceDecl.declarationRelations ?? []
+  if (model.declarationKind === 'typeAlias') return model.typeAlias.declarationRelations ?? []
+  return []
+}
+
+function knowledgeDeclarationTypeText(model: DtsTypeDeclarationModel): string | undefined {
+  return model.declarationKind === 'typeAlias' ? model.typeAlias.declarationTypeText : undefined
 }
 
 function summarizeJsDoc(jsdoc: string): string {

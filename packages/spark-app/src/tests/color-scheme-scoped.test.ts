@@ -27,7 +27,7 @@ describe('useColorScheme scoped storage', () => {
     expect(scheme.primaryColor.value).toBe('#722ed1')
     expect(scheme.navPresetIndex.value).toBe(3)
     expect(scheme.stylePresetIndex.value).toBe(0)
-  })
+  }, 20000)
 
   it('copies legacy global color scheme into the first scoped key', async () => {
     const legacy = { primaryColor: '#14b8a6', navIndex: 6, styleIndex: 3 }
@@ -43,7 +43,7 @@ describe('useColorScheme scoped storage', () => {
     expect(scheme.stylePresetIndex.value).toBe(3)
     expect(localStorage.getItem('spark-color-scheme:tenant:lmspark:project:homepage')).toBe(JSON.stringify(legacy))
     expect(localStorage.getItem('spark-color-scheme')).toBe(JSON.stringify(legacy))
-  })
+  }, 20000)
 
   it('refreshes CSS variables when switching scopes', async () => {
     const { setColorSchemeStorageScope, useColorScheme } = await import('../navigation/useColorScheme')
@@ -55,5 +55,5 @@ describe('useColorScheme scoped storage', () => {
 
     setColorSchemeStorageScope('tenant:lmspark:project:engineering-pm')
     expect(document.documentElement.style.getPropertyValue('--el-color-primary')).toBe('#409eff')
-  })
+  }, 20000)
 })

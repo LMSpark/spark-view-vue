@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/SparkCodeEditor.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/editors/SparkCodeEditor",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/SparkCodeEditor.vue.d.ts",
@@ -18,33 +18,19 @@
     "componentLayer": "editor",
     "componentDirectory": "editors"
   },
-  "symbols": [
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.518Z",
   "$defs": {
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "SparkCodeEditor 组件属性，描述代码内容、语言和编辑器外观。",
       "properties": {
         "modelValue": {
           "type": "string"
         },
         "language": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "javascript"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "css"
-              ]
-            }
+          "enum": [
+            "javascript",
+            "css"
           ]
         },
         "readOnly": {
@@ -66,104 +52,70 @@
         "lineWrapping": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.518Z",
   "models": {
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "SparkCodeEditor 组件属性，描述代码内容、语言和编辑器外观。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 编辑器内容 */\n    modelValue?: string;\n    /** 语言模式；当前只加载脚本与样式两类 CodeMirror language package。 */\n    language?: 'javascript' | 'css';\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否自动换行 */\n    lineWrapping?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/editors/SparkCodeEditor.vue.d.ts",
         "line": 2,
         "className": "Props",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SparkCodeEditor",
         "componentType": "code-editor",
         "componentLevel": "infrastructure",
         "componentLayer": "editor",
         "componentDirectory": "editors"
       },
-      "attributes": [
-        {
-          "name": "modelValue",
-          "jsdoc": "编辑器内容",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "language",
-          "jsdoc": "语言模式；当前只加载脚本与样式两类 CodeMirror language package。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "javascript"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "css"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "readOnly",
-          "jsdoc": "是否只读",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "height",
-          "jsdoc": "编辑器高度",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "tabSize",
-          "jsdoc": "Tab 缩进空格数",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "lineWrapping",
-          "jsdoc": "是否自动换行",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 编辑器内容 */\n    modelValue?: string;\n    /** 语言模式；当前只加载脚本与样式两类 CodeMirror language package。 */\n    language?: 'javascript' | 'css';\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否自动换行 */\n    lineWrapping?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "modelValue",
+              "jsdoc": "编辑器内容",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "language",
+              "jsdoc": "语言模式；当前只加载脚本与样式两类 CodeMirror language package。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "readOnly",
+              "jsdoc": "是否只读",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "height",
+              "jsdoc": "编辑器高度",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tabSize",
+              "jsdoc": "Tab 缩进空格数",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "lineWrapping",
+              "jsdoc": "是否自动换行",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

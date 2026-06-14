@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/project-planning/project-planning-headless.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/project-planning/project-planning-headless",
     "sourcePath": "class-model-emit/src/services/project-planning/project-planning-headless.d.ts",
@@ -14,26 +14,22 @@
       "HeadlessProjectPlanningEditorScope"
     ]
   },
-  "symbols": [
-    "ProjectPlanningEditorResolveContext",
-    "HeadlessProjectPlanningEditorScope"
-  ],
-  "generatedAt": "2026-06-14T03:35:14.694Z",
   "$defs": {
     "ProjectPlanningEditorResolveContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectPlanningEditorResolveContext",
-      "description": "Project Planning Editor Resolve Context 的运行上下文。",
       "properties": {
         "moduleInstanceId": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "HeadlessProjectPlanningEditorScope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "HeadlessProjectPlanningEditorScope",
-      "description": "Headless Project Planning Editor Scope 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -41,82 +37,76 @@
         "projectId": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:14.694Z",
   "models": {
     "ProjectPlanningEditorResolveContext": {
-      "kind": "ProjectPlanningEditorResolveContext",
-      "className": "ProjectPlanningEditorResolveContext",
+      "name": "ProjectPlanningEditorResolveContext",
       "jsdoc": "Project Planning Editor Resolve Context 的运行上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-headless.d.ts",
         "line": 9,
         "className": "ProjectPlanningEditorResolveContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "moduleInstanceId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "moduleInstanceId",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "HeadlessProjectPlanningEditorScope": {
-      "kind": "HeadlessProjectPlanningEditorScope",
-      "className": "HeadlessProjectPlanningEditorScope",
+      "name": "HeadlessProjectPlanningEditorScope",
       "jsdoc": "Headless Project Planning Editor Scope 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-headless.d.ts",
         "line": 13,
         "className": "HeadlessProjectPlanningEditorScope",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "projectId",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,120 +1,109 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/knowledge/worker-knowledge-handler",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler\n职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "CreateClassModelKnowledgeWorkerApiOptions"
     ]
   },
-  "symbols": [
-    "CreateClassModelKnowledgeWorkerApiOptions"
-  ],
-  "generatedAt": "2026-06-13T20:51:30.570Z",
   "$defs": {
     "CreateClassModelKnowledgeWorkerApiOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CreateClassModelKnowledgeWorkerApiOptions",
-      "description": "Create Class Model Knowledge Worker Api Options 的调用配置。",
       "properties": {
         "refreshBundle": {
-          "type": "object",
-          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
+          "$ref": "dts-bundle-class-model-knowledge-service.d.ts.json#/$defs/DtsBundleClassModelKnowledgeRefreshFunction"
         },
         "refreshPolicy": {
+          "$ref": "dts-bundle-class-model-knowledge-service.d.ts.json#/$defs/DtsBundleClassModelKnowledgeRefreshPolicy"
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.fetchJson.params": {
           "type": "object",
-          "title": "DtsBundleClassModelKnowledgeRefreshPolicy"
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.fetchJson.return": {
+          "type": "object",
+          "title": "Promise<unknown>"
         }
       }
     }
   },
+  "generatedAt": "2026-06-14T13:01:40.819Z",
   "models": {
     "CreateClassModelKnowledgeWorkerApiOptions": {
-      "kind": "CreateClassModelKnowledgeWorkerApiOptions",
-      "className": "CreateClassModelKnowledgeWorkerApiOptions",
+      "name": "CreateClassModelKnowledgeWorkerApiOptions",
       "jsdoc": "Create Class Model Knowledge Worker Api Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
         "line": 11,
         "className": "CreateClassModelKnowledgeWorkerApiOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "refreshBundle",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "DtsBundleClassModelKnowledgeRefreshFunction"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "refreshPolicy",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "DtsBundleClassModelKnowledgeRefreshPolicy"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "fetchJson",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
             {
-              "name": "url",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
+              "name": "refreshBundle",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "refreshPolicy",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "unknown"
+          "methods": [
+            {
+              "name": "fetchJson",
+              "parameters": [
+                {
+                  "name": "url",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "url": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<unknown>"
-          }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

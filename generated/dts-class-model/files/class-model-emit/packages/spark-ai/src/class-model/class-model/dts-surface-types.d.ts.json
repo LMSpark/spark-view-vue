@@ -1,57 +1,50 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/class-model/dts-surface-types",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-surface-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/dts-surface-types",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-surface-types\n职责：维护 DTS ClassModel 知识链路中的 dts-surface-types 能力，围绕 DtsClassModelSurfaceDocument、ProjectDtsClassModelSurfaceOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-surface-types 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-surface-types\n职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 dts-surface-types 能力，围绕 DtsClassModelSurfaceDocument、ProjectDtsClassModelSurfaceOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/dts-surface-types 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DtsClassModelSurfaceDocument",
       "ProjectDtsClassModelSurfaceOptions"
     ]
   },
-  "symbols": [
-    "DtsClassModelSurfaceDocument",
-    "ProjectDtsClassModelSurfaceOptions"
-  ],
-  "generatedAt": "2026-06-13T22:28:08.309Z",
   "$defs": {
     "DtsClassModelSurfaceDocument": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelSurfaceDocument",
-      "description": "Dts Class Model Surface Document 的语义模型。",
       "properties": {
-        "schemaVersion": {
-          "type": "number"
-        },
+        "schemaVersion": true,
         "source": {
-          "type": "object",
-          "title": "ClassModelEmitSource"
+          "$ref": "class-model-emit-path.d.ts.json#/$defs/ClassModelEmitSource"
         },
         "configPath": {
           "type": "string"
         },
         "models": {
           "type": "object",
-          "title": "Readonly<Record<string, ClassModel>>"
+          "title": "Record<string, DtsTypeDeclarationModel>"
         },
         "fileIndex": {
           "type": "object",
-          "title": "Readonly<Record<string, readonly string[]>>"
+          "title": "Record<string, readonly string[]>"
         },
         "generatedAt": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ProjectDtsClassModelSurfaceOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectDtsClassModelSurfaceOptions",
-      "description": "Project Dts Class Model Surface Options 的调用配置。",
       "properties": {
         "configPath": {
           "type": "string"
@@ -65,148 +58,111 @@
         "failOnDuplicate": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T13:01:40.902Z",
   "models": {
     "DtsClassModelSurfaceDocument": {
-      "kind": "DtsClassModelSurfaceDocument",
-      "className": "DtsClassModelSurfaceDocument",
+      "name": "DtsClassModelSurfaceDocument",
       "jsdoc": "Dts Class Model Surface Document 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, ClassModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, ClassModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",
         "line": 11,
         "className": "DtsClassModelSurfaceDocument",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "schemaVersion",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "source",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ClassModelEmitSource"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "configPath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "models",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, ClassModel>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "fileIndex",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, readonly string[]>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "generatedAt",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "schemaVersion",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "source",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "configPath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "models",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fileIndex",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "generatedAt",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ProjectDtsClassModelSurfaceOptions": {
-      "kind": "ProjectDtsClassModelSurfaceOptions",
-      "className": "ProjectDtsClassModelSurfaceOptions",
+      "name": "ProjectDtsClassModelSurfaceOptions",
       "jsdoc": "Project Dts Class Model Surface Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    configPath: string;\n    skipVueComponentDts?: boolean;\n    exportedOnly?: boolean;\n    failOnDuplicate?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    configPath: string;\n    skipVueComponentDts?: boolean;\n    exportedOnly?: boolean;\n    failOnDuplicate?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",
         "line": 20,
         "className": "ProjectDtsClassModelSurfaceOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "configPath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "skipVueComponentDts",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "exportedOnly",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "failOnDuplicate",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    configPath: string;\n    skipVueComponentDts?: boolean;\n    exportedOnly?: boolean;\n    failOnDuplicate?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    configPath: string;\n    skipVueComponentDts?: boolean;\n    exportedOnly?: boolean;\n    failOnDuplicate?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "configPath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "skipVueComponentDts",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "exportedOnly",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "failOnDuplicate",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

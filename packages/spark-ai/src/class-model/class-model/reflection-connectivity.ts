@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/reflection-connectivity
- * 职责：维护 DTS ClassModel 知识链路中的 reflection-connectivity 能力，围绕 ClassModelReflectionConnectivityIssue 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 reflection-connectivity 能力，围绕 ClassModelReflectionConnectivityIssue 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/class-model/reflection-connectivity 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/reflection-connectivity 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiApiAttributeMetadata, AiApiObjectMetadata, AiRuntimeApiMetadataJson } from '../metadata'
 import type { ClassModelDocument } from './types'
@@ -20,7 +20,7 @@ export type ClassModelReflectionConnectivityIssue = Readonly<{
 }>
 
 /**
- * 审计 ClassModel 反射与属性链是否断路。
+ * 审计 DtsTypeDeclarationModel 反射与属性链是否断路。
  *
  * ClassModelDocument 不预存 models；registry className 必须可投影，且非 root 须经子模型字段链可达。
  */

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/ai/ai-turn-bridge.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/ai/ai-turn-bridge",
     "sourcePath": "class-model-emit/src/services/ai/ai-turn-bridge.d.ts",
@@ -14,16 +14,11 @@
       "AiAgentTurnBridgeOptions"
     ]
   },
-  "symbols": [
-    "AiTurnBridgeDiagnostic",
-    "AiAgentTurnBridgeOptions"
-  ],
-  "generatedAt": "2026-06-12T01:02:32.236Z",
   "$defs": {
     "AiTurnBridgeDiagnostic": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiTurnBridgeDiagnostic",
-      "description": "Ai Turn Bridge Diagnostic 的诊断信息。",
       "properties": {
         "at": {
           "type": "number"
@@ -44,27 +39,18 @@
           "type": "object",
           "title": "Record<string, unknown>"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiAgentTurnBridgeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentTurnBridgeOptions",
-      "description": "Ai Agent Turn Bridge Options 的调用配置。",
       "properties": {
         "transport": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "app-sse"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "session-turn"
-              ]
-            }
+          "enum": [
+            "app-sse",
+            "session-turn"
           ]
         },
         "timeoutMs": {
@@ -76,159 +62,111 @@
         "windowSize": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-12T01:02:32.236Z",
   "models": {
     "AiTurnBridgeDiagnostic": {
-      "kind": "AiTurnBridgeDiagnostic",
-      "className": "AiTurnBridgeDiagnostic",
+      "name": "AiTurnBridgeDiagnostic",
       "jsdoc": "Ai Turn Bridge Diagnostic 的诊断信息。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-turn-bridge.d.ts",
         "line": 16,
         "className": "AiTurnBridgeDiagnostic",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "at",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sessionId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "turnId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "message",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "details",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "at",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sessionId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turnId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "message",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "details",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiAgentTurnBridgeOptions": {
-      "kind": "AiAgentTurnBridgeOptions",
-      "className": "AiAgentTurnBridgeOptions",
+      "name": "AiAgentTurnBridgeOptions",
       "jsdoc": "Ai Agent Turn Bridge Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-turn-bridge.d.ts",
         "line": 25,
         "className": "AiAgentTurnBridgeOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "transport",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "app-sse"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "session-turn"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "timeoutMs",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "idleTimeoutMs",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "windowSize",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "transport",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "timeoutMs",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "idleTimeoutMs",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "windowSize",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/view-tree-state",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
@@ -18,17 +18,11 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "RendererTreeViewState",
-    "TreeTableRowsInput",
-    "RendererTreeViewStateOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.410Z",
   "$defs": {
     "RendererTreeViewState": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererTreeViewState",
-      "description": "树形视图态（RendererTree 专用扩展）。",
       "properties": {
         "treeData": {
           "type": "object",
@@ -38,18 +32,22 @@
           "type": "object",
           "title": "ComputedRef<string>"
         }
-      }
+      },
+      "required": [
+        "treeData",
+        "treeIdField"
+      ],
+      "additionalProperties": false
     },
     "TreeTableRowsInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TreeTableRowsInput",
-      "description": "Tree Table Rows Input 的输入数据。",
       "properties": {
         "view": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataView"
+              "$ref": "../../../../../spark-data/src/data-view.d.ts.json#/$defs/DataView"
             },
             {
               "type": "null"
@@ -57,179 +55,155 @@
           ]
         },
         "rows": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+          }
         },
         "treeConfig": {
-          "type": "object",
-          "title": "TreeConfig"
+          "$ref": "../../../../../spark-data/src/types.d.ts.json#/$defs/TreeConfig"
         },
         "primaryKey": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "RendererTreeViewStateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererTreeViewStateOptions",
-      "description": "Renderer Tree View State Options 的调用配置。",
       "properties": {
         "dataState": {
-          "type": "object",
-          "title": "DataViewState"
+          "$ref": "view-runtime-state.d.ts.json#/$defs/DataViewState"
         }
-      }
+      },
+      "required": [
+        "dataState"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.410Z",
   "models": {
     "RendererTreeViewState": {
-      "kind": "RendererTreeViewState",
-      "className": "RendererTreeViewState",
+      "name": "RendererTreeViewState",
       "jsdoc": "树形视图态（RendererTree 专用扩展）。",
-      "shapeKind": "type",
-      "declarationTypeText": "DataViewState & {\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "DataViewState",
-          "targetName": "DataViewState"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
         "line": 6,
         "className": "RendererTreeViewState",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "treeData",
-          "jsdoc": "tree Data 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<TreeNode[]>"
+      "typeAlias": {
+        "declarationTypeText": "DataViewState & {\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "DataViewState",
+            "targetName": "DataViewState"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "treeIdField",
-          "jsdoc": "tree Id Field 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ComputedRef<string>"
-          },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "treeData",
+              "jsdoc": "tree Data 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "treeIdField",
+              "jsdoc": "tree Id Field 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "TreeTableRowsInput": {
-      "kind": "TreeTableRowsInput",
-      "className": "TreeTableRowsInput",
+      "name": "TreeTableRowsInput",
       "jsdoc": "Tree Table Rows Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
         "line": 13,
         "className": "TreeTableRowsInput",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "view",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataView"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rows",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "treeConfig",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "TreeConfig"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "primaryKey",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "view",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rows",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "treeConfig",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "primaryKey",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "RendererTreeViewStateOptions": {
-      "kind": "RendererTreeViewStateOptions",
-      "className": "RendererTreeViewStateOptions",
+      "name": "RendererTreeViewStateOptions",
       "jsdoc": "Renderer Tree View State Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** data State 状态。 */\n    dataState: DataViewState;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
         "line": 21,
         "className": "RendererTreeViewStateOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "dataState",
-          "jsdoc": "data State 状态。",
-          "schema": {
-            "type": "object",
-            "title": "DataViewState"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** data State 状态。 */\n    dataState: DataViewState;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "dataState",
+              "jsdoc": "data State 状态。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

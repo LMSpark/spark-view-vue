@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/context/dataViewEditing",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
@@ -16,45 +16,164 @@
       "DataViewEditingWriteInput"
     ]
   },
-  "symbols": [
-    "DataViewEditingEventName",
-    "DataViewEditingEvents",
-    "DataViewEditingSource",
-    "DataViewEditingWriteInput"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.524Z",
   "$defs": {
     "DataViewEditingEventName": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DataViewEditingEventName",
-      "description": "Data View Editing Event Name 的语义模型。"
+      "enum": [
+        "editingFieldChanged",
+        "editingChanged",
+        "rowsChanged",
+        "currentRowChanged",
+        "selectedRowsChanged",
+        "cleared"
+      ]
     },
     "DataViewEditingEvents": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewEditingEvents",
-      "description": "Data View Editing Events 的语义模型。"
+      "$defs": {
+        "method.on.params": {
+          "type": "object",
+          "properties": {
+            "eventName": {
+              "$ref": "#/$defs/DataViewEditingEventName"
+            },
+            "handler": {
+              "type": "object",
+              "title": "() => void"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.on.return": true,
+        "method.off.params": {
+          "type": "object",
+          "properties": {
+            "eventName": {
+              "$ref": "#/$defs/DataViewEditingEventName"
+            },
+            "handler": {
+              "type": "object",
+              "title": "() => void"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.off.return": true
+      }
     },
     "DataViewEditingSource": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewEditingSource",
-      "description": "Data View Editing Source 的语义模型。",
       "properties": {
         "events": {
           "$ref": "#/$defs/DataViewEditingEvents"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.getPkKey.params": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getPkKey.return": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "method.hasEditingChanges.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.hasEditingChanges.return": {
+          "type": "boolean"
+        },
+        "method.getEditingRow.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getEditingRow.return": {
+          "anyOf": [
+            {
+              "$ref": "../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.updateEditingValue.params": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": true
+          },
+          "additionalProperties": false
+        },
+        "method.updateEditingValue.return": {
+          "$ref": "../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+        }
       }
     },
     "DataViewEditingWriteInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataViewEditingWriteInput",
-      "description": "Data View Editing Write Input 的输入数据。",
       "properties": {
         "source": true,
         "row": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "DataRow"
+              "$ref": "../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
             },
             {
               "type": "null"
@@ -65,483 +184,339 @@
           "type": "string"
         },
         "value": true
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.524Z",
   "models": {
     "DataViewEditingEventName": {
-      "kind": "DataViewEditingEventName",
-      "className": "DataViewEditingEventName",
+      "name": "DataViewEditingEventName",
       "jsdoc": "Data View Editing Event Name 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'editingFieldChanged' | 'editingChanged' | 'rowsChanged' | 'currentRowChanged' | 'selectedRowsChanged' | 'cleared'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'editingFieldChanged'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'editingChanged'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'rowsChanged'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'currentRowChanged'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'selectedRowsChanged'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'cleared'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
         "line": 9,
         "className": "DataViewEditingEventName",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'editingFieldChanged' | 'editingChanged' | 'rowsChanged' | 'currentRowChanged' | 'selectedRowsChanged' | 'cleared'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'editingFieldChanged'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'editingChanged'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'rowsChanged'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'currentRowChanged'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'selectedRowsChanged'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'cleared'"
+          }
+        ],
+        "members": {}
+      }
     },
     "DataViewEditingEvents": {
-      "kind": "DataViewEditingEvents",
-      "className": "DataViewEditingEvents",
+      "name": "DataViewEditingEvents",
       "jsdoc": "Data View Editing Events 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    on(eventName: DataViewEditingEventName, handler: () => void): void;\n    off(eventName: DataViewEditingEventName, handler: () => void): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
         "line": 11,
         "className": "DataViewEditingEvents",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "on",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    on(eventName: DataViewEditingEventName, handler: () => void): void;\n    off(eventName: DataViewEditingEventName, handler: () => void): void;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "eventName",
+              "name": "on",
+              "parameters": [
+                {
+                  "name": "eventName",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataViewEditingEventName",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts"
+                  }
+                },
+                {
+                  "name": "handler",
+                  "type": {
+                    "type": "reflection",
+                    "declaration": {
+                      "signatures": [
+                        {
+                          "parameters": [],
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "void"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "DataViewEditingEventName",
-                "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts"
+                "type": "intrinsic",
+                "name": "void"
               }
             },
             {
-              "name": "handler",
-              "type": {
-                "type": "reflection",
-                "declaration": {
-                  "signatures": [
-                    {
-                      "parameters": [],
-                      "type": {
-                        "type": "intrinsic",
-                        "name": "void"
-                      }
+              "name": "off",
+              "parameters": [
+                {
+                  "name": "eventName",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataViewEditingEventName",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts"
+                  }
+                },
+                {
+                  "name": "handler",
+                  "type": {
+                    "type": "reflection",
+                    "declaration": {
+                      "signatures": [
+                        {
+                          "parameters": [],
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "void"
+                          }
+                        }
+                      ]
                     }
-                  ]
+                  }
                 }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "eventName": {
-                "$ref": "#/$defs/DataViewEditingEventName"
-              },
-              "handler": {
-                "type": "object",
-                "title": "() => void"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "off",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "eventName",
-              "type": {
-                "type": "reference",
-                "name": "DataViewEditingEventName",
-                "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts"
-              }
-            },
-            {
-              "name": "handler",
-              "type": {
-                "type": "reflection",
-                "declaration": {
-                  "signatures": [
-                    {
-                      "parameters": [],
-                      "type": {
-                        "type": "intrinsic",
-                        "name": "void"
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "eventName": {
-                "$ref": "#/$defs/DataViewEditingEventName"
-              },
-              "handler": {
-                "type": "object",
-                "title": "() => void"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     },
     "DataViewEditingSource": {
-      "kind": "DataViewEditingSource",
-      "className": "DataViewEditingSource",
+      "name": "DataViewEditingSource",
       "jsdoc": "Data View Editing Source 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    getPkKey(row: DataRow): string | number | undefined;\n    hasEditingChanges(id?: string | number): boolean;\n    getEditingRow(id: string | number): DataRow | null;\n    updateEditingValue(id: string | number, field: string, value: unknown): DataRow;\n    /** events 字段。 */\n    events?: DataViewEditingEvents;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
         "line": 16,
         "className": "DataViewEditingSource",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "events",
-          "jsdoc": "events 字段。",
-          "schema": {
-            "$ref": "#/$defs/DataViewEditingEvents"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "getPkKey",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    getPkKey(row: DataRow): string | number | undefined;\n    hasEditingChanges(id?: string | number): boolean;\n    getEditingRow(id: string | number): DataRow | null;\n    updateEditingValue(id: string | number, field: string, value: unknown): DataRow;\n    /** events 字段。 */\n    events?: DataViewEditingEvents;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "row",
+              "name": "events",
+              "jsdoc": "events 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "getPkKey",
+              "parameters": [
+                {
+                  "name": "row",
+                  "type": {
+                    "type": "reference",
+                    "name": "DataRow"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "hasEditingChanges",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "getEditingRow",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "updateEditingValue",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "field",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
                 "name": "DataRow"
               }
             }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "intrinsic",
-                "name": "number"
-              },
-              {
-                "type": "intrinsic",
-                "name": "undefined"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        {
-          "name": "hasEditingChanges",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "getEditingRow",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataRow"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataRow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "updateEditingValue",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "id",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "number"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "field",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "value",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "DataRow"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              },
-              "field": {
-                "type": "string"
-              },
-              "value": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "DataRow"
-          }
+          ]
         }
-      ]
+      }
     },
     "DataViewEditingWriteInput": {
-      "kind": "DataViewEditingWriteInput",
-      "className": "DataViewEditingWriteInput",
+      "name": "DataViewEditingWriteInput",
       "jsdoc": "Data View Editing Write Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    source: unknown;\n    row: DataRow | null;\n    field: string;\n    value: unknown;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    source: unknown;\n    row: DataRow | null;\n    field: string;\n    value: unknown;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
         "line": 27,
         "className": "DataViewEditingWriteInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "source",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "row",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataRow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "field",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "value",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    source: unknown;\n    row: DataRow | null;\n    field: string;\n    value: unknown;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    source: unknown;\n    row: DataRow | null;\n    field: string;\n    value: unknown;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "source",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "row",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "field",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "value",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -7,6 +7,6 @@ export function assertClassModelBundleComplete(
   options?: AssertClassModelBundleCompleteOptions,
 ): void
 
-export function assertClassModelGuideParamsSchema(bundleRoot: string): void
+export function assertClassModelGuideExecutableSchemas(bundleRoot: string): void
 
 export function assertClassModelSemanticGapsZero(bundleRoot: string): void

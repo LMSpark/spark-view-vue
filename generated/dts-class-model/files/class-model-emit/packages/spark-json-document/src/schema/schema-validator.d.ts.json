@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-json-document:schema/schema-validator",
     "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
@@ -16,18 +16,11 @@
       "JsonSchemaValidator"
     ]
   },
-  "symbols": [
-    "JsonValidationIssue",
-    "JsonValidationResult",
-    "JsonSchemaValidateOptions",
-    "JsonSchemaValidator"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.038Z",
   "$defs": {
     "JsonValidationIssue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonValidationIssue",
-      "description": "单条校验问题",
       "properties": {
         "path": {
           "type": "string"
@@ -35,352 +28,365 @@
         "message": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "path",
+        "message"
+      ],
+      "additionalProperties": false
     },
     "JsonValidationResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonValidationResult",
-      "description": "校验结果：ok + issues 列表",
       "properties": {
         "ok": {
           "type": "boolean"
         },
         "issues": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JsonValidationIssue"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "JsonSchemaValidateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonSchemaValidateOptions",
-      "description": "校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。",
       "properties": {
         "schemaDefs": {
           "type": "object",
-          "title": "Readonly<Record<string, JsonSchema>>"
+          "title": "Record<string, JsonSchema>"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "JsonSchemaValidator": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonSchemaValidator",
-      "description": "Json Schema Validator 的语义模型。"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.validateDeserializedParams.params": {
+          "type": "object",
+          "properties": {
+            "params": true,
+            "schema": true,
+            "options": {
+              "$ref": "#/$defs/JsonSchemaValidateOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.validateDeserializedParams.return": {
+          "$ref": "#/$defs/JsonValidationResult"
+        },
+        "method.validateJsonValue.params": {
+          "type": "object",
+          "properties": {
+            "value": true,
+            "schema": {
+              "$ref": "schema-types.d.ts.json#/$defs/JsonSchema"
+            },
+            "options": {
+              "$ref": "#/$defs/JsonSchemaValidateOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.validateJsonValue.return": {
+          "$ref": "#/$defs/JsonValidationResult"
+        },
+        "method.formatJsonValidationIssues.params": {
+          "type": "object",
+          "properties": {
+            "issues": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/JsonValidationIssue"
+              }
+            },
+            "maxCount": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.formatJsonValidationIssues.return": {
+          "type": "string"
+        },
+        "method.formatAiJsonValidationIssues.params": {
+          "type": "object",
+          "properties": {
+            "issues": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/JsonValidationIssue"
+              }
+            },
+            "maxCount": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.formatAiJsonValidationIssues.return": {
+          "type": "string"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-14T13:57:55.666Z",
   "models": {
     "JsonValidationIssue": {
-      "kind": "JsonValidationIssue",
-      "className": "JsonValidationIssue",
+      "name": "JsonValidationIssue",
       "jsdoc": "单条校验问题",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 资源路径。 */\n    path: string;\n    /** 用户可读消息。 */\n    message: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
         "line": 9,
         "className": "JsonValidationIssue",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "path",
-          "jsdoc": "资源路径。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "message",
-          "jsdoc": "用户可读消息。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 资源路径。 */\n    path: string;\n    /** 用户可读消息。 */\n    message: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "path",
+              "jsdoc": "资源路径。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "message",
+              "jsdoc": "用户可读消息。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "JsonValidationResult": {
-      "kind": "JsonValidationResult",
-      "className": "JsonValidationResult",
+      "name": "JsonValidationResult",
       "jsdoc": "校验结果：ok + issues 列表",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    issues: readonly JsonValidationIssue[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    ok: boolean;\n    issues: readonly JsonValidationIssue[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
         "line": 16,
         "className": "JsonValidationResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "ok",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "issues",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    ok: boolean;\n    issues: readonly JsonValidationIssue[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    ok: boolean;\n    issues: readonly JsonValidationIssue[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "ok",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "issues",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "JsonSchemaValidateOptions": {
-      "kind": "JsonSchemaValidateOptions",
-      "className": "JsonSchemaValidateOptions",
+      "name": "JsonSchemaValidateOptions",
       "jsdoc": "校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
         "line": 21,
         "className": "JsonSchemaValidateOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "schemaDefs",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, JsonSchema>>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "schemaDefs",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "JsonSchemaValidator": {
-      "kind": "JsonSchemaValidator",
-      "className": "JsonSchemaValidator",
+      "name": "JsonSchemaValidator",
       "jsdoc": "Json Schema Validator 的语义模型。",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts",
         "line": 25,
         "className": "JsonSchemaValidator",
         "declarationKind": "class"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "validateDeserializedParams",
-          "jsdoc": "校验反序列化后的 LLM 参数。\n调用时序：\n1. LLM 返回 function call arguments（JSON 字符串）\n2. Host 层 JSON.parse → params\n3. FunctionInvoker 调用本方法校验 params 是否符合 function.paramsSchema",
-          "parameterStyle": "positional",
-          "parameters": [
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "静态工具类禁止实例化；所有校验入口必须通过 static 方法共享同一个 AJV 2020 实例。",
+          "signatureText": "private constructor()"
+        },
+        "members": {
+          "methods": [
             {
-              "name": "params",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "schema",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "options",
+              "name": "validateDeserializedParams",
+              "jsdoc": "校验反序列化后的 LLM 参数。\n调用时序：\n1. LLM 返回 function call arguments（JSON 字符串）\n2. Host 层 JSON.parse → params\n3. FunctionInvoker 调用本方法校验 params 是否符合 function.paramsSchema",
+              "parameters": [
+                {
+                  "name": "params",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                },
+                {
+                  "name": "schema",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "JsonSchemaValidateOptions",
+                    "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "JsonSchemaValidateOptions",
+                "name": "JsonValidationResult",
                 "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "JsonValidationResult",
-            "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "params": true,
-              "schema": true,
-              "options": {
-                "$ref": "#/$defs/JsonSchemaValidateOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/JsonValidationResult"
-          }
-        },
-        {
-          "name": "validateJsonValue",
-          "jsdoc": "校验任意 JSON 值是否符合 JSON Schema。用于属性值与直调 function 参数兜底校验。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "value",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
               }
             },
             {
-              "name": "schema",
+              "name": "validateJsonValue",
+              "jsdoc": "校验任意 JSON 值是否符合 JSON Schema。用于属性值与直调 function 参数兜底校验。",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                },
+                {
+                  "name": "schema",
+                  "type": {
+                    "type": "reference",
+                    "name": "JsonSchema",
+                    "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-types.d.ts"
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "JsonSchemaValidateOptions",
+                    "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "JsonSchemaValidateOptions",
+                "name": "JsonValidationResult",
                 "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "JsonValidationResult",
-            "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-validator.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": true,
-              "schema": {
-                "type": "object",
-                "title": "JsonSchema"
-              },
-              "options": {
-                "$ref": "#/$defs/JsonSchemaValidateOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/JsonValidationResult"
-          }
-        },
-        {
-          "name": "formatJsonValidationIssues",
-          "jsdoc": "将校验问题格式化为中文诊断字符串。\n默认最多显示 5 条，超出时追加 \"另有 N 个问题\"。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "issues",
-              "type": {
-                "type": "unknown",
-                "name": "readonly JsonValidationIssue[]"
               }
             },
             {
-              "name": "maxCount",
+              "name": "formatJsonValidationIssues",
+              "jsdoc": "将校验问题格式化为中文诊断字符串。\n默认最多显示 5 条，超出时追加 \"另有 N 个问题\"。",
+              "parameters": [
+                {
+                  "name": "issues",
+                  "type": {
+                    "type": "unknown",
+                    "name": "readonly JsonValidationIssue[]"
+                  }
+                },
+                {
+                  "name": "maxCount",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "number"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "string"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "issues": {
-                "type": "array"
-              },
-              "maxCount": {
-                "type": "number"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "formatAiJsonValidationIssues",
-          "jsdoc": "@deprecated 使用 formatJsonValidationIssues",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "issues",
-              "type": {
-                "type": "unknown",
-                "name": "readonly JsonValidationIssue[]"
+                "name": "string"
               }
             },
             {
-              "name": "maxCount",
+              "name": "formatAiJsonValidationIssues",
+              "jsdoc": "@deprecated 使用 formatJsonValidationIssues",
+              "parameters": [
+                {
+                  "name": "issues",
+                  "type": {
+                    "type": "unknown",
+                    "name": "readonly JsonValidationIssue[]"
+                  }
+                },
+                {
+                  "name": "maxCount",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "number"
-              },
-              "flags": {
-                "isOptional": true
+                "name": "string"
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "string"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "issues": {
-                "type": "array"
-              },
-              "maxCount": {
-                "type": "number"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

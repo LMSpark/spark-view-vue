@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/permission/usePermission.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:permission/usePermission",
     "sourcePath": "class-model-emit/packages/spark-component/src/permission/usePermission.d.ts",
@@ -13,317 +13,305 @@
       "UsePermissionReturn"
     ]
   },
-  "symbols": [
-    "UsePermissionReturn"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.998Z",
   "$defs": {
     "UsePermissionReturn": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UsePermissionReturn",
-      "description": "Use Permission Return 的语义模型。",
       "properties": {
         "permissionMode": {
           "type": "object",
           "title": "NavPermissionMode"
         },
         "subtreeFieldPolicy": {
+          "$ref": "../core/capability-keys.d.ts.json#/$defs/SubtreeFieldPolicy"
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.isPermitted.params": {
           "type": "object",
-          "title": "SubtreeFieldPolicy"
+          "properties": {
+            "action": {
+              "$ref": "PermissionResolver.d.ts.json#/$defs/PermissionAction"
+            },
+            "context": {
+              "type": "object",
+              "title": "Omit<PermissionActionContext, 'permissionMode'>"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.isPermitted.return": {
+          "type": "boolean"
+        },
+        "method.isModelActionAllowed.params": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "object",
+              "title": "SparkNode"
+            },
+            "modelPerm": {
+              "$ref": "../../../spark-data/src/types.d.ts.json#/$defs/ModelPermission"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.isModelActionAllowed.return": {
+          "type": "boolean"
+        },
+        "method.isRowActionAllowed.params": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "object",
+              "title": "SparkNode"
+            },
+            "row": {
+              "$ref": "../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.isRowActionAllowed.return": {
+          "type": "boolean"
+        },
+        "method.resolveFieldState.params": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "row": {
+              "anyOf": [
+                {
+                  "$ref": "../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "config": {
+              "type": "object",
+              "title": "Omit<FieldRenderConfig, 'field'>"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.resolveFieldState.return": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "title": "FieldRenderState"
         }
       }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.998Z",
   "models": {
     "UsePermissionReturn": {
-      "kind": "UsePermissionReturn",
-      "className": "UsePermissionReturn",
+      "name": "UsePermissionReturn",
       "jsdoc": "Use Permission Return 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */\n    readonly permissionMode: NavPermissionMode | undefined;\n    /** 当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。 */\n    readonly subtreeFieldPolicy: SubtreeFieldPolicy | undefined;\n    /** 判断动作是否被权限允许 */\n    isPermitted(action: PermissionAction | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean;\n    /** 判断模型级动作（create/import/export）是否允许 */\n    isModelActionAllowed(action: SparkNode, modelPerm: ModelPermission | undefined): boolean;\n    /** 判断行级动作（edit/delete/create-child）是否允许 */\n    isRowActionAllowed(action: SparkNode, row: DataRow | undefined): boolean;\n    /** 解析字段权限状态（可见性 + 可编辑性） */\n    resolveFieldState(field: string | undefined, row: DataRow | null | undefined, config?: Omit<FieldRenderConfig, 'field'>): FieldRenderState | null;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/permission/usePermission.d.ts",
         "line": 25,
         "className": "UsePermissionReturn",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "permissionMode",
-          "jsdoc": "当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。",
-          "schema": {
-            "type": "object",
-            "title": "NavPermissionMode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "subtreeFieldPolicy",
-          "jsdoc": "当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。",
-          "schema": {
-            "type": "object",
-            "title": "SubtreeFieldPolicy"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "isPermitted",
-          "jsdoc": "判断动作是否被权限允许",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */\n    readonly permissionMode: NavPermissionMode | undefined;\n    /** 当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。 */\n    readonly subtreeFieldPolicy: SubtreeFieldPolicy | undefined;\n    /** 判断动作是否被权限允许 */\n    isPermitted(action: PermissionAction | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean;\n    /** 判断模型级动作（create/import/export）是否允许 */\n    isModelActionAllowed(action: SparkNode, modelPerm: ModelPermission | undefined): boolean;\n    /** 判断行级动作（edit/delete/create-child）是否允许 */\n    isRowActionAllowed(action: SparkNode, row: DataRow | undefined): boolean;\n    /** 解析字段权限状态（可见性 + 可编辑性） */\n    resolveFieldState(field: string | undefined, row: DataRow | null | undefined, config?: Omit<FieldRenderConfig, 'field'>): FieldRenderState | null;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "action",
-              "type": {
-                "type": "optional",
-                "elementType": {
-                  "type": "reference",
-                  "name": "unknown"
-                }
-              }
+              "name": "permissionMode",
+              "jsdoc": "当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。",
+              "readable": true,
+              "writable": false
             },
             {
-              "name": "context",
-              "type": {
-                "type": "reference",
-                "name": "Omit",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "unknown"
-                  },
-                  {
-                    "type": "literal",
-                    "value": "permissionMode"
+              "name": "subtreeFieldPolicy",
+              "jsdoc": "当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "isPermitted",
+              "jsdoc": "判断动作是否被权限允许",
+              "parameters": [
+                {
+                  "name": "action",
+                  "type": {
+                    "type": "optional",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "PermissionAction",
+                      "sourcePath": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts"
+                    }
                   }
-                ]
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "action": {
-                "type": "object",
-                "title": "PermissionAction"
-              },
-              "context": {
-                "type": "object",
-                "title": "Omit<PermissionActionContext, 'permissionMode'>"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "isModelActionAllowed",
-          "jsdoc": "判断模型级动作（create/import/export）是否允许",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "action",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "modelPerm",
-              "type": {
-                "type": "optional",
-                "elementType": {
-                  "type": "reference",
-                  "name": "ModelPermission"
+                },
+                {
+                  "name": "context",
+                  "type": {
+                    "type": "reference",
+                    "name": "Omit",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "PermissionActionContext",
+                        "sourcePath": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "permissionMode"
+                      }
+                    ]
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
                 }
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "action": {
-                "type": "object",
-                "title": "SparkNode"
-              },
-              "modelPerm": {
-                "type": "object",
-                "title": "ModelPermission"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "isRowActionAllowed",
-          "jsdoc": "判断行级动作（edit/delete/create-child）是否允许",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "action",
+              ],
               "type": {
-                "type": "reference",
-                "name": "unknown"
+                "type": "intrinsic",
+                "name": "boolean"
               }
             },
             {
-              "name": "row",
-              "type": {
-                "type": "optional",
-                "elementType": {
-                  "type": "reference",
-                  "name": "DataRow"
+              "name": "isModelActionAllowed",
+              "jsdoc": "判断模型级动作（create/import/export）是否允许",
+              "parameters": [
+                {
+                  "name": "action",
+                  "type": {
+                    "type": "reference",
+                    "name": "SparkNode",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/types.d.ts"
+                  }
+                },
+                {
+                  "name": "modelPerm",
+                  "type": {
+                    "type": "optional",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "ModelPermission"
+                    }
+                  }
                 }
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "action": {
-                "type": "object",
-                "title": "SparkNode"
-              },
-              "row": {
-                "type": "object",
-                "title": "DataRow"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "resolveFieldState",
-          "jsdoc": "解析字段权限状态（可见性 + 可编辑性）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "field",
+              ],
               "type": {
-                "type": "optional",
-                "elementType": {
-                  "type": "intrinsic",
-                  "name": "string"
-                }
+                "type": "intrinsic",
+                "name": "boolean"
               }
             },
             {
-              "name": "row",
+              "name": "isRowActionAllowed",
+              "jsdoc": "判断行级动作（edit/delete/create-child）是否允许",
+              "parameters": [
+                {
+                  "name": "action",
+                  "type": {
+                    "type": "reference",
+                    "name": "SparkNode",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/types.d.ts"
+                  }
+                },
+                {
+                  "name": "row",
+                  "type": {
+                    "type": "optional",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "DataRow"
+                    }
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "resolveFieldState",
+              "jsdoc": "解析字段权限状态（可见性 + 可编辑性）",
+              "parameters": [
+                {
+                  "name": "field",
+                  "type": {
+                    "type": "optional",
+                    "elementType": {
+                      "type": "intrinsic",
+                      "name": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "row",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "DataRow"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "config",
+                  "type": {
+                    "type": "reference",
+                    "name": "Omit",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "FieldRenderConfig",
+                        "sourcePath": "class-model-emit/packages/spark-component/src/permission/FieldRenderHelper.d.ts"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "field"
+                      }
+                    ]
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "union",
                 "types": [
                   {
                     "type": "reference",
-                    "name": "DataRow"
+                    "name": "FieldRenderState",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/permission/FieldRenderHelper.d.ts"
                   },
                   {
                     "type": "literal",
                     "value": null
-                  },
-                  {
-                    "type": "intrinsic",
-                    "name": "undefined"
                   }
                 ]
-              }
-            },
-            {
-              "name": "config",
-              "type": {
-                "type": "reference",
-                "name": "Omit",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "unknown"
-                  },
-                  {
-                    "type": "literal",
-                    "value": "field"
-                  }
-                ]
-              },
-              "flags": {
-                "isOptional": true
               }
             }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "field": {
-                "type": "string"
-              },
-              "row": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "title": "DataRow"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "config": {
-                "type": "object",
-                "title": "Omit<FieldRenderConfig, 'field'>"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "FieldRenderState"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/project/project-settings.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/project/project-settings",
     "sourcePath": "class-model-emit/src/services/project/project-settings.d.ts",
@@ -19,26 +19,19 @@
       "ProjectUiSettings"
     ]
   },
-  "symbols": [
-    "ProjectLayoutPlacement",
-    "ProjectDetail",
-    "ProjectHomeNodeOption",
-    "ProjectRuntimeSettings",
-    "ProjectRuntimeSettingsInput",
-    "SaveProjectRuntimeSettingsCommand",
-    "ProjectUiSettings"
-  ],
-  "generatedAt": "2026-06-14T03:35:14.941Z",
   "$defs": {
     "ProjectLayoutPlacement": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "ProjectLayoutPlacement",
-      "description": "Project Layout Placement 的语义模型。"
+      "enum": [
+        "header",
+        "sidebar"
+      ]
     },
     "ProjectDetail": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectDetail",
-      "description": "Project Detail 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -59,24 +52,31 @@
           "type": "string"
         },
         "homeNodeId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         },
         "order": {
           "type": "number"
         }
-      }
+      },
+      "required": [
+        "tenantId",
+        "projectId",
+        "name",
+        "projectType",
+        "icon",
+        "description",
+        "homeNodeId",
+        "order"
+      ],
+      "additionalProperties": false
     },
     "ProjectHomeNodeOption": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectHomeNodeOption",
-      "description": "Project Home Node Option 的语义模型。",
       "properties": {
         "id": {
           "type": "string"
@@ -90,12 +90,19 @@
         "label": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "id",
+        "title",
+        "path",
+        "label"
+      ],
+      "additionalProperties": false
     },
     "ProjectRuntimeSettings": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectRuntimeSettings",
-      "description": "Project Runtime Settings 的语义模型。",
       "properties": {
         "project": {
           "$ref": "#/$defs/ProjectDetail"
@@ -104,13 +111,9 @@
           "$ref": "#/$defs/ProjectLayoutPlacement"
         },
         "rootModuleId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         },
         "homeNodeOptions": {
@@ -119,32 +122,40 @@
             "$ref": "#/$defs/ProjectHomeNodeOption"
           }
         }
-      }
+      },
+      "required": [
+        "project",
+        "childPlacement",
+        "rootModuleId",
+        "homeNodeOptions"
+      ],
+      "additionalProperties": false
     },
     "ProjectRuntimeSettingsInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectRuntimeSettingsInput",
-      "description": "Project Runtime Settings Input 的输入数据。",
       "properties": {
         "childPlacement": {
           "$ref": "#/$defs/ProjectLayoutPlacement"
         },
         "homeNodeId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
+          "type": [
+            "null",
+            "string"
           ]
         }
-      }
+      },
+      "required": [
+        "childPlacement",
+        "homeNodeId"
+      ],
+      "additionalProperties": false
     },
     "SaveProjectRuntimeSettingsCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SaveProjectRuntimeSettingsCommand",
-      "description": "Save Project Runtime Settings Command 的命令参数。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -158,12 +169,13 @@
         "input": {
           "$ref": "#/$defs/ProjectRuntimeSettingsInput"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ProjectUiSettings": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectUiSettings",
-      "description": "Project Ui Settings 的语义模型。",
       "properties": {
         "headerFirst": {
           "type": "boolean"
@@ -175,399 +187,289 @@
           "type": "boolean"
         },
         "pageMode": {
-          "type": "object",
-          "title": "PageMode"
+          "$ref": "../../../packages/spark-app/src/navigation/useTabPages.d.ts.json#/$defs/PageMode"
         }
-      }
+      },
+      "required": [
+        "headerFirst",
+        "sidebarCollapsed",
+        "showFooter",
+        "pageMode"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:14.941Z",
   "models": {
     "ProjectLayoutPlacement": {
-      "kind": "ProjectLayoutPlacement",
-      "className": "ProjectLayoutPlacement",
+      "name": "ProjectLayoutPlacement",
       "jsdoc": "Project Layout Placement 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'header' | 'sidebar'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'header'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'sidebar'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 9,
         "className": "ProjectLayoutPlacement",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'header' | 'sidebar'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'header'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'sidebar'"
+          }
+        ],
+        "members": {}
+      }
     },
     "ProjectDetail": {
-      "kind": "ProjectDetail",
-      "className": "ProjectDetail",
+      "name": "ProjectDetail",
       "jsdoc": "Project Detail 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    tenantId: string;\n    projectId: string;\n    name: string;\n    projectType: string;\n    icon: string;\n    description: string;\n    homeNodeId: string | null;\n    order: number;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 11,
         "className": "ProjectDetail",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "projectType",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "icon",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "homeNodeId",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "order",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    tenantId: string;\n    projectId: string;\n    name: string;\n    projectType: string;\n    icon: string;\n    description: string;\n    homeNodeId: string | null;\n    order: number;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "projectId",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "name",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "projectType",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "icon",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "description",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "homeNodeId",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "order",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ProjectHomeNodeOption": {
-      "kind": "ProjectHomeNodeOption",
-      "className": "ProjectHomeNodeOption",
+      "name": "ProjectHomeNodeOption",
       "jsdoc": "Project Home Node Option 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    id: string;\n    title: string;\n    path: string;\n    label: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 22,
         "className": "ProjectHomeNodeOption",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "title",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "path",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "label",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    id: string;\n    title: string;\n    path: string;\n    label: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "title",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "path",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "label",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ProjectRuntimeSettings": {
-      "kind": "ProjectRuntimeSettings",
-      "className": "ProjectRuntimeSettings",
+      "name": "ProjectRuntimeSettings",
       "jsdoc": "Project Runtime Settings 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    project: ProjectDetail;\n    childPlacement: ProjectLayoutPlacement;\n    rootModuleId: string | null;\n    homeNodeOptions: ProjectHomeNodeOption[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 29,
         "className": "ProjectRuntimeSettings",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "project",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ProjectDetail"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "childPlacement",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ProjectLayoutPlacement"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rootModuleId",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "homeNodeOptions",
-          "jsdoc": "",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/ProjectHomeNodeOption"
+      "typeAlias": {
+        "declarationTypeText": "{\n    project: ProjectDetail;\n    childPlacement: ProjectLayoutPlacement;\n    rootModuleId: string | null;\n    homeNodeOptions: ProjectHomeNodeOption[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "project",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "childPlacement",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "rootModuleId",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "homeNodeOptions",
+              "readable": true,
+              "writable": true
             }
-          },
-          "readable": true,
-          "writable": true
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ProjectRuntimeSettingsInput": {
-      "kind": "ProjectRuntimeSettingsInput",
-      "className": "ProjectRuntimeSettingsInput",
+      "name": "ProjectRuntimeSettingsInput",
       "jsdoc": "Project Runtime Settings Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    childPlacement: ProjectLayoutPlacement;\n    homeNodeId: string | null;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 36,
         "className": "ProjectRuntimeSettingsInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "childPlacement",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ProjectLayoutPlacement"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "homeNodeId",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    childPlacement: ProjectLayoutPlacement;\n    homeNodeId: string | null;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "childPlacement",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "homeNodeId",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "SaveProjectRuntimeSettingsCommand": {
-      "kind": "SaveProjectRuntimeSettingsCommand",
-      "className": "SaveProjectRuntimeSettingsCommand",
+      "name": "SaveProjectRuntimeSettingsCommand",
       "jsdoc": "Save Project Runtime Settings Command 的命令参数。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    tenantId: string;\n    projectId: string;\n    current: ProjectRuntimeSettings;\n    input: ProjectRuntimeSettingsInput;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    tenantId: string;\n    projectId: string;\n    current: ProjectRuntimeSettings;\n    input: ProjectRuntimeSettingsInput;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 42,
         "className": "SaveProjectRuntimeSettingsCommand",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "current",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ProjectRuntimeSettings"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "input",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ProjectRuntimeSettingsInput"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    tenantId: string;\n    projectId: string;\n    current: ProjectRuntimeSettings;\n    input: ProjectRuntimeSettingsInput;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    tenantId: string;\n    projectId: string;\n    current: ProjectRuntimeSettings;\n    input: ProjectRuntimeSettingsInput;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "projectId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "current",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "input",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ProjectUiSettings": {
-      "kind": "ProjectUiSettings",
-      "className": "ProjectUiSettings",
+      "name": "ProjectUiSettings",
       "jsdoc": "Project Ui Settings 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    headerFirst: boolean;\n    sidebarCollapsed: boolean;\n    showFooter: boolean;\n    pageMode: PageMode;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
         "line": 50,
         "className": "ProjectUiSettings",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "headerFirst",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sidebarCollapsed",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "showFooter",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "pageMode",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "PageMode"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    headerFirst: boolean;\n    sidebarCollapsed: boolean;\n    showFooter: boolean;\n    pageMode: PageMode;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "headerFirst",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "sidebarCollapsed",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "showFooter",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "pageMode",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

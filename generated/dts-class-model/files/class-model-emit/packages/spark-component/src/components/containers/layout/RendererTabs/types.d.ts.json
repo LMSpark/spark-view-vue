@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabs/types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/layout/RendererTabs/types",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabs/types.d.ts",
@@ -18,65 +18,52 @@
     "componentLayer": "layout-container",
     "componentDirectory": "containers/layout"
   },
-  "symbols": [
-    "RendererTabsApi"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.454Z",
   "$defs": {
     "RendererTabsApi": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererTabsApi",
-      "description": "Renderer Tabs Api 的语义模型。"
-    }
-  },
-  "models": {
-    "RendererTabsApi": {
-      "kind": "RendererTabsApi",
-      "className": "RendererTabsApi",
-      "jsdoc": "Renderer Tabs Api 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    getActiveTab(): string | number | undefined;\n    setActiveTab(name: string | number): void;\n    getPaneNames(): Array<string | number>;\n    getPaneCount(): number;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabs/types.d.ts",
-        "line": 8,
-        "className": "RendererTabsApi",
-        "declarationKind": "type",
-        "componentName": "RendererTabs",
-        "componentType": "r-tabs",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getActiveTab",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "intrinsic",
-                "name": "number"
-              },
-              {
-                "type": "intrinsic",
-                "name": "undefined"
-              }
-            ]
+      "$defs": {
+        "method.getActiveTab.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getActiveTab.return": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "method.setActiveTab.params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
           },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
+          "additionalProperties": false
+        },
+        "method.setActiveTab.return": true,
+        "method.getPaneNames.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getPaneNames.return": {
+          "type": "array",
+          "items": {
             "anyOf": [
               {
                 "type": "string"
@@ -87,13 +74,40 @@
             ]
           }
         },
-        {
-          "name": "setActiveTab",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+        "method.getPaneCount.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getPaneCount.return": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:38:13.454Z",
+  "models": {
+    "RendererTabsApi": {
+      "name": "RendererTabsApi",
+      "jsdoc": "@module\n@spark-appworks /spark-component:components/containers/layout/RendererTabs/types\n职责：集中定义 RendererTabs（r-tabs）内部共享的类型契约，描述渲染器状态、事件载荷和运行时数据形态。\n边界：只提供 container/layout-container 的类型层语义，不创建组件实例、不执行 IO，也不承载具体 UI 渲染。\nAI用途：需要判断 renderer tabs 的状态结构、事件参数或 zero-code API 形状时，用本模块作为类型入口。\nRenderer Tabs Api 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererTabs/types.d.ts",
+        "line": 8,
+        "className": "RendererTabsApi",
+        "declarationKind": "typeAlias",
+        "componentName": "RendererTabs",
+        "componentType": "r-tabs",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    getActiveTab(): string | number | undefined;\n    setActiveTab(name: string | number): void;\n    getPaneNames(): Array<string | number>;\n    getPaneCount(): number;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "name",
+              "name": "getActiveTab",
               "type": {
                 "type": "union",
                 "types": [
@@ -104,92 +118,68 @@
                   {
                     "type": "intrinsic",
                     "name": "number"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "anyOf": [
-                  {
-                    "type": "string"
                   },
                   {
-                    "type": "number"
+                    "type": "intrinsic",
+                    "name": "undefined"
                   }
                 ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getPaneNames",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "union",
-              "types": [
+            {
+              "name": "setActiveTab",
+              "parameters": [
                 {
-                  "type": "intrinsic",
-                  "name": "string"
-                },
-                {
-                  "type": "intrinsic",
-                  "name": "number"
+                  "name": "name",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "getPaneNames",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "union",
+                  "types": [
+                    {
+                      "type": "intrinsic",
+                      "name": "string"
+                    },
+                    {
+                      "type": "intrinsic",
+                      "name": "number"
+                    }
+                  ]
                 }
-              ]
+              }
+            },
+            {
+              "name": "getPaneCount",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
             }
-          }
-        },
-        {
-          "name": "getPaneCount",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "number"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

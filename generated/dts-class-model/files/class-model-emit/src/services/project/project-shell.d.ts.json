@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/project/project-shell.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/project/project-shell",
     "sourcePath": "class-model-emit/src/services/project/project-shell.d.ts",
@@ -15,22 +15,31 @@
       "ShellNavRootListener"
     ]
   },
-  "symbols": [
-    "ProjectSwitchService",
-    "ProjectWorkspaceScope",
-    "ShellNavRootListener"
-  ],
-  "generatedAt": "2026-06-14T03:35:15.049Z",
   "$defs": {
     "ProjectSwitchService": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectSwitchService",
-      "description": "Project Switch Service 的语义模型。"
+      "$defs": {
+        "method.switchAndReload.params": {
+          "type": "object",
+          "properties": {
+            "projectId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.switchAndReload.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        }
+      }
     },
     "ProjectWorkspaceScope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectWorkspaceScope",
-      "description": "Project Workspace Scope 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
@@ -38,116 +47,98 @@
         "projectId": {
           "type": "string"
         }
-      }
-    },
-    "ShellNavRootListener": {
-      "type": "object",
-      "title": "ShellNavRootListener",
-      "description": "Shell Nav Root Listener 的语义模型。"
+      },
+      "required": [
+        "tenantId",
+        "projectId"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:15.049Z",
   "models": {
     "ProjectSwitchService": {
-      "kind": "ProjectSwitchService",
-      "className": "ProjectSwitchService",
+      "name": "ProjectSwitchService",
       "jsdoc": "Project Switch Service 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    switchAndReload(projectId: string): Promise<void>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-shell.d.ts",
         "line": 12,
         "className": "ProjectSwitchService",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "switchAndReload",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    switchAndReload(projectId: string): Promise<void>;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "projectId",
+              "name": "switchAndReload",
+              "parameters": [
+                {
+                  "name": "projectId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "projectId": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
+          ]
         }
-      ]
+      }
     },
     "ProjectWorkspaceScope": {
-      "kind": "ProjectWorkspaceScope",
-      "className": "ProjectWorkspaceScope",
+      "name": "ProjectWorkspaceScope",
       "jsdoc": "Project Workspace Scope 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    tenantId: string;\n    projectId: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-shell.d.ts",
         "line": 21,
         "className": "ProjectWorkspaceScope",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "projectId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    tenantId: string;\n    projectId: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "projectId",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ShellNavRootListener": {
-      "kind": "ShellNavRootListener",
-      "className": "ShellNavRootListener",
+      "name": "ShellNavRootListener",
       "jsdoc": "Shell Nav Root Listener 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "(navData: ProjectModelData | null) => void",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-shell.d.ts",
         "line": 29,
         "className": "ShellNavRootListener",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "(navData: ProjectModelData | null) => void",
+        "members": {}
+      }
     }
   }
 }

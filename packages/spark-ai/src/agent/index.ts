@@ -287,3 +287,39 @@ export {
 export type {
   TurnEventCollector,
 } from './tool-loop/turn-event-collector'
+
+// ── 10. AG-UI 旁路协议适配 ─────────────────────────────────
+
+export {
+  createSparkAgUiCustomEvent,
+  createSparkAgUiReasoningEndEvent,
+  createSparkAgUiReasoningMessageContentEvent,
+  createSparkAgUiReasoningMessageEndEvent,
+  createSparkAgUiReasoningMessageStartEvent,
+  createSparkAgUiReasoningStartEvent,
+  createSparkAgUiRunErrorEvent,
+  createSparkAgUiRunFinishedEvent,
+  createSparkAgUiRunStartedEvent,
+  createSparkAgUiStreamCustomEvent,
+  createSparkAgUiTextMessageContentEvent,
+  createSparkAgUiTextMessageEndEvent,
+  createSparkAgUiTextMessageStartEvent,
+  createSparkAgUiToolCallEvents,
+  stringifySparkAgUiPayload,
+  toSparkAgUiAssistantMessageId,
+  toSparkAgUiReasoningMessageId,
+  toSparkAgUiTool,
+  toSparkAgUiTools,
+} from './ag-ui'
+
+export type {
+  SparkAgUiBaseEvent,
+  SparkAgUiCustomEventName,
+  SparkAgUiEvent,
+  SparkAgUiEventMetadata,
+  SparkAgUiMessage,
+  SparkAgUiRunInput,
+  SparkAgUiRunRef,
+  SparkAgUiTextMessageRole,
+  SparkAgUiTool,
+} from './ag-ui'

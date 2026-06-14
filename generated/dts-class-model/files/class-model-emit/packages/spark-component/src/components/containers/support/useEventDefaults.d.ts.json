@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/support/useEventDefaults.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/support/useEventDefaults",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/support/useEventDefaults.d.ts",
@@ -16,151 +16,148 @@
       "EventDispatcher"
     ]
   },
-  "symbols": [
-    "EventDefaultDeclaration",
-    "EventArgsMap",
-    "EventDefaultDeclarations",
-    "EventDispatcher"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.967Z",
   "$defs": {
     "EventDefaultDeclaration": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EventDefaultDeclaration",
-      "description": "事件默认行为声明"
+      "$defs": {
+        "method.systemDefault.params": {
+          "type": "object",
+          "properties": {
+            "args": {
+              "type": "object",
+              "title": "TArgs"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.systemDefault.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        }
+      }
     },
     "EventArgsMap": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EventArgsMap",
-      "description": "dispatch 调用签名"
-    },
-    "EventDefaultDeclarations": {
-      "type": "object",
-      "title": "EventDefaultDeclarations",
-      "description": "Event Default Declarations 的语义模型。"
+      "additionalProperties": false
     },
     "EventDispatcher": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EventDispatcher",
-      "description": "Event Dispatcher 的语义模型。"
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.967Z",
   "models": {
     "EventDefaultDeclaration": {
-      "kind": "EventDefaultDeclaration",
-      "className": "EventDefaultDeclaration",
+      "name": "EventDefaultDeclaration",
       "jsdoc": "事件默认行为声明",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /**\n     * 系统默认处理方法 (A)\n     *\n     * 有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）\n     * 无值时：dispatch 仅执行 B 并返回 cancel 控制器\n     */\n    systemDefault?: (...args: TArgs) => void | Promise<void>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/support/useEventDefaults.d.ts",
         "line": 55,
         "className": "EventDefaultDeclaration",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "systemDefault",
-          "jsdoc": "系统默认处理方法 (A)\n有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）\n无值时：dispatch 仅执行 B 并返回 cancel 控制器",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /**\n     * 系统默认处理方法 (A)\n     *\n     * 有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）\n     * 无值时：dispatch 仅执行 B 并返回 cancel 控制器\n     */\n    systemDefault?: (...args: TArgs) => void | Promise<void>;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "args",
-              "type": {
-                "type": "rest",
-                "elementType": {
-                  "type": "reference",
-                  "name": "TArgs",
-                  "refersToTypeParameter": true
+              "name": "systemDefault",
+              "jsdoc": "系统默认处理方法 (A)\n有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）\n无值时：dispatch 仅执行 B 并返回 cancel 控制器",
+              "parameters": [
+                {
+                  "name": "args",
+                  "type": {
+                    "type": "rest",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "TArgs",
+                      "refersToTypeParameter": true
+                    }
+                  }
                 }
-              }
-            }
-          ],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "void"
-              },
-              {
-                "type": "reference",
-                "name": "Promise",
-                "typeArguments": [
+              ],
+              "type": {
+                "type": "union",
+                "types": [
                   {
                     "type": "intrinsic",
                     "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "args": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
+            }
+          ]
         }
-      ]
+      }
     },
     "EventArgsMap": {
-      "kind": "EventArgsMap",
-      "className": "EventArgsMap",
+      "name": "EventArgsMap",
       "jsdoc": "dispatch 调用签名",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [eventName: string]: readonly unknown[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/support/useEventDefaults.d.ts",
         "line": 65,
         "className": "EventArgsMap",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [eventName: string]: readonly unknown[];\n}",
+        "members": {}
+      }
     },
     "EventDefaultDeclarations": {
-      "kind": "EventDefaultDeclarations",
-      "className": "EventDefaultDeclarations",
+      "name": "EventDefaultDeclarations",
       "jsdoc": "Event Default Declarations 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/support/useEventDefaults.d.ts",
         "line": 69,
         "className": "EventDefaultDeclarations",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     },
     "EventDispatcher": {
-      "kind": "EventDispatcher",
-      "className": "EventDispatcher",
+      "name": "EventDispatcher",
       "jsdoc": "Event Dispatcher 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]): Promise<InteractionControl>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/support/useEventDefaults.d.ts",
         "line": 73,
         "className": "EventDispatcher",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]): Promise<InteractionControl>;\n}",
+        "members": {}
+      }
     }
   }
 }

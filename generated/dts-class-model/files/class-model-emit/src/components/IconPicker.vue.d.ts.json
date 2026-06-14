@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/components/IconPicker.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:components/IconPicker",
     "sourcePath": "class-model-emit/src/components/IconPicker.vue.d.ts",
@@ -13,15 +13,11 @@
       "Props"
     ]
   },
-  "symbols": [
-    "Props"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.637Z",
   "$defs": {
     "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "Props",
-      "description": "图标选择器属性，描述当前图标值和输入外观。",
       "properties": {
         "modelValue": {
           "type": "string"
@@ -39,59 +35,47 @@
             }
           ]
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.637Z",
   "models": {
     "Props": {
-      "kind": "Props",
-      "className": "Props",
+      "name": "Props",
       "jsdoc": "图标选择器属性，描述当前图标值和输入外观。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 当前选中的图标名称。 */\n    modelValue?: string;\n    /** 未选择图标时的占位提示。 */\n    placeholder?: string;\n    /** 图标选择器输入框宽度。 */\n    width?: number | string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/components/IconPicker.vue.d.ts",
         "line": 2,
         "className": "Props",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "modelValue",
-          "jsdoc": "当前选中的图标名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "placeholder",
-          "jsdoc": "未选择图标时的占位提示。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "width",
-          "jsdoc": "图标选择器输入框宽度。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 当前选中的图标名称。 */\n    modelValue?: string;\n    /** 未选择图标时的占位提示。 */\n    placeholder?: string;\n    /** 图标选择器输入框宽度。 */\n    width?: number | string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "modelValue",
+              "jsdoc": "当前选中的图标名称。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "placeholder",
+              "jsdoc": "未选择图标时的占位提示。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "width",
+              "jsdoc": "图标选择器输入框宽度。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

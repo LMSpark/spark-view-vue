@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/knowledge/worker-knowledge-api",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-api 能力，围绕 ClassModelKnowledgeWorkerInitInput、ClassModelKnowledgeWorkerApi 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-api 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 worker-knowledge-api 能力，围绕 ClassModelKnowledgeWorkerInitInput、ClassModelKnowledgeWorkerApi 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/knowledge/worker-knowledge-api 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ClassModelKnowledgeWorkerInitInput",
@@ -15,17 +15,11 @@
       "ClassModelKnowledgeWorkerApi"
     ]
   },
-  "symbols": [
-    "ClassModelKnowledgeWorkerInitInput",
-    "ClassModelKnowledgeWorkerRefreshInput",
-    "ClassModelKnowledgeWorkerApi"
-  ],
-  "generatedAt": "2026-06-13T22:01:14.899Z",
   "$defs": {
     "ClassModelKnowledgeWorkerInitInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelKnowledgeWorkerInitInput",
-      "description": "Class Model Knowledge Worker Init Input 的输入数据。",
       "properties": {
         "dtsClassModelManifestUrl": {
           "type": "string"
@@ -33,351 +27,341 @@
         "rootClassName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelKnowledgeWorkerRefreshInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelKnowledgeWorkerRefreshInput",
-      "description": "Class Model Knowledge Worker Refresh Input 的输入数据。",
       "properties": {
         "requestedClassName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ClassModelKnowledgeWorkerApi": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ClassModelKnowledgeWorkerApi",
-      "description": "Class Model Knowledge Worker Api 的语义模型。"
+      "$defs": {
+        "method.init.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "#/$defs/ClassModelKnowledgeWorkerInitInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.init.return": {
+          "type": "object",
+          "title": "Promise<{\n        initialized: true;\n    }>"
+        },
+        "method.refresh.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "#/$defs/ClassModelKnowledgeWorkerRefreshInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.refresh.return": {
+          "type": "object",
+          "title": "Promise<{\n        refreshed: true;\n    }>"
+        },
+        "method.query.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "class-model-knowledge-service.d.ts.json#/$defs/ClassModelKnowledgeQueryInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.query.return": {
+          "type": "object",
+          "title": "Promise<AiJsonValue>"
+        },
+        "method.modelGuide.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "class-model-knowledge-service.d.ts.json#/$defs/ClassModelModelGuideInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.modelGuide.return": {
+          "type": "object",
+          "title": "Promise<string>"
+        },
+        "method.attributeGuide.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "class-model-knowledge-service.d.ts.json#/$defs/ClassModelAttributeGuideInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.attributeGuide.return": {
+          "type": "object",
+          "title": "Promise<string>"
+        },
+        "method.methodGuide.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "class-model-knowledge-service.d.ts.json#/$defs/ClassModelMethodGuideInput"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.methodGuide.return": {
+          "type": "object",
+          "title": "Promise<string>"
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-14T13:01:40.803Z",
   "models": {
     "ClassModelKnowledgeWorkerInitInput": {
-      "kind": "ClassModelKnowledgeWorkerInitInput",
-      "className": "ClassModelKnowledgeWorkerInitInput",
+      "name": "ClassModelKnowledgeWorkerInitInput",
       "jsdoc": "Class Model Knowledge Worker Init Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    /** ClassModel bundle 分片 manifest.json。 */\n    dtsClassModelManifestUrl: string;\n    /** 业务根 className；DTS 模型里 kind 与 className 同值。 */\n    rootClassName: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    /** ClassModel bundle 分片 manifest.json。 */\n    dtsClassModelManifestUrl: string;\n    /** 业务根 className；DTS 模型里 kind 与 className 同值。 */\n    rootClassName: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
         "line": 10,
         "className": "ClassModelKnowledgeWorkerInitInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "dtsClassModelManifestUrl",
-          "jsdoc": "ClassModel bundle 分片 manifest.json。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rootClassName",
-          "jsdoc": "业务根 className；DTS 模型里 kind 与 className 同值。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    /** DtsTypeDeclarationModel bundle 分片 manifest.json。 */\n    dtsClassModelManifestUrl: string;\n    /** 业务根 className；DTS 模型里 kind 与 className 同值。 */\n    rootClassName: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** DtsTypeDeclarationModel bundle 分片 manifest.json。 */\n    dtsClassModelManifestUrl: string;\n    /** 业务根 className；DTS 模型里 kind 与 className 同值。 */\n    rootClassName: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "dtsClassModelManifestUrl",
+              "jsdoc": "DtsTypeDeclarationModel bundle 分片 manifest.json。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootClassName",
+              "jsdoc": "业务根 className；DTS 模型里 kind 与 className 同值。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelKnowledgeWorkerRefreshInput": {
-      "kind": "ClassModelKnowledgeWorkerRefreshInput",
-      "className": "ClassModelKnowledgeWorkerRefreshInput",
+      "name": "ClassModelKnowledgeWorkerRefreshInput",
       "jsdoc": "Class Model Knowledge Worker Refresh Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    requestedClassName?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    requestedClassName?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
         "line": 17,
         "className": "ClassModelKnowledgeWorkerRefreshInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "requestedClassName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    requestedClassName?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    requestedClassName?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "requestedClassName",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ClassModelKnowledgeWorkerApi": {
-      "kind": "ClassModelKnowledgeWorkerApi",
-      "className": "ClassModelKnowledgeWorkerApi",
+      "name": "ClassModelKnowledgeWorkerApi",
       "jsdoc": "Class Model Knowledge Worker Api 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
         "line": 21,
         "className": "ClassModelKnowledgeWorkerApi",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "init",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{\n        refreshed: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "methods": [
             {
-              "name": "input",
+              "name": "init",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelKnowledgeWorkerInitInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "ClassModelKnowledgeWorkerInitInput",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "unknown",
-                "name": "{\n        initialized: true;\n    }"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "$ref": "#/$defs/ClassModelKnowledgeWorkerInitInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "unknown",
+                    "name": "{\n        initialized: true;\n    }"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<{\n        initialized: true;\n    }>"
-          }
-        },
-        {
-          "name": "refresh",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "refresh",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelKnowledgeWorkerRefreshInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "ClassModelKnowledgeWorkerRefreshInput",
-                "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "unknown",
-                "name": "{\n        refreshed: true;\n    }"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "$ref": "#/$defs/ClassModelKnowledgeWorkerRefreshInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "unknown",
+                    "name": "{\n        refreshed: true;\n    }"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<{\n        refreshed: true;\n    }>"
-          }
-        },
-        {
-          "name": "query",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "query",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelKnowledgeQueryInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "type": "object",
-                "title": "ClassModelKnowledgeQueryInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AiJsonValue",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/json.d.ts"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AiJsonValue>"
-          }
-        },
-        {
-          "name": "modelGuide",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "modelGuide",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelModelGuideInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "type": "object",
-                "title": "ClassModelModelGuideInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<string>"
-          }
-        },
-        {
-          "name": "attributeGuide",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "attributeGuide",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelAttributeGuideInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "type": "object",
-                "title": "ClassModelAttributeGuideInput"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<string>"
-          }
-        },
-        {
-          "name": "methodGuide",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "input",
+              "name": "methodGuide",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "ClassModelMethodGuideInput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
-                "name": "unknown"
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "type": "object",
-                "title": "ClassModelMethodGuideInput"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<string>"
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

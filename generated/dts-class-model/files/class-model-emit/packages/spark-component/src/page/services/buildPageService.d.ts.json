@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/services/buildPageService.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/services/buildPageService",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/services/buildPageService.d.ts",
@@ -13,73 +13,107 @@
       "PageServiceOverrides"
     ]
   },
-  "symbols": [
-    "PageServiceOverrides"
-  ],
-  "generatedAt": "2026-06-12T20:32:06.116Z",
   "$defs": {
     "PageServiceOverrides": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageServiceOverrides",
-      "description": "可选的外部 UI 服务注入（测试或宿主覆盖用）",
       "properties": {
         "messageService": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "object",
+              "title": "(msg: string) => void"
+            },
+            "warning": {
+              "type": "object",
+              "title": "(msg: string) => void"
+            },
+            "error": {
+              "type": "object",
+              "title": "(msg: string) => void"
+            },
+            "info": {
+              "type": "object",
+              "title": "(msg: string) => void"
+            }
+          },
+          "required": [
+            "success",
+            "warning",
+            "error",
+            "info"
+          ],
+          "additionalProperties": false
         },
         "confirmService": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "object",
+              "title": "(msg: string, title?: string) => Promise<unknown>"
+            },
+            "alert": {
+              "type": "object",
+              "title": "(msg: string, title?: string) => Promise<unknown>"
+            },
+            "prompt": {
+              "type": "object",
+              "title": "(msg: string, title?: string) => Promise<string | null>"
+            }
+          },
+          "required": [
+            "confirm",
+            "alert"
+          ],
+          "additionalProperties": false
         },
         "pageService": {
           "type": "object",
-          "title": "Partial<PageServiceCapability>"
+          "title": "PageServiceCapability"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-12T20:32:06.116Z",
   "models": {
     "PageServiceOverrides": {
-      "kind": "PageServiceOverrides",
-      "className": "PageServiceOverrides",
+      "name": "PageServiceOverrides",
       "jsdoc": "可选的外部 UI 服务注入（测试或宿主覆盖用）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** message Service 回调。 */\n    messageService?: {\n        success: (msg: string) => void;\n        warning: (msg: string) => void;\n        error: (msg: string) => void;\n        info: (msg: string) => void;\n    } | undefined;\n    /** confirm Service 回调。 */\n    confirmService?: {\n        confirm: (msg: string, title?: string) => Promise<unknown>;\n        alert: (msg: string, title?: string) => Promise<unknown>;\n        prompt?: (msg: string, title?: string) => Promise<string | null>;\n    } | undefined;\n    /** page Service 字段。 */\n    pageService?: Partial<PageServiceCapability> | undefined;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/services/buildPageService.d.ts",
         "line": 16,
         "className": "PageServiceOverrides",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "messageService",
-          "jsdoc": "message Service 回调。",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "confirmService",
-          "jsdoc": "confirm Service 回调。",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "pageService",
-          "jsdoc": "page Service 字段。",
-          "schema": {
-            "type": "object",
-            "title": "Partial<PageServiceCapability>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** message Service 回调。 */\n    messageService?: {\n        success: (msg: string) => void;\n        warning: (msg: string) => void;\n        error: (msg: string) => void;\n        info: (msg: string) => void;\n    } | undefined;\n    /** confirm Service 回调。 */\n    confirmService?: {\n        confirm: (msg: string, title?: string) => Promise<unknown>;\n        alert: (msg: string, title?: string) => Promise<unknown>;\n        prompt?: (msg: string, title?: string) => Promise<string | null>;\n    } | undefined;\n    /** page Service 字段。 */\n    pageService?: Partial<PageServiceCapability> | undefined;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "messageService",
+              "jsdoc": "message Service 回调。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "confirmService",
+              "jsdoc": "confirm Service 回调。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "pageService",
+              "jsdoc": "page Service 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

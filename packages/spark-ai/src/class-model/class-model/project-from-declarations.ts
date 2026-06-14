@@ -1,20 +1,23 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations
- * 职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。
+ * 职责：从 TypeScript DTS AST 和声明文本投影 DtsTypeDeclarationModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。
  * 边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不引入额外知识链路。
  * AI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。
  */
-import { resolve } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { posix, resolve } from 'node:path'
 
 import ts from 'typescript'
 
 import {
   normalizeRepoPath,
-  resolveAliasedSymbol,
-  declarationNameText,
   sourceFileFromEmitPath,
+  hasExportModifier,
+  hasReadonlyModifier,
+  isPrivateMember,
+  readMemberName,
 } from './dts-ast-utils'
-import { readSourceModifiedAtIso } from './class-model-emit-path'
+import { readSourceModifiedAtIso } from './class-model-emit-fs'
 import {
   CLASS_MODEL_EMIT_SOURCE,
   isClassModelEmitPath,
@@ -36,12 +39,18 @@ import {
   type ProjectDtsFileProjectionOptions,
 } from './dts-bundle-types'
 import {
-  paramsSchemaFromSignature,
-  typeToAiJsonSchema,
+  paramsSchemaFromParameters,
+  typeNodeToAiJsonSchema,
 } from './dts-type-schema'
+import { enumMemberConstSchema } from './dts-enum-schema'
+import {
+  buildStandaloneTypeSchema,
+  finalizeDraft2020SchemaDocument,
+  modelDescription,
+} from './json-schema-emit'
 import type {
   AttributeMeta,
-  ClassModel,
+  DtsTypeDeclarationModel,
   ClassModelDeclarationRelation,
   ClassModelDeclarationRelationKind,
   ComponentClassModelLayer,
@@ -56,11 +65,10 @@ import type {
 } from './types'
 
 type ProjectionContext = Readonly<{
-  checker: ts.TypeChecker
   repoRoot: string
   exportedOnly: boolean
   failOnDuplicate: boolean
-  models: Record<string, ClassModel>
+  models: Record<string, DtsTypeDeclarationModel>
   fileIndex: Record<string, string[]>
 }>
 
@@ -75,7 +83,6 @@ type ProjectDtsSourceFileProjectionOptions = Readonly<{
   repoRoot: string
   absolutePath: string
   sourceFile: ts.SourceFile
-  checker: ts.TypeChecker
   exportedOnly?: boolean
 }>
 
@@ -97,15 +104,19 @@ type DtsFileModuleSemanticCommand = Readonly<{
   symbols: readonly string[]
 }>
 
-type ClassLikeProjectionCommand = Readonly<{
+type ClassDeclarationProjectionCommand = Readonly<{
   site: ProjectionSite
-  node: ts.ClassDeclaration | ts.InterfaceDeclaration
-  shapeKind: 'class' | 'interface'
+  node: ts.ClassDeclaration
+}>
+
+type InterfaceDeclarationProjectionCommand = Readonly<{
+  site: ProjectionSite
+  node: ts.InterfaceDeclaration
 }>
 
 type ObjectSchemaAttributesCommand = Readonly<{
   site: ProjectionSite
-  schema: ReturnType<typeof typeToAiJsonSchema>
+  schema: ReturnType<typeof typeNodeToAiJsonSchema>
   typeNode: ts.TypeNode
 }>
 
@@ -177,41 +188,29 @@ export function projectDtsFileProjection(
 ): DtsFileProjectionDocument {
   const repoRoot = resolve(options.repoRoot)
   const absolutePath = resolve(options.absolutePath)
-  const program = ts.createProgram({
-    rootNames: [absolutePath],
-    options: {
-      allowJs: false,
-      declaration: true,
-      emitDeclarationOnly: true,
-      skipLibCheck: true,
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.ES2022,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-    },
-  })
-  const checker = program.getTypeChecker()
-  const sourceFile = program.getSourceFile(absolutePath)
-  if (sourceFile === undefined) {
-    throw new Error(`DTS source file not found in TypeScript program: ${absolutePath}`)
-  }
+  const sourceFile = ts.createSourceFile(
+    absolutePath,
+    readFileSync(absolutePath, 'utf8'),
+    ts.ScriptTarget.ES2022,
+    true,
+    ts.ScriptKind.TS,
+  )
 
   return projectDtsSourceFileProjection({
     repoRoot,
     absolutePath,
     sourceFile,
-    checker,
     ...(options.exportedOnly === undefined ? {} : { exportedOnly: options.exportedOnly }),
   })
 }
 
-/** 单个 `.d.ts` → 单个 JSON 投影，复用外部 TypeScript Program 的 checker。 */
+/** 单个 `.d.ts` → 单个 JSON 投影。 */
 export function projectDtsSourceFileProjection(
   options: ProjectDtsSourceFileProjectionOptions,
 ): DtsFileProjectionDocument {
   const repoRoot = resolve(options.repoRoot)
   const absolutePath = resolve(options.absolutePath)
   const context: ProjectionContext = {
-    checker: options.checker,
     repoRoot,
     exportedOnly: options.exportedOnly ?? false,
     failOnDuplicate: false,
@@ -241,7 +240,7 @@ export function projectDtsSourceFileProjection(
   }
 }
 
-/** 从 class-model-emit tsconfig 投影全仓内存 `.d.ts` → ClassModel 索引。 */
+/** 从 class-model-emit tsconfig 投影全仓内存 `.d.ts` → DtsTypeDeclarationModel 索引。 */
 export function projectDtsClassModelSurface(
   options: ProjectDtsClassModelSurfaceOptions,
 ): DtsClassModelSurfaceDocument {
@@ -267,14 +266,12 @@ export function projectDtsClassModelSurface(
     options: parsed.options,
     ...(parsed.projectReferences === undefined ? {} : { projectReferences: parsed.projectReferences }),
   })
-  const checker = program.getTypeChecker()
   const repoRoot = resolve(configPath, '../..')
   const skipVueComponentDts = options.skipVueComponentDts ?? true
   const exportedOnly = options.exportedOnly ?? true
   const failOnDuplicate = options.failOnDuplicate ?? true
 
   const context: ProjectionContext = {
-    checker,
     repoRoot,
     exportedOnly,
     failOnDuplicate,
@@ -313,7 +310,7 @@ export function projectDtsClassModelSurface(
 export function resolveDtsClassModel(
   surface: DtsClassModelSurfaceDocument,
   className: string,
-): ClassModel | undefined {
+): DtsTypeDeclarationModel | undefined {
   return surface.models[className]
 }
 
@@ -326,29 +323,27 @@ function projectTopLevelDeclaration(
     const name = readDeclarationName(node)
     if (name === undefined) return undefined
     if (isSyntheticDeclarationName(name)) return undefined
-    return projectClassLike({
+    return projectClassDeclaration({
       site: projectionSite(context, sourceFile, name),
       node,
-      shapeKind: 'class',
     })
   }
   if (ts.isInterfaceDeclaration(node)) {
     const name = readDeclarationName(node)
     if (name === undefined) return undefined
     if (isSyntheticDeclarationName(name)) return undefined
-    return projectClassLike({
+    return projectInterfaceDeclaration({
       site: projectionSite(context, sourceFile, name),
       node,
-      shapeKind: 'interface',
     })
   }
   if (ts.isTypeAliasDeclaration(node)) {
     if (isSyntheticDeclarationName(node.name.text)) return undefined
-    return projectTypeAlias(context, sourceFile, node)
+    return projectTypeAliasDeclaration(context, sourceFile, node)
   }
   if (ts.isEnumDeclaration(node)) {
     if (isSyntheticDeclarationName(node.name.text)) return undefined
-    return projectEnum(context, sourceFile, node)
+    return projectEnumDeclaration(context, sourceFile, node)
   }
   return undefined
 }
@@ -369,8 +364,8 @@ function projectionSite(
   return { context, sourceFile, className }
 }
 
-function projectClassLike(command: ClassLikeProjectionCommand): string | undefined {
-  const { site, node, shapeKind } = command
+function projectClassDeclaration(command: ClassDeclarationProjectionCommand): string | undefined {
+  const { site, node } = command
   const { context, sourceFile } = site
   const name = readDeclarationName(node)
   if (name === undefined) return undefined
@@ -378,87 +373,134 @@ function projectClassLike(command: ClassLikeProjectionCommand): string | undefin
   const siteWithName = projectionSite(context, sourceFile, className)
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
   const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
-  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1
+  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const propsComponentName = readComponentNameFromPropsFile(file)
   const provenance = createProvenance({
     file,
     line,
     className,
-    declarationKind: shapeKind,
+    declarationKind: 'class',
     ...(propsComponentName === undefined ? {} : { componentName: propsComponentName }),
   })
   const declarationRelations = classLikeDeclarationRelations(node, sourceFile)
-
   const attributes: AttributeMeta[] = []
   const methods: MethodMeta[] = []
   let constructorMeta: ConstructorMeta | undefined
 
-  if (ts.isClassDeclaration(node)) {
-    for (const member of node.members) {
-      if (isPrivateMember(member)) continue
-      if (ts.isPropertyDeclaration(member)) {
-        const memberName = readMemberName(member.name)
-        if (memberName === undefined) continue
-        attributes.push(projectPropertyMember({
-          site: siteWithName,
-          memberName,
-          member,
-        }))
-        continue
-      }
-      if (ts.isMethodDeclaration(member)) {
-        const memberName = readMemberName(member.name)
-        if (memberName === undefined) continue
-        methods.push(projectMethodMember({
-          site: siteWithName,
-          memberName,
-          member,
-        }))
-        continue
-      }
-      if (ts.isConstructorDeclaration(member)) {
-        constructorMeta = projectConstructor({ site: siteWithName, member })
-      }
+  for (const member of node.members) {
+    if (ts.isConstructorDeclaration(member)) {
+      constructorMeta = projectConstructor({ site: siteWithName, member })
+      continue
     }
-  } else {
-    for (const member of node.members) {
-      if (ts.isPropertySignature(member)) {
-        const memberName = readMemberName(member.name)
-        if (memberName === undefined) continue
-        attributes.push(projectPropertySignature({
-          site: siteWithName,
-          memberName,
-          member,
-        }))
-        continue
-      }
-      if (ts.isMethodSignature(member)) {
-        const memberName = readMemberName(member.name)
-        if (memberName === undefined) continue
-        methods.push(projectMethodSignature({
-          site: siteWithName,
-          memberName,
-          member,
-        }))
-      }
+    if (isPrivateMember(member)) continue
+    if (ts.isPropertyDeclaration(member)) {
+      const memberName = readMemberName(member.name)
+      if (memberName === undefined) continue
+      attributes.push(projectPropertyMember({
+        site: siteWithName,
+        memberName,
+        member,
+      }))
+      continue
+    }
+    if (ts.isMethodDeclaration(member)) {
+      const memberName = readMemberName(member.name)
+      if (memberName === undefined) continue
+      methods.push(projectMethodMember({
+        site: siteWithName,
+        memberName,
+        member,
+      }))
     }
   }
 
   registerModel(context, className, {
-    kind: className,
-    className,
-    jsdoc: readJsDoc(context.checker, node),
-    shapeKind,
-    ...(declarationRelations.length === 0 ? {} : { declarationRelations }),
+    name: className,
+    jsdoc: readJsDoc(node, sourceFile),
+    declarationKind: 'class',
     provenance,
-    ...(constructorMeta === undefined ? {} : { constructorMeta }),
-    attributes,
-    methods,
+    classDecl: {
+      ...(declarationRelations.length === 0 ? {} : { declarationRelations }),
+      constructorMeta: constructorMeta ?? projectDefaultConstructor({ site: siteWithName, node }),
+      members: {
+        attributes,
+        methods,
+      },
+    },
   })
   return className
 }
 
-function projectTypeAlias(
+function projectInterfaceDeclaration(command: InterfaceDeclarationProjectionCommand): string | undefined {
+  const { site, node } = command
+  const { context, sourceFile } = site
+  const name = readDeclarationName(node)
+  if (name === undefined) return undefined
+  const className = name
+  const siteWithName = projectionSite(context, sourceFile, className)
+  if (context.exportedOnly && !hasExportModifier(node)) return undefined
+  const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
+  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
+  const propsComponentName = readComponentNameFromPropsFile(file)
+  const provenance = createProvenance({
+    file,
+    line,
+    className,
+    declarationKind: 'interface',
+    ...(propsComponentName === undefined ? {} : { componentName: propsComponentName }),
+  })
+  const declarationRelations = classLikeDeclarationRelations(node, sourceFile)
+  const attributes: AttributeMeta[] = []
+  const methods: MethodMeta[] = []
+
+  for (const member of node.members) {
+    if (ts.isPropertySignature(member)) {
+      const memberName = readMemberName(member.name)
+      if (memberName === undefined) continue
+      if (isFunctionPropertySignature(member)) {
+        methods.push(projectFunctionPropertySignature({
+          site: siteWithName,
+          memberName,
+          member,
+          typeNode: member.type,
+        }))
+        continue
+      }
+      attributes.push(projectPropertySignature({
+        site: siteWithName,
+        memberName,
+        member,
+      }))
+      continue
+    }
+    if (ts.isMethodSignature(member)) {
+      const memberName = readMemberName(member.name)
+      if (memberName === undefined) continue
+      methods.push(projectMethodSignature({
+        site: siteWithName,
+        memberName,
+        member,
+      }))
+    }
+  }
+
+  registerModel(context, className, {
+    name: className,
+    jsdoc: readJsDoc(node, sourceFile),
+    declarationKind: 'interface',
+    provenance,
+    interfaceDecl: {
+      ...(declarationRelations.length === 0 ? {} : { declarationRelations }),
+      members: {
+        attributes,
+        methods,
+      },
+    },
+  })
+  return className
+}
+
+function projectTypeAliasDeclaration(
   context: ProjectionContext,
   sourceFile: ts.SourceFile,
   node: ts.TypeAliasDeclaration,
@@ -467,12 +509,11 @@ function projectTypeAlias(
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
 
   const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
-  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1
+  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const propsComponentName = readComponentNameFromPropsFile(file)
-  const type = context.checker.getTypeAtLocation(node)
   const typeText = node.type.getText(sourceFile)
   const declarationRelations = typeAliasDeclarationRelations(node.type, sourceFile)
-  const objectSchema = typeToAiJsonSchema(context.checker, type, node.type)
+  const objectSchema = typeNodeToAiJsonSchema(node.type, sourceFile)
   const site = projectionSite(context, sourceFile, name)
   const attributes = attributesFromObjectSchema({
     site,
@@ -483,28 +524,73 @@ function projectTypeAlias(
     site,
     typeNode: node.type,
   })
+  const jsdoc = readJsDoc(node, sourceFile)
+  const jsonSchema = attributes.length === 0 && methods.length === 0
+    ? typeAliasJsonSchema({
+        className: name,
+        jsdoc,
+        schema: objectSchema,
+      })
+    : undefined
 
   registerModel(context, name, {
-    kind: name,
-    className: name,
-    jsdoc: readJsDoc(context.checker, node),
-    shapeKind: 'type',
-    declarationTypeText: typeText,
-    ...(declarationRelations.length === 0 ? {} : { declarationRelations }),
+    name,
+    jsdoc,
+    declarationKind: 'typeAlias',
+    ...(jsonSchema === undefined ? {} : { jsonSchema }),
     provenance: createProvenance({
       file,
       line,
       className: name,
-      declarationKind: 'type',
+      declarationKind: 'typeAlias',
       ...(propsComponentName === undefined ? {} : { componentName: propsComponentName }),
     }),
-    attributes,
-    methods,
+    typeAlias: {
+      declarationTypeText: typeText,
+      ...(declarationRelations.length === 0 ? {} : { declarationRelations }),
+      members: {
+        attributes,
+        methods,
+      },
+    },
   })
   return name
 }
 
-function projectEnum(
+function typeAliasJsonSchema(command: Readonly<{
+  className: string
+  jsdoc: string
+  schema: ReturnType<typeof typeNodeToAiJsonSchema>
+}>): ReturnType<typeof finalizeDraft2020SchemaDocument> | undefined {
+  if (isLowInformationTypeAliasSchema(command.schema)) return undefined
+  const description = modelDescription(command.jsdoc)
+  return finalizeDraft2020SchemaDocument(
+    buildStandaloneTypeSchema({
+      title: command.className,
+      ...(description === undefined ? {} : { description }),
+      body: command.schema,
+    }),
+    command.className,
+  )
+}
+
+function isLowInformationTypeAliasSchema(schema: ReturnType<typeof typeNodeToAiJsonSchema>): boolean {
+  if (typeof schema === 'boolean') return true
+  if (typeof schema !== 'object' || Array.isArray(schema)) return false
+  return schema.type === 'object'
+    && schema.properties === undefined
+    && schema.required === undefined
+    && schema.additionalProperties === undefined
+    && schema.items === undefined
+    && schema.prefixItems === undefined
+    && schema.anyOf === undefined
+    && schema.oneOf === undefined
+    && schema.allOf === undefined
+    && schema.not === undefined
+    && schema.$ref === undefined
+}
+
+function projectEnumDeclaration(
   context: ProjectionContext,
   sourceFile: ts.SourceFile,
   node: ts.EnumDeclaration,
@@ -513,22 +599,23 @@ function projectEnum(
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
 
   const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
-  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1
+  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const attributes: AttributeMeta[] = []
+  let autoIndex = 0
 
   for (const member of node.members) {
     if (!ts.isEnumMember(member)) continue
     const memberName = readMemberName(member.name)
     if (memberName === undefined) continue
-    const memberLine = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
+    const memberLine = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
+    const { schema, nextAutoIndex } = enumMemberConstSchema(member, autoIndex)
+    autoIndex = nextAutoIndex
     attributes.push({
       name: memberName,
-      schema: member.initializer === undefined
-        ? { type: 'string' }
-        : typeToAiJsonSchema(context.checker, context.checker.getTypeAtLocation(member.initializer)),
+      schema,
       readable: true,
       writable: false,
-      jsdoc: readJsDoc(context.checker, member),
+      jsdoc: readJsDoc(member, sourceFile),
       provenance: createProvenance({
         file,
         line: memberLine,
@@ -540,18 +627,18 @@ function projectEnum(
   }
 
   registerModel(context, name, {
-    kind: name,
-    className: name,
-    jsdoc: readJsDoc(context.checker, node),
-    shapeKind: 'enum',
+    name,
+    jsdoc: readJsDoc(node, sourceFile),
+    declarationKind: 'enum',
     provenance: createProvenance({
       file,
       line,
       className: name,
       declarationKind: 'enum',
     }),
-    attributes,
-    methods: [],
+    enumDecl: {
+      members: attributes,
+    },
   })
   return name
 }
@@ -620,7 +707,7 @@ function readTypeNodeTargetName(typeNode: ts.TypeNode, sourceFile: ts.SourceFile
 }
 
 /**
- * 原始 `.d.ts` 链路只记录直接声明边；attributes/methods 是 TypeChecker 派生缓存。
+ * 原始 `.d.ts` 链路只记录直接声明边；attributes/methods 是声明语法派生缓存。
  * 如果派生缓存缺属性或缺 JSDoc，先看 declarationRelations 找到链路下一跳，再到 semantic-gaps 看断在哪个源声明。
  */
 function attributesFromObjectSchema(command: ObjectSchemaAttributesCommand): AttributeMeta[] {
@@ -628,6 +715,7 @@ function attributesFromObjectSchema(command: ObjectSchemaAttributesCommand): Att
   const { context, sourceFile, className } = site
   const syntaxAttributes = typeNodeAttributes({ site, typeNode })
   if (syntaxAttributes.length > 0) return syntaxAttributes
+  if (methodsFromTypeNode({ site, typeNode }).length > 0) return []
 
   if (schema === true || schema === false || typeof schema !== 'object' || Array.isArray(schema)) {
     return []
@@ -648,10 +736,10 @@ function attributesFromObjectSchema(command: ObjectSchemaAttributesCommand): Att
     jsdoc: '',
     provenance: createProvenance({
       file,
-      line: sourceFile.getLineAndCharacterOfPosition(typeNode.getStart()).line + 1,
+      line: sourceFile.getLineAndCharacterOfPosition(typeNode.getStart(sourceFile)).line + 1,
       className,
       memberName: propertyName,
-      declarationKind: 'type',
+      declarationKind: 'typeAlias',
     }),
   }))
 }
@@ -661,9 +749,10 @@ function typeNodeAttributes(command: TypeNodeAttributesCommand): AttributeMeta[]
   if (ts.isTypeLiteralNode(typeNode)) {
     return typeLiteralAttributes({ site, typeNode })
   }
-  const transparentType = transparentTypeReferenceArgument(typeNode)
+  const transparentType = transparentTypeReferenceArgument(typeNode, site.sourceFile)
   if (transparentType !== undefined) {
     return typeNodeAttributes({ site, typeNode: transparentType })
+      .map(attribute => (attribute.writable ? { ...attribute, writable: false } : attribute))
   }
   if (ts.isIntersectionTypeNode(typeNode)) {
     const attributes: AttributeMeta[] = []
@@ -685,7 +774,7 @@ function methodsFromTypeNode(command: TypeNodeMethodsCommand): MethodMeta[] {
   if (ts.isTypeLiteralNode(typeNode)) {
     return typeLiteralMethods({ site, typeNode })
   }
-  const transparentType = transparentTypeReferenceArgument(typeNode)
+  const transparentType = transparentTypeReferenceArgument(typeNode, site.sourceFile)
   if (transparentType !== undefined) {
     return methodsFromTypeNode({ site, typeNode: transparentType })
   }
@@ -749,9 +838,9 @@ function typeLiteralMethods(command: TypeLiteralMethodsCommand): MethodMeta[] {
   return methods
 }
 
-function transparentTypeReferenceArgument(typeNode: ts.TypeNode): ts.TypeNode | undefined {
+function transparentTypeReferenceArgument(typeNode: ts.TypeNode, sourceFile: ts.SourceFile): ts.TypeNode | undefined {
   if (!ts.isTypeReferenceNode(typeNode)) return undefined
-  const typeName = typeNode.typeName.getText()
+  const typeName = typeNode.typeName.getText(sourceFile)
   if (typeName !== 'Readonly') return undefined
   return typeNode.typeArguments?.[0]
 }
@@ -763,14 +852,13 @@ function isFunctionPropertySignature(member: ts.PropertySignature): member is ts
 function projectPropertyMember(command: PropertyMemberCommand): AttributeMeta {
   const { site, memberName, member } = command
   const { context, sourceFile, className } = site
-  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
-  const type = context.checker.getTypeAtLocation(member)
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
   return {
     name: memberName,
-    schema: typeToAiJsonSchema(context.checker, type, member.type),
+    schema: typeNodeToAiJsonSchema(member.type, sourceFile),
     readable: true,
-    writable: !hasReadonlyModifier(member),
-    jsdoc: readJsDoc(context.checker, member),
+    writable: member.questionToken === undefined && !hasReadonlyModifier(member),
+    jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -784,14 +872,13 @@ function projectPropertyMember(command: PropertyMemberCommand): AttributeMeta {
 function projectPropertySignature(command: PropertySignatureCommand): AttributeMeta {
   const { site, memberName, member } = command
   const { context, sourceFile, className } = site
-  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
-  const type = context.checker.getTypeAtLocation(member)
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
   return {
     name: memberName,
-    schema: typeToAiJsonSchema(context.checker, type, member.type),
+    schema: typeNodeToAiJsonSchema(member.type, sourceFile),
     readable: true,
     writable: member.questionToken === undefined && !hasReadonlyModifier(member),
-    jsdoc: readJsDoc(context.checker, member),
+    jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -805,29 +892,22 @@ function projectPropertySignature(command: PropertySignatureCommand): AttributeM
 function projectFunctionPropertySignature(command: FunctionPropertySignatureCommand): MethodMeta {
   const { site, memberName, member, typeNode } = command
   const { context, sourceFile, className } = site
-  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
-  const signatureFromType = context.checker.getSignatureFromDeclaration(typeNode)
-  const signatures = context.checker.getTypeAtLocation(member).getCallSignatures()
-  const signature = signatureFromType ?? signatures[0]
-  if (signature === undefined) {
-    throw new Error(`Missing function property signature for ${className}.${memberName}`)
-  }
-  const returnType = context.checker.getReturnTypeOfSignature(signature)
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
   return {
     name: memberName,
     signatureText: member.getText(sourceFile).replace(/;$/u, '').trim(),
     parameterStyle: parameterStyleFromDeclaration(typeNode),
-    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, typeNode, sourceFile),
-    type: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, typeNode.type, sourceFile),
-    paramsSchema: paramsSchemaFromSignature(context.checker, signature),
-    returnSchema: typeToAiJsonSchema(context.checker, returnType, typeNode.type),
-    jsdoc: readJsDoc(context.checker, member),
+    parameters: methodParametersFromDeclaration(context.repoRoot, typeNode, sourceFile),
+    type: dtsTypeMetaFromTypeNode(context.repoRoot, typeNode.type, sourceFile),
+    paramsSchema: paramsSchemaFromParameters(typeNode.parameters, sourceFile),
+    returnSchema: typeNodeToAiJsonSchema(typeNode.type, sourceFile),
+    jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
       className,
       memberName,
-      declarationKind: 'type',
+      declarationKind: 'typeAlias',
     }),
   }
 }
@@ -835,27 +915,17 @@ function projectFunctionPropertySignature(command: FunctionPropertySignatureComm
 function projectMethodMember(command: MethodMemberCommand): MethodMeta {
   const { site, memberName, member } = command
   const { context, sourceFile, className } = site
-  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
-  const signature = context.checker.getSignatureFromDeclaration(member)
-  if (signature === undefined) {
-    throw new Error(`Missing method signature for ${className}.${memberName}`)
-  }
-  const returnType = context.checker.getReturnTypeOfSignature(signature)
-  const returnTypeMeta = methodReturnTypeMetaFromDeclaration(
-    context.checker,
-    context.repoRoot,
-    member,
-    sourceFile,
-  )
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
+  const returnTypeMeta = methodReturnTypeMetaFromDeclaration(context.repoRoot, member, sourceFile)
   return {
     name: memberName,
     signatureText: methodSignatureTextFromDeclaration(member, sourceFile),
     parameterStyle: parameterStyleFromDeclaration(member),
-    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
+    parameters: methodParametersFromDeclaration(context.repoRoot, member, sourceFile),
     type: returnTypeMeta,
-    paramsSchema: paramsSchemaFromSignature(context.checker, signature),
-    returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
-    jsdoc: readJsDoc(context.checker, member),
+    paramsSchema: paramsSchemaFromParameters(member.parameters, sourceFile),
+    returnSchema: typeNodeToAiJsonSchema(member.type, sourceFile),
+    jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -869,27 +939,17 @@ function projectMethodMember(command: MethodMemberCommand): MethodMeta {
 function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
   const { site, memberName, member } = command
   const { context, sourceFile, className } = site
-  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
-  const signature = context.checker.getSignatureFromDeclaration(member)
-  if (signature === undefined) {
-    throw new Error(`Missing method signature for ${className}.${memberName}`)
-  }
-  const returnType = context.checker.getReturnTypeOfSignature(signature)
-  const returnTypeMeta = methodReturnTypeMetaFromDeclaration(
-    context.checker,
-    context.repoRoot,
-    member,
-    sourceFile,
-  )
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
+  const returnTypeMeta = methodReturnTypeMetaFromDeclaration(context.repoRoot, member, sourceFile)
   return {
     name: memberName,
     signatureText: methodSignatureTextFromDeclaration(member, sourceFile),
     parameterStyle: parameterStyleFromDeclaration(member),
-    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
+    parameters: methodParametersFromDeclaration(context.repoRoot, member, sourceFile),
     type: returnTypeMeta,
-    paramsSchema: paramsSchemaFromSignature(context.checker, signature),
-    returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
-    jsdoc: readJsDoc(context.checker, member),
+    paramsSchema: paramsSchemaFromParameters(member.parameters, sourceFile),
+    returnSchema: typeNodeToAiJsonSchema(member.type, sourceFile),
+    jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -908,16 +968,14 @@ function methodSignatureTextFromDeclaration(
 }
 
 function methodParametersFromDeclaration(
-  checker: ts.TypeChecker,
   repoRoot: string,
-  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.FunctionTypeNode,
+  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.FunctionDeclaration | ts.FunctionTypeNode,
   sourceFile: ts.SourceFile,
 ): readonly MethodParameterMeta[] {
-  return member.parameters.map(parameter => parameterMetaFromDeclaration(checker, repoRoot, parameter, sourceFile))
+  return member.parameters.map(parameter => parameterMetaFromDeclaration(repoRoot, parameter, sourceFile))
 }
 
 function parameterMetaFromDeclaration(
-  checker: ts.TypeChecker,
   repoRoot: string,
   parameter: ts.ParameterDeclaration,
   sourceFile: ts.SourceFile,
@@ -926,7 +984,7 @@ function parameterMetaFromDeclaration(
   const defaultValue = defaultValueFromParameter(parameter, sourceFile)
   return {
     name: parameter.name.getText(sourceFile),
-    type: dtsTypeMetaFromParameter(checker, repoRoot, parameter, sourceFile),
+    type: dtsTypeMetaFromParameter(repoRoot, parameter, sourceFile),
     ...(flags === undefined ? {} : { flags }),
     ...(defaultValue === undefined ? {} : { defaultValue }),
   }
@@ -957,7 +1015,7 @@ function defaultValueFromParameter(
 }
 
 function parameterStyleFromDeclaration(
-  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.FunctionTypeNode,
+  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.FunctionDeclaration | ts.FunctionTypeNode,
 ): MethodParameterStyle {
   const firstParameter = member.parameters[0]
   return firstParameter !== undefined && member.parameters.length === 1 && ts.isObjectBindingPattern(firstParameter.name)
@@ -966,82 +1024,79 @@ function parameterStyleFromDeclaration(
 }
 
 function methodReturnTypeMetaFromDeclaration(
-  checker: ts.TypeChecker,
   repoRoot: string,
   member: ts.MethodDeclaration | ts.MethodSignature,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
-  return dtsTypeMetaFromTypeNode(checker, repoRoot, member.type, sourceFile)
+  return dtsTypeMetaFromTypeNode(repoRoot, member.type, sourceFile)
 }
 
 function dtsTypeMetaFromParameter(
-  checker: ts.TypeChecker,
   repoRoot: string,
   parameter: ts.ParameterDeclaration,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
   if (ts.isRestParameter(parameter)) {
     const elementType: DtsTypeMeta = parameter.type === undefined
-      ? { type: 'unknown', name: checker.typeToString(checker.getTypeAtLocation(parameter.name), undefined, ts.TypeFormatFlags.NoTruncation) }
-      : dtsTypeMetaFromTypeNode(checker, repoRoot, parameter.type, sourceFile)
+      ? { type: 'unknown', name: parameter.name.getText(sourceFile) }
+      : dtsTypeMetaFromTypeNode(repoRoot, parameter.type, sourceFile)
     return normalizeDtsTypeMeta({ type: 'rest', elementType })
   }
   if (parameter.type !== undefined) {
-    return dtsTypeMetaFromTypeNode(checker, repoRoot, parameter.type, sourceFile)
+    return dtsTypeMetaFromTypeNode(repoRoot, parameter.type, sourceFile)
   }
   return normalizeDtsTypeMeta({
     type: 'unknown',
-    name: checker.typeToString(checker.getTypeAtLocation(parameter.name), undefined, ts.TypeFormatFlags.NoTruncation),
+    name: parameter.name.getText(sourceFile),
   })
 }
 
 function dtsTypeMetaFromTypeNode(
-  checker: ts.TypeChecker,
   repoRoot: string,
   typeNode: ts.TypeNode | undefined,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
   if (typeNode === undefined) return { type: 'unknown', name: 'unknown' }
-  if (ts.isParenthesizedTypeNode(typeNode)) return dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile)
+  if (ts.isParenthesizedTypeNode(typeNode)) return dtsTypeMetaFromTypeNode(repoRoot, typeNode.type, sourceFile)
   if (ts.isRestTypeNode(typeNode)) {
     return normalizeDtsTypeMeta({
       type: 'rest',
-      elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile),
+      elementType: dtsTypeMetaFromTypeNode(repoRoot, typeNode.type, sourceFile),
     })
   }
   if (ts.isArrayTypeNode(typeNode)) {
     return normalizeDtsTypeMeta({
       type: 'array',
-      elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.elementType, sourceFile),
+      elementType: dtsTypeMetaFromTypeNode(repoRoot, typeNode.elementType, sourceFile),
     })
   }
   if (ts.isTupleTypeNode(typeNode)) {
     return normalizeDtsTypeMeta({
       type: 'tuple',
-      elements: typeNode.elements.map(element => dtsTypeMetaFromTypeNode(checker, repoRoot, element, sourceFile)),
+      elements: typeNode.elements.map(element => dtsTypeMetaFromTypeNode(repoRoot, element, sourceFile)),
     })
   }
   if (ts.isTypeLiteralNode(typeNode)) return { type: 'unknown', name: typeNode.getText(sourceFile) }
   if (ts.isFunctionTypeNode(typeNode) || ts.isConstructorTypeNode(typeNode)) {
-    return dtsTypeMetaFromFunctionLikeTypeNode(checker, repoRoot, typeNode, sourceFile)
+    return dtsTypeMetaFromFunctionLikeTypeNode(repoRoot, typeNode, sourceFile)
   }
   if (ts.isLiteralTypeNode(typeNode)) return literalDtsTypeMeta(typeNode, sourceFile)
-  if (ts.isUnionTypeNode(typeNode)) return dtsTypeMetaFromUnionTypeNode(checker, repoRoot, typeNode, sourceFile)
+  if (ts.isUnionTypeNode(typeNode)) return dtsTypeMetaFromUnionTypeNode(repoRoot, typeNode, sourceFile)
   if (ts.isIntersectionTypeNode(typeNode)) {
     return normalizeDtsTypeMeta({
       type: 'intersection',
-      types: typeNode.types.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile)),
+      types: typeNode.types.map(item => dtsTypeMetaFromTypeNode(repoRoot, item, sourceFile)),
     })
   }
   if (ts.isTypeReferenceNode(typeNode)) {
-    const typeName = typeNode.typeName.getText()
+    const typeName = typeNode.typeName.getText(sourceFile)
     if ((typeName === 'Array' || typeName === 'ReadonlyArray') && typeNode.typeArguments?.[0] !== undefined) {
       return normalizeDtsTypeMeta({
         type: 'array',
-        elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.typeArguments[0], sourceFile),
+        elementType: dtsTypeMetaFromTypeNode(repoRoot, typeNode.typeArguments[0], sourceFile),
       })
     }
-    return dtsReferenceTypeMetaFromTypeReferenceNode(checker, repoRoot, typeNode, sourceFile)
+    return dtsReferenceTypeMetaFromTypeReferenceNode(repoRoot, typeNode, sourceFile)
   }
   const intrinsicName = intrinsicNameFromKeywordTypeNode(typeNode)
   if (intrinsicName !== undefined) return { type: 'intrinsic', name: intrinsicName }
@@ -1049,16 +1104,15 @@ function dtsTypeMetaFromTypeNode(
 }
 
 function dtsTypeMetaFromUnionTypeNode(
-  checker: ts.TypeChecker,
   repoRoot: string,
   typeNode: ts.UnionTypeNode,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
-  const members = typeNode.types.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile))
+  const members = typeNode.types.map(item => dtsTypeMetaFromTypeNode(repoRoot, item, sourceFile))
   const undefinedMembers = typeNode.types.filter(item => isUndefinedOnlyTypeNode(item))
   const nonUndefinedMembers = typeNode.types
     .filter(item => !isUndefinedOnlyTypeNode(item))
-    .map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile))
+    .map(item => dtsTypeMetaFromTypeNode(repoRoot, item, sourceFile))
 
   if (undefinedMembers.length > 0 && nonUndefinedMembers.length === 1) {
     const onlyMember = nonUndefinedMembers[0]
@@ -1075,14 +1129,13 @@ function dtsTypeMetaFromUnionTypeNode(
 }
 
 function dtsTypeMetaFromFunctionLikeTypeNode(
-  checker: ts.TypeChecker,
   repoRoot: string,
   typeNode: ts.FunctionTypeNode | ts.ConstructorTypeNode,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
   const signature: DtsReflectionSignature = {
-    parameters: typeNode.parameters.map(parameter => parameterMetaFromDeclaration(checker, repoRoot, parameter, sourceFile)),
-    type: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile),
+    parameters: typeNode.parameters.map(parameter => parameterMetaFromDeclaration(repoRoot, parameter, sourceFile)),
+    type: dtsTypeMetaFromTypeNode(repoRoot, typeNode.type, sourceFile),
   }
   return {
     type: 'reflection',
@@ -1103,32 +1156,137 @@ function normalizeDtsTypeMeta(typeMeta: DtsTypeMeta): DtsTypeMeta {
 }
 
 function dtsReferenceTypeMetaFromTypeReferenceNode(
-  checker: ts.TypeChecker,
   repoRoot: string,
   node: ts.TypeReferenceNode,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
-  const symbol = resolveAliasedSymbol(checker, checker.getSymbolAtLocation(node.typeName))
-  const declaration = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
-  const typeArguments = node.typeArguments?.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile))
-  if (declaration !== undefined && ts.isTypeParameterDeclaration(declaration)) {
+  const typeArguments = node.typeArguments?.map(item => dtsTypeMetaFromTypeNode(repoRoot, item, sourceFile))
+  const typeName = node.typeName.getText(sourceFile)
+  if (isLocalTypeParameterName(node, typeName)) {
     return {
       type: 'reference',
-      name: node.typeName.getText(sourceFile),
+      name: typeName,
       refersToTypeParameter: true,
       ...(typeArguments === undefined || typeArguments.length === 0 ? {} : { typeArguments }),
     }
   }
-  const sourcePath = declaration === undefined
-    ? undefined
-    : normalizeRepoPath(declaration.getSourceFile().fileName, repoRoot)
-  const declarationName = declaration === undefined ? undefined : declarationNameText(declaration)
+  const target = dtsReferenceSourceTarget(repoRoot, sourceFile, node.typeName)
   return {
     type: 'reference',
-    name: declarationName ?? symbol?.name ?? node.typeName.getText(sourceFile),
-    ...(isClassModelEmitPath(sourcePath) ? { sourcePath } : {}),
+    name: target?.targetName ?? typeName,
+    ...(target?.sourcePath === undefined ? {} : { sourcePath: target.sourcePath }),
     ...(typeArguments === undefined || typeArguments.length === 0 ? {} : { typeArguments }),
   }
+}
+
+function isLocalTypeParameterName(node: ts.Node, typeName: string): boolean {
+  if (typeName.includes('.')) return false
+  for (let current: ts.Node = node; !ts.isSourceFile(current); current = current.parent) {
+    const typeParameters = (current as ts.Node & { typeParameters?: readonly ts.TypeParameterDeclaration[] }).typeParameters
+    if (typeParameters?.some(parameter => parameter.name.text === typeName) === true) return true
+  }
+  return false
+}
+
+function dtsReferenceSourceTarget(
+  repoRoot: string,
+  sourceFile: ts.SourceFile,
+  typeName: ts.EntityName,
+): { targetName: string; sourcePath: string } | undefined {
+  const currentSourcePath = normalizeRepoPath(sourceFile.fileName, repoRoot)
+  if (ts.isIdentifier(typeName)) {
+    const localName = typeName.text
+    const imported = dtsImportTargetForLocalName(repoRoot, sourceFile, currentSourcePath, localName)
+    if (imported !== undefined) return imported
+    return sourceFileHasTopLevelDeclaration(sourceFile, localName)
+      ? { targetName: localName, sourcePath: currentSourcePath }
+      : undefined
+  }
+
+  const namespaceName = typeName.left.getText(sourceFile)
+  const memberName = typeName.right.text
+  const namespaceSourcePath = dtsImportSourcePathForNamespace(repoRoot, sourceFile, currentSourcePath, namespaceName)
+  return namespaceSourcePath === undefined
+    ? undefined
+    : { targetName: memberName, sourcePath: namespaceSourcePath }
+}
+
+function dtsImportTargetForLocalName(
+  repoRoot: string,
+  sourceFile: ts.SourceFile,
+  currentSourcePath: string,
+  localName: string,
+): { targetName: string; sourcePath: string } | undefined {
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    if (!ts.isStringLiteral(statement.moduleSpecifier)) continue
+    const sourcePath = resolveDtsModuleSpecifierSourcePath(repoRoot, currentSourcePath, statement.moduleSpecifier.text)
+    if (sourcePath === undefined) continue
+    const importClause = statement.importClause
+    if (importClause?.name?.text === localName) return { targetName: localName, sourcePath }
+    const namedBindings = importClause?.namedBindings
+    if (namedBindings === undefined || !ts.isNamedImports(namedBindings)) continue
+    for (const element of namedBindings.elements) {
+      if (element.name.text !== localName) continue
+      return {
+        targetName: element.propertyName?.text ?? element.name.text,
+        sourcePath,
+      }
+    }
+  }
+  return undefined
+}
+
+function dtsImportSourcePathForNamespace(
+  repoRoot: string,
+  sourceFile: ts.SourceFile,
+  currentSourcePath: string,
+  namespaceName: string,
+): string | undefined {
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    if (!ts.isStringLiteral(statement.moduleSpecifier)) continue
+    const namedBindings = statement.importClause?.namedBindings
+    if (namedBindings === undefined || !ts.isNamespaceImport(namedBindings)) continue
+    if (namedBindings.name.text !== namespaceName) continue
+    return resolveDtsModuleSpecifierSourcePath(repoRoot, currentSourcePath, statement.moduleSpecifier.text)
+  }
+  return undefined
+}
+
+function resolveDtsModuleSpecifierSourcePath(
+  repoRoot: string,
+  currentSourcePath: string,
+  moduleSpecifier: string,
+): string | undefined {
+  if (!moduleSpecifier.startsWith('.')) return undefined
+  const base = posix.normalize(posix.join(posix.dirname(currentSourcePath), moduleSpecifier.replace(/\\/g, '/')))
+  for (const candidate of dtsModuleSourcePathCandidates(base)) {
+    if (existsSync(resolve(repoRoot, candidate))) return candidate
+  }
+  return dtsModuleSourcePathCandidates(base)[0]
+}
+
+function dtsModuleSourcePathCandidates(base: string): readonly string[] {
+  if (/\.d\.[cm]?ts$/u.test(base)) return [base]
+  if (base.endsWith(".vue")) return [`${base}.d.ts`]
+  if (/\.[cm]?js$/u.test(base)) return [base.replace(/\.[cm]?js$/u, '.d.ts')]
+  if (/\.[cm]?ts$/u.test(base)) return [base.replace(/\.[cm]?ts$/u, '.d.ts')]
+  return [`${base}.d.ts`, `${base}/index.d.ts`]
+}
+
+function sourceFileHasTopLevelDeclaration(sourceFile: ts.SourceFile, className: string): boolean {
+  return sourceFile.statements.some(statement => {
+    if (
+      ts.isClassDeclaration(statement)
+      || ts.isInterfaceDeclaration(statement)
+      || ts.isTypeAliasDeclaration(statement)
+      || ts.isEnumDeclaration(statement)
+    ) {
+      return statement.name?.text === className
+    }
+    return false
+  })
 }
 
 function isUndefinedOnlyTypeNode(typeNode: ts.TypeNode): boolean {
@@ -1164,17 +1322,40 @@ function literalDtsTypeMeta(typeNode: ts.LiteralTypeNode, sourceFile: ts.SourceF
 function projectConstructor(command: ConstructorProjectionCommand): ConstructorMeta {
   const { site, member } = command
   const { context, sourceFile, className } = site
-  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
-  const signature = context.checker.getSignatureFromDeclaration(member)
-  if (signature === undefined) {
-    throw new Error(`Missing constructor signature for ${className}`)
-  }
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart(sourceFile)).line + 1
   return {
     signatureText: constructorSignatureTextFromDeclaration(member, sourceFile),
     parameterStyle: parameterStyleFromDeclaration(member),
-    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
-    paramsSchema: paramsSchemaFromSignature(context.checker, signature),
-    jsdoc: readJsDoc(context.checker, member),
+    parameters: methodParametersFromDeclaration(context.repoRoot, member, sourceFile),
+    paramsSchema: paramsSchemaFromParameters(member.parameters, sourceFile),
+    jsdoc: readJsDoc(member, sourceFile),
+    provenance: createProvenance({
+      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      line,
+      className,
+      memberName: 'constructor',
+      declarationKind: 'class',
+    }),
+  }
+}
+
+function projectDefaultConstructor(command: Readonly<{
+  site: ProjectionSite
+  node: ts.ClassDeclaration
+}>): ConstructorMeta {
+  const { site, node } = command
+  const { context, sourceFile, className } = site
+  const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
+  return {
+    signatureText: 'constructor()',
+    parameterStyle: 'positional',
+    parameters: [],
+    paramsSchema: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    },
+    jsdoc: readJsDoc(node, sourceFile),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -1192,10 +1373,10 @@ function constructorSignatureTextFromDeclaration(
   return member.getText(sourceFile).replace(/;$/u, '').trim()
 }
 
-function registerModel(context: ProjectionContext, className: string, model: ClassModel): void {
+function registerModel(context: ProjectionContext, className: string, model: DtsTypeDeclarationModel): void {
   if (context.failOnDuplicate && context.models[className] !== undefined) {
     throw new Error(
-      `Duplicate ClassModel className "${className}" from ${model.provenance?.file ?? 'unknown file'}`,
+      `Duplicate DtsTypeDeclarationModel className "${className}" from ${model.provenance?.file ?? 'unknown file'}`,
     )
   }
   context.models[className] = model
@@ -1339,11 +1520,11 @@ function inferModuleJsDoc(input: {
 }
 
 function summarizeModuleSymbols(symbols: readonly string[]): string {
-  if (symbols.length === 0) return '该 DTS shard 当前不导出 ClassModel symbol。'
+  if (symbols.length === 0) return '该 DTS shard 当前不导出 DtsTypeDeclarationModel symbol。'
   const preview = symbols.length > 8
     ? `${symbols.slice(0, 8).join(', ')} 等`
     : symbols.join(', ')
-  return `导出 ClassModel symbol: ${preview}（共 ${String(symbols.length)} 个 symbol）。`
+  return `导出 DtsTypeDeclarationModel symbol: ${preview}（共 ${String(symbols.length)} 个 symbol）。`
 }
 
 function createProvenance(input: SourceProvenanceMeta): SourceProvenanceMeta {
@@ -1500,37 +1681,6 @@ const SPECIAL_COMPONENT_TYPES: Readonly<Record<string, string>> = {
   SparkCodeEditor: 'code-editor',
   SparkJsonEditor: 'json-editor',
   TreeNodeSummary: 'r-tree-node-summary',
-}
-
-function hasExportModifier(node: ts.Node): boolean {
-  return ts.canHaveModifiers(node)
-    && (ts.getModifiers(node)?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword) ?? false)
-}
-
-function hasReadonlyModifier(node: ts.Node): boolean {
-  return ts.canHaveModifiers(node)
-    && (ts.getModifiers(node)?.some(modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword) ?? false)
-}
-
-function isPrivateMember(member: ts.ClassElement): boolean {
-  const modifiers = ts.canHaveModifiers(member) ? ts.getModifiers(member) : undefined
-  if (modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.PrivateKeyword) === true) {
-    return true
-  }
-  if (ts.isPropertyDeclaration(member) && ts.isIdentifier(member.name)) {
-    return member.name.text.startsWith('#')
-  }
-  if (ts.isMethodDeclaration(member) && ts.isIdentifier(member.name)) {
-    return member.name.text.startsWith('#')
-  }
-  return false
-}
-
-function readMemberName(name: ts.PropertyName): string | undefined {
-  if (ts.isIdentifier(name)) return name.text
-  if (ts.isStringLiteral(name)) return name.text
-  if (ts.isNumericLiteral(name)) return name.text
-  return undefined
 }
 
 function readComponentNameFromPropsFile(file: string): string | undefined {

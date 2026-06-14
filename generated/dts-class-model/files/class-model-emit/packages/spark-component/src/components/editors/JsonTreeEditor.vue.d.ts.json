@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/editors/JsonTreeEditor",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
@@ -17,21 +17,14 @@
     "componentLayer": "editor",
     "componentDirectory": "editors"
   },
-  "symbols": [
-    "JsonTreeEditorProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.517Z",
   "$defs": {
     "JsonTreeEditorProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonTreeEditorProps",
-      "description": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "json-tree-editor"
-          ]
+          "const": "json-tree-editor"
         },
         "field": {
           "type": "string"
@@ -48,8 +41,7 @@
         "documentValue": {
           "anyOf": [
             {
-              "type": "object",
-              "title": "Sjd.JsonDocument"
+              "$ref": "../../../../spark-json-document/src/core/json-types.d.ts.json#/$defs/JsonDocument"
             },
             {
               "type": "null"
@@ -70,392 +62,318 @@
           "type": "boolean"
         },
         "schema": {
-          "anyOf": [
-            {
-              "type": "object"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false
         },
         "filterPlaceholder": {
           "type": "string"
         },
         "policy": {
-          "type": "object",
-          "title": "Sjd.JsonTreePolicy"
+          "$ref": "../../../../spark-json-document/src/tree/tree-types.d.ts.json#/$defs/JsonTreePolicy"
         },
         "rootLabel": {
           "type": "string"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.isProtected.params": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "$ref": "../../../../spark-json-document/src/core/json-path.d.ts.json#/$defs/JsonPath"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.isProtected.return": {
+          "type": "boolean"
+        },
+        "method.canEditKey.params": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "$ref": "../../../../spark-json-document/src/core/json-path.d.ts.json#/$defs/JsonPath"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.canEditKey.return": {
+          "type": "boolean"
+        },
+        "method.canEditType.params": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "$ref": "../../../../spark-json-document/src/core/json-path.d.ts.json#/$defs/JsonPath"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.canEditType.return": {
+          "type": "boolean"
+        },
+        "method.suggestChildKey.params": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "$ref": "../../../../spark-json-document/src/core/json-types.d.ts.json#/$defs/JsonObject"
+            },
+            "parentPath": {
+              "$ref": "../../../../spark-json-document/src/core/json-path.d.ts.json#/$defs/JsonPath"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.suggestChildKey.return": {
+          "type": "string"
+        },
+        "method.createDefaultArrayItem.params": {
+          "type": "object",
+          "properties": {
+            "parentPath": {
+              "$ref": "../../../../spark-json-document/src/core/json-path.d.ts.json#/$defs/JsonPath"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.createDefaultArrayItem.return": {
+          "$ref": "../../../../spark-json-document/src/core/json-types.d.ts.json#/$defs/JsonValue"
+        },
+        "method.createDefaultObjectValue.params": {
+          "type": "object",
+          "properties": {
+            "parentPath": {
+              "$ref": "../../../../spark-json-document/src/core/json-path.d.ts.json#/$defs/JsonPath"
+            },
+            "key": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.createDefaultObjectValue.return": {
+          "$ref": "../../../../spark-json-document/src/core/json-types.d.ts.json#/$defs/JsonValue"
+        }
       }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.517Z",
   "models": {
     "JsonTreeEditorProps": {
-      "kind": "JsonTreeEditorProps",
-      "className": "JsonTreeEditorProps",
+      "name": "JsonTreeEditorProps",
       "jsdoc": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 固定编辑器类型，用于组件注册和配置识别。 */\n    type?: 'json-tree-editor';\n    /** 字段绑定名，映射到 DataView 行字段 */\n    field?: string;\n    /** 显示标签 */\n    label?: string;\n    /** r-table 内列宽 */\n    width?: number;\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 已解析的 JSON 文档对象 */\n    documentValue?: Sjd.JsonDocument | null;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: {\n        [key: string]: unknown;\n    } | null;\n    /** 筛选框占位文本 */\n    filterPlaceholder?: string;\n    /** 策略聚合对象（复杂场景一次传入） */\n    policy?: Sjd.JsonTreePolicy;\n    /** 根节点标签 */\n    rootLabel?: string;\n    /** 判断路径是否受保护 */\n    isProtected?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑键名 */\n    canEditKey?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑类型 */\n    canEditType?: (path: Sjd.JsonPath) => boolean;\n    /** 推荐子节点键名 */\n    suggestChildKey?: (target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string;\n    /** 创建数组默认子项 */\n    createDefaultArrayItem?: (parentPath: Sjd.JsonPath) => Sjd.JsonValue;\n    /** 创建对象默认子值 */\n    createDefaultObjectValue?: (parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
         "line": 3,
         "className": "JsonTreeEditorProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "JsonTreeEditor",
         "componentLevel": "infrastructure",
         "componentLayer": "editor",
         "componentDirectory": "editors"
       },
-      "attributes": [
-        {
-          "name": "type",
-          "jsdoc": "固定编辑器类型，用于组件注册和配置识别。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "json-tree-editor"
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "field",
-          "jsdoc": "字段绑定名，映射到 DataView 行字段",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "label",
-          "jsdoc": "显示标签",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "width",
-          "jsdoc": "r-table 内列宽",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "modelValue",
-          "jsdoc": "JSON 字符串内容",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "documentValue",
-          "jsdoc": "已解析的 JSON 文档对象",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "Sjd.JsonDocument"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "height",
-          "jsdoc": "编辑器高度",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "readOnly",
-          "jsdoc": "是否只读",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "schema",
-          "jsdoc": "JSON Schema 校验规则",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "filterPlaceholder",
-          "jsdoc": "筛选框占位文本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "policy",
-          "jsdoc": "策略聚合对象（复杂场景一次传入）",
-          "schema": {
-            "type": "object",
-            "title": "Sjd.JsonTreePolicy"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "rootLabel",
-          "jsdoc": "根节点标签",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "isProtected",
-          "jsdoc": "判断路径是否受保护",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 固定编辑器类型，用于组件注册和配置识别。 */\n    type?: 'json-tree-editor';\n    /** 字段绑定名，映射到 DataView 行字段 */\n    field?: string;\n    /** 显示标签 */\n    label?: string;\n    /** r-table 内列宽 */\n    width?: number;\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 已解析的 JSON 文档对象 */\n    documentValue?: Sjd.JsonDocument | null;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: {\n        [key: string]: unknown;\n    } | null;\n    /** 筛选框占位文本 */\n    filterPlaceholder?: string;\n    /** 策略聚合对象（复杂场景一次传入） */\n    policy?: Sjd.JsonTreePolicy;\n    /** 根节点标签 */\n    rootLabel?: string;\n    /** 判断路径是否受保护 */\n    isProtected?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑键名 */\n    canEditKey?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑类型 */\n    canEditType?: (path: Sjd.JsonPath) => boolean;\n    /** 推荐子节点键名 */\n    suggestChildKey?: (target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string;\n    /** 创建数组默认子项 */\n    createDefaultArrayItem?: (parentPath: Sjd.JsonPath) => Sjd.JsonValue;\n    /** 创建对象默认子值 */\n    createDefaultObjectValue?: (parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "path",
-              "type": {
-                "type": "reference",
-                "name": "JsonPath"
-              }
+              "name": "type",
+              "jsdoc": "固定编辑器类型，用于组件注册和配置识别。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "field",
+              "jsdoc": "字段绑定名，映射到 DataView 行字段",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "label",
+              "jsdoc": "显示标签",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "width",
+              "jsdoc": "r-table 内列宽",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "modelValue",
+              "jsdoc": "JSON 字符串内容",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "documentValue",
+              "jsdoc": "已解析的 JSON 文档对象",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "height",
+              "jsdoc": "编辑器高度",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "readOnly",
+              "jsdoc": "是否只读",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schema",
+              "jsdoc": "JSON Schema 校验规则",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "filterPlaceholder",
+              "jsdoc": "筛选框占位文本",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "policy",
+              "jsdoc": "策略聚合对象（复杂场景一次传入）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rootLabel",
+              "jsdoc": "根节点标签",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "path": {
-                "type": "object",
-                "title": "Sjd.JsonPath"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "canEditKey",
-          "jsdoc": "判断路径是否可编辑键名",
-          "parameterStyle": "positional",
-          "parameters": [
+          "methods": [
             {
-              "name": "path",
+              "name": "isProtected",
+              "jsdoc": "判断路径是否受保护",
+              "parameters": [
+                {
+                  "name": "path",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonPath"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "JsonPath"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "path": {
-                "type": "object",
-                "title": "Sjd.JsonPath"
+                "type": "intrinsic",
+                "name": "boolean"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "canEditType",
-          "jsdoc": "判断路径是否可编辑类型",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "path",
+              "name": "canEditKey",
+              "jsdoc": "判断路径是否可编辑键名",
+              "parameters": [
+                {
+                  "name": "path",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonPath"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "JsonPath"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "boolean"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "path": {
-                "type": "object",
-                "title": "Sjd.JsonPath"
+                "type": "intrinsic",
+                "name": "boolean"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean"
-          }
-        },
-        {
-          "name": "suggestChildKey",
-          "jsdoc": "推荐子节点键名",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "target",
+              "name": "canEditType",
+              "jsdoc": "判断路径是否可编辑类型",
+              "parameters": [
+                {
+                  "name": "path",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonPath"
+                  }
+                }
+              ],
               "type": {
-                "type": "reference",
-                "name": "JsonObject"
+                "type": "intrinsic",
+                "name": "boolean"
               }
             },
             {
-              "name": "parentPath",
-              "type": {
-                "type": "reference",
-                "name": "JsonPath"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "string"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "target": {
-                "type": "object",
-                "title": "Sjd.JsonObject"
-              },
-              "parentPath": {
-                "type": "object",
-                "title": "Sjd.JsonPath"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "createDefaultArrayItem",
-          "jsdoc": "创建数组默认子项",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "parentPath",
-              "type": {
-                "type": "reference",
-                "name": "JsonPath"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "JsonValue"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "parentPath": {
-                "type": "object",
-                "title": "Sjd.JsonPath"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Sjd.JsonValue"
-          }
-        },
-        {
-          "name": "createDefaultObjectValue",
-          "jsdoc": "创建对象默认子值",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "parentPath",
-              "type": {
-                "type": "reference",
-                "name": "JsonPath"
-              }
-            },
-            {
-              "name": "key",
+              "name": "suggestChildKey",
+              "jsdoc": "推荐子节点键名",
+              "parameters": [
+                {
+                  "name": "target",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonObject"
+                  }
+                },
+                {
+                  "name": "parentPath",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonPath"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
                 "name": "string"
               }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "JsonValue"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "parentPath": {
-                "type": "object",
-                "title": "Sjd.JsonPath"
-              },
-              "key": {
-                "type": "string"
+            },
+            {
+              "name": "createDefaultArrayItem",
+              "jsdoc": "创建数组默认子项",
+              "parameters": [
+                {
+                  "name": "parentPath",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonPath"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Sjd.JsonValue"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Sjd.JsonValue"
-          }
+            {
+              "name": "createDefaultObjectValue",
+              "jsdoc": "创建对象默认子值",
+              "parameters": [
+                {
+                  "name": "parentPath",
+                  "type": {
+                    "type": "reference",
+                    "name": "Sjd.JsonPath"
+                  }
+                },
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Sjd.JsonValue"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:ai/components/SessionDiagnosticsPanel.props",
     "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.d.ts",
@@ -13,69 +13,59 @@
       "SessionDiagnosticsPanelProps"
     ]
   },
-  "symbols": [
-    "SessionDiagnosticsPanelProps"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.369Z",
   "$defs": {
     "SessionDiagnosticsPanelProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SessionDiagnosticsPanelProps",
-      "description": "Session Diagnostics Panel Props 的属性契约。",
       "properties": {
         "data": {
-          "type": "object",
-          "title": "SessionDiagnosticsData"
+          "$ref": "../types.d.ts.json#/$defs/SessionDiagnosticsData"
         },
         "loading": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.369Z",
   "models": {
     "SessionDiagnosticsPanelProps": {
-      "kind": "SessionDiagnosticsPanelProps",
-      "className": "SessionDiagnosticsPanelProps",
+      "name": "SessionDiagnosticsPanelProps",
       "jsdoc": "Session Diagnostics Panel Props 的属性契约。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.d.ts",
         "line": 9,
         "className": "SessionDiagnosticsPanelProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "SessionDiagnosticsPanel"
       },
-      "attributes": [
-        {
-          "name": "data",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "SessionDiagnosticsData"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "loading",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "data",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "loading",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

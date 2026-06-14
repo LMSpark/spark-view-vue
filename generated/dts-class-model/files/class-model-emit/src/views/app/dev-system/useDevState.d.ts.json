@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:views/app/dev-system/useDevState",
     "sourcePath": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
@@ -21,94 +21,52 @@
       "DevState"
     ]
   },
-  "symbols": [
-    "DevPageFileName",
-    "PageConfigPageSummary",
-    "NavigationNodeDraftNode",
-    "RunPageDesignAiOptions",
-    "EditableProjectOption",
-    "StatusMessage",
-    "DevContextConfig",
-    "DevWorkspaceTab",
-    "DevState"
-  ],
-  "generatedAt": "2026-06-12T04:50:58.244Z",
   "$defs": {
-    "DevPageFileName": {
-      "type": "object",
-      "title": "DevPageFileName",
-      "description": "Dev Page File Name 的语义模型。"
-    },
-    "PageConfigPageSummary": {
-      "type": "object",
-      "title": "PageConfigPageSummary",
-      "description": "Page Config Page Summary 的语义模型。"
-    },
-    "NavigationNodeDraftNode": {
-      "type": "object",
-      "title": "NavigationNodeDraftNode",
-      "description": "Navigation Node Draft Node 的语义模型。"
-    },
-    "RunPageDesignAiOptions": {
-      "type": "object",
-      "title": "RunPageDesignAiOptions",
-      "description": "Run Page Design Ai Options 的调用配置。"
-    },
     "EditableProjectOption": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EditableProjectOption",
-      "description": "Editable Project Option 的语义模型。",
       "properties": {
         "tenantId": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "tenantId"
+      ],
+      "additionalProperties": false
     },
     "StatusMessage": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "StatusMessage",
-      "description": "Status Message 的语义模型。",
       "properties": {
         "text": {
           "type": "string"
         },
         "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "success"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "warning"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "error"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "info"
-              ]
-            }
+          "enum": [
+            "success",
+            "warning",
+            "error",
+            "info"
           ]
         },
         "time": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "text",
+        "type",
+        "time"
+      ],
+      "additionalProperties": false
     },
     "DevContextConfig": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DevContextConfig",
-      "description": "Dev Context Config 的配置结构。",
       "properties": {
         "placeholder": {
           "type": "string"
@@ -119,285 +77,258 @@
         "paramName": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "placeholder",
+        "defaultValue",
+        "paramName"
+      ],
+      "additionalProperties": false
     },
     "DevWorkspaceTab": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DevWorkspaceTab",
-      "description": "Dev Workspace Tab 的语义模型。"
-    },
-    "DevState": {
-      "type": "object",
-      "title": "DevState",
-      "description": "Dev State 的运行状态。"
+      "anyOf": [
+        {
+          "const": "props"
+        },
+        {
+          "const": "preview"
+        },
+        {
+          "type": "object",
+          "title": "DevPageFileName"
+        }
+      ]
     }
   },
+  "generatedAt": "2026-06-12T04:50:58.244Z",
   "models": {
     "DevPageFileName": {
-      "kind": "DevPageFileName",
-      "className": "DevPageFileName",
+      "name": "DevPageFileName",
       "jsdoc": "Dev Page File Name 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Extract<PageNodeFileName, string>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Extract<PageNodeFileName, string>",
-          "targetName": "Extract"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 6,
         "className": "DevPageFileName",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Extract<PageNodeFileName, string>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Extract<PageNodeFileName, string>",
+            "targetName": "Extract"
+          }
+        ],
+        "members": {}
+      }
     },
     "PageConfigPageSummary": {
-      "kind": "PageConfigPageSummary",
-      "className": "PageConfigPageSummary",
+      "name": "PageConfigPageSummary",
       "jsdoc": "Page Config Page Summary 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 8,
         "className": "PageConfigPageSummary",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key];\n}",
+        "members": {}
+      }
     },
     "NavigationNodeDraftNode": {
-      "kind": "NavigationNodeDraftNode",
-      "className": "NavigationNodeDraftNode",
+      "name": "NavigationNodeDraftNode",
       "jsdoc": "Navigation Node Draft Node 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [Key in keyof ProjectNavigationNodeDraftNode]: ProjectNavigationNodeDraftNode[Key];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 12,
         "className": "NavigationNodeDraftNode",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [Key in keyof ProjectNavigationNodeDraftNode]: ProjectNavigationNodeDraftNode[Key];\n}",
+        "members": {}
+      }
     },
     "RunPageDesignAiOptions": {
-      "kind": "RunPageDesignAiOptions",
-      "className": "RunPageDesignAiOptions",
+      "name": "RunPageDesignAiOptions",
       "jsdoc": "Run Page Design Ai Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 16,
         "className": "RunPageDesignAiOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key];\n}",
+        "members": {}
+      }
     },
     "EditableProjectOption": {
-      "kind": "EditableProjectOption",
-      "className": "EditableProjectOption",
+      "name": "EditableProjectOption",
       "jsdoc": "Editable Project Option 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "ProjectSummary & {\n    /** tenant Id 标识。 */\n    tenantId: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "ProjectSummary",
-          "targetName": "ProjectSummary"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 20,
         "className": "EditableProjectOption",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "ProjectSummary & {\n    /** tenant Id 标识。 */\n    tenantId: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "ProjectSummary",
+            "targetName": "ProjectSummary"
           },
-          "readable": true,
-          "writable": true
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "tenantId",
+              "jsdoc": "tenant Id 标识。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "StatusMessage": {
-      "kind": "StatusMessage",
-      "className": "StatusMessage",
+      "name": "StatusMessage",
       "jsdoc": "Status Message 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 展示文本。 */\n    text: string;\n    /** 类型标识。 */\n    type: 'success' | 'warning' | 'error' | 'info';\n    /** time 字段。 */\n    time: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 25,
         "className": "StatusMessage",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "text",
-          "jsdoc": "展示文本。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "类型标识。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "success"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "warning"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "error"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "info"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "time",
-          "jsdoc": "time 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 展示文本。 */\n    text: string;\n    /** 类型标识。 */\n    type: 'success' | 'warning' | 'error' | 'info';\n    /** time 字段。 */\n    time: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "text",
+              "jsdoc": "展示文本。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "type",
+              "jsdoc": "类型标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "time",
+              "jsdoc": "time 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DevContextConfig": {
-      "kind": "DevContextConfig",
-      "className": "DevContextConfig",
+      "name": "DevContextConfig",
       "jsdoc": "Dev Context Config 的配置结构。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 34,
         "className": "DevContextConfig",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "placeholder",
-          "jsdoc": "占位提示文本。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "defaultValue",
-          "jsdoc": "default Value 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "paramName",
-          "jsdoc": "param Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "placeholder",
+              "jsdoc": "占位提示文本。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "defaultValue",
+              "jsdoc": "default Value 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "paramName",
+              "jsdoc": "param Name 名称。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DevWorkspaceTab": {
-      "kind": "DevWorkspaceTab",
-      "className": "DevWorkspaceTab",
+      "name": "DevWorkspaceTab",
       "jsdoc": "Dev Workspace Tab 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'props' | 'preview' | DevPageFileName",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'props'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'preview'"
-        },
-        {
-          "kind": "union",
-          "typeText": "DevPageFileName",
-          "targetName": "DevPageFileName"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 43,
         "className": "DevWorkspaceTab",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'props' | 'preview' | DevPageFileName",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'props'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'preview'"
+          },
+          {
+            "kind": "union",
+            "typeText": "DevPageFileName",
+            "targetName": "DevPageFileName"
+          }
+        ],
+        "members": {}
+      }
     },
     "DevState": {
-      "kind": "DevState",
-      "className": "DevState",
+      "name": "DevState",
       "jsdoc": "Dev State 的运行状态。",
-      "shapeKind": "type",
-      "declarationTypeText": "ReturnType<typeof useDevState>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "ReturnType<typeof useDevState>",
-          "targetName": "ReturnType"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/views/app/dev-system/useDevState.d.ts",
         "line": 192,
         "className": "DevState",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "ReturnType<typeof useDevState>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "ReturnType<typeof useDevState>",
+            "targetName": "ReturnType"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }

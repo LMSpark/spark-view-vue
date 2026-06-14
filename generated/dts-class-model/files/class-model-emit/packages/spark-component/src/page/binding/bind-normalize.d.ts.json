@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/binding/bind-normalize.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/binding/bind-normalize",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/binding/bind-normalize.d.ts",
@@ -13,32 +13,30 @@
       "CallFunc"
     ]
   },
-  "symbols": [
-    "CallFunc"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.982Z",
   "$defs": {
     "CallFunc": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CallFunc",
-      "description": "沙箱函数调用签名"
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.982Z",
   "models": {
     "CallFunc": {
-      "kind": "CallFunc",
-      "className": "CallFunc",
+      "name": "CallFunc",
       "jsdoc": "沙箱函数调用签名",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/binding/bind-normalize.d.ts",
         "line": 35,
         "className": "CallFunc",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
+        "members": {}
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/renderer/scopeCSS.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/renderer/scopeCSS",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/renderer/scopeCSS.d.ts",
@@ -13,15 +13,11 @@
       "CssScopeOptions"
     ]
   },
-  "symbols": [
-    "CssScopeOptions"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.987Z",
   "$defs": {
     "CssScopeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CssScopeOptions",
-      "description": "CSS 作用域选项",
       "properties": {
         "pageId": {
           "type": "string"
@@ -29,43 +25,45 @@
         "css": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "pageId",
+        "css"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.987Z",
   "models": {
     "CssScopeOptions": {
-      "kind": "CssScopeOptions",
-      "className": "CssScopeOptions",
-      "jsdoc": "CSS 作用域选项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** css 字段。 */\n    css: string;\n}",
+      "name": "CssScopeOptions",
+      "jsdoc": "@module\n@spark-appworks /spark-component:page/renderer/scopeCSS\n职责：提供 scope CSS 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\nCSS 作用域隔离工具\nCSS 作用域选项",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/renderer/scopeCSS.d.ts",
         "line": 13,
         "className": "CssScopeOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "pageId",
-          "jsdoc": "page Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "css",
-          "jsdoc": "css 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** css 字段。 */\n    css: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "pageId",
+              "jsdoc": "page Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "css",
+              "jsdoc": "css 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

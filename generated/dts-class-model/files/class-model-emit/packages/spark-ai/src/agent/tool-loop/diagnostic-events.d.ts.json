@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/diagnostic-events.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/tool-loop/diagnostic-events",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/diagnostic-events.d.ts",
@@ -14,223 +14,154 @@
       "ToolResultEventInput"
     ]
   },
-  "symbols": [
-    "AiAgentDiagnosticEventInput",
-    "ToolResultEventInput"
-  ],
-  "generatedAt": "2026-06-14T01:03:51.192Z",
   "$defs": {
     "AiAgentDiagnosticEventInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentDiagnosticEventInput",
-      "description": "Ai Agent Diagnostic Event Input 的输入数据。",
       "properties": {
         "request": {
-          "type": "object",
-          "title": "AiAgentChatRequest"
+          "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentChatRequest"
         },
         "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
+          "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentScope"
         },
         "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
+          "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentTurnMeta"
         },
         "type": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "llm-request"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "llm-append"
-              ]
-            }
+          "enum": [
+            "llm-request",
+            "llm-append"
           ]
         },
         "data": true
-      }
+      },
+      "additionalProperties": false
     },
     "ToolResultEventInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ToolResultEventInput",
-      "description": "Tool Result Event Input 的输入数据。",
       "properties": {
         "request": {
-          "type": "object",
-          "title": "AiAgentChatRequest"
+          "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentChatRequest"
         },
         "scope": {
-          "type": "object",
-          "title": "AiAgentScope"
+          "$ref": "../business/scope-types.d.ts.json#/$defs/AiAgentScope"
         },
         "turn": {
-          "type": "object",
-          "title": "AiAgentTurnMeta"
+          "$ref": "../chat/chat-types.d.ts.json#/$defs/AiAgentTurnMeta"
         },
         "eventModuleId": {
           "type": "string"
         },
         "data": true
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T01:03:51.192Z",
   "models": {
     "AiAgentDiagnosticEventInput": {
-      "kind": "AiAgentDiagnosticEventInput",
-      "className": "AiAgentDiagnosticEventInput",
+      "name": "AiAgentDiagnosticEventInput",
       "jsdoc": "Ai Agent Diagnostic Event Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    type: 'llm-request' | 'llm-append';\n    data: unknown;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    type: 'llm-request' | 'llm-append';\n    data: unknown;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/diagnostic-events.d.ts",
         "line": 10,
         "className": "AiAgentDiagnosticEventInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "request",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentChatRequest"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "scope",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentScope"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turn",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTurnMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "llm-request"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "llm-append"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "data",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    type: 'llm-request' | 'llm-append';\n    data: unknown;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    type: 'llm-request' | 'llm-append';\n    data: unknown;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "request",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turn",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ToolResultEventInput": {
-      "kind": "ToolResultEventInput",
-      "className": "ToolResultEventInput",
+      "name": "ToolResultEventInput",
       "jsdoc": "Tool Result Event Input 的输入数据。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    eventModuleId: string;\n    data: unknown;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    eventModuleId: string;\n    data: unknown;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/diagnostic-events.d.ts",
         "line": 18,
         "className": "ToolResultEventInput",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "request",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentChatRequest"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "scope",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentScope"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turn",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTurnMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "eventModuleId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "data",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    eventModuleId: string;\n    data: unknown;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    request: AiAgentChatRequest;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    eventModuleId: string;\n    data: unknown;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "request",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scope",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turn",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "eventModuleId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

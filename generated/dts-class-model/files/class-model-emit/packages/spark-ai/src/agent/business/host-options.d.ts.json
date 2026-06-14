@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/business/host-options",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
@@ -13,80 +13,67 @@
       "AiAgentOptions"
     ]
   },
-  "symbols": [
-    "AiAgentOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.306Z",
   "$defs": {
     "AiAgentOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiAgentOptions",
-      "description": "Ai Agent Options 的调用配置。",
       "properties": {
         "registry": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false
         },
         "turnCallbacks": {
-          "type": "object",
-          "title": "AiAgentTurnCallbacks"
+          "$ref": "../transport/transport-types.d.ts.json#/$defs/AiAgentTurnCallbacks"
         },
         "maxToolRounds": {
           "type": "number"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.306Z",
   "models": {
     "AiAgentOptions": {
-      "kind": "AiAgentOptions",
-      "className": "AiAgentOptions",
+      "name": "AiAgentOptions",
       "jsdoc": "Ai Agent Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
         "line": 11,
         "className": "AiAgentOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "registry",
-          "jsdoc": "",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "turnCallbacks",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiAgentTurnCallbacks"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "maxToolRounds",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "registry",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "turnCallbacks",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "maxToolRounds",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/page/context/buildPageContext.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:page/context/buildPageContext",
     "sourcePath": "class-model-emit/packages/spark-component/src/page/context/buildPageContext.d.ts",
@@ -13,15 +13,11 @@
       "PageContextDeps"
     ]
   },
-  "symbols": [
-    "PageContextDeps"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.984Z",
   "$defs": {
     "PageContextDeps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageContextDeps",
-      "description": "buildPageContext 所需的依赖引用",
       "properties": {
         "pageRoute": {
           "type": "object",
@@ -35,161 +31,154 @@
           "type": "object",
           "title": "PageServiceCapability"
         }
+      },
+      "required": [
+        "pageRoute",
+        "pageContainer",
+        "pageService"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.getDataSet.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getDataSet.return": {
+          "anyOf": [
+            {
+              "$ref": "../../../../spark-data/src/dataset.d.ts.json#/$defs/DataSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.getComponentRegistry.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getComponentRegistry.return": {
+          "anyOf": [
+            {
+              "$ref": "../../core/capability-keys.d.ts.json#/$defs/PageComponentRegistry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.getModuleContext.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getModuleContext.return": {
+          "anyOf": [
+            {
+              "$ref": "../../core/capability-keys.d.ts.json#/$defs/ModuleContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
       }
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.984Z",
   "models": {
     "PageContextDeps": {
-      "kind": "PageContextDeps",
-      "className": "PageContextDeps",
+      "name": "PageContextDeps",
       "jsdoc": "buildPageContext 所需的依赖引用",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** DataSet getter（闭包引用，每次调用返回最新值） */\n    getDataSet: () => DataSet | null;\n    /** page Route 字段。 */\n    pageRoute: PageRoute;\n    /** page Container 字段。 */\n    pageContainer: Ref<HTMLElement | null>;\n    /** page Service 字段。 */\n    pageService: PageServiceCapability;\n    /** 页面级组件注册中心 getter（可选） */\n    getComponentRegistry?: () => PageComponentRegistry | null;\n    /** 模块上下文 getter（可选，每次调用返回最新快照） */\n    getModuleContext?: () => ModuleContext | null;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/page/context/buildPageContext.d.ts",
         "line": 20,
         "className": "PageContextDeps",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "pageRoute",
-          "jsdoc": "page Route 字段。",
-          "schema": {
-            "type": "object",
-            "title": "PageRoute"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "pageContainer",
-          "jsdoc": "page Container 字段。",
-          "schema": {
-            "type": "object",
-            "title": "Ref<HTMLElement | null>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "pageService",
-          "jsdoc": "page Service 字段。",
-          "schema": {
-            "type": "object",
-            "title": "PageServiceCapability"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** DataSet getter（闭包引用，每次调用返回最新值） */\n    getDataSet: () => DataSet | null;\n    /** page Route 字段。 */\n    pageRoute: PageRoute;\n    /** page Container 字段。 */\n    pageContainer: Ref<HTMLElement | null>;\n    /** page Service 字段。 */\n    pageService: PageServiceCapability;\n    /** 页面级组件注册中心 getter（可选） */\n    getComponentRegistry?: () => PageComponentRegistry | null;\n    /** 模块上下文 getter（可选，每次调用返回最新快照） */\n    getModuleContext?: () => ModuleContext | null;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "pageRoute",
+              "jsdoc": "page Route 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "pageContainer",
+              "jsdoc": "page Container 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "pageService",
+              "jsdoc": "page Service 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "getDataSet",
+              "jsdoc": "DataSet getter（闭包引用，每次调用返回最新值）",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataSet"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "getComponentRegistry",
+              "jsdoc": "页面级组件注册中心 getter（可选）",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "PageComponentRegistry",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "getModuleContext",
+              "jsdoc": "模块上下文 getter（可选，每次调用返回最新快照）",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ModuleContext",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/capability-keys.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ]
         }
-      ],
-      "methods": [
-        {
-          "name": "getDataSet",
-          "jsdoc": "DataSet getter（闭包引用，每次调用返回最新值）",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataSet"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "DataSet"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "getComponentRegistry",
-          "jsdoc": "页面级组件注册中心 getter（可选）",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "PageComponentRegistry"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "getModuleContext",
-          "jsdoc": "模块上下文 getter（可选，每次调用返回最新快照）",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "ModuleContext"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        }
-      ]
+      }
     }
   }
 }

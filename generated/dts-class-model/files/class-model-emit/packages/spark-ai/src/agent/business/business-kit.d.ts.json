@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-kit.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:agent/business/business-kit",
     "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-kit.d.ts",
@@ -15,34 +15,49 @@
       "CreateSimpleInputContractOptions"
     ]
   },
-  "symbols": [
-    "AiBusinessIdOptions",
-    "AiBusinessInputOptions",
-    "CreateSimpleInputContractOptions"
-  ],
-  "generatedAt": "2026-06-14T02:24:09.386Z",
   "$defs": {
     "AiBusinessIdOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiBusinessIdOptions",
-      "description": "Ai Business Id Options 的调用配置。",
       "properties": {
         "businessId": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "AiBusinessInputOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AiBusinessInputOptions",
-      "description": "Ai Business Input Options 的调用配置。",
       "properties": {
         "paramsSchema": {
           "type": "object",
           "title": "AiJsonSchemaObject"
         },
-        "identityField": true,
-        "messageField": true,
+        "identityField": {
+          "allOf": [
+            {
+              "type": "object",
+              "title": "TInput"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "messageField": {
+          "allOf": [
+            {
+              "type": "object",
+              "title": "TInput"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
         "systemPrompt": {
           "anyOf": [
             {
@@ -68,7 +83,10 @@
         "readonlySteps": {
           "anyOf": [
             {
-              "type": "array"
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             {
               "type": "object",
@@ -76,202 +94,173 @@
             }
           ]
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.normalize.params": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "type": "object",
+              "title": "AiJsonParams"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.normalize.return": {
+          "type": "object",
+          "title": "TInput"
+        }
       }
     },
     "CreateSimpleInputContractOptions": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "CreateSimpleInputContractOptions",
-      "description": "Create Simple Input Contract Options 的调用配置。"
+      "allOf": [
+        {
+          "type": "object",
+          "title": "AiBusinessIdOptions"
+        },
+        {
+          "type": "object",
+          "title": "AiBusinessInputOptions<TInput>"
+        }
+      ]
     }
   },
+  "generatedAt": "2026-06-14T02:24:09.386Z",
   "models": {
     "AiBusinessIdOptions": {
-      "kind": "AiBusinessIdOptions",
-      "className": "AiBusinessIdOptions",
+      "name": "AiBusinessIdOptions",
       "jsdoc": "Ai Business Id Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    businessId: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    businessId: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/business-kit.d.ts",
         "line": 10,
         "className": "AiBusinessIdOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "businessId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    businessId: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    businessId: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "businessId",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "AiBusinessInputOptions": {
-      "kind": "AiBusinessInputOptions",
-      "className": "AiBusinessInputOptions",
+      "name": "AiBusinessInputOptions",
       "jsdoc": "Ai Business Input Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    messageField: keyof TInput & string;\n    normalize?: (input: AiJsonParams) => TInput;\n    systemPrompt: string | ((input: TInput) => string);\n    title?: string | ((input: TInput) => string | undefined);\n    readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined);\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    messageField: keyof TInput & string;\n    normalize?: (input: AiJsonParams) => TInput;\n    systemPrompt: string | ((input: TInput) => string);\n    title?: string | ((input: TInput) => string | undefined);\n    readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined);\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/business-kit.d.ts",
         "line": 14,
         "className": "AiBusinessInputOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "paramsSchema",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonSchemaObject"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "identityField",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "messageField",
-          "jsdoc": "",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "systemPrompt",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "title": "(input: TInput) => string"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "title",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "title": "(input: TInput) => string | undefined"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "readonlySteps",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "array"
-              },
-              {
-                "type": "object",
-                "title": "(input: TInput) => readonly string[] | undefined"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "normalize",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    messageField: keyof TInput & string;\n    normalize?: (input: AiJsonParams) => TInput;\n    systemPrompt: string | ((input: TInput) => string);\n    title?: string | ((input: TInput) => string | undefined);\n    readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined);\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    messageField: keyof TInput & string;\n    normalize?: (input: AiJsonParams) => TInput;\n    systemPrompt: string | ((input: TInput) => string);\n    title?: string | ((input: TInput) => string | undefined);\n    readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined);\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
             {
-              "name": "input",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
+              "name": "paramsSchema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "identityField",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "messageField",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "systemPrompt",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "title",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "readonlySteps",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "reference",
-            "name": "TInput",
-            "refersToTypeParameter": true
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "type": "object",
-                "title": "AiJsonParams"
+          "methods": [
+            {
+              "name": "normalize",
+              "parameters": [
+                {
+                  "name": "input",
+                  "type": {
+                    "type": "reference",
+                    "name": "AiJsonParams",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/json.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "TInput",
+                "refersToTypeParameter": true
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            }
+          ]
         }
-      ]
+      }
     },
     "CreateSimpleInputContractOptions": {
-      "kind": "CreateSimpleInputContractOptions",
-      "className": "CreateSimpleInputContractOptions",
+      "name": "CreateSimpleInputContractOptions",
       "jsdoc": "Create Simple Input Contract Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "AiBusinessIdOptions & AiBusinessInputOptions<TInput>",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "AiBusinessIdOptions",
-          "targetName": "AiBusinessIdOptions"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "AiBusinessInputOptions<TInput>",
-          "targetName": "AiBusinessInputOptions"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/agent/business/business-kit.d.ts",
         "line": 24,
         "className": "CreateSimpleInputContractOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "AiBusinessIdOptions & AiBusinessInputOptions<TInput>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "AiBusinessIdOptions",
+            "targetName": "AiBusinessIdOptions"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "AiBusinessInputOptions<TInput>",
+            "targetName": "AiBusinessInputOptions"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }

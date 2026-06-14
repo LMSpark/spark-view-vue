@@ -4,7 +4,7 @@ import {
   AiToolApprovalBridge,
   createAiToolApprovalBridge,
   type AiToolApprovalBridgeSnapshot,
-} from '../tool-approval-bridge'
+} from '../../ai/tool-approval-bridge'
 
 function createBeforeFunctionCallOptions(
   toolName = 'model_script',

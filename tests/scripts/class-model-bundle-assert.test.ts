@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
 // @ts-ignore TS7016 -- Node .mjs helper；契约见 scripts/lib/class-model-bundle-assert.d.ts
-import { assertClassModelBundleComplete, assertClassModelGuideParamsSchema, assertClassModelSemanticGapsZero } from '../../scripts/lib/class-model-bundle-assert.mjs'
+import { assertClassModelBundleComplete, assertClassModelGuideExecutableSchemas, assertClassModelSemanticGapsZero } from '../../scripts/lib/class-model-bundle-assert.mjs'
 
 const repoRoot = process.cwd()
 
@@ -30,9 +30,16 @@ describe('class-model-bundle-assert', () => {
       writeFileSync(join(root, 'files/foo.json'), JSON.stringify({
         models: {
           Demo: {
+            shapeKind: 'function',
+            jsonSchema: {
+              $schema: 'https://json-schema.org/draft/2020-12/schema',
+              type: 'object',
+              properties: {
+                params: { type: 'object', properties: {} },
+              },
+            },
             methods: [{
               name: 'run',
-              paramsSchema: { type: 'object', properties: {} },
             }],
           },
         },
@@ -58,13 +65,19 @@ describe('class-model-bundle-assert', () => {
     }
   })
 
-  it('throws when guide shard method is missing paramsSchema', () => {
+  it('throws when guide shard method is missing executable schema in jsonSchema', () => {
     const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
     try {
       mkdirSync(join(root, 'files'), { recursive: true })
       writeFileSync(join(root, 'files/foo.json'), JSON.stringify({
         models: {
           Demo: {
+            shapeKind: 'function',
+            jsonSchema: {
+              $schema: 'https://json-schema.org/draft/2020-12/schema',
+              type: 'object',
+              properties: {},
+            },
             methods: [{ name: 'run' }],
           },
         },
@@ -75,21 +88,47 @@ describe('class-model-bundle-assert', () => {
         },
       }))
 
-      expect(() => assertClassModelGuideParamsSchema(root)).toThrow(/paramsSchema/i)
+      expect(() => assertClassModelGuideExecutableSchemas(root)).toThrow(/jsonSchema-only/i)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
   })
 
-  it('passes paramsSchema gate on checked-in guide bundle when present', () => {
+  it('passes jsonSchema-only gate on checked-in guide bundle when present', () => {
     const bundleRoot = resolve(repoRoot, 'generated/dts-class-model')
     if (!existsSync(join(bundleRoot, 'manifest.json'))) return
-    expect(() => assertClassModelGuideParamsSchema(bundleRoot)).not.toThrow()
+    expect(() => assertClassModelGuideExecutableSchemas(bundleRoot)).not.toThrow()
   })
 
-  it('passes semantic gaps zero gate on checked-in bundle when present', () => {
-    const bundleRoot = resolve(repoRoot, 'generated/dts-class-model')
-    if (!existsSync(join(bundleRoot, 'semantic-gaps.json'))) return
-    expect(() => assertClassModelSemanticGapsZero(bundleRoot)).not.toThrow()
+  it('passes semantic gaps zero gate when report has no gaps', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    try {
+      writeFileSync(join(root, 'semantic-gaps.json'), JSON.stringify({
+        gapCount: 0,
+        gaps: [],
+      }))
+
+      expect(() => assertClassModelSemanticGapsZero(root)).not.toThrow()
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('throws semantic gaps zero gate when report has gaps', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    try {
+      writeFileSync(join(root, 'semantic-gaps.json'), JSON.stringify({
+        gapCount: 1,
+        gaps: [{
+          kind: 'model',
+          className: 'Demo',
+          sourceFile: 'packages/demo.ts',
+        }],
+      }))
+
+      expect(() => assertClassModelSemanticGapsZero(root)).toThrow(/gapCount=1/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })

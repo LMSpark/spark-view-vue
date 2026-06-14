@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-json-document:core/json-types",
     "sourcePath": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
@@ -18,196 +18,220 @@
       "JsonParamShape"
     ]
   },
-  "symbols": [
-    "JsonPrimitive",
-    "JsonValue",
-    "JsonObject",
-    "JsonDocument",
-    "JsonParams",
-    "JsonParamShape"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.031Z",
   "$defs": {
     "JsonPrimitive": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "JsonPrimitive",
-      "description": "JSON 原始值"
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "JsonValue": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "JsonValue",
-      "description": "递归 JSON 值：原始值 | 对象 | 数组"
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "JsonPrimitive"
+        },
+        {
+          "type": "object",
+          "title": "JsonObject"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "JsonValue"
+          }
+        }
+      ]
     },
     "JsonObject": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "JsonObject",
-      "description": "JSON 对象：key → JsonValue 映射"
+      "additionalProperties": false
     },
     "JsonDocument": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "JsonDocument",
-      "description": "文档顶层：对象或数组"
-    },
-    "JsonParams": {
-      "type": "object",
-      "title": "JsonParams",
-      "description": "函数/业务参数对象：运行时宽形态，key → JsonValue"
-    },
-    "JsonParamShape": {
-      "type": "object",
-      "title": "JsonParamShape",
-      "description": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。"
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "JsonObject"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "JsonValue"
+          }
+        }
+      ]
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.031Z",
   "models": {
     "JsonPrimitive": {
-      "kind": "JsonPrimitive",
-      "className": "JsonPrimitive",
+      "name": "JsonPrimitive",
       "jsdoc": "JSON 原始值",
-      "shapeKind": "type",
-      "declarationTypeText": "string | number | boolean | null",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "string"
-        },
-        {
-          "kind": "union",
-          "typeText": "number"
-        },
-        {
-          "kind": "union",
-          "typeText": "boolean"
-        },
-        {
-          "kind": "union",
-          "typeText": "null"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
         "line": 9,
         "className": "JsonPrimitive",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "string | number | boolean | null",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "string"
+          },
+          {
+            "kind": "union",
+            "typeText": "number"
+          },
+          {
+            "kind": "union",
+            "typeText": "boolean"
+          },
+          {
+            "kind": "union",
+            "typeText": "null"
+          }
+        ],
+        "members": {}
+      }
     },
     "JsonValue": {
-      "kind": "JsonValue",
-      "className": "JsonValue",
+      "name": "JsonValue",
       "jsdoc": "递归 JSON 值：原始值 | 对象 | 数组",
-      "shapeKind": "type",
-      "declarationTypeText": "JsonPrimitive | JsonObject | JsonValue[]",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "JsonPrimitive",
-          "targetName": "JsonPrimitive"
-        },
-        {
-          "kind": "union",
-          "typeText": "JsonObject",
-          "targetName": "JsonObject"
-        },
-        {
-          "kind": "union",
-          "typeText": "JsonValue[]"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
         "line": 11,
         "className": "JsonValue",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "JsonPrimitive | JsonObject | JsonValue[]",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "JsonPrimitive",
+            "targetName": "JsonPrimitive"
+          },
+          {
+            "kind": "union",
+            "typeText": "JsonObject",
+            "targetName": "JsonObject"
+          },
+          {
+            "kind": "union",
+            "typeText": "JsonValue[]"
+          }
+        ],
+        "members": {}
+      }
     },
     "JsonObject": {
-      "kind": "JsonObject",
-      "className": "JsonObject",
+      "name": "JsonObject",
       "jsdoc": "JSON 对象：key → JsonValue 映射",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    [key: string]: JsonValue;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
         "line": 13,
         "className": "JsonObject",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    [key: string]: JsonValue;\n}",
+        "members": {}
+      }
     },
     "JsonDocument": {
-      "kind": "JsonDocument",
-      "className": "JsonDocument",
+      "name": "JsonDocument",
       "jsdoc": "文档顶层：对象或数组",
-      "shapeKind": "type",
-      "declarationTypeText": "JsonObject | JsonValue[]",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "JsonObject",
-          "targetName": "JsonObject"
-        },
-        {
-          "kind": "union",
-          "typeText": "JsonValue[]"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
         "line": 17,
         "className": "JsonDocument",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "JsonObject | JsonValue[]",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "JsonObject",
+            "targetName": "JsonObject"
+          },
+          {
+            "kind": "union",
+            "typeText": "JsonValue[]"
+          }
+        ],
+        "members": {}
+      }
     },
     "JsonParams": {
-      "kind": "JsonParams",
-      "className": "JsonParams",
+      "name": "JsonParams",
       "jsdoc": "函数/业务参数对象：运行时宽形态，key → JsonValue",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<Record<string, JsonValue>>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<Record<string, JsonValue>>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
         "line": 19,
         "className": "JsonParams",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<Record<string, JsonValue>>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<Record<string, JsonValue>>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     },
     "JsonParamShape": {
-      "kind": "JsonParamShape",
-      "className": "JsonParamShape",
+      "name": "JsonParamShape",
       "jsdoc": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<TShape>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<TShape>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-json-document/src/core/json-types.d.ts",
         "line": 26,
         "className": "JsonParamShape",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "Readonly<TShape>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<TShape>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }

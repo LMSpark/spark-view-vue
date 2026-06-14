@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-client
- * 职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-client 能力，围绕 WorkerClassModelKnowledgeProvider 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 worker-knowledge-client 能力，围绕 WorkerClassModelKnowledgeProvider 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-client 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/knowledge/worker-knowledge-client 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import { wrap, type Remote } from 'comlink'
 import type { AiJsonValue } from '../../json'
@@ -93,18 +93,18 @@ const DEFAULT_WORKER_OPTIONS: WorkerOptions = { type: 'module' }
 
 function createBrowserWorker(url: string | URL, options?: WorkerOptions): Worker {
   if (typeof Worker === 'undefined') {
-    throw new Error('DTS ClassModel knowledge requires Web Worker on-demand loading.')
+    throw new Error('DTS DtsTypeDeclarationModel knowledge requires Web Worker on-demand loading.')
   }
   return new Worker(url, options)
 }
 
 function normalizeRequiredText(value: unknown, field: string): string {
   if (typeof value !== 'string') {
-    throw new Error(`DTS ClassModel worker knowledge requires ${field}.`)
+    throw new Error(`DTS DtsTypeDeclarationModel worker knowledge requires ${field}.`)
   }
   const trimmed = value.trim()
   if (trimmed.length === 0) {
-    throw new Error(`DTS ClassModel worker knowledge requires ${field}.`)
+    throw new Error(`DTS DtsTypeDeclarationModel worker knowledge requires ${field}.`)
   }
   return trimmed
 }

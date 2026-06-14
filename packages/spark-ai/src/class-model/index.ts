@@ -1,15 +1,15 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/index
- * 职责：维护 DTS ClassModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。
  *
  * 浏览器 / Worker 公开入口：禁止 re-export `./class-model` barrel（会拉入编译期 node:path 模块）。
  * 编译期 API 见 `./class-model/build-index.ts`。
  */
 export type {
   AttributeMeta,
-  ClassModel,
+  DtsTypeDeclarationModel,
   ClassModelDeclarationRelation,
   ClassModelDeclarationRelationKind,
   ClassModelDocument,

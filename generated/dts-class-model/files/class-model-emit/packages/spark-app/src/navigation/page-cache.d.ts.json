@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/navigation/page-cache.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:navigation/page-cache",
     "sourcePath": "class-model-emit/packages/spark-app/src/navigation/page-cache.d.ts",
@@ -14,183 +14,235 @@
       "PageCacheHandle"
     ]
   },
-  "symbols": [
-    "PageCacheSource",
-    "PageCacheHandle"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.350Z",
   "$defs": {
     "PageCacheSource": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageCacheSource",
-      "description": "页面配置缓存管理（spark-app 内聚）"
+      "$defs": {
+        "method.clearPageCache.params": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.clearPageCache.return": true,
+        "method.clearAllCache.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearAllCache.return": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "number"
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "size",
+            "keys"
+          ],
+          "additionalProperties": false
+        },
+        "method.getCacheStats.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCacheStats.return": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "number"
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "size",
+            "keys"
+          ],
+          "additionalProperties": false
+        }
+      }
     },
     "PageCacheHandle": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageCacheHandle",
-      "description": "Page Cache Handle 的语义模型。"
+      "$defs": {
+        "method.clearPageCache.params": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.clearPageCache.return": true,
+        "method.clearAllCache.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearAllCache.return": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "number"
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "size",
+            "keys"
+          ],
+          "additionalProperties": false
+        },
+        "method.getCacheStats.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCacheStats.return": {
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "number"
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "size",
+            "keys"
+          ],
+          "additionalProperties": false
+        }
+      }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.350Z",
   "models": {
     "PageCacheSource": {
-      "kind": "PageCacheSource",
-      "className": "PageCacheSource",
-      "jsdoc": "页面配置缓存管理（spark-app 内聚）",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
+      "name": "PageCacheSource",
+      "jsdoc": "@module\n@spark-appworks /spark-app:navigation/page-cache\n职责：提供应用壳层 page-cache 能力，围绕 PageCacheSource、PageCacheHandle 连接导航、认证、插件、主题或 AI 宿主接线。\n边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。\nAI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/page-cache。\n页面配置缓存管理（spark-app 内聚）",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/page-cache.d.ts",
         "line": 10,
         "className": "PageCacheSource",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "clearPageCache",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
+        "members": {
+          "methods": [
             {
-              "name": "pageId",
+              "name": "clearPageCache",
+              "parameters": [
+                {
+                  "name": "pageId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pageId": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "clearAllCache",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object"
-          }
-        },
-        {
-          "name": "getCacheStats",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object"
-          }
+            {
+              "name": "clearAllCache",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        size: number;\n        keys: string[];\n    }"
+              }
+            },
+            {
+              "name": "getCacheStats",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        size: number;\n        keys: string[];\n    }"
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "PageCacheHandle": {
-      "kind": "PageCacheHandle",
-      "className": "PageCacheHandle",
+      "name": "PageCacheHandle",
       "jsdoc": "Page Cache Handle 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/page-cache.d.ts",
         "line": 22,
         "className": "PageCacheHandle",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "clearPageCache",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
+        "members": {
+          "methods": [
             {
-              "name": "pageId",
+              "name": "clearPageCache",
+              "parameters": [
+                {
+                  "name": "pageId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pageId": {
-                "type": "string"
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "clearAllCache",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object"
-          }
-        },
-        {
-          "name": "getCacheStats",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "unknown",
-            "name": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object"
-          }
+            {
+              "name": "clearAllCache",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        size: number;\n        keys: string[];\n    }"
+              }
+            },
+            {
+              "name": "getCacheStats",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        size: number;\n        keys: string[];\n    }"
+              }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

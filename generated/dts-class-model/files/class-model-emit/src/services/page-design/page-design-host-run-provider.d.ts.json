@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/page-design/page-design-host-run-provider",
     "sourcePath": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
@@ -14,175 +14,129 @@
       "CreatePageDesignDeliveryPortOptions"
     ]
   },
-  "symbols": [
-    "PageDesignDeliveryContext",
-    "CreatePageDesignDeliveryPortOptions"
-  ],
-  "generatedAt": "2026-06-14T03:35:13.059Z",
   "$defs": {
     "PageDesignDeliveryContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignDeliveryContext",
-      "description": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
       "properties": {
         "editor": {
-          "type": "object",
-          "title": "ProjectWorkspace"
+          "$ref": "../../../packages/spark-project-model/src/project/project-workspace.d.ts.json#/$defs/ProjectWorkspace"
         },
         "pageId": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "CreatePageDesignDeliveryPortOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "CreatePageDesignDeliveryPortOptions",
-      "description": "Create Page Design Delivery Port Options 的调用配置。",
       "properties": {
         "mode": {
-          "type": "object",
-          "title": "AiDeliveryMode"
+          "$ref": "../ai/ai-delivery-port.d.ts.json#/$defs/AiDeliveryMode"
         },
         "shouldSave": {
           "type": "boolean"
         },
         "rollbackStatus": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "skipped"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "rolledBack"
-              ]
-            }
+          "enum": [
+            "skipped",
+            "rolledBack"
           ]
         },
         "saveFileNames": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "../../../packages/spark-project-model/src/page/page-file.d.ts.json#/$defs/PageNodeFileName"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T03:35:13.059Z",
   "models": {
     "PageDesignDeliveryContext": {
-      "kind": "PageDesignDeliveryContext",
-      "className": "PageDesignDeliveryContext",
+      "name": "PageDesignDeliveryContext",
       "jsdoc": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
         "line": 12,
         "className": "PageDesignDeliveryContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "editor",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ProjectWorkspace"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "pageId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "editor",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "pageId",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "CreatePageDesignDeliveryPortOptions": {
-      "kind": "CreatePageDesignDeliveryPortOptions",
-      "className": "CreatePageDesignDeliveryPortOptions",
+      "name": "CreatePageDesignDeliveryPortOptions",
       "jsdoc": "Create Page Design Delivery Port Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
         "line": 17,
         "className": "CreatePageDesignDeliveryPortOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "mode",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiDeliveryMode"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "shouldSave",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rollbackStatus",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "skipped"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "rolledBack"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "saveFileNames",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "mode",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "shouldSave",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "rollbackStatus",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "saveFileNames",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

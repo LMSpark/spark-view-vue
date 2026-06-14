@@ -1,50 +1,176 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-type-schema
- * 职责：维护 DTS ClassModel 知识链路中的 dts-type-schema 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
- * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/class-model/dts-type-schema 这一段如何生成、加载或投影时，用本模块定位职责。
+ * 职责：把 `.d.ts` TypeNode 语法结构投影为轻量 JSON Schema。
+ * 边界：只读取声明文本和 AST，不创建语义求值器、不做符号解析、不执行类型求值。
+ * AI用途：排查 .d.ts 字符串类型如何进入 paramsSchema / returnSchema / attribute.schema 时，用本模块定位语法映射规则。
  */
 import ts from 'typescript'
+
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
+import { extractConstOrSingleEnumValue } from './json-schema-emit'
 
-export function typeToAiJsonSchema(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  node?: ts.Node,
+/** 将 `.d.ts` 类型节点按语法结构投影为 JSON Schema。 */
+export function typeNodeToAiJsonSchema(
+  node: ts.Node | undefined,
+  sourceFile?: ts.SourceFile,
 ): AiJsonSchema {
-  const text = node === undefined
-    ? safeTypeToString(checker, type)
-    : node.getText()
-  const schemaFromNode = node === undefined ? undefined : typeNodeToAiJsonSchema(checker, node)
-  if (schemaFromNode !== undefined) return schemaFromNode
-  return typeToAiJsonSchemaByFlags(checker, type, text)
-}
-
-function typeNodeToAiJsonSchema(checker: ts.TypeChecker, node: ts.Node): AiJsonSchema | undefined {
-  if (!ts.isTypeNode(node)) return undefined
-  if (ts.isParenthesizedTypeNode(node)) return typeNodeToAiJsonSchema(checker, node.type)
+  if (node === undefined || !ts.isTypeNode(node)) return true
+  if (ts.isParenthesizedTypeNode(node)) return typeNodeToAiJsonSchema(node.type, sourceFile)
+  if (ts.isRestTypeNode(node)) return typeNodeToAiJsonSchema(node.type, sourceFile)
   if (ts.isArrayTypeNode(node)) {
     return {
       type: 'array',
-      items: typeToAiJsonSchema(checker, checker.getTypeFromTypeNode(node.elementType), node.elementType),
+      items: typeNodeToAiJsonSchema(node.elementType, sourceFile),
+    }
+  }
+  if (ts.isTupleTypeNode(node)) {
+    return {
+      type: 'array',
+      prefixItems: node.elements.map(element => typeNodeToAiJsonSchema(element, sourceFile)),
     }
   }
   if (ts.isUnionTypeNode(node)) {
     return combineUnionSchemas(
       node.types
         .filter(item => !isUndefinedLikeTypeNode(item))
-        .map(item => typeToAiJsonSchema(checker, checker.getTypeFromTypeNode(item), item)),
+        .map(item => typeNodeToAiJsonSchema(item, sourceFile)),
     )
   }
-  if (ts.isTypeReferenceNode(node)) return typeReferenceNodeToAiJsonSchema(checker, node)
-  if (ts.isTypeLiteralNode(node)) return { type: 'object' }
-  if (ts.isFunctionTypeNode(node)) return { type: 'object', title: node.getText() }
-  if (ts.isLiteralTypeNode(node)) return literalTypeNodeToAiJsonSchema(node)
+  if (ts.isIntersectionTypeNode(node)) {
+    const schemas = node.types.map(item => typeNodeToAiJsonSchema(item, sourceFile))
+    if (schemas.length === 0) return true
+    if (schemas.length === 1) return schemas[0] ?? true
+    return { allOf: schemas }
+  }
+  if (ts.isTypeReferenceNode(node)) return typeReferenceNodeToAiJsonSchema(node, sourceFile)
+  if (ts.isTypeLiteralNode(node)) return typeLiteralNodeToAiJsonSchema(node, sourceFile)
+  if (ts.isFunctionTypeNode(node) || ts.isConstructorTypeNode(node)) {
+    return { type: 'object', title: node.getText(sourceFile) }
+  }
+  if (ts.isLiteralTypeNode(node)) return literalTypeNodeToAiJsonSchema(node, sourceFile)
+  if (ts.isIndexedAccessTypeNode(node)) return true
+  if (ts.isConditionalTypeNode(node)) return true
+  if (ts.isMappedTypeNode(node)) return { type: 'object', title: node.getText(sourceFile) }
+  if (ts.isTypeOperatorNode(node)) return typeNodeToAiJsonSchema(node.type, sourceFile)
+  if (ts.isImportTypeNode(node)) return { type: 'object', title: node.getText(sourceFile) }
 
+  const intrinsic = intrinsicSchemaFromKeywordTypeNode(node)
+  if (intrinsic !== undefined) return intrinsic
+  return true
+}
+
+/** 按声明参数列表生成 executable paramsSchema；不做语义签名展开。 */
+export function paramsSchemaFromParameters(
+  parameters: readonly ts.ParameterDeclaration[],
+  sourceFile: ts.SourceFile,
+): AiJsonSchemaObject {
+  const properties: Record<string, AiJsonSchema> = {}
+  for (const parameter of parameters) {
+    if (ts.isObjectBindingPattern(parameter.name) && parameter.type !== undefined) {
+      const schema = typeNodeToAiJsonSchema(parameter.type, sourceFile)
+      if (isJsonSchemaObject(schema) && schema.properties !== undefined) {
+        for (const [name, propertySchema] of Object.entries(schema.properties)) {
+          properties[name] = propertySchema
+        }
+        continue
+      }
+    }
+    properties[parameter.name.getText(sourceFile)] = typeNodeToAiJsonSchema(parameter.type, sourceFile)
+  }
+  return {
+    type: 'object',
+    properties,
+    additionalProperties: false,
+  }
+}
+
+function typeLiteralNodeToAiJsonSchema(
+  node: ts.TypeLiteralNode,
+  sourceFile: ts.SourceFile | undefined,
+): AiJsonSchemaObject {
+  const properties: Record<string, AiJsonSchema> = {}
+  const required: string[] = []
+  for (const member of node.members) {
+    if (!ts.isPropertySignature(member)) continue
+    const name = readPropertyName(member.name)
+    if (name === undefined) continue
+    properties[name] = typeNodeToAiJsonSchema(member.type, sourceFile)
+    if (member.questionToken === undefined) required.push(name)
+  }
+  return {
+    type: 'object',
+    ...(Object.keys(properties).length === 0 ? {} : { properties }),
+    ...(required.length === 0 ? {} : { required }),
+    additionalProperties: false,
+  }
+}
+
+function typeReferenceNodeToAiJsonSchema(
+  node: ts.TypeReferenceNode,
+  sourceFile: ts.SourceFile | undefined,
+): AiJsonSchema {
+  const typeName = node.typeName.getText(sourceFile)
+  const firstTypeArgument = node.typeArguments?.[0]
+  if ((typeName === 'Array' || typeName === 'ReadonlyArray') && firstTypeArgument !== undefined) {
+    return {
+      type: 'array',
+      items: typeNodeToAiJsonSchema(firstTypeArgument, sourceFile),
+    }
+  }
+  if (
+    (typeName === 'Readonly' || typeName === 'Required')
+    && firstTypeArgument !== undefined
+  ) {
+    return typeNodeToAiJsonSchema(firstTypeArgument, sourceFile)
+  }
+  if (typeName === 'Partial' && firstTypeArgument !== undefined) {
+    const schema = typeNodeToAiJsonSchema(firstTypeArgument, sourceFile)
+    return isJsonSchemaObject(schema) ? withoutRequired(schema) : schema
+  }
+  return {
+    type: 'object',
+    title: node.getText(sourceFile),
+  }
+}
+
+function literalTypeNodeToAiJsonSchema(
+  node: ts.LiteralTypeNode,
+  sourceFile: ts.SourceFile | undefined,
+): AiJsonSchema {
+  const value = literalTypeNodeValue(node, sourceFile)
+  if (value === undefined) return true
+  if (value === null) return { type: 'null' }
+  return { type: typeof value as 'string' | 'number' | 'boolean', enum: [value] }
+}
+
+function literalTypeNodeValue(
+  node: ts.LiteralTypeNode,
+  sourceFile: ts.SourceFile | undefined,
+): string | number | boolean | null | undefined {
+  const literal = node.literal
+  if (ts.isStringLiteral(literal)) return literal.text
+  if (ts.isNumericLiteral(literal)) return Number(literal.text)
+  if (literal.kind === ts.SyntaxKind.TrueKeyword) return true
+  if (literal.kind === ts.SyntaxKind.FalseKeyword) return false
+  if (literal.kind === ts.SyntaxKind.NullKeyword) return null
+  if (
+    ts.isPrefixUnaryExpression(literal)
+    && literal.operator === ts.SyntaxKind.MinusToken
+    && ts.isNumericLiteral(literal.operand)
+  ) {
+    return -Number(literal.operand.text)
+  }
+  const text = literal.getText(sourceFile)
+  if (text.length === 0) return undefined
+  return undefined
+}
+
+function intrinsicSchemaFromKeywordTypeNode(node: ts.TypeNode): AiJsonSchema | undefined {
   if (node.kind === ts.SyntaxKind.StringKeyword) return { type: 'string' }
   if (node.kind === ts.SyntaxKind.NumberKeyword) return { type: 'number' }
   if (node.kind === ts.SyntaxKind.BooleanKeyword) return { type: 'boolean' }
   if (node.kind === ts.SyntaxKind.NullKeyword) return { type: 'null' }
+  if (node.kind === ts.SyntaxKind.NeverKeyword) return false
   if (
     node.kind === ts.SyntaxKind.AnyKeyword
     || node.kind === ts.SyntaxKind.UnknownKeyword
@@ -53,115 +179,50 @@ function typeNodeToAiJsonSchema(checker: ts.TypeChecker, node: ts.Node): AiJsonS
   ) {
     return true
   }
-  if (node.kind === ts.SyntaxKind.NeverKeyword) return false
+  if (node.kind === ts.SyntaxKind.ObjectKeyword) return { type: 'object' }
   return undefined
-}
-
-function literalTypeNodeToAiJsonSchema(node: ts.LiteralTypeNode): AiJsonSchema {
-  const literal = node.literal
-  if (ts.isStringLiteral(literal)) return { type: 'string', enum: [literal.text] }
-  if (ts.isNumericLiteral(literal)) return { type: 'number', enum: [Number(literal.text)] }
-  if (literal.kind === ts.SyntaxKind.TrueKeyword) return { type: 'boolean', enum: [true] }
-  if (literal.kind === ts.SyntaxKind.FalseKeyword) return { type: 'boolean', enum: [false] }
-  if (literal.kind === ts.SyntaxKind.NullKeyword) return { type: 'null' }
-  return true
-}
-
-function typeToAiJsonSchemaByFlags(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  text: string,
-): AiJsonSchema {
-  if (isFlagSet(type, ts.TypeFlags.Any) || isFlagSet(type, ts.TypeFlags.Unknown)) return true
-  if (isFlagSet(type, ts.TypeFlags.Never)) return false
-  if (isFlagSet(type, ts.TypeFlags.Void) || isFlagSet(type, ts.TypeFlags.Undefined)) return true
-  if (isFlagSet(type, ts.TypeFlags.StringLike)) return { type: 'string' }
-  if (isFlagSet(type, ts.TypeFlags.NumberLike)) return { type: 'number' }
-  if (isFlagSet(type, ts.TypeFlags.BooleanLike)) return { type: 'boolean' }
-  if (isFlagSet(type, ts.TypeFlags.Null)) return { type: 'null' }
-  if (type.isUnion()) {
-    return combineUnionSchemas(
-      type.types
-        .filter(item => !isUndefinedLikeType(item))
-        .map(item => typeToAiJsonSchemaByFlags(checker, item, safeTypeToString(checker, item))),
-    )
-  }
-  if (isFlagSet(type, ts.TypeFlags.TypeParameter)) return true
-  if (checker.isArrayType(type) || checker.isTupleType(type)) {
-    return { type: 'array' }
-  }
-  if (isFlagSet(type, ts.TypeFlags.Object)) {
-    return text.length === 0 || text === 'object'
-      ? { type: 'object' }
-      : { type: 'object', title: text }
-  }
-  return true
-}
-
-function typeReferenceNodeToAiJsonSchema(checker: ts.TypeChecker, node: ts.TypeReferenceNode): AiJsonSchema {
-  const typeName = node.typeName.getText()
-  if ((typeName === 'Array' || typeName === 'ReadonlyArray') && node.typeArguments?.[0] !== undefined) {
-    const item = node.typeArguments[0]
-    return {
-      type: 'array',
-      items: typeToAiJsonSchema(checker, checker.getTypeFromTypeNode(item), item),
-    }
-  }
-  const type = checker.getTypeFromTypeNode(node)
-  if (isFlagSet(type, ts.TypeFlags.TypeParameter)) return true
-  return {
-    type: 'object',
-    title: node.getText(),
-  }
-}
-
-function isFlagSet(type: ts.Type, flag: ts.TypeFlags): boolean {
-  return (type.flags & flag) !== 0
 }
 
 function combineUnionSchemas(schemas: readonly AiJsonSchema[]): AiJsonSchema {
   if (schemas.length === 0) return true
   if (schemas.some(schema => schema === true)) return true
   if (schemas.length === 1) return schemas[0] ?? true
+
+  const literalEnum = mergeLiteralUnionToEnum(schemas)
+  if (literalEnum !== undefined) return literalEnum
+
   return { anyOf: schemas }
 }
 
-function isUndefinedLikeType(type: ts.Type): boolean {
-  return isFlagSet(type, ts.TypeFlags.Undefined) || isFlagSet(type, ts.TypeFlags.Void)
+/** 同质字面量 union -> { enum: [...] }，避免 Draft 2020-12 不推荐的 anyOf 字面量分支链。 */
+function mergeLiteralUnionToEnum(
+  schemas: readonly AiJsonSchema[],
+): AiJsonSchemaObject | undefined {
+  const values: Array<string | number | boolean | null> = []
+  for (const schema of schemas) {
+    const value = extractConstOrSingleEnumValue(schema)
+    if (value === undefined) return undefined
+    values.push(value)
+  }
+  return values.length === schemas.length ? { enum: values } : undefined
 }
 
 function isUndefinedLikeTypeNode(node: ts.TypeNode): boolean {
   return node.kind === ts.SyntaxKind.UndefinedKeyword || node.kind === ts.SyntaxKind.VoidKeyword
 }
 
-function safeTypeToString(checker: ts.TypeChecker, type: ts.Type): string {
-  try {
-    return checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
-  } catch {
-    return ''
-  }
+function readPropertyName(name: ts.PropertyName): string | undefined {
+  if (ts.isIdentifier(name)) return name.text
+  if (ts.isStringLiteral(name)) return name.text
+  if (ts.isNumericLiteral(name)) return name.text
+  return undefined
 }
 
-export function paramsSchemaFromSignature(
-  checker: ts.TypeChecker,
-  signature: ts.Signature,
-): AiJsonSchemaObject {
-  const properties: Record<string, AiJsonSchema> = {}
-  for (const parameter of signature.getParameters()) {
-    const declaration = parameter.valueDeclaration
-    const name = parameter.getName()
-    const anchor = declaration ?? signature.declaration
-    if (anchor === undefined) continue
-    const type = checker.getTypeOfSymbolAtLocation(parameter, anchor)
-    properties[name] = typeToAiJsonSchema(
-      checker,
-      type,
-      declaration !== undefined && ts.isParameter(declaration) ? declaration.type : declaration,
-    )
-  }
-  return {
-    type: 'object',
-    properties,
-    additionalProperties: false,
-  }
+function isJsonSchemaObject(schema: AiJsonSchema): schema is AiJsonSchemaObject {
+  return schema !== true && schema !== false && typeof schema === 'object' && !Array.isArray(schema)
+}
+
+function withoutRequired(schema: AiJsonSchemaObject): AiJsonSchemaObject {
+  const { required: _required, ...rest } = schema
+  return rest
 }

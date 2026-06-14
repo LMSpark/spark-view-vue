@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/config/loader.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:config/loader",
     "sourcePath": "class-model-emit/packages/spark-app/src/config/loader.d.ts",
@@ -14,104 +14,287 @@
       "TenantResolver"
     ]
   },
-  "symbols": [
-    "ConfigLoader",
-    "TenantResolver"
-  ],
-  "generatedAt": "2026-06-12T20:26:57.885Z",
   "$defs": {
     "ConfigLoader": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ConfigLoader",
-      "description": "配置加载器"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getInstance.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getInstance.return": {
+          "$ref": "#/$defs/ConfigLoader"
+        },
+        "method.loadDefaultConfig.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.loadDefaultConfig.return": {
+          "type": "object",
+          "title": "Promise<AppFullConfig>"
+        },
+        "method.loadTenantConfig.params": {
+          "type": "object",
+          "properties": {
+            "tenantId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.loadTenantConfig.return": {
+          "type": "object",
+          "title": "Promise<TenantConfig | null>"
+        },
+        "method.loadConfig.params": {
+          "type": "object",
+          "properties": {
+            "tenantId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.loadConfig.return": {
+          "type": "object",
+          "title": "Promise<AppFullConfig>"
+        },
+        "method.clearCache.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.clearCache.return": true
+      }
     },
     "TenantResolver": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TenantResolver",
-      "description": "租户识别器"
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.fromQuery.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.fromQuery.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.fromSubdomain.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.fromSubdomain.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.fromLocalStorage.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.fromLocalStorage.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.fromCookie.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.fromCookie.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.resolve.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.resolve.return": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "method.save.params": {
+          "type": "object",
+          "properties": {
+            "tenantId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.save.return": true
+      }
     }
   },
+  "generatedAt": "2026-06-14T13:57:55.662Z",
   "models": {
     "ConfigLoader": {
-      "kind": "ConfigLoader",
-      "className": "ConfigLoader",
+      "name": "ConfigLoader",
       "jsdoc": "配置加载器",
-      "shapeKind": "class",
+      "declarationKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/config/loader.d.ts",
         "line": 21,
         "className": "ConfigLoader",
         "declarationKind": "class"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getInstance",
-          "jsdoc": "获取单例实例",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "ConfigLoader",
-            "sourcePath": "class-model-emit/packages/spark-app/src/config/loader.d.ts"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/ConfigLoader"
-          }
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "私有构造函数，确保运行时配置缓存只通过 getInstance 维护一个进程内单例。",
+          "signatureText": "private constructor()"
         },
-        {
-          "name": "loadDefaultConfig",
-          "jsdoc": "加载默认配置",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AppFullConfig>"
-          }
-        },
-        {
-          "name": "loadTenantConfig",
-          "jsdoc": "加载租户配置",
-          "parameterStyle": "positional",
-          "parameters": [
+        "members": {
+          "methods": [
             {
-              "name": "tenantId",
+              "name": "getInstance",
+              "jsdoc": "获取单例实例",
+              "type": {
+                "type": "reference",
+                "name": "ConfigLoader",
+                "sourcePath": "class-model-emit/packages/spark-app/src/config/loader.d.ts"
+              }
+            },
+            {
+              "name": "loadDefaultConfig",
+              "jsdoc": "加载默认配置",
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AppFullConfig",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/config/types.d.ts"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "loadTenantConfig",
+              "jsdoc": "加载租户配置",
+              "parameters": [
+                {
+                  "name": "tenantId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "TenantConfig",
+                        "sourcePath": "class-model-emit/packages/spark-app/src/config/types.d.ts"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "loadConfig",
+              "jsdoc": "加载完整配置（默认 + 租户）",
+              "parameters": [
+                {
+                  "name": "tenantId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "AppFullConfig",
+                    "sourcePath": "class-model-emit/packages/spark-app/src/config/types.d.ts"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "clearCache",
+              "jsdoc": "清除缓存",
               "type": {
                 "type": "intrinsic",
-                "name": "string"
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
+          ]
+        }
+      }
+    },
+    "TenantResolver": {
+      "name": "TenantResolver",
+      "jsdoc": "租户识别器",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/config/loader.d.ts",
+        "line": 72,
+        "className": "TenantResolver",
+        "declarationKind": "class"
+      },
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "租户识别器",
+          "signatureText": "constructor()"
+        },
+        "members": {
+          "methods": [
+            {
+              "name": "fromQuery",
+              "jsdoc": "从 URL 参数获取租户 ID",
+              "type": {
                 "type": "union",
                 "types": [
                   {
-                    "type": "reference",
-                    "name": "unknown"
+                    "type": "intrinsic",
+                    "name": "string"
                   },
                   {
                     "type": "literal",
@@ -119,292 +302,95 @@
                   }
                 ]
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "tenantId": {
-                "type": "string"
+            },
+            {
+              "name": "fromSubdomain",
+              "jsdoc": "从子域名获取租户 ID\n例如：demo.example.com -> demo",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<TenantConfig | null>"
-          }
-        },
-        {
-          "name": "loadConfig",
-          "jsdoc": "加载完整配置（默认 + 租户）",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "tenantId",
+              "name": "fromLocalStorage",
+              "jsdoc": "从 localStorage 获取租户 ID",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fromCookie",
+              "jsdoc": "从 cookie 获取租户 ID",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "resolve",
+              "jsdoc": "综合识别租户 ID（按优先级）\n优先级：URL 参数 > 子域名 > localStorage > cookie",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "save",
+              "jsdoc": "保存租户 ID 到 localStorage",
+              "parameters": [
+                {
+                  "name": "tenantId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "tenantId": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<AppFullConfig>"
-          }
-        },
-        {
-          "name": "clearCache",
-          "jsdoc": "清除缓存",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
-    },
-    "TenantResolver": {
-      "kind": "TenantResolver",
-      "className": "TenantResolver",
-      "jsdoc": "租户识别器",
-      "shapeKind": "class",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-app/src/config/loader.d.ts",
-        "line": 71,
-        "className": "TenantResolver",
-        "declarationKind": "class"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "fromQuery",
-          "jsdoc": "从 URL 参数获取租户 ID",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "fromSubdomain",
-          "jsdoc": "从子域名获取租户 ID\n例如：demo.example.com -> demo",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "fromLocalStorage",
-          "jsdoc": "从 localStorage 获取租户 ID",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "fromCookie",
-          "jsdoc": "从 cookie 获取租户 ID",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "resolve",
-          "jsdoc": "综合识别租户 ID（按优先级）\n优先级：URL 参数 > 子域名 > localStorage > cookie",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              {
-                "type": "literal",
-                "value": null
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        {
-          "name": "save",
-          "jsdoc": "保存租户 ID 到 localStorage",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "tenantId",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "tenantId": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        }
-      ]
+      }
     }
   }
 }

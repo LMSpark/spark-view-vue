@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/containers/data-views/RendererTree/zero-code",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
@@ -26,23 +26,11 @@
     "componentLayer": "data-view-container",
     "componentDirectory": "containers/data-views"
   },
-  "symbols": [
-    "TreeNode",
-    "ElTreeNode",
-    "ElTreeComponent",
-    "NativeTreeLike",
-    "NativeTreeNodeLike",
-    "TreeEventControl",
-    "TreeEventHandler",
-    "RendererTreeBehaviorProps",
-    "RendererTreeZeroCodeOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.400Z",
   "$defs": {
     "TreeNode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TreeNode",
-      "description": "r-tree 对外暴露的树节点数据形态，兼容普通 DataRow 和嵌套 children。",
       "properties": {
         "id": {
           "anyOf": [
@@ -69,12 +57,13 @@
         "disabled": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ElTreeNode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ElTreeNode",
-      "description": "Element Plus 树节点实例的最小结构，供事件回调和拖拽逻辑读取。",
       "properties": {
         "level": {
           "type": "number"
@@ -83,8 +72,7 @@
           "type": "boolean"
         },
         "data": {
-          "type": "object",
-          "title": "DataRow"
+          "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
         },
         "parent": {
           "anyOf": [
@@ -96,46 +84,218 @@
             }
           ]
         }
-      }
+      },
+      "required": [
+        "level",
+        "expanded"
+      ],
+      "additionalProperties": false
     },
     "ElTreeComponent": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ElTreeComponent",
-      "description": "Element Plus tree 组件实例的最小透传形态。"
+      "additionalProperties": false
     },
     "NativeTreeLike": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NativeTreeLike",
-      "description": "r-tree 运行时需要调用的 Element Plus tree 原生能力集合。"
-    },
-    "NativeTreeNodeLike": {
-      "type": "object",
-      "title": "NativeTreeNodeLike",
-      "description": "Element Plus 原生树节点实例的最小能力集合。",
-      "properties": {
-        "data": {
+      "$defs": {
+        "method.getCurrentNode.params": {
           "type": "object",
-          "title": "DataRow"
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.getCurrentNode.return": true,
+        "method.setCurrentKey.params": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setCurrentKey.return": true,
+        "method.filter.params": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.filter.return": true,
+        "method.getCheckedNodes.params": {
+          "type": "object",
+          "properties": {
+            "leafOnly": {
+              "type": "boolean"
+            },
+            "includeHalfChecked": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getCheckedNodes.return": {
+          "type": "array",
+          "items": true
+        },
+        "method.getCheckedKeys.params": {
+          "type": "object",
+          "properties": {
+            "leafOnly": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getCheckedKeys.return": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "method.setCheckedKeys.params": {
+          "type": "object",
+          "properties": {
+            "keys": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "leafOnly": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setCheckedKeys.return": true,
+        "method.append.params": {
+          "type": "object",
+          "properties": {
+            "data": true,
+            "parentNode": true
+          },
+          "additionalProperties": false
+        },
+        "method.append.return": true,
+        "method.insertBefore.params": {
+          "type": "object",
+          "properties": {
+            "data": true,
+            "refNode": true
+          },
+          "additionalProperties": false
+        },
+        "method.insertBefore.return": true,
+        "method.insertAfter.params": {
+          "type": "object",
+          "properties": {
+            "data": true,
+            "refNode": true
+          },
+          "additionalProperties": false
+        },
+        "method.insertAfter.return": true,
+        "method.remove.params": {
+          "type": "object",
+          "properties": {
+            "nodeOrData": true
+          },
+          "additionalProperties": false
+        },
+        "method.remove.return": true,
+        "method.getNode.params": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.getNode.return": {
+          "$ref": "#/$defs/NativeTreeNodeLike"
         }
       }
     },
-    "TreeEventControl": {
+    "NativeTreeNodeLike": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "TreeEventControl",
-      "description": "树事件回调的默认行为控制器。",
+      "title": "NativeTreeNodeLike",
       "properties": {
-        "cancel": true
+        "data": {
+          "$ref": "../../../../../../spark-data/src/types.d.ts.json#/$defs/DataRow"
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.expand.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.expand.return": true
       }
     },
+    "TreeEventControl": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "TreeEventControl",
+      "properties": {
+        "cancel": true
+      },
+      "required": [
+        "cancel"
+      ],
+      "additionalProperties": false
+    },
     "TreeEventHandler": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TreeEventHandler",
-      "description": "r-tree 节点交互事件处理函数。"
+      "additionalProperties": false
     },
     "RendererTreeBehaviorProps": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererTreeBehaviorProps",
-      "description": "r-tree 与节点交互相关的行为属性。",
       "properties": {
         "onNodeClick": {
           "$ref": "#/$defs/TreeEventHandler"
@@ -146,431 +306,293 @@
         "onNodeCollapse": {
           "$ref": "#/$defs/TreeEventHandler"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "RendererTreeZeroCodeOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "RendererTreeZeroCodeOptions",
-      "description": "创建 r-tree zero-code API 和事件桥接所需的运行时输入。",
       "properties": {
         "props": {
           "$ref": "#/$defs/RendererTreeBehaviorProps"
         },
         "resolvedView": {
-          "type": "object",
-          "title": "ValueRef<DataView | null>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "treeData": {
-          "type": "object",
-          "title": "ValueRef<DataRow[]>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "nativeTreeRef": {
-          "type": "object",
-          "title": "ValueRef<unknown>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "logger": {
           "type": "object",
           "title": "LoggerApi"
         },
         "nodeKeyField": {
-          "type": "object",
-          "title": "ValueRef<string>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         },
         "treeIdField": {
-          "type": "object",
-          "title": "ValueRef<string>"
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef"
         }
-      }
+      },
+      "required": [
+        "props",
+        "resolvedView",
+        "treeData",
+        "nativeTreeRef",
+        "logger",
+        "nodeKeyField",
+        "treeIdField"
+      ],
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.400Z",
   "models": {
     "TreeNode": {
-      "kind": "TreeNode",
-      "className": "TreeNode",
+      "name": "TreeNode",
       "jsdoc": "r-tree 对外暴露的树节点数据形态，兼容普通 DataRow 和嵌套 children。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。 */\n    id?: string | number;\n    /** 节点展示文本；优先用于树节点标题。 */\n    label?: string;\n    /** 兼容后端常见字段名的节点展示文本。 */\n    name?: string;\n    /** 子节点集合；存在时按嵌套树数据渲染。 */\n    children?: TreeNode[];\n    /** 是否禁用该节点的选择、勾选或交互。 */\n    disabled?: boolean;\n    /** 允许保留业务行上的额外字段，供脚本和动作读取。 */\n    [key: string]: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 7,
         "className": "TreeNode",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "label",
-          "jsdoc": "节点展示文本；优先用于树节点标题。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "name",
-          "jsdoc": "兼容后端常见字段名的节点展示文本。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "children",
-          "jsdoc": "子节点集合；存在时按嵌套树数据渲染。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/TreeNode"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。 */\n    id?: string | number;\n    /** 节点展示文本；优先用于树节点标题。 */\n    label?: string;\n    /** 兼容后端常见字段名的节点展示文本。 */\n    name?: string;\n    /** 子节点集合；存在时按嵌套树数据渲染。 */\n    children?: TreeNode[];\n    /** 是否禁用该节点的选择、勾选或交互。 */\n    disabled?: boolean;\n    /** 允许保留业务行上的额外字段，供脚本和动作读取。 */\n    [key: string]: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "label",
+              "jsdoc": "节点展示文本；优先用于树节点标题。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "name",
+              "jsdoc": "兼容后端常见字段名的节点展示文本。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "children",
+              "jsdoc": "子节点集合；存在时按嵌套树数据渲染。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "disabled",
+              "jsdoc": "是否禁用该节点的选择、勾选或交互。",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "disabled",
-          "jsdoc": "是否禁用该节点的选择、勾选或交互。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ElTreeNode": {
-      "kind": "ElTreeNode",
-      "className": "ElTreeNode",
+      "name": "ElTreeNode",
       "jsdoc": "Element Plus 树节点实例的最小结构，供事件回调和拖拽逻辑读取。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** Element Plus 树节点层级，从根层开始递增。 */\n    level: number;\n    /** Element Plus 树节点当前是否展开。 */\n    expanded: boolean;\n    /** 树节点绑定的原始 DataRow。 */\n    data?: DataRow;\n    /** 父级 Element Plus 树节点；根节点为空。 */\n    parent?: ElTreeNode | null;\n    /** Element Plus 内部节点对象上的额外运行时字段。 */\n    [key: string]: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 22,
         "className": "ElTreeNode",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "level",
-          "jsdoc": "Element Plus 树节点层级，从根层开始递增。",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "expanded",
-          "jsdoc": "Element Plus 树节点当前是否展开。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "data",
-          "jsdoc": "树节点绑定的原始 DataRow。",
-          "schema": {
-            "type": "object",
-            "title": "DataRow"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "parent",
-          "jsdoc": "父级 Element Plus 树节点；根节点为空。",
-          "schema": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/ElTreeNode"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** Element Plus 树节点层级，从根层开始递增。 */\n    level: number;\n    /** Element Plus 树节点当前是否展开。 */\n    expanded: boolean;\n    /** 树节点绑定的原始 DataRow。 */\n    data?: DataRow;\n    /** 父级 Element Plus 树节点；根节点为空。 */\n    parent?: ElTreeNode | null;\n    /** Element Plus 内部节点对象上的额外运行时字段。 */\n    [key: string]: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "level",
+              "jsdoc": "Element Plus 树节点层级，从根层开始递增。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "expanded",
+              "jsdoc": "Element Plus 树节点当前是否展开。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "data",
+              "jsdoc": "树节点绑定的原始 DataRow。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "parent",
+              "jsdoc": "父级 Element Plus 树节点；根节点为空。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ElTreeComponent": {
-      "kind": "ElTreeComponent",
-      "className": "ElTreeComponent",
+      "name": "ElTreeComponent",
       "jsdoc": "Element Plus tree 组件实例的最小透传形态。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** Element Plus tree 组件实例上的额外运行时方法或状态。 */\n    [key: string]: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 35,
         "className": "ElTreeComponent",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** Element Plus tree 组件实例上的额外运行时方法或状态。 */\n    [key: string]: unknown;\n}",
+        "members": {}
+      }
     },
     "NativeTreeLike": {
-      "kind": "NativeTreeLike",
-      "className": "NativeTreeLike",
+      "name": "NativeTreeLike",
       "jsdoc": "r-tree 运行时需要调用的 Element Plus tree 原生能力集合。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 返回当前选中的原生树节点数据。 */\n    getCurrentNode?: () => unknown;\n    /** 按节点 key 设置当前选中节点；传 null 清空选中。 */\n    setCurrentKey?: (key: string | number | null) => void;\n    /** 按关键字触发 Element Plus 树过滤。 */\n    filter?: (value: string) => void;\n    /** 返回当前勾选的节点数据。 */\n    getCheckedNodes?: (leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[];\n    /** 返回当前勾选节点的 key 集合。 */\n    getCheckedKeys?: (leafOnly?: boolean) => Array<string | number>;\n    /** 设置当前勾选节点的 key 集合。 */\n    setCheckedKeys?: (keys: Array<string | number>, leafOnly?: boolean) => void;\n    /** 将节点数据追加到父节点下。 */\n    append?: (data: unknown, parentNode: unknown) => void;\n    /** 将节点数据插入到参考节点之前。 */\n    insertBefore?: (data: unknown, refNode: unknown) => void;\n    /** 将节点数据插入到参考节点之后。 */\n    insertAfter?: (data: unknown, refNode: unknown) => void;\n    /** 从树中移除节点实例或节点数据。 */\n    remove?: (nodeOrData: unknown) => void;\n    /** 按业务 key 获取原生树节点实例。 */\n    getNode?: (key: string | number) => NativeTreeNodeLike | undefined;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 40,
         "className": "NativeTreeLike",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "getCurrentNode",
-          "jsdoc": "返回当前选中的原生树节点数据。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "setCurrentKey",
-          "jsdoc": "按节点 key 设置当前选中节点；传 null 清空选中。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 返回当前选中的原生树节点数据。 */\n    getCurrentNode?: () => unknown;\n    /** 按节点 key 设置当前选中节点；传 null 清空选中。 */\n    setCurrentKey?: (key: string | number | null) => void;\n    /** 按关键字触发 Element Plus 树过滤。 */\n    filter?: (value: string) => void;\n    /** 返回当前勾选的节点数据。 */\n    getCheckedNodes?: (leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[];\n    /** 返回当前勾选节点的 key 集合。 */\n    getCheckedKeys?: (leafOnly?: boolean) => Array<string | number>;\n    /** 设置当前勾选节点的 key 集合。 */\n    setCheckedKeys?: (keys: Array<string | number>, leafOnly?: boolean) => void;\n    /** 将节点数据追加到父节点下。 */\n    append?: (data: unknown, parentNode: unknown) => void;\n    /** 将节点数据插入到参考节点之前。 */\n    insertBefore?: (data: unknown, refNode: unknown) => void;\n    /** 将节点数据插入到参考节点之后。 */\n    insertAfter?: (data: unknown, refNode: unknown) => void;\n    /** 从树中移除节点实例或节点数据。 */\n    remove?: (nodeOrData: unknown) => void;\n    /** 按业务 key 获取原生树节点实例。 */\n    getNode?: (key: string | number) => NativeTreeNodeLike | undefined;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "key",
+              "name": "getCurrentNode",
+              "jsdoc": "返回当前选中的原生树节点数据。",
               "type": {
-                "type": "union",
-                "types": [
-                  {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "setCurrentKey",
+              "jsdoc": "按节点 key 设置当前选中节点；传 null 清空选中。",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "filter",
+              "jsdoc": "按关键字触发 Element Plus 树过滤。",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
                     "type": "intrinsic",
                     "name": "string"
-                  },
-                  {
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "getCheckedNodes",
+              "jsdoc": "返回当前勾选的节点数据。",
+              "parameters": [
+                {
+                  "name": "leafOnly",
+                  "type": {
                     "type": "intrinsic",
-                    "name": "number"
+                    "name": "boolean"
                   },
-                  {
-                    "type": "literal",
-                    "value": null
+                  "flags": {
+                    "isOptional": true
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "filter",
-          "jsdoc": "按关键字触发 Element Plus 树过滤。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "value",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getCheckedNodes",
-          "jsdoc": "返回当前勾选的节点数据。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "leafOnly",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            },
-            {
-              "name": "includeHalfChecked",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "intrinsic",
-              "name": "unknown"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "leafOnly": {
-                "type": "boolean"
-              },
-              "includeHalfChecked": {
-                "type": "boolean"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": true
-          }
-        },
-        {
-          "name": "getCheckedKeys",
-          "jsdoc": "返回当前勾选节点的 key 集合。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "leafOnly",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "intrinsic",
-                  "name": "string"
                 },
                 {
-                  "type": "intrinsic",
-                  "name": "number"
+                  "name": "includeHalfChecked",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
                 }
-              ]
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "leafOnly": {
-                "type": "boolean"
+              ],
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "unknown"
+                }
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "setCheckedKeys",
-          "jsdoc": "设置当前勾选节点的 key 集合。",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "keys",
+              "name": "getCheckedKeys",
+              "jsdoc": "返回当前勾选节点的 key 集合。",
+              "parameters": [
+                {
+                  "name": "leafOnly",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
                 "type": "array",
                 "elementType": {
@@ -589,468 +611,371 @@
               }
             },
             {
-              "name": "leafOnly",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "keys": {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
+              "name": "setCheckedKeys",
+              "jsdoc": "设置当前勾选节点的 key 集合。",
+              "parameters": [
+                {
+                  "name": "keys",
+                  "type": {
+                    "type": "array",
+                    "elementType": {
+                      "type": "union",
+                      "types": [
+                        {
+                          "type": "intrinsic",
+                          "name": "string"
+                        },
+                        {
+                          "type": "intrinsic",
+                          "name": "number"
+                        }
+                      ]
                     }
-                  ]
+                  }
+                },
+                {
+                  "name": "leafOnly",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
                 }
-              },
-              "leafOnly": {
-                "type": "boolean"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "append",
-          "jsdoc": "将节点数据追加到父节点下。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "data",
+              ],
               "type": {
                 "type": "intrinsic",
-                "name": "unknown"
+                "name": "void"
               }
             },
             {
-              "name": "parentNode",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "data": true,
-              "parentNode": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "insertBefore",
-          "jsdoc": "将节点数据插入到参考节点之前。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "data",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "refNode",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "data": true,
-              "refNode": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "insertAfter",
-          "jsdoc": "将节点数据插入到参考节点之后。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "data",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            },
-            {
-              "name": "refNode",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "data": true,
-              "refNode": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "remove",
-          "jsdoc": "从树中移除节点实例或节点数据。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "nodeOrData",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "nodeOrData": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "getNode",
-          "jsdoc": "按业务 key 获取原生树节点实例。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "key",
-              "type": {
-                "type": "union",
-                "types": [
-                  {
+              "name": "append",
+              "jsdoc": "将节点数据追加到父节点下。",
+              "parameters": [
+                {
+                  "name": "data",
+                  "type": {
                     "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
+                    "name": "unknown"
+                  }
+                },
+                {
+                  "name": "parentNode",
+                  "type": {
                     "type": "intrinsic",
-                    "name": "number"
+                    "name": "unknown"
                   }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "optional",
-            "elementType": {
-              "type": "reference",
-              "name": "NativeTreeNodeLike",
-              "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts"
-            }
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "$ref": "#/$defs/NativeTreeNodeLike"
-          }
+            {
+              "name": "insertBefore",
+              "jsdoc": "将节点数据插入到参考节点之前。",
+              "parameters": [
+                {
+                  "name": "data",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                },
+                {
+                  "name": "refNode",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "insertAfter",
+              "jsdoc": "将节点数据插入到参考节点之后。",
+              "parameters": [
+                {
+                  "name": "data",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                },
+                {
+                  "name": "refNode",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "remove",
+              "jsdoc": "从树中移除节点实例或节点数据。",
+              "parameters": [
+                {
+                  "name": "nodeOrData",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "getNode",
+              "jsdoc": "按业务 key 获取原生树节点实例。",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "NativeTreeNodeLike",
+                  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts"
+                }
+              }
+            }
+          ]
         }
-      ]
+      }
     },
     "NativeTreeNodeLike": {
-      "kind": "NativeTreeNodeLike",
-      "className": "NativeTreeNodeLike",
+      "name": "NativeTreeNodeLike",
       "jsdoc": "Element Plus 原生树节点实例的最小能力集合。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 展开当前原生树节点。 */\n    expand?: () => void;\n    /** 原生树节点绑定的业务行数据。 */\n    data?: DataRow;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 65,
         "className": "NativeTreeNodeLike",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "data",
-          "jsdoc": "原生树节点绑定的业务行数据。",
-          "schema": {
-            "type": "object",
-            "title": "DataRow"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 展开当前原生树节点。 */\n    expand?: () => void;\n    /** 原生树节点绑定的业务行数据。 */\n    data?: DataRow;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "data",
+              "jsdoc": "原生树节点绑定的业务行数据。",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "expand",
+              "jsdoc": "展开当前原生树节点。",
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
         }
-      ],
-      "methods": [
-        {
-          "name": "expand",
-          "jsdoc": "展开当前原生树节点。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        }
-      ]
+      }
     },
     "TreeEventControl": {
-      "kind": "TreeEventControl",
-      "className": "TreeEventControl",
+      "name": "TreeEventControl",
       "jsdoc": "树事件回调的默认行为控制器。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 事件处理器调用后阻止组件默认行为。 */\n    cancel: CancellableControl['cancel'];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 72,
         "className": "TreeEventControl",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "cancel",
-          "jsdoc": "事件处理器调用后阻止组件默认行为。",
-          "schema": true,
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 事件处理器调用后阻止组件默认行为。 */\n    cancel: CancellableControl['cancel'];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "cancel",
+              "jsdoc": "事件处理器调用后阻止组件默认行为。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "TreeEventHandler": {
-      "kind": "TreeEventHandler",
-      "className": "TreeEventHandler",
+      "name": "TreeEventHandler",
       "jsdoc": "r-tree 节点交互事件处理函数。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 树节点交互回调；可通过 control.cancel() 接管默认选中、展开等行为。 */\n    (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 77,
         "className": "TreeEventHandler",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 树节点交互回调；可通过 control.cancel() 接管默认选中、展开等行为。 */\n    (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>;\n}",
+        "members": {}
+      }
     },
     "RendererTreeBehaviorProps": {
-      "kind": "RendererTreeBehaviorProps",
-      "className": "RendererTreeBehaviorProps",
+      "name": "RendererTreeBehaviorProps",
       "jsdoc": "r-tree 与节点交互相关的行为属性。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<Record<string, unknown>> & {\n    /** 节点点击时触发，可取消默认选中当前行行为。 */\n    onNodeClick?: TreeEventHandler | undefined;\n    /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */\n    onNodeExpand?: TreeEventHandler | undefined;\n    /** 节点收起时触发，用于同步外部状态或埋点。 */\n    onNodeCollapse?: TreeEventHandler | undefined;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "Readonly<Record<string, unknown>>",
-          "targetName": "Readonly"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 节点点击时触发，可取消默认选中当前行行为。 */\n    onNodeClick?: TreeEventHandler | undefined;\n    /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */\n    onNodeExpand?: TreeEventHandler | undefined;\n    /** 节点收起时触发，用于同步外部状态或埋点。 */\n    onNodeCollapse?: TreeEventHandler | undefined;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 82,
         "className": "RendererTreeBehaviorProps",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-enderer-tree-behavior",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "onNodeClick",
-          "jsdoc": "节点点击时触发，可取消默认选中当前行行为。",
-          "schema": {
-            "$ref": "#/$defs/TreeEventHandler"
+      "typeAlias": {
+        "declarationTypeText": "Readonly<Record<string, unknown>> & {\n    /** 节点点击时触发，可取消默认选中当前行行为。 */\n    onNodeClick?: TreeEventHandler | undefined;\n    /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */\n    onNodeExpand?: TreeEventHandler | undefined;\n    /** 节点收起时触发，用于同步外部状态或埋点。 */\n    onNodeCollapse?: TreeEventHandler | undefined;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<Record<string, unknown>>",
+            "targetName": "Readonly"
           },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "onNodeExpand",
-          "jsdoc": "节点展开时触发，用于懒加载、埋点或自定义展开逻辑。",
-          "schema": {
-            "$ref": "#/$defs/TreeEventHandler"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "onNodeCollapse",
-          "jsdoc": "节点收起时触发，用于同步外部状态或埋点。",
-          "schema": {
-            "$ref": "#/$defs/TreeEventHandler"
-          },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 节点点击时触发，可取消默认选中当前行行为。 */\n    onNodeClick?: TreeEventHandler | undefined;\n    /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */\n    onNodeExpand?: TreeEventHandler | undefined;\n    /** 节点收起时触发，用于同步外部状态或埋点。 */\n    onNodeCollapse?: TreeEventHandler | undefined;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "onNodeClick",
+              "jsdoc": "节点点击时触发，可取消默认选中当前行行为。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "onNodeExpand",
+              "jsdoc": "节点展开时触发，用于懒加载、埋点或自定义展开逻辑。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "onNodeCollapse",
+              "jsdoc": "节点收起时触发，用于同步外部状态或埋点。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "RendererTreeZeroCodeOptions": {
-      "kind": "RendererTreeZeroCodeOptions",
-      "className": "RendererTreeZeroCodeOptions",
+      "name": "RendererTreeZeroCodeOptions",
       "jsdoc": "创建 r-tree zero-code API 和事件桥接所需的运行时输入。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** r-tree 的组件属性集合，包含事件回调和配置透传。 */\n    props: RendererTreeBehaviorProps;\n    /** 当前解析出的 DataView；为空时树 API 只处理原生实例能力。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** 树渲染使用的行数据集合。 */\n    treeData: ValueRef<DataRow[]>;\n    /** Element Plus tree 原生组件 ref。 */\n    nativeTreeRef: ValueRef<unknown>;\n    /** 运行时诊断日志。 */\n    logger: LoggerApi;\n    /** 作为树节点 key 的字段名。 */\n    nodeKeyField: ValueRef<string>;\n    /** 作为树节点 id 的字段名，用于诊断缺主键场景。 */\n    treeIdField: ValueRef<string>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
         "line": 91,
         "className": "RendererTreeZeroCodeOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentName": "RendererTree",
         "componentType": "r-tree",
         "componentLevel": "table-level",
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [
-        {
-          "name": "props",
-          "jsdoc": "r-tree 的组件属性集合，包含事件回调和配置透传。",
-          "schema": {
-            "$ref": "#/$defs/RendererTreeBehaviorProps"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "resolvedView",
-          "jsdoc": "当前解析出的 DataView；为空时树 API 只处理原生实例能力。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<DataView | null>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "treeData",
-          "jsdoc": "树渲染使用的行数据集合。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<DataRow[]>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "nativeTreeRef",
-          "jsdoc": "Element Plus tree 原生组件 ref。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<unknown>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "logger",
-          "jsdoc": "运行时诊断日志。",
-          "schema": {
-            "type": "object",
-            "title": "LoggerApi"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "nodeKeyField",
-          "jsdoc": "作为树节点 key 的字段名。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<string>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "treeIdField",
-          "jsdoc": "作为树节点 id 的字段名，用于诊断缺主键场景。",
-          "schema": {
-            "type": "object",
-            "title": "ValueRef<string>"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** r-tree 的组件属性集合，包含事件回调和配置透传。 */\n    props: RendererTreeBehaviorProps;\n    /** 当前解析出的 DataView；为空时树 API 只处理原生实例能力。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** 树渲染使用的行数据集合。 */\n    treeData: ValueRef<DataRow[]>;\n    /** Element Plus tree 原生组件 ref。 */\n    nativeTreeRef: ValueRef<unknown>;\n    /** 运行时诊断日志。 */\n    logger: LoggerApi;\n    /** 作为树节点 key 的字段名。 */\n    nodeKeyField: ValueRef<string>;\n    /** 作为树节点 id 的字段名，用于诊断缺主键场景。 */\n    treeIdField: ValueRef<string>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "props",
+              "jsdoc": "r-tree 的组件属性集合，包含事件回调和配置透传。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "resolvedView",
+              "jsdoc": "当前解析出的 DataView；为空时树 API 只处理原生实例能力。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "treeData",
+              "jsdoc": "树渲染使用的行数据集合。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "nativeTreeRef",
+              "jsdoc": "Element Plus tree 原生组件 ref。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "logger",
+              "jsdoc": "运行时诊断日志。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "nodeKeyField",
+              "jsdoc": "作为树节点 key 的字段名。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "treeIdField",
+              "jsdoc": "作为树节点 id 的字段名，用于诊断缺主键场景。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

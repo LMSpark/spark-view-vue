@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:components/fields/data-components/composables/useChoiceFieldState",
     "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
@@ -16,127 +16,133 @@
     "componentLayer": "data-field",
     "componentDirectory": "fields/data-components"
   },
-  "symbols": [
-    "UseChoiceFieldStateOptions"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.533Z",
   "$defs": {
     "UseChoiceFieldStateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "UseChoiceFieldStateOptions",
-      "description": "Use Choice Field State Options 的调用配置。",
       "properties": {
         "props": {
-          "type": "object",
-          "title": "OptionFieldStateProps<TValue>"
+          "$ref": "useOptionFieldState.d.ts.json#/$defs/OptionFieldStateProps"
         },
         "fieldType": {
           "type": "string"
         },
-        "fallbackValue": true
+        "fallbackValue": {
+          "type": "object",
+          "title": "TValue"
+        }
+      },
+      "required": [
+        "props",
+        "fieldType",
+        "fallbackValue"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.emitUpdate.params": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "object",
+              "title": "TValue"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.emitUpdate.return": true,
+        "method.coerce.params": {
+          "type": "object",
+          "properties": {
+            "rawValue": true
+          },
+          "additionalProperties": false
+        },
+        "method.coerce.return": {
+          "type": "object",
+          "title": "TValue"
+        }
       }
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.533Z",
   "models": {
     "UseChoiceFieldStateOptions": {
-      "kind": "UseChoiceFieldStateOptions",
-      "className": "UseChoiceFieldStateOptions",
+      "name": "UseChoiceFieldStateOptions",
       "jsdoc": "Use Choice Field State Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: OptionFieldStateProps<TValue>;\n    /** field Type 字段。 */\n    fieldType: string;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** coerce 回调。 */\n    coerce: (rawValue: unknown) => TValue;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
         "line": 3,
         "className": "UseChoiceFieldStateOptions",
-        "declarationKind": "type",
+        "declarationKind": "typeAlias",
         "componentLevel": "field-level",
         "componentLayer": "data-field",
         "componentDirectory": "fields/data-components"
       },
-      "attributes": [
-        {
-          "name": "props",
-          "jsdoc": "组件属性集合。",
-          "schema": {
-            "type": "object",
-            "title": "OptionFieldStateProps<TValue>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "fieldType",
-          "jsdoc": "field Type 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "fallbackValue",
-          "jsdoc": "fallback Value 字段。",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "emitUpdate",
-          "jsdoc": "emit Update 回调。",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: OptionFieldStateProps<TValue>;\n    /** field Type 字段。 */\n    fieldType: string;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** coerce 回调。 */\n    coerce: (rawValue: unknown) => TValue;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "value",
+              "name": "props",
+              "jsdoc": "组件属性集合。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "fieldType",
+              "jsdoc": "field Type 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "fallbackValue",
+              "jsdoc": "fallback Value 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "emitUpdate",
+              "jsdoc": "emit Update 回调。",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "reference",
+                    "name": "TValue",
+                    "refersToTypeParameter": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "coerce",
+              "jsdoc": "coerce 回调。",
+              "parameters": [
+                {
+                  "name": "rawValue",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              ],
               "type": {
                 "type": "reference",
                 "name": "TValue",
                 "refersToTypeParameter": true
               }
             }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "coerce",
-          "jsdoc": "coerce 回调。",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "rawValue",
-              "type": {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "TValue",
-            "refersToTypeParameter": true
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "rawValue": true
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/runtime/class-model-runtime
- * 职责：维护 DTS ClassModel 知识链路中的 class-model-runtime 能力，围绕 ClassModelScriptCommand、ClassModelRuntimeOptions、ClassModelToolArgs 等 8 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。
+ * 职责：维护 DTS DtsTypeDeclarationModel 知识链路中的 class-model-runtime 能力，围绕 ClassModelScriptCommand、ClassModelRuntimeOptions、ClassModelToolArgs 等 8 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
- * AI用途：当需要判断 ClassModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。
+ * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonValue } from '../../json'
 import type { ClassModelDocument } from '../class-model/types'
@@ -55,11 +55,11 @@ export type ClassModelScriptExecutor =
   (command: ClassModelScriptCommand) => ClassModelScriptExecutorResult | Promise<ClassModelScriptExecutorResult>
 
 /**
- * ClassModel tool runtime。
+ * DtsTypeDeclarationModel tool runtime。
  *
- * 这是 ClassModel 的运行时投影，唯一执行入口由 scriptExecutor 承接。
+ * 这是 DtsTypeDeclarationModel 的运行时投影，唯一执行入口由 scriptExecutor 承接。
  * runtime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。
- * ClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。
+ * DtsTypeDeclarationModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。
  */
 export class ClassModelRuntime {
   private readonly knowledge: ClassModelKnowledgeProvider
@@ -85,7 +85,7 @@ public async executeTool(
     if (!isClassModelToolName(toolName)) {
       return failResult(
         'UNKNOWN_CLASS_MODEL_TOOL',
-        `工具 "${toolName}" 未在 ClassModel 工具闭集中定义。`,
+        `工具 "${toolName}" 未在 DtsTypeDeclarationModel 工具闭集中定义。`,
         `可用工具: ${Object.values(CLASS_MODEL_TOOL_NAMES).join(', ')}`,
       )
     }

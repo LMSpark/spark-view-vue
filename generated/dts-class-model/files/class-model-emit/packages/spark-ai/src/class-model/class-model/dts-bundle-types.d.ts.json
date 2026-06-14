@@ -1,16 +1,17 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-ai:class-model/class-model/dts-bundle-types",
     "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
     "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/dts-bundle-types",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和协议边界。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS DtsTypeDeclarationModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和协议边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DtsFileProjectionDocument",
+      "DtsFileProjectionBundleJson",
       "DtsFileModuleJsDocSource",
       "DtsFileModuleSemanticMeta",
       "DtsClassModelBundleFileEntry",
@@ -23,29 +24,13 @@
       "ProjectDtsFileProjectionOptions"
     ]
   },
-  "symbols": [
-    "DtsFileProjectionDocument",
-    "DtsFileModuleJsDocSource",
-    "DtsFileModuleSemanticMeta",
-    "DtsClassModelBundleFileEntry",
-    "DtsClassModelBundleClassEntry",
-    "DtsClassModelBundleManifest",
-    "DtsClassModelDuplicateRecord",
-    "DtsClassModelSemanticGapKind",
-    "DtsClassModelSemanticGap",
-    "DtsClassModelSemanticGapReport",
-    "ProjectDtsFileProjectionOptions"
-  ],
-  "generatedAt": "2026-06-14T02:53:50.653Z",
   "$defs": {
     "DtsFileProjectionDocument": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsFileProjectionDocument",
-      "description": "Dts File Projection Document 的语义模型。",
       "properties": {
-        "schemaVersion": {
-          "type": "number"
-        },
+        "schemaVersion": true,
         "sourcePath": {
           "type": "string"
         },
@@ -53,30 +38,56 @@
           "$ref": "#/$defs/DtsFileModuleSemanticMeta"
         },
         "symbols": {
-          "type": "array"
-        },
-        "$defs": {
-          "type": "object",
-          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "models": {
           "type": "object",
-          "title": "Readonly<Record<string, ClassModel>>"
+          "title": "Record<string, DtsTypeDeclarationModel>"
         },
         "generatedAt": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
+    },
+    "DtsFileProjectionBundleJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "DtsFileProjectionBundleJson",
+      "properties": {
+        "$schema": {
+          "const": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "schemaVersion": true,
+        "module": {
+          "$ref": "#/$defs/DtsFileModuleSemanticMeta"
+        },
+        "models": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
     },
     "DtsFileModuleJsDocSource": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DtsFileModuleJsDocSource",
-      "description": "Dts File Module JsDoc Source 标记模块语义来自源码注释还是路径推导。"
+      "enum": [
+        "leading-jsdoc",
+        "source-file-jsdoc",
+        "inferred"
+      ]
     },
     "DtsFileModuleSemanticMeta": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsFileModuleSemanticMeta",
-      "description": "Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。",
       "properties": {
         "name": {
           "type": "string"
@@ -100,7 +111,10 @@
           "$ref": "#/$defs/DtsFileModuleJsDocSource"
         },
         "symbols": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "componentName": {
           "type": "string"
@@ -109,22 +123,21 @@
           "type": "string"
         },
         "componentLevel": {
-          "type": "object",
-          "title": "ComponentClassModelLevel"
+          "$ref": "types.d.ts.json#/$defs/ComponentClassModelLevel"
         },
         "componentLayer": {
-          "type": "object",
-          "title": "ComponentClassModelLayer"
+          "$ref": "types.d.ts.json#/$defs/ComponentClassModelLayer"
         },
         "componentDirectory": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsClassModelBundleFileEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelBundleFileEntry",
-      "description": "Dts Class Model Bundle File Entry 的语义模型。",
       "properties": {
         "file": {
           "type": "string"
@@ -132,12 +145,13 @@
         "module": {
           "$ref": "#/$defs/DtsFileModuleSemanticMeta"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsClassModelBundleClassEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelBundleClassEntry",
-      "description": "Dts Class Model Bundle Class Entry 的语义模型。",
       "properties": {
         "sourcePath": {
           "type": "string"
@@ -145,39 +159,40 @@
         "file": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsClassModelBundleManifest": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelBundleManifest",
-      "description": "Dts Class Model Bundle Manifest 的语义模型。",
       "properties": {
-        "schemaVersion": {
-          "type": "number"
-        },
-        "protocol": {
-          "type": "string"
-        },
+        "schemaVersion": true,
+        "protocol": true,
         "scannedFileCount": {
           "type": "number"
         },
         "files": {
           "type": "object",
-          "title": "Readonly<Record<string, DtsClassModelBundleFileEntry>>"
+          "title": "Record<string, DtsClassModelBundleFileEntry>"
         },
         "classIndex": {
           "type": "object",
-          "title": "Readonly<Record<string, DtsClassModelBundleClassEntry>>"
+          "title": "Record<string, DtsClassModelBundleClassEntry>"
         },
         "duplicates": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DtsClassModelDuplicateRecord"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsClassModelDuplicateRecord": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelDuplicateRecord",
-      "description": "Dts Class Model Duplicate Record 的记录结构。",
       "properties": {
         "className": {
           "type": "string"
@@ -188,17 +203,24 @@
         "skippedFile": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsClassModelSemanticGapKind": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "DtsClassModelSemanticGapKind",
-      "description": "Dts Class Model Semantic Gap Kind 的语义模型。"
+      "enum": [
+        "module",
+        "model",
+        "constructor",
+        "attribute",
+        "method"
+      ]
     },
     "DtsClassModelSemanticGap": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelSemanticGap",
-      "description": "Dts Class Model Semantic Gap 的语义模型。",
       "properties": {
         "kind": {
           "$ref": "#/$defs/DtsClassModelSemanticGapKind"
@@ -213,25 +235,10 @@
           "type": "string"
         },
         "reason": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "missing-jsdoc"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "inferred-module-jsdoc"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "weak-module-jsdoc"
-              ]
-            }
+          "enum": [
+            "missing-jsdoc",
+            "inferred-module-jsdoc",
+            "weak-module-jsdoc"
           ]
         },
         "chainBreak": {
@@ -256,12 +263,10 @@
           "type": "string"
         },
         "componentLevel": {
-          "type": "object",
-          "title": "ComponentClassModelLevel"
+          "$ref": "types.d.ts.json#/$defs/ComponentClassModelLevel"
         },
         "componentLayer": {
-          "type": "object",
-          "title": "ComponentClassModelLayer"
+          "$ref": "types.d.ts.json#/$defs/ComponentClassModelLayer"
         },
         "componentDirectory": {
           "type": "string"
@@ -270,28 +275,36 @@
           "type": "object",
           "title": "NonNullable<SourceProvenanceMeta['declarationKind']>"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DtsClassModelSemanticGapReport": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DtsClassModelSemanticGapReport",
-      "description": "Dts Class Model Semantic Gap Report 的语义模型。",
       "properties": {
         "gapCount": {
           "type": "number"
         },
         "notes": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "gaps": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DtsClassModelSemanticGap"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ProjectDtsFileProjectionOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ProjectDtsFileProjectionOptions",
-      "description": "Project Dts File Projection Options 的调用配置。",
       "properties": {
         "repoRoot": {
           "type": "string"
@@ -302,805 +315,629 @@
         "exportedOnly": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-14T13:21:05.248Z",
   "models": {
     "DtsFileProjectionDocument": {
-      "kind": "DtsFileProjectionDocument",
-      "className": "DtsFileProjectionDocument",
+      "name": "DtsFileProjectionDocument",
       "jsdoc": "Dts File Projection Document 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, ClassModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, ClassModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
         "line": 13,
         "className": "DtsFileProjectionDocument",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "schemaVersion",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sourcePath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "module",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/DtsFileModuleSemanticMeta"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "symbols",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "$defs",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "models",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, ClassModel>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "generatedAt",
-          "jsdoc": "对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    models: Readonly<Record<string, DtsTypeDeclarationModel>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "schemaVersion",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sourcePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "module",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "symbols",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "models",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "generatedAt",
+              "jsdoc": "对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
+    },
+    "DtsFileProjectionBundleJson": {
+      "name": "DtsFileProjectionBundleJson",
+      "jsdoc": "Dts File Projection Bundle Json 是写盘 shard 的精简形态；声明 schema 统一放入顶层 $defs。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 23,
+        "className": "DtsFileProjectionBundleJson",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    $schema: 'https://json-schema.org/draft/2020-12/schema';\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    module: DtsFileModuleSemanticMeta;\n    $defs: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, unknown>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    $schema: 'https://json-schema.org/draft/2020-12/schema';\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    module: DtsFileModuleSemanticMeta;\n    $defs: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, unknown>>;\n    /** 对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。 */\n    generatedAt?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "$schema",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "schemaVersion",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "module",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "$defs",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "models",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "generatedAt",
+              "jsdoc": "对应源文件（module.sourceFile）最后修改时间 ISO；重编译时源码未改则保持不变。",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
     },
     "DtsFileModuleJsDocSource": {
-      "kind": "DtsFileModuleJsDocSource",
-      "className": "DtsFileModuleJsDocSource",
+      "name": "DtsFileModuleJsDocSource",
       "jsdoc": "Dts File Module JsDoc Source 标记模块语义来自源码注释还是路径推导。",
-      "shapeKind": "type",
-      "declarationTypeText": "'leading-jsdoc' | 'source-file-jsdoc' | 'inferred'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'leading-jsdoc'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'source-file-jsdoc'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'inferred'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 24,
+        "line": 33,
         "className": "DtsFileModuleJsDocSource",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'leading-jsdoc' | 'source-file-jsdoc' | 'inferred'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'leading-jsdoc'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'source-file-jsdoc'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'inferred'"
+          }
+        ],
+        "members": {}
+      }
     },
     "DtsFileModuleSemanticMeta": {
-      "kind": "DtsFileModuleSemanticMeta",
-      "className": "DtsFileModuleSemanticMeta",
+      "name": "DtsFileModuleSemanticMeta",
       "jsdoc": "Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 26,
+        "line": 35,
         "className": "DtsFileModuleSemanticMeta",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sourcePath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sourceFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "packageName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "modulePath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "jsdoc",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "jsdocSource",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/DtsFileModuleJsDocSource"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "symbols",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "componentName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentType",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentLevel",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ComponentClassModelLevel"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentLayer",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ComponentClassModelLayer"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentDirectory",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sourcePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sourceFile",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "packageName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "modulePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsdoc",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "jsdocSource",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "symbols",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentType",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLevel",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLayer",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentDirectory",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DtsClassModelBundleFileEntry": {
-      "kind": "DtsClassModelBundleFileEntry",
-      "className": "DtsClassModelBundleFileEntry",
+      "name": "DtsClassModelBundleFileEntry",
       "jsdoc": "Dts Class Model Bundle File Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 42,
+        "line": 51,
         "className": "DtsClassModelBundleFileEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "file",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "module",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/DtsFileModuleSemanticMeta"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "file",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "module",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DtsClassModelBundleClassEntry": {
-      "kind": "DtsClassModelBundleClassEntry",
-      "className": "DtsClassModelBundleClassEntry",
+      "name": "DtsClassModelBundleClassEntry",
       "jsdoc": "Dts Class Model Bundle Class Entry 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 47,
+        "line": 56,
         "className": "DtsClassModelBundleClassEntry",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "sourcePath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "file",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "sourcePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "file",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DtsClassModelBundleManifest": {
-      "kind": "DtsClassModelBundleManifest",
-      "className": "DtsClassModelBundleManifest",
+      "name": "DtsClassModelBundleManifest",
       "jsdoc": "Dts Class Model Bundle Manifest 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
-      "provenance": {
-        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 52,
-        "className": "DtsClassModelBundleManifest",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "schemaVersion",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "protocol",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "scannedFileCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "files",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, DtsClassModelBundleFileEntry>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "classIndex",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, DtsClassModelBundleClassEntry>>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "duplicates",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
-    },
-    "DtsClassModelDuplicateRecord": {
-      "kind": "DtsClassModelDuplicateRecord",
-      "className": "DtsClassModelDuplicateRecord",
-      "jsdoc": "Dts Class Model Duplicate Record 的记录结构。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
         "line": 61,
-        "className": "DtsClassModelDuplicateRecord",
-        "declarationKind": "type"
+        "className": "DtsClassModelBundleManifest",
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "className",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "keptFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "skippedFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "schemaVersion",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "protocol",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "scannedFileCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "files",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "classIndex",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "duplicates",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
+    },
+    "DtsClassModelDuplicateRecord": {
+      "name": "DtsClassModelDuplicateRecord",
+      "jsdoc": "Dts Class Model Duplicate Record 的记录结构。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 70,
+        "className": "DtsClassModelDuplicateRecord",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "className",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "keptFile",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "skippedFile",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
     },
     "DtsClassModelSemanticGapKind": {
-      "kind": "DtsClassModelSemanticGapKind",
-      "className": "DtsClassModelSemanticGapKind",
+      "name": "DtsClassModelSemanticGapKind",
       "jsdoc": "Dts Class Model Semantic Gap Kind 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'module' | 'model' | 'constructor' | 'attribute' | 'method'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'module'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'model'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'constructor'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'attribute'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'method'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 67,
+        "line": 76,
         "className": "DtsClassModelSemanticGapKind",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'module' | 'model' | 'constructor' | 'attribute' | 'method'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'module'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'model'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'constructor'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'attribute'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'method'"
+          }
+        ],
+        "members": {}
+      }
     },
     "DtsClassModelSemanticGap": {
-      "kind": "DtsClassModelSemanticGap",
-      "className": "DtsClassModelSemanticGap",
+      "name": "DtsClassModelSemanticGap",
       "jsdoc": "Dts Class Model Semantic Gap 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 69,
+        "line": 78,
         "className": "DtsClassModelSemanticGap",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/DtsClassModelSemanticGapKind"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "className",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "moduleName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "memberName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "reason",
-          "jsdoc": "",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "missing-jsdoc"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "inferred-module-jsdoc"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "weak-module-jsdoc"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "chainBreak",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "fixHint",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declarationFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "declarationLine",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "sourceFile",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "componentName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentType",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentLevel",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ComponentClassModelLevel"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentLayer",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ComponentClassModelLayer"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "componentDirectory",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "declarationKind",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "NonNullable<SourceProvenanceMeta['declarationKind']>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "className",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "moduleName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "memberName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reason",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "chainBreak",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fixHint",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationFile",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationLine",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sourceFile",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentType",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLevel",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLayer",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentDirectory",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "declarationKind",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "DtsClassModelSemanticGapReport": {
-      "kind": "DtsClassModelSemanticGapReport",
-      "className": "DtsClassModelSemanticGapReport",
+      "name": "DtsClassModelSemanticGapReport",
       "jsdoc": "Dts Class Model Semantic Gap Report 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 88,
+        "line": 97,
         "className": "DtsClassModelSemanticGapReport",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "gapCount",
-          "jsdoc": "",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "notes",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "gaps",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "gapCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "notes",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "gaps",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ProjectDtsFileProjectionOptions": {
-      "kind": "ProjectDtsFileProjectionOptions",
-      "className": "ProjectDtsFileProjectionOptions",
+      "name": "ProjectDtsFileProjectionOptions",
       "jsdoc": "Project Dts File Projection Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 94,
+        "line": 103,
         "className": "ProjectDtsFileProjectionOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "repoRoot",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "absolutePath",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "exportedOnly",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "repoRoot",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "absolutePath",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "exportedOnly",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

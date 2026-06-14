@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:runtime/app-services",
     "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
@@ -24,36 +24,30 @@
       "PageRuntimeServicesCapability"
     ]
   },
-  "symbols": [
-    "PageMessageType",
-    "PageDialogResult",
-    "PageDialogOptions",
-    "PageBrowseFilesOptions",
-    "PageSelectedFile",
-    "PageUploadFilesOptions",
-    "PageUploadedFile",
-    "PageSelectorOption",
-    "PageSelectEntitiesOptions",
-    "PageServiceCapability",
-    "PageRouterService",
-    "PageRuntimeServicesCapability"
-  ],
-  "generatedAt": "2026-06-11T12:48:50.999Z",
   "$defs": {
     "PageMessageType": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "PageMessageType",
-      "description": "消息类型：成功 / 错误 / 警告 / 信息"
+      "enum": [
+        "success",
+        "error",
+        "warning",
+        "info"
+      ]
     },
     "PageDialogResult": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "PageDialogResult",
-      "description": "对话框操作结果：确认 / 取消 / 关闭"
+      "enum": [
+        "confirm",
+        "cancel",
+        "close"
+      ]
     },
     "PageDialogOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDialogOptions",
-      "description": "对话框配置选项",
       "properties": {
         "title": {
           "type": "string"
@@ -82,12 +76,13 @@
         "width": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PageBrowseFilesOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageBrowseFilesOptions",
-      "description": "文件浏览配置",
       "properties": {
         "title": {
           "type": "string"
@@ -101,12 +96,13 @@
         "currentValue": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PageSelectedFile": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageSelectedFile",
-      "description": "已选择的文件信息",
       "properties": {
         "name": {
           "type": "string"
@@ -124,36 +120,29 @@
           "type": "object",
           "title": "File"
         }
-      }
+      },
+      "required": [
+        "name",
+        "size",
+        "type",
+        "lastModified",
+        "file"
+      ],
+      "additionalProperties": false
     },
     "PageUploadFilesOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageUploadFilesOptions",
-      "description": "文件上传配置（在浏览选项基础上增加上传端点信息）",
       "properties": {
         "action": {
           "type": "string"
         },
         "method": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "POST"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "PUT"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "PATCH"
-              ]
-            }
+          "enum": [
+            "POST",
+            "PUT",
+            "PATCH"
           ]
         },
         "fieldName": {
@@ -177,23 +166,31 @@
             "title": "File"
           }
         }
-      }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
     },
     "PageUploadedFile": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageUploadedFile",
-      "description": "已上传的文件：在选择文件基础上增加服务端响应",
       "properties": {
         "response": true,
         "url": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "response"
+      ],
+      "additionalProperties": false
     },
     "PageSelectorOption": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageSelectorOption",
-      "description": "选择器候选项",
       "properties": {
         "label": {
           "type": "string"
@@ -218,12 +215,17 @@
           "type": "boolean"
         },
         "raw": true
-      }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "additionalProperties": false
     },
     "PageSelectEntitiesOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageSelectEntitiesOptions",
-      "description": "实体选择器配置",
       "properties": {
         "title": {
           "type": "string"
@@ -284,25 +286,282 @@
             "$ref": "#/$defs/PageSelectorOption"
           }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PageServiceCapability": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageServiceCapability",
-      "description": "页面服务：消息提示、对话框、文件操作、实体选择、导航等。\n所有方法由宿主（如 Vue Router、Element Plus 等）实现，\n页面通过 ScriptContext 调用。"
+      "$defs": {
+        "method.showMessage.params": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/$defs/PageMessageType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.showMessage.return": true,
+        "method.showConfirm.params": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "confirmText": {
+                  "type": "string"
+                },
+                "cancelText": {
+                  "type": "string"
+                },
+                "type": {
+                  "$ref": "#/$defs/PageMessageType"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.showConfirm.return": {
+          "type": "object",
+          "title": "Promise<boolean>"
+        },
+        "method.showPrompt.params": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "placeholder": {
+                  "type": "string"
+                },
+                "defaultValue": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.showPrompt.return": {
+          "type": "object",
+          "title": "Promise<string | null>"
+        },
+        "method.showAlert.params": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "$ref": "#/$defs/PageMessageType"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.showAlert.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.showDialog.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/PageDialogOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.showDialog.return": {
+          "type": "object",
+          "title": "Promise<PageDialogResult>"
+        },
+        "method.selectEntities.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/PageSelectEntitiesOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.selectEntities.return": {
+          "type": "object",
+          "title": "Promise<PageSelectorOption[]>"
+        },
+        "method.browseFiles.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/PageBrowseFilesOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.browseFiles.return": {
+          "type": "object",
+          "title": "Promise<PageSelectedFile[]>"
+        },
+        "method.uploadFiles.params": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/PageUploadFilesOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.uploadFiles.return": {
+          "type": "object",
+          "title": "Promise<PageUploadedFile[]>"
+        },
+        "method.showLoading.params": {
+          "type": "object",
+          "properties": {
+            "show": {
+              "type": "boolean"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.showLoading.return": true,
+        "method.navigate.params": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.navigate.return": true
+      }
     },
     "PageRouterService": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageRouterService",
-      "description": "路由服务：SPA 内的 push / replace / back 操作",
       "properties": {
         "currentRoute": true
+      },
+      "required": [
+        "currentRoute"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.push.params": {
+          "type": "object",
+          "properties": {
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "query": {
+                      "type": "object",
+                      "title": "Record<string, unknown>"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.push.return": {
+          "type": "object",
+          "title": "Promise<unknown>"
+        },
+        "method.replace.params": {
+          "type": "object",
+          "properties": {
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "query": {
+                      "type": "object",
+                      "title": "Record<string, unknown>"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.replace.return": {
+          "type": "object",
+          "title": "Promise<unknown>"
+        },
+        "method.back.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.back.return": true
       }
     },
     "PageRuntimeServicesCapability": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageRuntimeServicesCapability",
-      "description": "页面运行时能力集合。\n由宿主环境提供，ScriptContext 中通过 capability 查询获取。\n各字段均为可选，由消费方在使用前判断是否存在。",
       "properties": {
         "router": {
           "$ref": "#/$defs/PageRouterService"
@@ -312,1375 +571,997 @@
           "title": "LoggerApi"
         },
         "tenant": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "tenantId": {
+              "type": "string"
+            },
+            "tenantName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tenantId"
+          ],
+          "additionalProperties": false
         },
         "authService": true,
         "pageService": {
-          "type": "object",
-          "title": "Partial<PageServiceCapability>"
+          "$ref": "#/$defs/PageServiceCapability"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:48:50.999Z",
   "models": {
     "PageMessageType": {
-      "kind": "PageMessageType",
-      "className": "PageMessageType",
+      "name": "PageMessageType",
       "jsdoc": "消息类型：成功 / 错误 / 警告 / 信息",
-      "shapeKind": "type",
-      "declarationTypeText": "'success' | 'error' | 'warning' | 'info'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'success'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'error'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'warning'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'info'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 33,
         "className": "PageMessageType",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'success' | 'error' | 'warning' | 'info'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'success'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'error'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'warning'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'info'"
+          }
+        ],
+        "members": {}
+      }
     },
     "PageDialogResult": {
-      "kind": "PageDialogResult",
-      "className": "PageDialogResult",
+      "name": "PageDialogResult",
       "jsdoc": "对话框操作结果：确认 / 取消 / 关闭",
-      "shapeKind": "type",
-      "declarationTypeText": "'confirm' | 'cancel' | 'close'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'confirm'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'cancel'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'close'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 35,
         "className": "PageDialogResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'confirm' | 'cancel' | 'close'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'confirm'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'cancel'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'close'"
+          }
+        ],
+        "members": {}
+      }
     },
     "PageDialogOptions": {
-      "kind": "PageDialogOptions",
-      "className": "PageDialogOptions",
+      "name": "PageDialogOptions",
       "jsdoc": "对话框配置选项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 对话框标题 */\n    title?: string;\n    /** 对话框正文内容（纯文本） */\n    message?: string;\n    /** 自定义内容（HTML 字符串，需配合 dangerouslyUseHTMLString） */\n    content?: string;\n    /** 确认按钮文案 */\n    confirmText?: string;\n    /** 取消按钮文案 */\n    cancelText?: string;\n    /** 是否显示取消按钮 */\n    showCancelButton?: boolean;\n    /** 是否允许渲染 HTML 字符串 */\n    dangerouslyUseHTMLString?: boolean;\n    /** 消息类型（影响图标和配色） */\n    type?: PageMessageType;\n    /** 对话框宽度 */\n    width?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 37,
         "className": "PageDialogOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "title",
-          "jsdoc": "对话框标题",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "message",
-          "jsdoc": "对话框正文内容（纯文本）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "content",
-          "jsdoc": "自定义内容（HTML 字符串，需配合 dangerouslyUseHTMLString）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "confirmText",
-          "jsdoc": "确认按钮文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "cancelText",
-          "jsdoc": "取消按钮文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "showCancelButton",
-          "jsdoc": "是否显示取消按钮",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "dangerouslyUseHTMLString",
-          "jsdoc": "是否允许渲染 HTML 字符串",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "type",
-          "jsdoc": "消息类型（影响图标和配色）",
-          "schema": {
-            "$ref": "#/$defs/PageMessageType"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "width",
-          "jsdoc": "对话框宽度",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 对话框标题 */\n    title?: string;\n    /** 对话框正文内容（纯文本） */\n    message?: string;\n    /** 自定义内容（HTML 字符串，需配合 dangerouslyUseHTMLString） */\n    content?: string;\n    /** 确认按钮文案 */\n    confirmText?: string;\n    /** 取消按钮文案 */\n    cancelText?: string;\n    /** 是否显示取消按钮 */\n    showCancelButton?: boolean;\n    /** 是否允许渲染 HTML 字符串 */\n    dangerouslyUseHTMLString?: boolean;\n    /** 消息类型（影响图标和配色） */\n    type?: PageMessageType;\n    /** 对话框宽度 */\n    width?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "title",
+              "jsdoc": "对话框标题",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "message",
+              "jsdoc": "对话框正文内容（纯文本）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "content",
+              "jsdoc": "自定义内容（HTML 字符串，需配合 dangerouslyUseHTMLString）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "confirmText",
+              "jsdoc": "确认按钮文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "cancelText",
+              "jsdoc": "取消按钮文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "showCancelButton",
+              "jsdoc": "是否显示取消按钮",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "dangerouslyUseHTMLString",
+              "jsdoc": "是否允许渲染 HTML 字符串",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "jsdoc": "消息类型（影响图标和配色）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "width",
+              "jsdoc": "对话框宽度",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageBrowseFilesOptions": {
-      "kind": "PageBrowseFilesOptions",
-      "className": "PageBrowseFilesOptions",
+      "name": "PageBrowseFilesOptions",
       "jsdoc": "文件浏览配置",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 浏览对话框标题 */\n    title?: string;\n    /** 接受的文件类型（如 '.jpg,.png' 或 'image/*'） */\n    accept?: string;\n    /** 是否允许多选 */\n    multiple?: boolean;\n    /** 当前已选值（用于回显） */\n    currentValue?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 58,
         "className": "PageBrowseFilesOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "title",
-          "jsdoc": "浏览对话框标题",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "accept",
-          "jsdoc": "接受的文件类型（如 '.jpg,.png' 或 'image/*'）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "multiple",
-          "jsdoc": "是否允许多选",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "currentValue",
-          "jsdoc": "当前已选值（用于回显）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 浏览对话框标题 */\n    title?: string;\n    /** 接受的文件类型（如 '.jpg,.png' 或 'image/*'） */\n    accept?: string;\n    /** 是否允许多选 */\n    multiple?: boolean;\n    /** 当前已选值（用于回显） */\n    currentValue?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "title",
+              "jsdoc": "浏览对话框标题",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "accept",
+              "jsdoc": "接受的文件类型（如 '.jpg,.png' 或 'image/*'）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "multiple",
+              "jsdoc": "是否允许多选",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "currentValue",
+              "jsdoc": "当前已选值（用于回显）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageSelectedFile": {
-      "kind": "PageSelectedFile",
-      "className": "PageSelectedFile",
+      "name": "PageSelectedFile",
       "jsdoc": "已选择的文件信息",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 文件名 */\n    name: string;\n    /** 文件大小（字节） */\n    size: number;\n    /** MIME 类型 */\n    type: string;\n    /** 最后修改时间戳 */\n    lastModified: number;\n    /** 原始 File 对象 */\n    file: File;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 69,
         "className": "PageSelectedFile",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "name",
-          "jsdoc": "文件名",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "size",
-          "jsdoc": "文件大小（字节）",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "type",
-          "jsdoc": "MIME 类型",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "lastModified",
-          "jsdoc": "最后修改时间戳",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "file",
-          "jsdoc": "原始 File 对象",
-          "schema": {
-            "type": "object",
-            "title": "File"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 文件名 */\n    name: string;\n    /** 文件大小（字节） */\n    size: number;\n    /** MIME 类型 */\n    type: string;\n    /** 最后修改时间戳 */\n    lastModified: number;\n    /** 原始 File 对象 */\n    file: File;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "name",
+              "jsdoc": "文件名",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "size",
+              "jsdoc": "文件大小（字节）",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "type",
+              "jsdoc": "MIME 类型",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "lastModified",
+              "jsdoc": "最后修改时间戳",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "file",
+              "jsdoc": "原始 File 对象",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageUploadFilesOptions": {
-      "kind": "PageUploadFilesOptions",
-      "className": "PageUploadFilesOptions",
+      "name": "PageUploadFilesOptions",
       "jsdoc": "文件上传配置（在浏览选项基础上增加上传端点信息）",
-      "shapeKind": "type",
-      "declarationTypeText": "PageBrowseFilesOptions & {\n    /** 上传目标 URL */\n    action: string;\n    /** HTTP 方法 */\n    method?: 'POST' | 'PUT' | 'PATCH';\n    /** 文件字段名 */\n    fieldName?: string;\n    /** 附加请求头 */\n    headers?: Record<string, string>;\n    /** 附加表单数据 */\n    data?: Record<string, string | Blob>;\n    /** 是否携带 Cookie / 认证信息 */\n    withCredentials?: boolean;\n    /** 待上传的文件列表 */\n    files?: File[];\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "PageBrowseFilesOptions",
-          "targetName": "PageBrowseFilesOptions"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 上传目标 URL */\n    action: string;\n    /** HTTP 方法 */\n    method?: 'POST' | 'PUT' | 'PATCH';\n    /** 文件字段名 */\n    fieldName?: string;\n    /** 附加请求头 */\n    headers?: Record<string, string>;\n    /** 附加表单数据 */\n    data?: Record<string, string | Blob>;\n    /** 是否携带 Cookie / 认证信息 */\n    withCredentials?: boolean;\n    /** 待上传的文件列表 */\n    files?: File[];\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 82,
         "className": "PageUploadFilesOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "action",
-          "jsdoc": "上传目标 URL",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "PageBrowseFilesOptions & {\n    /** 上传目标 URL */\n    action: string;\n    /** HTTP 方法 */\n    method?: 'POST' | 'PUT' | 'PATCH';\n    /** 文件字段名 */\n    fieldName?: string;\n    /** 附加请求头 */\n    headers?: Record<string, string>;\n    /** 附加表单数据 */\n    data?: Record<string, string | Blob>;\n    /** 是否携带 Cookie / 认证信息 */\n    withCredentials?: boolean;\n    /** 待上传的文件列表 */\n    files?: File[];\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "PageBrowseFilesOptions",
+            "targetName": "PageBrowseFilesOptions"
           },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "method",
-          "jsdoc": "HTTP 方法",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "POST"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "PUT"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "PATCH"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "fieldName",
-          "jsdoc": "文件字段名",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "headers",
-          "jsdoc": "附加请求头",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, string>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "data",
-          "jsdoc": "附加表单数据",
-          "schema": {
-            "type": "object",
-            "title": "Record<string, string | Blob>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "withCredentials",
-          "jsdoc": "是否携带 Cookie / 认证信息",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "files",
-          "jsdoc": "待上传的文件列表",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "title": "File"
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 上传目标 URL */\n    action: string;\n    /** HTTP 方法 */\n    method?: 'POST' | 'PUT' | 'PATCH';\n    /** 文件字段名 */\n    fieldName?: string;\n    /** 附加请求头 */\n    headers?: Record<string, string>;\n    /** 附加表单数据 */\n    data?: Record<string, string | Blob>;\n    /** 是否携带 Cookie / 认证信息 */\n    withCredentials?: boolean;\n    /** 待上传的文件列表 */\n    files?: File[];\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "action",
+              "jsdoc": "上传目标 URL",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "method",
+              "jsdoc": "HTTP 方法",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fieldName",
+              "jsdoc": "文件字段名",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "headers",
+              "jsdoc": "附加请求头",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "data",
+              "jsdoc": "附加表单数据",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "withCredentials",
+              "jsdoc": "是否携带 Cookie / 认证信息",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "files",
+              "jsdoc": "待上传的文件列表",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageUploadedFile": {
-      "kind": "PageUploadedFile",
-      "className": "PageUploadedFile",
+      "name": "PageUploadedFile",
       "jsdoc": "已上传的文件：在选择文件基础上增加服务端响应",
-      "shapeKind": "type",
-      "declarationTypeText": "PageSelectedFile & {\n    /** 服务端返回的响应体 */\n    response: unknown;\n    /** 上传后可访问的文件 URL */\n    url?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "PageSelectedFile",
-          "targetName": "PageSelectedFile"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 服务端返回的响应体 */\n    response: unknown;\n    /** 上传后可访问的文件 URL */\n    url?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 99,
         "className": "PageUploadedFile",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "response",
-          "jsdoc": "服务端返回的响应体",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "url",
-          "jsdoc": "上传后可访问的文件 URL",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "PageSelectedFile & {\n    /** 服务端返回的响应体 */\n    response: unknown;\n    /** 上传后可访问的文件 URL */\n    url?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "PageSelectedFile",
+            "targetName": "PageSelectedFile"
           },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 服务端返回的响应体 */\n    response: unknown;\n    /** 上传后可访问的文件 URL */\n    url?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "response",
+              "jsdoc": "服务端返回的响应体",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "url",
+              "jsdoc": "上传后可访问的文件 URL",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageSelectorOption": {
-      "kind": "PageSelectorOption",
-      "className": "PageSelectorOption",
+      "name": "PageSelectorOption",
       "jsdoc": "选择器候选项",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 展示文本 */\n    label: string;\n    /** 选中值 */\n    value: string | number | boolean;\n    /** 描述信息 */\n    description?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 原始数据（未加工的选项数据） */\n    raw?: unknown;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 106,
         "className": "PageSelectorOption",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "label",
-          "jsdoc": "展示文本",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "value",
-          "jsdoc": "选中值",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "描述信息",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "disabled",
-          "jsdoc": "是否禁用",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "raw",
-          "jsdoc": "原始数据（未加工的选项数据）",
-          "schema": true,
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 展示文本 */\n    label: string;\n    /** 选中值 */\n    value: string | number | boolean;\n    /** 描述信息 */\n    description?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 原始数据（未加工的选项数据） */\n    raw?: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "label",
+              "jsdoc": "展示文本",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "value",
+              "jsdoc": "选中值",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "description",
+              "jsdoc": "描述信息",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "disabled",
+              "jsdoc": "是否禁用",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "raw",
+              "jsdoc": "原始数据（未加工的选项数据）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageSelectEntitiesOptions": {
-      "kind": "PageSelectEntitiesOptions",
-      "className": "PageSelectEntitiesOptions",
+      "name": "PageSelectEntitiesOptions",
       "jsdoc": "实体选择器配置",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 选择器标题 */\n    title?: string;\n    /** 实体名称（用于空状态提示等） */\n    entityName?: string;\n    /** 搜索框占位符 */\n    placeholder?: string;\n    /** 是否允许多选 */\n    multiple?: boolean;\n    /** 是否可搜索 */\n    searchable?: boolean;\n    /** 确认按钮文案 */\n    confirmText?: string;\n    /** 取消按钮文案 */\n    cancelText?: string;\n    /** 空状态文案 */\n    emptyText?: string;\n    /** 当前已选值 */\n    currentValue?: string | number | boolean | Array<string | number | boolean>;\n    /** 静态选项列表（不传则动态加载） */\n    options?: PageSelectorOption[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 119,
         "className": "PageSelectEntitiesOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "title",
-          "jsdoc": "选择器标题",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "entityName",
-          "jsdoc": "实体名称（用于空状态提示等）",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "placeholder",
-          "jsdoc": "搜索框占位符",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "multiple",
-          "jsdoc": "是否允许多选",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "searchable",
-          "jsdoc": "是否可搜索",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "confirmText",
-          "jsdoc": "确认按钮文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "cancelText",
-          "jsdoc": "取消按钮文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "emptyText",
-          "jsdoc": "空状态文案",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "currentValue",
-          "jsdoc": "当前已选值",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "boolean"
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "options",
-          "jsdoc": "静态选项列表（不传则动态加载）",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/PageSelectorOption"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 选择器标题 */\n    title?: string;\n    /** 实体名称（用于空状态提示等） */\n    entityName?: string;\n    /** 搜索框占位符 */\n    placeholder?: string;\n    /** 是否允许多选 */\n    multiple?: boolean;\n    /** 是否可搜索 */\n    searchable?: boolean;\n    /** 确认按钮文案 */\n    confirmText?: string;\n    /** 取消按钮文案 */\n    cancelText?: string;\n    /** 空状态文案 */\n    emptyText?: string;\n    /** 当前已选值 */\n    currentValue?: string | number | boolean | Array<string | number | boolean>;\n    /** 静态选项列表（不传则动态加载） */\n    options?: PageSelectorOption[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "title",
+              "jsdoc": "选择器标题",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "entityName",
+              "jsdoc": "实体名称（用于空状态提示等）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "placeholder",
+              "jsdoc": "搜索框占位符",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "multiple",
+              "jsdoc": "是否允许多选",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "searchable",
+              "jsdoc": "是否可搜索",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "confirmText",
+              "jsdoc": "确认按钮文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "cancelText",
+              "jsdoc": "取消按钮文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "emptyText",
+              "jsdoc": "空状态文案",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "currentValue",
+              "jsdoc": "当前已选值",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "options",
+              "jsdoc": "静态选项列表（不传则动态加载）",
+              "readable": true,
+              "writable": false
             }
-          },
-          "readable": true,
-          "writable": false
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageServiceCapability": {
-      "kind": "PageServiceCapability",
-      "className": "PageServiceCapability",
+      "name": "PageServiceCapability",
       "jsdoc": "页面服务：消息提示、对话框、文件操作、实体选择、导航等。\n所有方法由宿主（如 Vue Router、Element Plus 等）实现，\n页面通过 ScriptContext 调用。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 显示提示消息 */\n    showMessage(message: string, type?: PageMessageType): void;\n    /** 显示确认对话框，返回用户操作结果 */\n    showConfirm(message: string, title?: string, options?: {\n        confirmText?: string;\n        cancelText?: string;\n        type?: PageMessageType;\n    }): Promise<boolean>;\n    /** 显示输入弹窗 */\n    showPrompt(message: string, title?: string, options?: {\n        placeholder?: string;\n        defaultValue?: string;\n    }): Promise<string | null>;\n    /** 显示提示框（无取消操作） */\n    showAlert(message: string, title?: string, options?: {\n        type?: PageMessageType;\n    }): Promise<void>;\n    /** 显示自定义对话框 */\n    showDialog(options: PageDialogOptions): Promise<PageDialogResult>;\n    /** 打开实体选择器 */\n    selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectorOption[]>;\n    /** 打开文件浏览对话框 */\n    browseFiles(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]>;\n    /** 上传文件 */\n    uploadFiles(options: PageUploadFilesOptions): Promise<PageUploadedFile[]>;\n    /** 显示 / 隐藏全局 Loading */\n    showLoading(show: boolean, text?: string): void;\n    /** 路由跳转 */\n    navigate(path: string, params?: Record<string, unknown>): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 149,
         "className": "PageServiceCapability",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "showMessage",
-          "jsdoc": "显示提示消息",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 显示提示消息 */\n    showMessage(message: string, type?: PageMessageType): void;\n    /** 显示确认对话框，返回用户操作结果 */\n    showConfirm(message: string, title?: string, options?: {\n        confirmText?: string;\n        cancelText?: string;\n        type?: PageMessageType;\n    }): Promise<boolean>;\n    /** 显示输入弹窗 */\n    showPrompt(message: string, title?: string, options?: {\n        placeholder?: string;\n        defaultValue?: string;\n    }): Promise<string | null>;\n    /** 显示提示框（无取消操作） */\n    showAlert(message: string, title?: string, options?: {\n        type?: PageMessageType;\n    }): Promise<void>;\n    /** 显示自定义对话框 */\n    showDialog(options: PageDialogOptions): Promise<PageDialogResult>;\n    /** 打开实体选择器 */\n    selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectorOption[]>;\n    /** 打开文件浏览对话框 */\n    browseFiles(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]>;\n    /** 上传文件 */\n    uploadFiles(options: PageUploadFilesOptions): Promise<PageUploadedFile[]>;\n    /** 显示 / 隐藏全局 Loading */\n    showLoading(show: boolean, text?: string): void;\n    /** 路由跳转 */\n    navigate(path: string, params?: Record<string, unknown>): void;\n}",
+        "members": {
+          "methods": [
             {
-              "name": "message",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "type",
-              "type": {
-                "type": "reference",
-                "name": "PageMessageType",
-                "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "type": {
-                "$ref": "#/$defs/PageMessageType"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "showConfirm",
-          "jsdoc": "显示确认对话框，返回用户操作结果",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "message",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "title",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            },
-            {
-              "name": "options",
-              "type": {
-                "type": "unknown",
-                "name": "{\n        confirmText?: string;\n        cancelText?: string;\n        type?: PageMessageType;\n    }"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "boolean"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "options": {
-                "type": "object"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<boolean>"
-          }
-        },
-        {
-          "name": "showPrompt",
-          "jsdoc": "显示输入弹窗",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "message",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "title",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            },
-            {
-              "name": "options",
-              "type": {
-                "type": "unknown",
-                "name": "{\n        placeholder?: string;\n        defaultValue?: string;\n    }"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "union",
-                "types": [
-                  {
+              "name": "showMessage",
+              "jsdoc": "显示提示消息",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
                     "type": "intrinsic",
                     "name": "string"
-                  },
-                  {
-                    "type": "literal",
-                    "value": null
                   }
-                ]
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "options": {
-                "type": "object"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<string | null>"
-          }
-        },
-        {
-          "name": "showAlert",
-          "jsdoc": "显示提示框（无取消操作）",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "message",
+                },
+                {
+                  "name": "type",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageMessageType",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
               "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "title",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            },
-            {
-              "name": "options",
-              "type": {
-                "type": "unknown",
-                "name": "{\n        type?: PageMessageType;\n    }"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
                 "type": "intrinsic",
                 "name": "void"
               }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "options": {
-                "type": "object"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<void>"
-          }
-        },
-        {
-          "name": "showDialog",
-          "jsdoc": "显示自定义对话框",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "PageDialogOptions",
-                "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "reference",
-                "name": "PageDialogResult",
-                "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "$ref": "#/$defs/PageDialogOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<PageDialogResult>"
-          }
-        },
-        {
-          "name": "selectEntities",
-          "jsdoc": "打开实体选择器",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "PageSelectEntitiesOptions",
-                "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "PageSelectorOption",
-                  "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-                }
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "$ref": "#/$defs/PageSelectEntitiesOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<PageSelectorOption[]>"
-          }
-        },
-        {
-          "name": "browseFiles",
-          "jsdoc": "打开文件浏览对话框",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "PageBrowseFilesOptions",
-                "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "PageSelectedFile",
-                  "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-                }
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "$ref": "#/$defs/PageBrowseFilesOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<PageSelectedFile[]>"
-          }
-        },
-        {
-          "name": "uploadFiles",
-          "jsdoc": "上传文件",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "options",
-              "type": {
-                "type": "reference",
-                "name": "PageUploadFilesOptions",
-                "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "PageUploadedFile",
-                  "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
-                }
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "$ref": "#/$defs/PageUploadFilesOptions"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<PageUploadedFile[]>"
-          }
-        },
-        {
-          "name": "showLoading",
-          "jsdoc": "显示 / 隐藏全局 Loading",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "show",
-              "type": {
-                "type": "intrinsic",
-                "name": "boolean"
-              }
             },
             {
-              "name": "text",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "show": {
-                "type": "boolean"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        },
-        {
-          "name": "navigate",
-          "jsdoc": "路由跳转",
-          "parameterStyle": "positional",
-          "parameters": [
-            {
-              "name": "path",
-              "type": {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            },
-            {
-              "name": "params",
-              "type": {
-                "type": "reference",
-                "name": "Record",
-                "typeArguments": [
-                  {
+              "name": "showConfirm",
+              "jsdoc": "显示确认对话框，返回用户操作结果",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "title",
+                  "type": {
                     "type": "intrinsic",
                     "name": "string"
                   },
+                  "flags": {
+                    "isOptional": true
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "unknown",
+                    "name": "{\n        confirmText?: string;\n        cancelText?: string;\n        type?: PageMessageType;\n    }"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "showPrompt",
+              "jsdoc": "显示输入弹窗",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "title",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "unknown",
+                    "name": "{\n        placeholder?: string;\n        defaultValue?: string;\n    }"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "showAlert",
+              "jsdoc": "显示提示框（无取消操作）",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "title",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "unknown",
+                    "name": "{\n        type?: PageMessageType;\n    }"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "showDialog",
+              "jsdoc": "显示自定义对话框",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageDialogOptions",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "PageDialogResult",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "selectEntities",
+              "jsdoc": "打开实体选择器",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageSelectEntitiesOptions",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "PageSelectorOption",
+                      "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "browseFiles",
+              "jsdoc": "打开文件浏览对话框",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageBrowseFilesOptions",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "PageSelectedFile",
+                      "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "uploadFiles",
+              "jsdoc": "上传文件",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageUploadFilesOptions",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "PageUploadedFile",
+                      "sourcePath": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "showLoading",
+              "jsdoc": "显示 / 隐藏全局 Loading",
+              "parameters": [
+                {
+                  "name": "show",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  }
+                },
+                {
+                  "name": "text",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "navigate",
+              "jsdoc": "路由跳转",
+              "parameters": [
+                {
+                  "name": "path",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "name": "params",
+                  "type": {
+                    "type": "reference",
+                    "name": "Record",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "unknown"
+                      }
+                    ]
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "PageRouterService": {
+      "name": "PageRouterService",
+      "jsdoc": "路由服务：SPA 内的 push / replace / back 操作",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
+        "line": 181,
+        "className": "PageRouterService",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 导航到目标（字符串路径或路由对象） */\n    push(to: string | {\n        path: string;\n        query?: Record<string, unknown>;\n    }): Promise<unknown>;\n    /** 替换当前路由 */\n    replace(to: string | {\n        path: string;\n        query?: Record<string, unknown>;\n    }): Promise<unknown>;\n    /** 后退 */\n    back(): void;\n    /** 当前路由信息 */\n    currentRoute: unknown;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "currentRoute",
+              "jsdoc": "当前路由信息",
+              "readable": true,
+              "writable": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "push",
+              "jsdoc": "导航到目标（字符串路径或路由对象）",
+              "parameters": [
+                {
+                  "name": "to",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "unknown",
+                        "name": "{\n        path: string;\n        query?: Record<string, unknown>;\n    }"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
                   {
                     "type": "intrinsic",
                     "name": "unknown"
                   }
                 ]
-              },
-              "flags": {
-                "isOptional": true
-              }
-            }
-          ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "path": {
-                "type": "string"
-              },
-              "params": {
-                "type": "object",
-                "title": "Record<string, unknown>"
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": true
-        }
-      ]
-    },
-    "PageRouterService": {
-      "kind": "PageRouterService",
-      "className": "PageRouterService",
-      "jsdoc": "路由服务：SPA 内的 push / replace / back 操作",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 导航到目标（字符串路径或路由对象） */\n    push(to: string | {\n        path: string;\n        query?: Record<string, unknown>;\n    }): Promise<unknown>;\n    /** 替换当前路由 */\n    replace(to: string | {\n        path: string;\n        query?: Record<string, unknown>;\n    }): Promise<unknown>;\n    /** 后退 */\n    back(): void;\n    /** 当前路由信息 */\n    currentRoute: unknown;\n}",
-      "provenance": {
-        "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
-        "line": 181,
-        "className": "PageRouterService",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "currentRoute",
-          "jsdoc": "当前路由信息",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "push",
-          "jsdoc": "导航到目标（字符串路径或路由对象）",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "to",
+              "name": "replace",
+              "jsdoc": "替换当前路由",
+              "parameters": [
+                {
+                  "name": "to",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "unknown",
+                        "name": "{\n        path: string;\n        query?: Record<string, unknown>;\n    }"
+                      }
+                    ]
+                  }
+                }
+              ],
               "type": {
-                "type": "union",
-                "types": [
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
                   {
                     "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "unknown",
-                    "name": "{\n        path: string;\n        query?: Record<string, unknown>;\n    }"
-                  }
-                ]
-              }
-            }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "to": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "object"
+                    "name": "unknown"
                   }
                 ]
               }
             },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<unknown>"
-          }
-        },
-        {
-          "name": "replace",
-          "jsdoc": "替换当前路由",
-          "parameterStyle": "positional",
-          "parameters": [
             {
-              "name": "to",
+              "name": "back",
+              "jsdoc": "后退",
               "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "intrinsic",
-                    "name": "string"
-                  },
-                  {
-                    "type": "unknown",
-                    "name": "{\n        path: string;\n        query?: Record<string, unknown>;\n    }"
-                  }
-                ]
+                "type": "intrinsic",
+                "name": "void"
               }
             }
-          ],
-          "type": {
-            "type": "reference",
-            "name": "Promise",
-            "typeArguments": [
-              {
-                "type": "intrinsic",
-                "name": "unknown"
-              }
-            ]
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "to": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "object"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "Promise<unknown>"
-          }
-        },
-        {
-          "name": "back",
-          "jsdoc": "后退",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": true
+          ]
         }
-      ]
+      }
     },
     "PageRuntimeServicesCapability": {
-      "kind": "PageRuntimeServicesCapability",
-      "className": "PageRuntimeServicesCapability",
+      "name": "PageRuntimeServicesCapability",
       "jsdoc": "页面运行时能力集合。\n由宿主环境提供，ScriptContext 中通过 capability 查询获取。\n各字段均为可选，由消费方在使用前判断是否存在。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 路由服务 */\n    router?: PageRouterService;\n    /** 日志 API */\n    logger?: LoggerApi;\n    /** 租户上下文 */\n    tenant?: {\n        tenantId: string;\n        tenantName?: string;\n        [key: string]: unknown;\n    };\n    /** 认证服务 */\n    authService?: unknown;\n    /** 页面服务（部分实现） */\n    pageService?: Partial<PageServiceCapability>;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/runtime/app-services.d.ts",
         "line": 203,
         "className": "PageRuntimeServicesCapability",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "router",
-          "jsdoc": "路由服务",
-          "schema": {
-            "$ref": "#/$defs/PageRouterService"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "logger",
-          "jsdoc": "日志 API",
-          "schema": {
-            "type": "object",
-            "title": "LoggerApi"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "tenant",
-          "jsdoc": "租户上下文",
-          "schema": {
-            "type": "object"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "authService",
-          "jsdoc": "认证服务",
-          "schema": true,
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "pageService",
-          "jsdoc": "页面服务（部分实现）",
-          "schema": {
-            "type": "object",
-            "title": "Partial<PageServiceCapability>"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 路由服务 */\n    router?: PageRouterService;\n    /** 日志 API */\n    logger?: LoggerApi;\n    /** 租户上下文 */\n    tenant?: {\n        tenantId: string;\n        tenantName?: string;\n        [key: string]: unknown;\n    };\n    /** 认证服务 */\n    authService?: unknown;\n    /** 页面服务（部分实现） */\n    pageService?: Partial<PageServiceCapability>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "router",
+              "jsdoc": "路由服务",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "logger",
+              "jsdoc": "日志 API",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "tenant",
+              "jsdoc": "租户上下文",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "authService",
+              "jsdoc": "认证服务",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "pageService",
+              "jsdoc": "页面服务（部分实现）",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

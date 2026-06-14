@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-component/src/system/spark.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-component:system/spark",
     "sourcePath": "class-model-emit/packages/spark-component/src/system/spark.d.ts",
@@ -13,122 +13,140 @@
       "SparkSystem"
     ]
   },
-  "symbols": [
-    "SparkSystem"
-  ],
-  "generatedAt": "2026-06-11T12:48:51.001Z",
   "$defs": {
     "SparkSystem": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SparkSystem",
-      "description": "Spark.createSystem() 返回的隔离测试系统",
       "properties": {
         "registry": {
-          "type": "object",
-          "title": "ComponentRegistry"
+          "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
         },
         "rootContext": {
+          "type": "object",
+          "title": "CapabilityContext"
+        }
+      },
+      "required": [
+        "registry",
+        "rootContext"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.createContext.params": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "title": "CapabilityContext"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "parent": {
+              "type": "object",
+              "title": "CapabilityContext"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.createContext.return": {
           "type": "object",
           "title": "CapabilityContext"
         }
       }
     }
   },
+  "generatedAt": "2026-06-11T12:48:51.001Z",
   "models": {
     "SparkSystem": {
-      "kind": "SparkSystem",
-      "className": "SparkSystem",
+      "name": "SparkSystem",
       "jsdoc": "Spark.createSystem() 返回的隔离测试系统",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-component/src/system/spark.d.ts",
         "line": 19,
         "className": "SparkSystem",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "registry",
-          "jsdoc": "registry 字段。",
-          "schema": {
-            "type": "object",
-            "title": "ComponentRegistry"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "rootContext",
-          "jsdoc": "root Context 字段。",
-          "schema": {
-            "type": "object",
-            "title": "CapabilityContext"
-          },
-          "readable": true,
-          "writable": true
-        }
-      ],
-      "methods": [
-        {
-          "name": "createContext",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "config",
-              "type": {
-                "type": "intersection",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "Partial",
-                    "typeArguments": [
-                      {
-                        "type": "reference",
-                        "name": "unknown"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "unknown",
-                    "name": "{\n        type: string;\n    }"
-                  }
-                ]
-              }
+              "name": "registry",
+              "jsdoc": "registry 字段。",
+              "readable": true,
+              "writable": true
             },
             {
-              "name": "parent",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              },
-              "flags": {
-                "isOptional": true
-              }
+              "name": "rootContext",
+              "jsdoc": "root Context 字段。",
+              "readable": true,
+              "writable": true
             }
           ],
-          "type": {
-            "type": "reference",
-            "name": "unknown"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "config": true,
-              "parent": {
-                "type": "object",
-                "title": "CapabilityContext"
+          "methods": [
+            {
+              "name": "createContext",
+              "parameters": [
+                {
+                  "name": "config",
+                  "type": {
+                    "type": "intersection",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "Partial",
+                        "typeArguments": [
+                          {
+                            "type": "reference",
+                            "name": "CapabilityContext",
+                            "sourcePath": "class-model-emit/packages/spark-component/src/core/types.d.ts"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "unknown",
+                        "name": "{\n        type: string;\n    }"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "parent",
+                  "type": {
+                    "type": "reference",
+                    "name": "CapabilityContext",
+                    "sourcePath": "class-model-emit/packages/spark-component/src/core/types.d.ts"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "CapabilityContext",
+                "sourcePath": "class-model-emit/packages/spark-component/src/core/types.d.ts"
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "object",
-            "title": "CapabilityContext"
-          }
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

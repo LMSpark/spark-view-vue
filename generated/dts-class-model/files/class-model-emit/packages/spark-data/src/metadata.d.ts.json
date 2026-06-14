@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-data/src/metadata.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-data:metadata",
     "sourcePath": "class-model-emit/packages/spark-data/src/metadata.d.ts",
@@ -13,58 +13,55 @@
       "TableMetadataLike"
     ]
   },
-  "symbols": [
-    "TableMetadataLike"
-  ],
-  "generatedAt": "2026-06-11T12:38:13.614Z",
   "$defs": {
     "TableMetadataLike": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "TableMetadataLike",
-      "description": "Table Metadata Like 的语义模型。",
       "properties": {
         "tableName": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-11T12:38:13.614Z",
   "models": {
     "TableMetadataLike": {
-      "kind": "TableMetadataLike",
-      "className": "TableMetadataLike",
+      "name": "TableMetadataLike",
       "jsdoc": "Table Metadata Like 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Omit<TableMetadata, 'tableName'> & {\n    /** 数据表名。 */\n    tableName?: string;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "Omit<TableMetadata, 'tableName'>",
-          "targetName": "Omit"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 数据表名。 */\n    tableName?: string;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-data/src/metadata.d.ts",
         "line": 3,
         "className": "TableMetadataLike",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "tableName",
-          "jsdoc": "数据表名。",
-          "schema": {
-            "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "Omit<TableMetadata, 'tableName'> & {\n    /** 数据表名。 */\n    tableName?: string;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "Omit<TableMetadata, 'tableName'>",
+            "targetName": "Omit"
           },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 数据表名。 */\n    tableName?: string;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "tableName",
+              "jsdoc": "数据表名。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

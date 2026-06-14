@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "app:services/page-design/page-design-gates",
     "sourcePath": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
@@ -21,23 +21,11 @@
       "EvaluatePageDesignScriptOperationGateOptions"
     ]
   },
-  "symbols": [
-    "PageDesignAllowedOperations",
-    "PageDesignRunContext",
-    "PageDesignRunMode",
-    "PageDesignImplGate",
-    "PageDesignGateState",
-    "ReadPageDesignGateStateOptions",
-    "PageDesignGateValidationResult",
-    "EvaluatePageDesignMutationToolGateOptions",
-    "EvaluatePageDesignScriptOperationGateOptions"
-  ],
-  "generatedAt": "2026-06-12T04:50:58.271Z",
   "$defs": {
     "PageDesignAllowedOperations": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignAllowedOperations",
-      "description": "Page Design Allowed Operations 的语义模型。",
       "properties": {
         "nodeTree": {
           "type": "boolean"
@@ -54,35 +42,47 @@
         "navigation": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PageDesignRunContext": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignRunContext",
-      "description": "Page Design Run Context 的运行上下文。",
       "properties": {
         "allowedOperations": {
           "$ref": "#/$defs/PageDesignAllowedOperations"
         },
         "deliverySaveFileNames": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "../../../packages/spark-project-model/src/page/page-file.d.ts.json#/$defs/PageNodeFileName"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PageDesignRunMode": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "PageDesignRunMode",
-      "description": "Page Design Run Mode 的语义模型。"
+      "enum": [
+        "create",
+        "update",
+        "fix"
+      ]
     },
     "PageDesignImplGate": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "PageDesignImplGate",
-      "description": "Page Design Impl Gate 的语义模型。"
+      "enum": [
+        "closed",
+        "open"
+      ]
     },
     "PageDesignGateState": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignGateState",
-      "description": "Page Design Gate State 的运行状态。",
       "properties": {
         "pageId": {
           "type": "string"
@@ -96,22 +96,24 @@
         "upstreamContractsSatisfied": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ReadPageDesignGateStateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "ReadPageDesignGateStateOptions",
-      "description": "Read Page Design Gate State Options 的调用配置。",
       "properties": {
         "strictImplGate": {
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PageDesignGateValidationResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "PageDesignGateValidationResult",
-      "description": "Page Design Gate Validation Result 的返回结果。",
       "properties": {
         "ok": {
           "type": "boolean"
@@ -125,19 +127,19 @@
         "fix": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "EvaluatePageDesignMutationToolGateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EvaluatePageDesignMutationToolGateOptions",
-      "description": "Evaluate Page Design Mutation Tool Gate Options 的调用配置。",
       "properties": {
         "toolName": {
           "type": "string"
         },
         "summary": {
-          "type": "object",
-          "title": "ProjectPageNodeSummary"
+          "$ref": "../../../packages/spark-project-model/src/navigation/project-node.d.ts.json#/$defs/ProjectPageNodeSummary"
         },
         "mode": {
           "$ref": "#/$defs/PageDesignRunMode"
@@ -152,12 +154,13 @@
           "type": "object",
           "title": "AiJsonParams"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "EvaluatePageDesignScriptOperationGateOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "EvaluatePageDesignScriptOperationGateOptions",
-      "description": "Evaluate Page Design Script Operation Gate Options 的调用配置。",
       "properties": {
         "toolName": {
           "type": "string"
@@ -169,452 +172,367 @@
         "allowedOperations": {
           "$ref": "#/$defs/PageDesignAllowedOperations"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
+  "generatedAt": "2026-06-12T04:50:58.271Z",
   "models": {
     "PageDesignAllowedOperations": {
-      "kind": "PageDesignAllowedOperations",
-      "className": "PageDesignAllowedOperations",
+      "name": "PageDesignAllowedOperations",
       "jsdoc": "Page Design Allowed Operations 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    nodeTree?: boolean;\n    dataSet?: boolean;\n    script?: boolean;\n    style?: boolean;\n    navigation?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    nodeTree?: boolean;\n    dataSet?: boolean;\n    script?: boolean;\n    style?: boolean;\n    navigation?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 14,
         "className": "PageDesignAllowedOperations",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "nodeTree",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "dataSet",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "script",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "style",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "navigation",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    nodeTree?: boolean;\n    dataSet?: boolean;\n    script?: boolean;\n    style?: boolean;\n    navigation?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    nodeTree?: boolean;\n    dataSet?: boolean;\n    script?: boolean;\n    style?: boolean;\n    navigation?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "nodeTree",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "dataSet",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "script",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "style",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "navigation",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageDesignRunContext": {
-      "kind": "PageDesignRunContext",
-      "className": "PageDesignRunContext",
+      "name": "PageDesignRunContext",
       "jsdoc": "Page Design Run Context 的运行上下文。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    allowedOperations?: PageDesignAllowedOperations;\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    allowedOperations?: PageDesignAllowedOperations;\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 22,
         "className": "PageDesignRunContext",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "allowedOperations",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/PageDesignAllowedOperations"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "deliverySaveFileNames",
-          "jsdoc": "",
-          "schema": {
-            "type": "array"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    allowedOperations?: PageDesignAllowedOperations;\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    allowedOperations?: PageDesignAllowedOperations;\n    deliverySaveFileNames?: readonly PageNodeFileName[];\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "allowedOperations",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "deliverySaveFileNames",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageDesignRunMode": {
-      "kind": "PageDesignRunMode",
-      "className": "PageDesignRunMode",
+      "name": "PageDesignRunMode",
       "jsdoc": "Page Design Run Mode 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'create' | 'update' | 'fix'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'create'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'update'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'fix'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 32,
         "className": "PageDesignRunMode",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'create' | 'update' | 'fix'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'create'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'update'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'fix'"
+          }
+        ],
+        "members": {}
+      }
     },
     "PageDesignImplGate": {
-      "kind": "PageDesignImplGate",
-      "className": "PageDesignImplGate",
+      "name": "PageDesignImplGate",
       "jsdoc": "Page Design Impl Gate 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'closed' | 'open'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'closed'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'open'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 34,
         "className": "PageDesignImplGate",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'closed' | 'open'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'closed'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'open'"
+          }
+        ],
+        "members": {}
+      }
     },
     "PageDesignGateState": {
-      "kind": "PageDesignGateState",
-      "className": "PageDesignGateState",
+      "name": "PageDesignGateState",
       "jsdoc": "Page Design Gate State 的运行状态。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 36,
         "className": "PageDesignGateState",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "pageId",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "planningReady",
-          "jsdoc": "effectiveDescription 非空即视为策划就绪。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "implGate",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/PageDesignImplGate"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "upstreamContractsSatisfied",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    pageId: string;\n    /** effectiveDescription 非空即视为策划就绪。 */\n    planningReady: boolean;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "pageId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "planningReady",
+              "jsdoc": "effectiveDescription 非空即视为策划就绪。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "implGate",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "upstreamContractsSatisfied",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "ReadPageDesignGateStateOptions": {
-      "kind": "ReadPageDesignGateStateOptions",
-      "className": "ReadPageDesignGateStateOptions",
+      "name": "ReadPageDesignGateStateOptions",
       "jsdoc": "Read Page Design Gate State Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */\n    strictImplGate?: boolean;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */\n    strictImplGate?: boolean;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 44,
         "className": "ReadPageDesignGateStateOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "strictImplGate",
-          "jsdoc": "未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */\n    strictImplGate?: boolean;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */\n    strictImplGate?: boolean;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "strictImplGate",
+              "jsdoc": "未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "PageDesignGateValidationResult": {
-      "kind": "PageDesignGateValidationResult",
-      "className": "PageDesignGateValidationResult",
+      "name": "PageDesignGateValidationResult",
       "jsdoc": "Page Design Gate Validation Result 的返回结果。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 49,
         "className": "PageDesignGateValidationResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "ok",
-          "jsdoc": "",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "code",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "reason",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "fix",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "ok",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "code",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "reason",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "fix",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "EvaluatePageDesignMutationToolGateOptions": {
-      "kind": "EvaluatePageDesignMutationToolGateOptions",
-      "className": "EvaluatePageDesignMutationToolGateOptions",
+      "name": "EvaluatePageDesignMutationToolGateOptions",
       "jsdoc": "Evaluate Page Design Mutation Tool Gate Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n    allowedOperations?: PageDesignAllowedOperations;\n    toolArgs?: AiJsonParams;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n    allowedOperations?: PageDesignAllowedOperations;\n    toolArgs?: AiJsonParams;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 59,
         "className": "EvaluatePageDesignMutationToolGateOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "toolName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "summary",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "ProjectPageNodeSummary"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "mode",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/PageDesignRunMode"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "gateOptions",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/ReadPageDesignGateStateOptions"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "allowedOperations",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/PageDesignAllowedOperations"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "toolArgs",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonParams"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n    allowedOperations?: PageDesignAllowedOperations;\n    toolArgs?: AiJsonParams;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n    allowedOperations?: PageDesignAllowedOperations;\n    toolArgs?: AiJsonParams;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "summary",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "mode",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "gateOptions",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "allowedOperations",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolArgs",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "EvaluatePageDesignScriptOperationGateOptions": {
-      "kind": "EvaluatePageDesignScriptOperationGateOptions",
-      "className": "EvaluatePageDesignScriptOperationGateOptions",
+      "name": "EvaluatePageDesignScriptOperationGateOptions",
       "jsdoc": "Evaluate Page Design Script Operation Gate Options 的调用配置。",
-      "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    toolName: string;\n    args?: AiJsonParams;\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
-      "declarationRelations": [
-        {
-          "kind": "alias",
-          "typeText": "Readonly<{\n    toolName: string;\n    args?: AiJsonParams;\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
-          "targetName": "Readonly"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
         "line": 69,
         "className": "EvaluatePageDesignScriptOperationGateOptions",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "toolName",
-          "jsdoc": "",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "args",
-          "jsdoc": "",
-          "schema": {
-            "type": "object",
-            "title": "AiJsonParams"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "allowedOperations",
-          "jsdoc": "",
-          "schema": {
-            "$ref": "#/$defs/PageDesignAllowedOperations"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    toolName: string;\n    args?: AiJsonParams;\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    toolName: string;\n    args?: AiJsonParams;\n    allowedOperations?: PageDesignAllowedOperations;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "args",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "allowedOperations",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     }
   }
 }

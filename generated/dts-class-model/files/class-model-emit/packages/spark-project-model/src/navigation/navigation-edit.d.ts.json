@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-project-model:navigation/navigation-edit",
     "sourcePath": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
@@ -19,21 +19,11 @@
       "NavigationNodePatchTarget"
     ]
   },
-  "symbols": [
-    "NavigationNodeDraftNode",
-    "NavigationNodePatch",
-    "NavigationContextEditConfigDto",
-    "NavigationContextEditDto",
-    "NavigationNodeDraft",
-    "NavigationNodeDraftApplyResult",
-    "NavigationNodePatchTarget"
-  ],
-  "generatedAt": "2026-06-12T04:50:58.318Z",
   "$defs": {
     "NavigationNodeDraftNode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationNodeDraftNode",
-      "description": "Navigation Node Draft Node 的语义模型。",
       "properties": {
         "id": {
           "type": "string"
@@ -45,8 +35,7 @@
           "type": "string"
         },
         "nodeKind": {
-          "type": "object",
-          "title": "NavNodeKind"
+          "$ref": "project-node.d.ts.json#/$defs/NavNodeKind"
         },
         "dividerAfter": {
           "type": "boolean"
@@ -80,19 +69,36 @@
           "type": "string"
         },
         "permissionMode": {
-          "type": "object",
-          "title": "NavPermissionMode"
+          "$ref": "project-node.d.ts.json#/$defs/NavPermissionMode"
         },
         "implGate": true,
         "upstreamContractsSatisfied": {
           "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "id",
+        "title",
+        "icon",
+        "nodeKind",
+        "dividerAfter",
+        "description",
+        "planningAttachmentRef",
+        "path",
+        "linkTarget",
+        "childPlacement",
+        "order",
+        "hidden",
+        "disabled",
+        "refId",
+        "permissionMode"
+      ],
+      "additionalProperties": false
     },
     "NavigationNodePatch": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationNodePatch",
-      "description": "Navigation Node Patch 的语义模型。",
       "properties": {
         "context": {
           "anyOf": [
@@ -102,22 +108,21 @@
             {
               "type": "array",
               "items": {
-                "type": "object",
-                "title": "NavContextItem"
+                "$ref": "project-node.d.ts.json#/$defs/NavContextItem"
               }
             },
             {
-              "type": "object",
-              "title": "NavContextConfig"
+              "$ref": "project-node.d.ts.json#/$defs/NavContextConfig"
             }
           ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "NavigationContextEditConfigDto": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationContextEditConfigDto",
-      "description": "Navigation Context Edit Config Dto 的语义模型。",
       "properties": {
         "placeholder": {
           "type": "string"
@@ -128,12 +133,18 @@
         "paramName": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "placeholder",
+        "defaultValue",
+        "paramName"
+      ],
+      "additionalProperties": false
     },
     "NavigationContextEditDto": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationContextEditDto",
-      "description": "Navigation Context Edit Dto 的语义模型。",
       "properties": {
         "hasContext": {
           "type": "boolean"
@@ -141,18 +152,37 @@
         "items": {
           "type": "array",
           "items": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "additionalProperties": false
           }
         },
         "config": {
           "$ref": "#/$defs/NavigationContextEditConfigDto"
         }
-      }
+      },
+      "required": [
+        "hasContext",
+        "items",
+        "config"
+      ],
+      "additionalProperties": false
     },
     "NavigationNodeDraft": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationNodeDraft",
-      "description": "Navigation Node Draft 的语义模型。",
       "properties": {
         "node": {
           "$ref": "#/$defs/NavigationNodeDraftNode"
@@ -160,467 +190,397 @@
         "context": {
           "$ref": "#/$defs/NavigationContextEditDto"
         }
-      }
+      },
+      "required": [
+        "node",
+        "context"
+      ],
+      "additionalProperties": false
     },
     "NavigationNodeDraftApplyResult": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationNodeDraftApplyResult",
-      "description": "Navigation Node Draft Apply Result 的返回结果。",
       "properties": {
-        "patch": true,
+        "patch": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/NavigationNodePatch"
+            },
+            {
+              "type": "object",
+              "title": "Pick<ProjectNodeData, 'title' | 'nodeKind'>"
+            }
+          ]
+        },
         "warnings": {
           "type": "array",
           "items": {
             "type": "string"
           }
         }
-      }
+      },
+      "required": [
+        "patch",
+        "warnings"
+      ],
+      "additionalProperties": false
     },
     "NavigationNodePatchTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavigationNodePatchTarget",
-      "description": "Navigation Node Patch Target 的语义模型。",
       "properties": {
         "id": {
           "type": "string"
         }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "method.applyNavigationPatch.params": {
+          "type": "object",
+          "properties": {
+            "patch": {
+              "$ref": "project-node.d.ts.json#/$defs/ProjectNodeNavigationPatch"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.applyNavigationPatch.return": true
       }
     }
   },
+  "generatedAt": "2026-06-12T04:50:58.318Z",
   "models": {
     "NavigationNodeDraftNode": {
-      "kind": "NavigationNodeDraftNode",
-      "className": "NavigationNodeDraftNode",
+      "name": "NavigationNodeDraftNode",
       "jsdoc": "Navigation Node Draft Node 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 显示标题。 */\n    title: string;\n    /** icon 字段。 */\n    icon: string;\n    /** node Kind 字段。 */\n    nodeKind: NavNodeKind;\n    /** divider After 字段。 */\n    dividerAfter: boolean;\n    /** description 字段。 */\n    description: string;\n    /** planning Attachment Ref 字段。 */\n    planningAttachmentRef: string;\n    /** 资源路径。 */\n    path: string;\n    /** link Target 字段。 */\n    linkTarget: NonNullable<ProjectNodeData['linkTarget']>;\n    /** child Placement 字段。 */\n    childPlacement: string;\n    /** order 字段。 */\n    order: number;\n    /** hidden 字段。 */\n    hidden: boolean;\n    /** 是否禁用。 */\n    disabled: boolean;\n    /** ref Id 标识。 */\n    refId: string;\n    /** permission Mode 字段。 */\n    permissionMode: NavPermissionMode;\n    /** impl Gate 字段。 */\n    implGate?: ProjectNodeData['implGate'];\n    /** upstream Contracts Satisfied 字段。 */\n    upstreamContractsSatisfied?: boolean;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 15,
         "className": "NavigationNodeDraftNode",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "唯一标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "title",
-          "jsdoc": "显示标题。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "icon",
-          "jsdoc": "icon 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "nodeKind",
-          "jsdoc": "node Kind 字段。",
-          "schema": {
-            "type": "object",
-            "title": "NavNodeKind"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "dividerAfter",
-          "jsdoc": "divider After 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "description",
-          "jsdoc": "description 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "planningAttachmentRef",
-          "jsdoc": "planning Attachment Ref 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "path",
-          "jsdoc": "资源路径。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "linkTarget",
-          "jsdoc": "link Target 字段。",
-          "schema": {
-            "type": "object",
-            "title": "NonNullable<ProjectNodeData['linkTarget']>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "childPlacement",
-          "jsdoc": "child Placement 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "order",
-          "jsdoc": "order 字段。",
-          "schema": {
-            "type": "number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "hidden",
-          "jsdoc": "hidden 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "disabled",
-          "jsdoc": "是否禁用。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "refId",
-          "jsdoc": "ref Id 标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "permissionMode",
-          "jsdoc": "permission Mode 字段。",
-          "schema": {
-            "type": "object",
-            "title": "NavPermissionMode"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "implGate",
-          "jsdoc": "impl Gate 字段。",
-          "schema": true,
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "upstreamContractsSatisfied",
-          "jsdoc": "upstream Contracts Satisfied 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 显示标题。 */\n    title: string;\n    /** icon 字段。 */\n    icon: string;\n    /** node Kind 字段。 */\n    nodeKind: NavNodeKind;\n    /** divider After 字段。 */\n    dividerAfter: boolean;\n    /** description 字段。 */\n    description: string;\n    /** planning Attachment Ref 字段。 */\n    planningAttachmentRef: string;\n    /** 资源路径。 */\n    path: string;\n    /** link Target 字段。 */\n    linkTarget: NonNullable<ProjectNodeData['linkTarget']>;\n    /** child Placement 字段。 */\n    childPlacement: string;\n    /** order 字段。 */\n    order: number;\n    /** hidden 字段。 */\n    hidden: boolean;\n    /** 是否禁用。 */\n    disabled: boolean;\n    /** ref Id 标识。 */\n    refId: string;\n    /** permission Mode 字段。 */\n    permissionMode: NavPermissionMode;\n    /** impl Gate 字段。 */\n    implGate?: ProjectNodeData['implGate'];\n    /** upstream Contracts Satisfied 字段。 */\n    upstreamContractsSatisfied?: boolean;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "jsdoc": "唯一标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "title",
+              "jsdoc": "显示标题。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "icon",
+              "jsdoc": "icon 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "nodeKind",
+              "jsdoc": "node Kind 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "dividerAfter",
+              "jsdoc": "divider After 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "description",
+              "jsdoc": "description 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "planningAttachmentRef",
+              "jsdoc": "planning Attachment Ref 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "path",
+              "jsdoc": "资源路径。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "linkTarget",
+              "jsdoc": "link Target 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "childPlacement",
+              "jsdoc": "child Placement 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "order",
+              "jsdoc": "order 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "hidden",
+              "jsdoc": "hidden 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "disabled",
+              "jsdoc": "是否禁用。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "refId",
+              "jsdoc": "ref Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "permissionMode",
+              "jsdoc": "permission Mode 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "implGate",
+              "jsdoc": "impl Gate 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "upstreamContractsSatisfied",
+              "jsdoc": "upstream Contracts Satisfied 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavigationNodePatch": {
-      "kind": "NavigationNodePatch",
-      "className": "NavigationNodePatch",
+      "name": "NavigationNodePatch",
       "jsdoc": "Navigation Node Patch 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "Partial<Omit<NavigationNodeDraftNode, 'id'>> & {\n    /** 运行上下文。 */\n    context?: string | NavContextItem[] | NavContextConfig;\n}",
-      "declarationRelations": [
-        {
-          "kind": "intersection",
-          "typeText": "Partial<Omit<NavigationNodeDraftNode, 'id'>>",
-          "targetName": "Partial"
-        },
-        {
-          "kind": "intersection",
-          "typeText": "{\n    /** 运行上下文。 */\n    context?: string | NavContextItem[] | NavContextConfig;\n}"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 52,
         "className": "NavigationNodePatch",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "context",
-          "jsdoc": "运行上下文。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "title": "NavContextItem"
-                }
-              },
-              {
-                "type": "object",
-                "title": "NavContextConfig"
-              }
-            ]
+      "typeAlias": {
+        "declarationTypeText": "Partial<Omit<NavigationNodeDraftNode, 'id'>> & {\n    /** 运行上下文。 */\n    context?: string | NavContextItem[] | NavContextConfig;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "Partial<Omit<NavigationNodeDraftNode, 'id'>>",
+            "targetName": "Partial"
           },
-          "readable": true,
-          "writable": false
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 运行上下文。 */\n    context?: string | NavContextItem[] | NavContextConfig;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "context",
+              "jsdoc": "运行上下文。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavigationContextEditConfigDto": {
-      "kind": "NavigationContextEditConfigDto",
-      "className": "NavigationContextEditConfigDto",
+      "name": "NavigationContextEditConfigDto",
       "jsdoc": "Navigation Context Edit Config Dto 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 57,
         "className": "NavigationContextEditConfigDto",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "placeholder",
-          "jsdoc": "占位提示文本。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "defaultValue",
-          "jsdoc": "default Value 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "paramName",
-          "jsdoc": "param Name 名称。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "placeholder",
+              "jsdoc": "占位提示文本。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "defaultValue",
+              "jsdoc": "default Value 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "paramName",
+              "jsdoc": "param Name 名称。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavigationContextEditDto": {
-      "kind": "NavigationContextEditDto",
-      "className": "NavigationContextEditDto",
+      "name": "NavigationContextEditDto",
       "jsdoc": "Navigation Context Edit Dto 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 是否 has Context。 */\n    hasContext: boolean;\n    /** items 字段。 */\n    items: Array<{\n        id: string;\n        title: string;\n    }>;\n    /** 配置对象。 */\n    config: NavigationContextEditConfigDto;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 66,
         "className": "NavigationContextEditDto",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "hasContext",
-          "jsdoc": "是否 has Context。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "items",
-          "jsdoc": "items 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "object"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 是否 has Context。 */\n    hasContext: boolean;\n    /** items 字段。 */\n    items: Array<{\n        id: string;\n        title: string;\n    }>;\n    /** 配置对象。 */\n    config: NavigationContextEditConfigDto;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "hasContext",
+              "jsdoc": "是否 has Context。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "items",
+              "jsdoc": "items 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "config",
+              "jsdoc": "配置对象。",
+              "readable": true,
+              "writable": true
             }
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "config",
-          "jsdoc": "配置对象。",
-          "schema": {
-            "$ref": "#/$defs/NavigationContextEditConfigDto"
-          },
-          "readable": true,
-          "writable": true
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavigationNodeDraft": {
-      "kind": "NavigationNodeDraft",
-      "className": "NavigationNodeDraft",
+      "name": "NavigationNodeDraft",
       "jsdoc": "Navigation Node Draft 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** node 字段。 */\n    node: NavigationNodeDraftNode;\n    /** 运行上下文。 */\n    context: NavigationContextEditDto;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 78,
         "className": "NavigationNodeDraft",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "node",
-          "jsdoc": "node 字段。",
-          "schema": {
-            "$ref": "#/$defs/NavigationNodeDraftNode"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "context",
-          "jsdoc": "运行上下文。",
-          "schema": {
-            "$ref": "#/$defs/NavigationContextEditDto"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** node 字段。 */\n    node: NavigationNodeDraftNode;\n    /** 运行上下文。 */\n    context: NavigationContextEditDto;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "node",
+              "jsdoc": "node 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "context",
+              "jsdoc": "运行上下文。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavigationNodeDraftApplyResult": {
-      "kind": "NavigationNodeDraftApplyResult",
-      "className": "NavigationNodeDraftApplyResult",
+      "name": "NavigationNodeDraftApplyResult",
       "jsdoc": "Navigation Node Draft Apply Result 的返回结果。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** patch 字段。 */\n    patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>;\n    /** warnings 字段。 */\n    warnings: string[];\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 85,
         "className": "NavigationNodeDraftApplyResult",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "patch",
-          "jsdoc": "patch 字段。",
-          "schema": true,
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "warnings",
-          "jsdoc": "warnings 字段。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "type": "string"
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** patch 字段。 */\n    patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>;\n    /** warnings 字段。 */\n    warnings: string[];\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "patch",
+              "jsdoc": "patch 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "warnings",
+              "jsdoc": "warnings 字段。",
+              "readable": true,
+              "writable": true
             }
-          },
-          "readable": true,
-          "writable": true
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavigationNodePatchTarget": {
-      "kind": "NavigationNodePatchTarget",
-      "className": "NavigationNodePatchTarget",
+      "name": "NavigationNodePatchTarget",
       "jsdoc": "Navigation Node Patch Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    applyNavigationPatch(patch: ProjectNodeNavigationPatch): void;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts",
         "line": 92,
         "className": "NavigationNodePatchTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "id",
-          "jsdoc": "唯一标识。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": [
-        {
-          "name": "applyNavigationPatch",
-          "jsdoc": "",
-          "parameterStyle": "positional",
-          "parameters": [
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    applyNavigationPatch(patch: ProjectNodeNavigationPatch): void;\n}",
+        "members": {
+          "attributes": [
             {
-              "name": "patch",
-              "type": {
-                "type": "reference",
-                "name": "unknown"
-              }
+              "name": "id",
+              "jsdoc": "唯一标识。",
+              "readable": true,
+              "writable": false
             }
           ],
-          "type": {
-            "type": "intrinsic",
-            "name": "void"
-          },
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "patch": {
-                "type": "object",
-                "title": "ProjectNodeNavigationPatch"
+          "methods": [
+            {
+              "name": "applyNavigationPatch",
+              "parameters": [
+                {
+                  "name": "patch",
+                  "type": {
+                    "type": "reference",
+                    "name": "ProjectNodeNavigationPatch",
+                    "sourcePath": "class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": true
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourcePath": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
   "module": {
     "name": "@spark-appworks/spark-app:navigation/runtime-target",
     "sourcePath": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
@@ -19,32 +19,23 @@
       "NavNodeRuntimeTarget"
     ]
   },
-  "symbols": [
-    "NavNodeRouteTargetKind",
-    "NavNodeRouteTarget",
-    "NavNodeExternalTarget",
-    "NavNodeActionTarget",
-    "NavNodeContainerTarget",
-    "NavNodeHiddenTarget",
-    "NavNodeRuntimeTarget"
-  ],
-  "generatedAt": "2026-06-12T04:50:58.281Z",
   "$defs": {
     "NavNodeRouteTargetKind": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "NavNodeRouteTargetKind",
-      "description": "Nav Node Route Target Kind 的语义模型。"
+      "enum": [
+        "page",
+        "external-link",
+        "cross-project-ref"
+      ]
     },
     "NavNodeRouteTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavNodeRouteTarget",
-      "description": "Nav Node Route Target 的语义模型。",
       "properties": {
         "kind": {
-          "type": "string",
-          "enum": [
-            "route"
-          ]
+          "const": "route"
         },
         "routeKind": {
           "$ref": "#/$defs/NavNodeRouteTargetKind"
@@ -52,387 +43,353 @@
         "path": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "kind",
+        "routeKind",
+        "path"
+      ],
+      "additionalProperties": false
     },
     "NavNodeExternalTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavNodeExternalTarget",
-      "description": "Nav Node External Target 的语义模型。",
       "properties": {
         "kind": {
-          "type": "string",
-          "enum": [
-            "external"
-          ]
+          "const": "external"
         },
         "mode": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "new-tab"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "self"
-              ]
-            }
+          "enum": [
+            "new-tab",
+            "self"
           ]
         },
         "href": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "kind",
+        "mode",
+        "href"
+      ],
+      "additionalProperties": false
     },
     "NavNodeActionTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavNodeActionTarget",
-      "description": "Nav Node Action Target 的语义模型。",
       "properties": {
         "kind": {
-          "type": "string",
-          "enum": [
-            "action"
-          ]
+          "const": "action"
         },
         "command": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "kind",
+        "command"
+      ],
+      "additionalProperties": false
     },
     "NavNodeContainerTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavNodeContainerTarget",
-      "description": "Nav Node Container Target 的语义模型。",
       "properties": {
         "kind": {
-          "type": "string",
-          "enum": [
-            "container"
-          ]
+          "const": "container"
         },
         "redirect": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
     },
     "NavNodeHiddenTarget": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "NavNodeHiddenTarget",
-      "description": "Nav Node Hidden Target 的语义模型。",
       "properties": {
         "kind": {
-          "type": "string",
-          "enum": [
-            "hidden"
-          ]
+          "const": "hidden"
         },
         "reason": {
-          "type": "string",
-          "enum": [
-            "sub-page"
-          ]
+          "const": "sub-page"
         }
-      }
+      },
+      "required": [
+        "kind",
+        "reason"
+      ],
+      "additionalProperties": false
     },
     "NavNodeRuntimeTarget": {
-      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "NavNodeRuntimeTarget",
-      "description": "Nav Node Runtime Target 的语义模型。"
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "NavNodeRouteTarget"
+        },
+        {
+          "type": "object",
+          "title": "NavNodeExternalTarget"
+        },
+        {
+          "type": "object",
+          "title": "NavNodeActionTarget"
+        },
+        {
+          "type": "object",
+          "title": "NavNodeContainerTarget"
+        },
+        {
+          "type": "object",
+          "title": "NavNodeHiddenTarget"
+        }
+      ]
     }
   },
+  "generatedAt": "2026-06-12T04:50:58.281Z",
   "models": {
     "NavNodeRouteTargetKind": {
-      "kind": "NavNodeRouteTargetKind",
-      "className": "NavNodeRouteTargetKind",
+      "name": "NavNodeRouteTargetKind",
       "jsdoc": "Nav Node Route Target Kind 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'page' | 'external-link' | 'cross-project-ref'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'page'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'external-link'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'cross-project-ref'"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 9,
         "className": "NavNodeRouteTargetKind",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "'page' | 'external-link' | 'cross-project-ref'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'page'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'external-link'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'cross-project-ref'"
+          }
+        ],
+        "members": {}
+      }
     },
     "NavNodeRouteTarget": {
-      "kind": "NavNodeRouteTarget",
-      "className": "NavNodeRouteTarget",
+      "name": "NavNodeRouteTarget",
       "jsdoc": "Nav Node Route Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'route';\n    /** route Kind 字段。 */\n    routeKind: NavNodeRouteTargetKind;\n    /** 资源路径。 */\n    path: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 11,
         "className": "NavNodeRouteTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "类型判别字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "route"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "routeKind",
-          "jsdoc": "route Kind 字段。",
-          "schema": {
-            "$ref": "#/$defs/NavNodeRouteTargetKind"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "path",
-          "jsdoc": "资源路径。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'route';\n    /** route Kind 字段。 */\n    routeKind: NavNodeRouteTargetKind;\n    /** 资源路径。 */\n    path: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "jsdoc": "类型判别字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "routeKind",
+              "jsdoc": "route Kind 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "path",
+              "jsdoc": "资源路径。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavNodeExternalTarget": {
-      "kind": "NavNodeExternalTarget",
-      "className": "NavNodeExternalTarget",
+      "name": "NavNodeExternalTarget",
       "jsdoc": "Nav Node External Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'external';\n    /** mode 字段。 */\n    mode: 'new-tab' | 'self';\n    /** href 字段。 */\n    href: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 20,
         "className": "NavNodeExternalTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "类型判别字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "external"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "mode",
-          "jsdoc": "mode 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "new-tab"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "self"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "href",
-          "jsdoc": "href 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'external';\n    /** mode 字段。 */\n    mode: 'new-tab' | 'self';\n    /** href 字段。 */\n    href: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "jsdoc": "类型判别字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "mode",
+              "jsdoc": "mode 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "href",
+              "jsdoc": "href 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavNodeActionTarget": {
-      "kind": "NavNodeActionTarget",
-      "className": "NavNodeActionTarget",
+      "name": "NavNodeActionTarget",
       "jsdoc": "Nav Node Action Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'action';\n    /** command 字段。 */\n    command: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 29,
         "className": "NavNodeActionTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "类型判别字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "action"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "command",
-          "jsdoc": "command 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'action';\n    /** command 字段。 */\n    command: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "jsdoc": "类型判别字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "command",
+              "jsdoc": "command 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavNodeContainerTarget": {
-      "kind": "NavNodeContainerTarget",
-      "className": "NavNodeContainerTarget",
+      "name": "NavNodeContainerTarget",
       "jsdoc": "Nav Node Container Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'container';\n    /** redirect 字段。 */\n    redirect?: string;\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 36,
         "className": "NavNodeContainerTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "类型判别字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "container"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "redirect",
-          "jsdoc": "redirect 字段。",
-          "schema": {
-            "type": "string"
-          },
-          "readable": true,
-          "writable": false
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'container';\n    /** redirect 字段。 */\n    redirect?: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "jsdoc": "类型判别字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "redirect",
+              "jsdoc": "redirect 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavNodeHiddenTarget": {
-      "kind": "NavNodeHiddenTarget",
-      "className": "NavNodeHiddenTarget",
+      "name": "NavNodeHiddenTarget",
       "jsdoc": "Nav Node Hidden Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'hidden';\n    /** reason 字段。 */\n    reason: 'sub-page';\n}",
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 43,
         "className": "NavNodeHiddenTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [
-        {
-          "name": "kind",
-          "jsdoc": "类型判别字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "hidden"
-            ]
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "reason",
-          "jsdoc": "reason 字段。",
-          "schema": {
-            "type": "string",
-            "enum": [
-              "sub-page"
-            ]
-          },
-          "readable": true,
-          "writable": true
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'hidden';\n    /** reason 字段。 */\n    reason: 'sub-page';\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "jsdoc": "类型判别字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "reason",
+              "jsdoc": "reason 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
         }
-      ],
-      "methods": []
+      }
     },
     "NavNodeRuntimeTarget": {
-      "kind": "NavNodeRuntimeTarget",
-      "className": "NavNodeRuntimeTarget",
+      "name": "NavNodeRuntimeTarget",
       "jsdoc": "Nav Node Runtime Target 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "NavNodeRouteTarget | NavNodeExternalTarget | NavNodeActionTarget | NavNodeContainerTarget | NavNodeHiddenTarget",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "NavNodeRouteTarget",
-          "targetName": "NavNodeRouteTarget"
-        },
-        {
-          "kind": "union",
-          "typeText": "NavNodeExternalTarget",
-          "targetName": "NavNodeExternalTarget"
-        },
-        {
-          "kind": "union",
-          "typeText": "NavNodeActionTarget",
-          "targetName": "NavNodeActionTarget"
-        },
-        {
-          "kind": "union",
-          "typeText": "NavNodeContainerTarget",
-          "targetName": "NavNodeContainerTarget"
-        },
-        {
-          "kind": "union",
-          "typeText": "NavNodeHiddenTarget",
-          "targetName": "NavNodeHiddenTarget"
-        }
-      ],
+      "declarationKind": "typeAlias",
       "provenance": {
         "file": "class-model-emit/packages/spark-app/src/navigation/runtime-target.d.ts",
         "line": 50,
         "className": "NavNodeRuntimeTarget",
-        "declarationKind": "type"
+        "declarationKind": "typeAlias"
       },
-      "attributes": [],
-      "methods": []
+      "typeAlias": {
+        "declarationTypeText": "NavNodeRouteTarget | NavNodeExternalTarget | NavNodeActionTarget | NavNodeContainerTarget | NavNodeHiddenTarget",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "NavNodeRouteTarget",
+            "targetName": "NavNodeRouteTarget"
+          },
+          {
+            "kind": "union",
+            "typeText": "NavNodeExternalTarget",
+            "targetName": "NavNodeExternalTarget"
+          },
+          {
+            "kind": "union",
+            "typeText": "NavNodeActionTarget",
+            "targetName": "NavNodeActionTarget"
+          },
+          {
+            "kind": "union",
+            "typeText": "NavNodeContainerTarget",
+            "targetName": "NavNodeContainerTarget"
+          },
+          {
+            "kind": "union",
+            "typeText": "NavNodeHiddenTarget",
+            "targetName": "NavNodeHiddenTarget"
+          }
+        ],
+        "members": {}
+      }
     }
   }
 }
