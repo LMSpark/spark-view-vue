@@ -17,8 +17,7 @@
 9. [样式隔离](#9-样式隔离)
 10. [测试](#10-测试)
 11. [最佳实践与规范](#11-最佳实践与规范)
-12. [使用 Plop 脚手架](#12-使用-plop-脚手架)
-13. [附录：完整示例——主从表组件](#13-附录完整示例主从表组件)
+12. [附录：完整示例——主从表组件](#12-附录完整示例主从表组件)
 
 ---
 
@@ -682,27 +681,7 @@ gridRef.value?.selectAll()
 
 ---
 
-## 12. 使用 Plop 脚手架
-
-项目提供 Plop 模板快速创建符合规范的组件骨架：
-
-```bash
-pnpm run plop
-# 选择 "component" 模板，按提示输入组件名称
-# 自动生成：
-#   src/components/MyComponent/MyComponent.vue
-#   src/components/MyComponent/MyComponent.test.ts
-```
-
-生成的文件已包含：
-- 正确的 `SparkNode` 继承
-- `useSparkComponent` 调用骨架
-- Vitest 测试文件（含 `Spark.createPlugin()` 挂载模板）
-- 基础 JSDoc 注释
-
----
-
-## 13. 附录：完整示例——主从表组件
+## 12. 附录：完整示例——主从表组件
 
 展示 DataView 选中驱动子视图级联的完整模式。
 

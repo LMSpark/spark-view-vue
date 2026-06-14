@@ -5,7 +5,9 @@
   "license": "MIT",
   "description": "Generic JSON document editing engine with JSON Schema types, construction, validation, and UUID-stable tree mutations",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -44,6 +46,7 @@
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

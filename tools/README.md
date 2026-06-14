@@ -9,7 +9,6 @@
 - `verify-ai-codegen-rules.mjs`：AI 代码生成硬门禁，禁止游离 interface、机械 `Interface/Impl` 命名、非 `as const` 类型断言、已移除 AI API、TypeScript namespace、公共 `export *`、参数列表内嵌 JSDoc，并限制 named import、公共入口平铺导出和过长位置参数继续膨胀。
 - `verify-dependency-catalog.mjs`：pnpm catalog 版本与运行时归属校验。
 - `verify-pages-config.mjs`：pages-config 命名、必需文件与 manifest 白名单校验。
-- `mock-config-api.mjs`：本地调试用的配置 API mock。
 
 ## 验证入口
 

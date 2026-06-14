@@ -3,7 +3,12 @@
   "version": "0.4.5",
   "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.vue.js"
+  ],
   "private": false,
   "license": "MIT",
   "description": "SPARK Component System - 组件核心（能力系统、组件管理器、组件注册表）",
@@ -42,7 +47,6 @@
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.43.0",
-    "@spark-appworks/spark-ai": "workspace:*",
     "@spark-appworks/spark-data": "workspace:*",
     "@spark-appworks/spark-json-document": "workspace:*",
     "@spark-appworks/spark-project-model": "workspace:*",
@@ -51,9 +55,12 @@
     "vanilla-jsoneditor": "^3.12.0"
   },
   "peerDependencies": {
+    "@spark-appworks/spark-ai": "workspace:*",
+    "@element-plus/icons-vue": "catalog:",
     "element-plus": "catalog:",
     "vue": "catalog:",
-    "vue-router": "catalog:"
+    "vue-router": "catalog:",
+    "vxe-table": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -67,7 +74,6 @@
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:",
-    "vue-router": "catalog:",
-    "vxe-table": "catalog:"
+    "vue-router": "catalog:"
   }
 }
