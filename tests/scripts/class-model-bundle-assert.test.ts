@@ -13,11 +13,29 @@ describe('class-model-bundle-assert', () => {
     try {
       writeFileSync(join(root, 'manifest.json'), JSON.stringify({
         files: {
-          'class-model-emit/foo.d.ts': { file: 'files/missing.json' },
+          'packages/foo.ts': { file: 'files/missing.json' },
         },
       }))
 
       expect(() => assertClassModelBundleComplete(root)).toThrow(/incomplete/i)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('throws when manifest uses legacy emit keys or .d.ts.json shard paths', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    try {
+      mkdirSync(join(root, 'files'), { recursive: true })
+      writeFileSync(join(root, 'files/legacy.json'), '{}')
+      writeFileSync(join(root, 'manifest.json'), JSON.stringify({
+        files: {
+          'class-model-emit/foo.d.ts': { file: 'files/legacy.json' },
+          'packages/bar.ts': { file: 'files/packages/bar.d.ts.json' },
+        },
+      }))
+
+      expect(() => assertClassModelBundleComplete(root)).toThrow(/legacy emit-path|\.d\.ts\.json/i)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
@@ -46,7 +64,7 @@ describe('class-model-bundle-assert', () => {
       }))
       writeFileSync(join(root, 'manifest.json'), JSON.stringify({
         files: {
-          'class-model-emit/foo.d.ts': { file: 'files/foo.json' },
+          'packages/foo.ts': { file: 'files/foo.json' },
         },
       }))
 
@@ -84,7 +102,7 @@ describe('class-model-bundle-assert', () => {
       }))
       writeFileSync(join(root, 'manifest.json'), JSON.stringify({
         files: {
-          'class-model-emit/foo.d.ts': { file: 'files/foo.json' },
+          'packages/foo.ts': { file: 'files/foo.json' },
         },
       }))
 

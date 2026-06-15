@@ -2,6 +2,39 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { buildDebugBreak } from './build-debug.mjs'
 
+/** manifest 键与 shard 路径必须为源码 repo 相对路径，禁止 `.d.ts.json` 与 `class-model-emit/`。 */
+function assertClassModelBundleNativeShardPaths(manifest) {
+  const violations = []
+  for (const [sourcePath, entry] of Object.entries(manifest.files ?? {})) {
+    if (sourcePath.includes('class-model-emit/') || sourcePath.endsWith('.d.ts')) {
+      violations.push(`manifest key must be native source path: ${sourcePath}`)
+    }
+    const file = entry?.file
+    if (typeof file === 'string') {
+      if (file.endsWith('.d.ts.json') || file.includes('/class-model-emit/')) {
+        violations.push(`shard path must be native *.ts.json / *.vue.json: ${file}`)
+      }
+    }
+    if (violations.length >= 10) break
+  }
+  for (const [className, entry] of Object.entries(manifest.classIndex ?? {})) {
+    const sourcePath = entry?.sourcePath
+    if (
+      typeof sourcePath === 'string'
+      && (sourcePath.includes('class-model-emit/') || sourcePath.endsWith('.d.ts'))
+    ) {
+      violations.push(`classIndex sourcePath must be native: ${className} -> ${sourcePath}`)
+    }
+    if (violations.length >= 10) break
+  }
+  if (violations.length > 0) {
+    throw new Error([
+      'ClassModel bundle uses legacy emit-path manifest keys or .d.ts.json shard paths.',
+      ...violations,
+    ].join('\n'))
+  }
+}
+
 /**
  * Fail-fast：manifest 存在但 shard 缺失时抛错（generate 中断或拷贝前校验）。
  * 只校验 guide manifest（manifest.json + files/**）；不校验 runtime/manifest.json（已冻结，见 spark-ai-platform.md §3.4）。
@@ -18,6 +51,7 @@ export function assertClassModelBundleComplete(bundleRoot, options = {}) {
   }
 
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  assertClassModelBundleNativeShardPaths(manifest)
   const missing = []
   for (const [sourcePath, entry] of Object.entries(manifest.files ?? {})) {
     const relativeFile = entry?.file

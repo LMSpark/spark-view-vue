@@ -7,6 +7,13 @@ import { augmentIncrementalPlanWithConfigDrift, canSkipDeclarationEmit, planIncr
 import { dtsSourcePathToBundleRelativeJson } from '../../packages/spark-ai/src/class-model/class-model/dts-bundle-url'
 
 describe('class-model-incremental-build', () => {
+  it('maps emit source paths to native shard relative paths', () => {
+    expect(dtsSourcePathToBundleRelativeJson('class-model-emit/packages/demo/src/widget.d.ts'))
+      .toBe('files/packages/demo/src/widget.ts.json')
+    expect(dtsSourcePathToBundleRelativeJson('packages/demo/src/widget.ts'))
+      .toBe('files/packages/demo/src/widget.ts.json')
+  })
+
   it('treats legacy array .dts-manifest as full rebuild', () => {
     const root = mkdtempSync(join(tmpdir(), 'spark-dts-manifest-legacy-'))
     try {
@@ -22,16 +29,17 @@ describe('class-model-incremental-build', () => {
     try {
       const repoRoot = root
       const outputDir = join(root, 'generated/dts-class-model')
-      const sourcePath = 'class-model-emit/packages/demo/src/widget.d.ts'
+      const emitSourcePath = 'class-model-emit/packages/demo/src/widget.d.ts'
+      const manifestSourcePath = 'packages/demo/src/widget.ts'
       const sourceTs = join(repoRoot, 'packages/demo/src/widget.ts')
-      const shardRelative = dtsSourcePathToBundleRelativeJson(sourcePath)
+      const shardRelative = dtsSourcePathToBundleRelativeJson(manifestSourcePath)
       const shardPath = join(outputDir, shardRelative)
       const mtime = new Date('2026-01-02T03:04:05.000Z')
 
       mkdirSync(join(repoRoot, 'packages/demo/src'), { recursive: true })
       writeFileSync(sourceTs, 'export class Widget {}\n', 'utf8')
       utimesSync(sourceTs, mtime, mtime)
-      mkdirSync(join(outputDir, 'files/class-model-emit/packages/demo/src'), { recursive: true })
+      mkdirSync(join(outputDir, 'files/packages/demo/src'), { recursive: true })
       writeFileSync(shardPath, JSON.stringify({
         symbols: ['Widget'],
         generatedAt: mtime.toISOString(),
@@ -39,17 +47,17 @@ describe('class-model-incremental-build', () => {
 
       const existingManifest = {
         files: {
-          [sourcePath]: {
+          [manifestSourcePath]: {
             file: shardRelative,
-            module: { sourceFile: 'packages/demo/src/widget.ts' },
+            module: { sourceFile: manifestSourcePath },
           },
         },
       }
       const existingDtsManifest = {
         schemaVersion: 1,
         entries: {
-          [sourcePath]: {
-            sourceFile: 'packages/demo/src/widget.ts',
+          [manifestSourcePath]: {
+            sourceFile: manifestSourcePath,
             sourceModifiedAt: mtime.toISOString(),
             shardFile: shardRelative,
           },
@@ -59,15 +67,15 @@ describe('class-model-incremental-build', () => {
       const plan = planIncrementalBundleBuild({
         repoRoot,
         outputDir,
-        emitSourcePaths: [sourcePath],
-        dtsFiles: [resolve(repoRoot, sourcePath)],
+        emitSourcePaths: [emitSourcePath],
+        dtsFiles: [resolve(repoRoot, emitSourcePath)],
         existingManifest,
         existingDtsManifest,
         resolveProgramRootFiles: () => [],
       })
 
       expect(plan.mode).toBe('incremental')
-      expect([...plan.unchangedSourcePaths]).toEqual([sourcePath])
+      expect([...plan.unchangedSourcePaths]).toEqual([emitSourcePath])
       expect(plan.changedSourcePaths.size).toBe(0)
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -79,9 +87,10 @@ describe('class-model-incremental-build', () => {
     try {
       const repoRoot = root
       const outputDir = join(root, 'generated/dts-class-model')
-      const sourcePath = 'class-model-emit/packages/demo/src/widget.d.ts'
+      const emitSourcePath = 'class-model-emit/packages/demo/src/widget.d.ts'
+      const manifestSourcePath = 'packages/demo/src/widget.ts'
       const sourceTs = join(repoRoot, 'packages/demo/src/widget.ts')
-      const shardRelative = dtsSourcePathToBundleRelativeJson(sourcePath)
+      const shardRelative = dtsSourcePathToBundleRelativeJson(manifestSourcePath)
       const shardPath = join(outputDir, shardRelative)
       const oldMtime = new Date('2026-01-02T03:04:05.000Z')
       const newMtime = new Date('2026-01-03T03:04:05.000Z')
@@ -89,7 +98,7 @@ describe('class-model-incremental-build', () => {
       mkdirSync(join(repoRoot, 'packages/demo/src'), { recursive: true })
       writeFileSync(sourceTs, 'export class Widget {}\n', 'utf8')
       utimesSync(sourceTs, newMtime, newMtime)
-      mkdirSync(join(outputDir, 'files/class-model-emit/packages/demo/src'), { recursive: true })
+      mkdirSync(join(outputDir, 'files/packages/demo/src'), { recursive: true })
       writeFileSync(shardPath, JSON.stringify({
         symbols: ['Widget'],
         generatedAt: oldMtime.toISOString(),
@@ -98,18 +107,18 @@ describe('class-model-incremental-build', () => {
       const plan = planIncrementalBundleBuild({
         repoRoot,
         outputDir,
-        emitSourcePaths: [sourcePath],
-        dtsFiles: [resolve(repoRoot, sourcePath)],
+        emitSourcePaths: [emitSourcePath],
+        dtsFiles: [resolve(repoRoot, emitSourcePath)],
         existingManifest: {
           files: {
-            [sourcePath]: { file: shardRelative, module: { sourceFile: 'packages/demo/src/widget.ts' } },
+            [manifestSourcePath]: { file: shardRelative, module: { sourceFile: manifestSourcePath } },
           },
         },
         existingDtsManifest: {
           schemaVersion: 1,
           entries: {
-            [sourcePath]: {
-              sourceFile: 'packages/demo/src/widget.ts',
+            [manifestSourcePath]: {
+              sourceFile: manifestSourcePath,
               sourceModifiedAt: oldMtime.toISOString(),
               shardFile: shardRelative,
             },
@@ -119,7 +128,7 @@ describe('class-model-incremental-build', () => {
       })
 
       expect(plan.mode).toBe('incremental')
-      expect([...plan.changedSourcePaths]).toEqual([sourcePath])
+      expect([...plan.changedSourcePaths]).toEqual([emitSourcePath])
       expect(plan.unchangedSourcePaths.size).toBe(0)
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -131,7 +140,7 @@ describe('class-model-incremental-build', () => {
     try {
       const repoRoot = root
       const manifestPath = join(root, '.dts-manifest.json')
-      const sourcePath = 'class-model-emit/packages/demo/src/widget.d.ts'
+      const manifestSourcePath = 'packages/demo/src/widget.ts'
       const sourceTs = join(repoRoot, 'packages/demo/src/widget.ts')
       const mtime = new Date('2026-01-02T03:04:05.000Z')
       mkdirSync(join(repoRoot, 'packages/demo/src'), { recursive: true })
@@ -144,9 +153,9 @@ describe('class-model-incremental-build', () => {
         writeFileSync,
         manifest: {
           files: {
-            [sourcePath]: {
-              file: dtsSourcePathToBundleRelativeJson(sourcePath),
-              module: { sourceFile: 'packages/demo/src/widget.ts' },
+            [manifestSourcePath]: {
+              file: dtsSourcePathToBundleRelativeJson(manifestSourcePath),
+              module: { sourceFile: manifestSourcePath },
             },
           },
         },
@@ -154,8 +163,8 @@ describe('class-model-incremental-build', () => {
 
       const snapshot = JSON.parse(readFileSync(manifestPath, 'utf8'))
       expect(snapshot.schemaVersion).toBe(1)
-      expect(snapshot.entries[sourcePath]).toMatchObject({
-        sourceFile: 'packages/demo/src/widget.ts',
+      expect(snapshot.entries[manifestSourcePath]).toMatchObject({
+        sourceFile: manifestSourcePath,
         sourceModifiedAt: mtime.toISOString(),
       })
     } finally {
@@ -243,13 +252,13 @@ describe('class-model-incremental-build', () => {
       ],
       existingManifest: {
         files: {
-          'class-model-emit/a.d.ts': { file: 'files/a.json' },
-          'class-model-emit/b.d.ts': { file: 'files/b.json' },
+          'packages/demo/a.ts': { file: 'files/packages/demo/a.ts.json' },
+          'packages/demo/b.ts': { file: 'files/packages/demo/b.ts.json' },
         },
       },
     })).toEqual([
-      'class-model-emit/a.d.ts',
-      'class-model-emit/b.d.ts',
+      'class-model-emit/packages/demo/a.d.ts',
+      'class-model-emit/packages/demo/b.d.ts',
     ])
   })
 
@@ -257,19 +266,19 @@ describe('class-model-incremental-build', () => {
     const plan = {
       mode: 'incremental',
       changedSourcePaths: new Set(),
-      unchangedSourcePaths: new Set(['class-model-emit/a.d.ts']),
+      unchangedSourcePaths: new Set(['class-model-emit/packages/demo/a.d.ts']),
       removedSourcePaths: new Set(),
       programRootFiles: [],
     }
     const augmented = augmentIncrementalPlanWithConfigDrift(plan, {
       repoRoot: process.cwd(),
       configEmitSourcePaths: [
-        'class-model-emit/a.d.ts',
+        'class-model-emit/packages/demo/a.d.ts',
         'class-model-emit/phantom.d.ts',
       ],
       existingManifest: {
         files: {
-          'class-model-emit/a.d.ts': { file: 'files/a.json' },
+          'packages/demo/a.ts': { file: 'files/packages/demo/a.ts.json' },
         },
       },
       existingDtsManifest: { schemaVersion: 1, entries: {} },
