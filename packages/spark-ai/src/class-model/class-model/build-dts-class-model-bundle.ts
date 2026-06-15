@@ -27,6 +27,7 @@ import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from '.
 import {
   isClassModelEmitPath,
   sourceFileFromEmitPath,
+  toClassModelEmitPath,
 } from './class-model-emit-path'
 import { normalizeRepoPath } from './dts-ast-utils'
 import { projectDtsSourceFileProjection } from './project-from-declarations'
@@ -128,12 +129,20 @@ export function buildDtsClassModelBundle(
   const repoRoot = resolve(options.repoRoot)
   const outputDir = resolve(options.outputDir)
   const rootFiles = options.rootFiles.filter(absolutePath => {
-    const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
-    return isClassModelEmitPath(sourcePath)
+    const emitSourcePath = normalizeRepoPath(absolutePath, repoRoot)
+    return isClassModelEmitPath(emitSourcePath)
   })
-  const knownSourcePaths = new Set(rootFiles.map(absolutePath => normalizeRepoPath(absolutePath, repoRoot)))
-  for (const sourcePath of options.knownProjectedClassNamesBySourcePath?.keys() ?? []) {
+  const projectOnlySourcePaths = options.projectOnlySourcePaths === undefined
+    ? undefined
+    : new Set([...options.projectOnlySourcePaths].map(sourceFileFromEmitPath))
+  const knownSourcePaths = new Set(rootFiles.map(absolutePath => sourceFileFromEmitPath(normalizeRepoPath(absolutePath, repoRoot))))
+  const knownEmitSourcePaths = new Set(rootFiles.map(absolutePath => normalizeRepoPath(absolutePath, repoRoot)))
+  const knownProjectedClassNamesBySourcePath = normalizeKnownProjectedClassNamesBySourcePath(
+    options.knownProjectedClassNamesBySourcePath,
+  )
+  for (const sourcePath of knownProjectedClassNamesBySourcePath.keys()) {
     knownSourcePaths.add(sourcePath)
+    knownEmitSourcePaths.add(toClassModelEmitPath(sourcePath))
   }
   const total = rootFiles.length
   const progressInterval = options.progressInterval ?? 50
@@ -148,15 +157,16 @@ export function buildDtsClassModelBundle(
   let projectedCount = 0
 
   for (const [index, absolutePath] of rootFiles.entries()) {
-    const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
-    if (options.projectOnlySourcePaths !== undefined && !options.projectOnlySourcePaths.has(sourcePath)) {
+    const emitSourcePath = normalizeRepoPath(absolutePath, repoRoot)
+    const sourcePath = sourceFileFromEmitPath(emitSourcePath)
+    if (projectOnlySourcePaths !== undefined && !projectOnlySourcePaths.has(sourcePath)) {
       continue
     }
     const sourceFile = readDtsSourceFile(absolutePath, options.compilerHost)
     const typeReferenceTargets = collectDtsTypeReferenceTargets({
-      sourcePath,
+      emitSourcePath,
       sourceFile,
-      knownSourcePaths,
+      knownEmitSourcePaths,
     })
     if (typeReferenceTargets.size > 0) typeReferenceIndex.set(sourcePath, typeReferenceTargets)
 
@@ -212,7 +222,7 @@ export function buildDtsClassModelBundle(
   }
 
   const projectedClassNamesBySourcePath = new Map<string, ReadonlySet<string>>(
-    options.knownProjectedClassNamesBySourcePath ?? [],
+    knownProjectedClassNamesBySourcePath,
   )
   for (const projectedFile of projectedFiles) {
     projectedClassNamesBySourcePath.set(
@@ -224,7 +234,7 @@ export function buildDtsClassModelBundle(
   const schemaClassNamesBySourcePath = buildSchemaClassNamesBySourcePath({
     outputDir,
     projectedFiles,
-    knownSourcePaths: options.knownProjectedClassNamesBySourcePath?.keys() ?? [],
+    knownSourcePaths: knownProjectedClassNamesBySourcePath.keys(),
   })
   for (const projectedFile of projectedFiles) {
     const compactProjection = compactDtsFileProjectionForBundle(projectedFile.projection, {
@@ -283,20 +293,31 @@ function readDtsSourceFile(absolutePath: string, compilerHost: ts.CompilerHost |
   return ts.createSourceFile(resolvedPath, text, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS)
 }
 
+function normalizeKnownProjectedClassNamesBySourcePath(
+  known: ReadonlyMap<string, ReadonlySet<string>> | undefined,
+): ReadonlyMap<string, ReadonlySet<string>> {
+  const normalized = new Map<string, ReadonlySet<string>>()
+  for (const [sourcePath, classNames] of known ?? []) {
+    normalized.set(sourceFileFromEmitPath(sourcePath), classNames)
+  }
+  return normalized
+}
+
 function collectDtsTypeReferenceTargets(command: {
-  sourcePath: string
+  emitSourcePath: string
   sourceFile: ts.SourceFile
-  knownSourcePaths: ReadonlySet<string>
+  knownEmitSourcePaths: ReadonlySet<string>
 }): ReadonlyMap<string, TypeReferenceTarget> {
-  const { sourcePath, sourceFile, knownSourcePaths } = command
+  const { emitSourcePath, sourceFile, knownEmitSourcePaths } = command
   const targets = new Map<string, TypeReferenceTarget>()
   const text = sourceFile.getFullText()
   for (const importMatch of text.matchAll(/import\s+(?:type\s+)?([^'"]+?)\s+from\s+['"]([^'"]+)['"]/gu)) {
     const bindingsText = importMatch[1]?.trim()
     const moduleSpecifier = importMatch[2]
     if (bindingsText === undefined || moduleSpecifier === undefined) continue
-    const targetSourcePath = resolveDtsModuleSpecifierSourcePath(sourcePath, moduleSpecifier, knownSourcePaths)
-    if (targetSourcePath === undefined) continue
+    const targetEmitSourcePath = resolveDtsModuleSpecifierSourcePath(emitSourcePath, moduleSpecifier, knownEmitSourcePaths)
+    if (targetEmitSourcePath === undefined) continue
+    const targetSourcePath = sourceFileFromEmitPath(targetEmitSourcePath)
 
     const namedBindings = /^\{(?<body>[\s\S]*)\}$/u.exec(bindingsText)
     if (namedBindings?.groups?.['body'] !== undefined) {

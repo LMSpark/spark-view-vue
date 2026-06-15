@@ -60,6 +60,55 @@ export function sourceFileFromEmitPath(emitPath: string): string {
     ? normalized.slice(CLASS_MODEL_EMIT_PREFIX.length)
     : normalized
   if (hasPathSuffix(sourcePath, '.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
+  const typedDtsSuffixes = ['.tsx', '.ts', '.mts', '.cts', '.jsx', '.js', '.mjs', '.cjs'] as const
+  for (const ext of typedDtsSuffixes) {
+    if (hasPathSuffix(sourcePath, `${ext}.d.ts`)) {
+      return sourcePath.slice(0, -'.d.ts'.length)
+    }
+  }
   if (hasPathSuffix(sourcePath, '.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
   return sourcePath
+}
+
+/**
+ * manifest / snapshot 路径 → 内存 emit 虚拟键。
+ * 已是 emit 键则原样返回；源码 repo 相对键则映射为 emit。
+ */
+export function resolveClassModelEmitPath(path: string): string {
+  const normalized = normalizeRepoRelativePath(path)
+  if (isClassModelEmitPath(normalized)) return normalized
+  return toClassModelEmitPath(normalized)
+}
+
+function readBundlePathRecordEntry(table: Readonly<Record<string, unknown>>, path: string): unknown {
+  const normalized = normalizeRepoRelativePath(path)
+  if (Object.hasOwn(table, normalized)) return table[normalized]
+  const sourceKey = sourceFileFromEmitPath(normalized)
+  if (sourceKey !== normalized && Object.hasOwn(table, sourceKey)) return table[sourceKey]
+  if (!isClassModelEmitPath(normalized)) {
+    const emitKey = toClassModelEmitPath(normalized)
+    if (Object.hasOwn(table, emitKey)) return table[emitKey]
+  }
+  return undefined
+}
+
+/** 读取 manifest.files 条目；兼容 emit 键与源码 repo 相对键。 */
+export function readManifestFileEntry(
+  manifest: { files?: Readonly<Record<string, unknown>> } | undefined,
+  path: string,
+): unknown {
+  return readBundlePathRecordEntry(manifest?.files ?? {}, path)
+}
+
+/** 读取 .dts-manifest.json entries；键查找规则与 manifest.files 一致。 */
+export function readDtsManifestSnapshotEntry(
+  snapshot: { entries?: Readonly<Record<string, unknown>> } | undefined,
+  path: string,
+): unknown {
+  return readBundlePathRecordEntry(snapshot?.entries ?? {}, path)
+}
+
+/** 增量 merge 时统一 changed/target 路径为 manifest 源码 repo 相对键集合。 */
+export function normalizeBundleManifestSourcePathSet(paths: Iterable<string>): Set<string> {
+  return new Set([...paths].map(path => sourceFileFromEmitPath(normalizeRepoRelativePath(path))))
 }

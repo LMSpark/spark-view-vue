@@ -226,8 +226,13 @@ export function projectDtsSourceFileProjection(
     const className = projectTopLevelDeclaration(context, options.sourceFile, node)
     if (className !== undefined) symbols.push(className)
   })
-  const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
-  const sourceModifiedAt = readSourceModifiedAtIso({ repoRoot, emitSourcePath: sourcePath })
+  const emitSourcePath = normalizeRepoPath(absolutePath, repoRoot)
+  const sourcePath = sourceFileFromEmitPath(emitSourcePath)
+  const sourceModifiedAt = readSourceModifiedAtIso({
+    repoRoot,
+    emitSourcePath,
+    sourceFile: sourcePath,
+  })
 
   return {
     schemaVersion: DTS_FILE_PROJECTION_VERSION,
@@ -298,7 +303,7 @@ export function projectDtsClassModelSurface(
     })
 
     if (contributed.length > 0) {
-      fileIndexMerge(context.fileIndex, normalized, contributed)
+      fileIndexMerge(context.fileIndex, sourceFileFromEmitPath(normalized), contributed)
     }
   }
 
@@ -376,7 +381,7 @@ function projectClassDeclaration(command: ClassDeclarationProjectionCommand): st
   const className = name
   const siteWithName = projectionSite(context, sourceFile, className)
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
-  const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
+  const file = sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot))
   const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const propsComponentName = readComponentNameFromPropsFile(file)
   const provenance = createProvenance({
@@ -443,7 +448,7 @@ function projectInterfaceDeclaration(command: InterfaceDeclarationProjectionComm
   const className = name
   const siteWithName = projectionSite(context, sourceFile, className)
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
-  const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
+  const file = sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot))
   const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const propsComponentName = readComponentNameFromPropsFile(file)
   const provenance = createProvenance({
@@ -512,7 +517,7 @@ function projectTypeAliasDeclaration(
   const name = node.name.text
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
 
-  const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
+  const file = sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot))
   const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const propsComponentName = readComponentNameFromPropsFile(file)
   const typeText = node.type.getText(sourceFile)
@@ -602,7 +607,7 @@ function projectEnumDeclaration(
   const name = node.name.text
   if (context.exportedOnly && !hasExportModifier(node)) return undefined
 
-  const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
+  const file = sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot))
   const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
   const attributes: AttributeMeta[] = []
   let autoIndex = 0
@@ -731,7 +736,7 @@ function attributesFromObjectSchema(command: ObjectSchemaAttributesCommand): Att
   const required = new Set(
     Array.isArray(schema.required) ? schema.required.map(String) : [],
   )
-  const file = normalizeRepoPath(sourceFile.fileName, context.repoRoot)
+  const file = sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot))
   return Object.entries(schema.properties).map(([propertyName, propertySchema]) => ({
     name: propertyName,
     schema: propertySchema,
@@ -864,7 +869,7 @@ function projectPropertyMember(command: PropertyMemberCommand): AttributeMeta {
     writable: member.questionToken === undefined && !hasReadonlyModifier(member),
     jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName,
@@ -884,7 +889,7 @@ function projectPropertySignature(command: PropertySignatureCommand): AttributeM
     writable: member.questionToken === undefined && !hasReadonlyModifier(member),
     jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName,
@@ -907,7 +912,7 @@ function projectFunctionPropertySignature(command: FunctionPropertySignatureComm
     returnSchema: typeNodeToAiJsonSchema(typeNode.type, sourceFile),
     jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName,
@@ -931,7 +936,7 @@ function projectMethodMember(command: MethodMemberCommand): MethodMeta {
     returnSchema: typeNodeToAiJsonSchema(member.type, sourceFile),
     jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName,
@@ -955,7 +960,7 @@ function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
     returnSchema: typeNodeToAiJsonSchema(member.type, sourceFile),
     jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName,
@@ -1197,10 +1202,11 @@ function dtsReferenceSourceTarget(
   sourceFile: ts.SourceFile,
   typeName: ts.EntityName,
 ): { targetName: string; sourcePath: string } | undefined {
-  const currentSourcePath = normalizeRepoPath(sourceFile.fileName, repoRoot)
+  const currentEmitSourcePath = normalizeRepoPath(sourceFile.fileName, repoRoot)
+  const currentSourcePath = sourceFileFromEmitPath(currentEmitSourcePath)
   if (ts.isIdentifier(typeName)) {
     const localName = typeName.text
-    const imported = dtsImportTargetForLocalName(repoRoot, sourceFile, currentSourcePath, localName)
+    const imported = dtsImportTargetForLocalName(repoRoot, sourceFile, currentEmitSourcePath, localName)
     if (imported !== undefined) return imported
     return sourceFileHasTopLevelDeclaration(sourceFile, localName)
       ? { targetName: localName, sourcePath: currentSourcePath }
@@ -1209,7 +1215,7 @@ function dtsReferenceSourceTarget(
 
   const namespaceName = typeName.left.getText(sourceFile)
   const memberName = typeName.right.text
-  const namespaceSourcePath = dtsImportSourcePathForNamespace(repoRoot, sourceFile, currentSourcePath, namespaceName)
+  const namespaceSourcePath = dtsImportSourcePathForNamespace(repoRoot, sourceFile, currentEmitSourcePath, namespaceName)
   return namespaceSourcePath === undefined
     ? undefined
     : { targetName: memberName, sourcePath: namespaceSourcePath }
@@ -1218,14 +1224,15 @@ function dtsReferenceSourceTarget(
 function dtsImportTargetForLocalName(
   repoRoot: string,
   sourceFile: ts.SourceFile,
-  currentSourcePath: string,
+  currentEmitSourcePath: string,
   localName: string,
 ): { targetName: string; sourcePath: string } | undefined {
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement)) continue
     if (!ts.isStringLiteral(statement.moduleSpecifier)) continue
-    const sourcePath = resolveDtsModuleSpecifierSourcePath(repoRoot, currentSourcePath, statement.moduleSpecifier.text)
-    if (sourcePath === undefined) continue
+    const emitSourcePath = resolveDtsModuleSpecifierSourcePath(repoRoot, currentEmitSourcePath, statement.moduleSpecifier.text)
+    if (emitSourcePath === undefined) continue
+    const sourcePath = sourceFileFromEmitPath(emitSourcePath)
     const importClause = statement.importClause
     if (importClause?.name?.text === localName) return { targetName: localName, sourcePath }
     const namedBindings = importClause?.namedBindings
@@ -1244,7 +1251,7 @@ function dtsImportTargetForLocalName(
 function dtsImportSourcePathForNamespace(
   repoRoot: string,
   sourceFile: ts.SourceFile,
-  currentSourcePath: string,
+  currentEmitSourcePath: string,
   namespaceName: string,
 ): string | undefined {
   for (const statement of sourceFile.statements) {
@@ -1253,18 +1260,19 @@ function dtsImportSourcePathForNamespace(
     const namedBindings = statement.importClause?.namedBindings
     if (namedBindings === undefined || !ts.isNamespaceImport(namedBindings)) continue
     if (namedBindings.name.text !== namespaceName) continue
-    return resolveDtsModuleSpecifierSourcePath(repoRoot, currentSourcePath, statement.moduleSpecifier.text)
+    const emitSourcePath = resolveDtsModuleSpecifierSourcePath(repoRoot, currentEmitSourcePath, statement.moduleSpecifier.text)
+    return emitSourcePath === undefined ? undefined : sourceFileFromEmitPath(emitSourcePath)
   }
   return undefined
 }
 
 function resolveDtsModuleSpecifierSourcePath(
   repoRoot: string,
-  currentSourcePath: string,
+  currentEmitSourcePath: string,
   moduleSpecifier: string,
 ): string | undefined {
   if (!moduleSpecifier.startsWith('.')) return undefined
-  const base = posix.normalize(posix.join(posix.dirname(currentSourcePath), moduleSpecifier.replace(/\\/g, '/')))
+  const base = posix.normalize(posix.join(posix.dirname(currentEmitSourcePath), moduleSpecifier.replace(/\\/g, '/')))
   for (const candidate of dtsModuleSourcePathCandidates(base)) {
     if (existsSync(resolve(repoRoot, candidate))) return candidate
   }
@@ -1334,7 +1342,7 @@ function projectConstructor(command: ConstructorProjectionCommand): ConstructorM
     paramsSchema: paramsSchemaFromParameters(member.parameters, sourceFile),
     jsdoc: readJsDoc(member, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName: 'constructor',
@@ -1361,7 +1369,7 @@ function projectDefaultConstructor(command: Readonly<{
     },
     jsdoc: readJsDoc(node, sourceFile),
     provenance: createProvenance({
-      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      file: sourceFileFromEmitPath(normalizeRepoPath(sourceFile.fileName, context.repoRoot)),
       line,
       className,
       memberName: 'constructor',
@@ -1645,7 +1653,8 @@ function inferComponentNameFromPath(componentPath: string): string | undefined {
   const fileName = segments.at(-1)
   if (fileName === undefined) return undefined
   const stem = fileName
-    .replace(/\.d\.ts$/u, '')
+    .replace(/\.d\.[cm]?ts$/u, '')
+    .replace(/\.[cm]?tsx?$/u, '')
     .replace(/\.(props|types|vue)$/u, '')
   if (isLikelyComponentName(stem)) return stem
   const parent = segments.at(-2)
@@ -1688,7 +1697,7 @@ const SPECIAL_COMPONENT_TYPES: Readonly<Record<string, string>> = {
 }
 
 function readComponentNameFromPropsFile(file: string): string | undefined {
-  const match = /\/([^/]+)\.props\.d\.ts$/.exec(file)
+  const match = /\/([^/]+)\.props(?:\.d)?\.[cm]?ts$/.exec(file)
   return match?.[1]
 }
 

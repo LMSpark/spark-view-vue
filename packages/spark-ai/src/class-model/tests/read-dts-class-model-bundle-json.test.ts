@@ -17,12 +17,17 @@ import {
   readDtsClassModelBundleManifest,
   readDtsFileProjectionDocument,
 } from '../class-model/read-dts-class-model-bundle-json'
+import { sourceFileFromEmitPath } from '../class-model/class-model-emit-path'
 import type { DtsTypeDeclarationModel } from '../class-model/types'
 
 const removedReturnTypeField = ['return', 'Type'].join('')
 const removedReturnTypeRefsField = ['return', 'Type', 'Refs'].join('')
 const removedReturnTextField = ['return', 'Type', 'Text'].join('')
 const removedParamsTextField = ['params', 'Type', 'Text'].join('')
+
+function bundleSourcePath(sourcePath: string): string {
+  return sourceFileFromEmitPath(sourcePath)
+}
 
 function expectClassModel(model: DtsTypeDeclarationModel | undefined, name: string): Extract<DtsTypeDeclarationModel, { declarationKind: 'class' }> {
   if (model?.declarationKind !== 'class') throw new Error(`Expected class model: ${name}`)
@@ -69,13 +74,13 @@ describe('readDtsClassModelBundleJson', () => {
       expect(manifest.schemaVersion).toBe(DTS_CLASS_MODEL_BUNDLE_VERSION)
       expect(manifest.protocol).toBe(DTS_CLASS_MODEL_BUNDLE_PROTOCOL)
       expect(Object.keys(manifest.classIndex)).toContain('SparkAIModel')
-      expect(Object.keys(manifest.files)).toContain(sourcePath)
-      expect(manifest.files[sourcePath]?.module).toMatchObject({
+      expect(Object.keys(manifest.files)).toContain(bundleSourcePath(sourcePath))
+      expect(manifest.files[bundleSourcePath(sourcePath)]?.module).toMatchObject({
         name: '@spark-appworks/spark-utils:ai-model',
         sourceFile: 'packages/spark-utils/src/ai-model.ts',
         jsdocSource: 'inferred',
       })
-      expect(manifest.files[sourcePath]?.module.symbols).toContain('SparkAIModel')
+      expect(manifest.files[bundleSourcePath(sourcePath)]?.module.symbols).toContain('SparkAIModel')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -108,7 +113,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [absolutePath],
         outputDir,
       })
-      const shardPath = resolve(outputDir, 'files', `${sourcePath}.json`)
+      const shardPath = resolve(outputDir, 'files', `${bundleSourcePath(sourcePath)}.json`)
       const shard = JSON.parse(readFileSync(shardPath, 'utf8')) as {
         $defs: Record<string, { properties?: Record<string, unknown> }>
       }
@@ -158,7 +163,7 @@ describe('readDtsClassModelBundleJson', () => {
         classIndex: Record<string, unknown>
       }
 
-      expect(Object.keys(manifest.files)).toEqual([alphaSourcePath, zetaSourcePath])
+      expect(Object.keys(manifest.files)).toEqual([bundleSourcePath(alphaSourcePath), bundleSourcePath(zetaSourcePath)])
       expect(Object.keys(manifest.classIndex)).toEqual(['Alpha', 'Zeta'])
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
@@ -192,7 +197,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [absolutePath],
         outputDir,
       })
-      const entry = result.manifest.files[sourcePath]
+      const entry = result.manifest.files[bundleSourcePath(sourcePath)]
       if (entry === undefined) throw new Error(`Missing test shard entry: ${sourcePath}`)
       const raw: unknown = JSON.parse(readFileSync(resolve(outputDir, entry.file), 'utf8'))
       const projection = readDtsFileProjectionDocument(raw)
@@ -272,14 +277,14 @@ describe('readDtsClassModelBundleJson', () => {
         type: {
           type: 'reference',
           name: 'SparkAIModel',
-          sourcePath,
+          sourcePath: bundleSourcePath(sourcePath),
         },
       }])
       expect(attachMethod).not.toHaveProperty(removedReturnTextField)
       expect(attachMethod?.type).toEqual({
         type: 'reference',
         name: 'SparkAIModel',
-        sourcePath,
+        sourcePath: bundleSourcePath(sourcePath),
       })
       expect(attachMethod).not.toHaveProperty(removedReturnTypeField)
       expect(attachMethod).not.toHaveProperty(removedReturnTypeRefsField)
@@ -525,7 +530,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [registrationPath, registryPath],
         outputDir,
       })
-      const registryEntry = result.manifest.files[registrySourcePath]
+      const registryEntry = result.manifest.files[bundleSourcePath(registrySourcePath)]
       if (registryEntry === undefined) throw new Error(`Missing registry shard entry: ${registrySourcePath}`)
       const registryProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, registryEntry.file), 'utf8')) as unknown,
@@ -540,7 +545,7 @@ describe('readDtsClassModelBundleJson', () => {
         type: {
           type: 'reference',
           name: 'AiAgentRegistration',
-          sourcePath: registrationSourcePath,
+          sourcePath: bundleSourcePath(registrationSourcePath),
           typeArguments: [{
             type: 'reference',
             name: 'TInput',
@@ -556,7 +561,7 @@ describe('readDtsClassModelBundleJson', () => {
         type: 'object',
         properties: {
           registration: {
-            $ref: 'registration-types.d.ts.json#/$defs/AiAgentRegistration',
+            $ref: 'registration-types.ts.json#/$defs/AiAgentRegistration',
           },
         },
       })
@@ -612,7 +617,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [optionsPath, widgetPath],
         outputDir,
       })
-      const widgetEntry = result.manifest.files[widgetSourcePath]
+      const widgetEntry = result.manifest.files[bundleSourcePath(widgetSourcePath)]
       if (widgetEntry === undefined) throw new Error(`Missing widget shard entry: ${widgetSourcePath}`)
       const widgetProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, widgetEntry.file), 'utf8')) as unknown,
@@ -666,7 +671,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [absolutePath],
         outputDir,
       })
-      const entry = result.manifest.files[sourcePath]
+      const entry = result.manifest.files[bundleSourcePath(sourcePath)]
       if (entry === undefined) throw new Error(`Missing private host shard entry: ${sourcePath}`)
       const projection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, entry.file), 'utf8')) as unknown,
@@ -708,7 +713,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [registrationPath, registryPath],
         outputDir,
       })
-      const registryEntry = result.manifest.files[registrySourcePath]
+      const registryEntry = result.manifest.files[bundleSourcePath(registrySourcePath)]
       if (registryEntry === undefined) throw new Error(`Missing registry shard entry: ${registrySourcePath}`)
       const registryProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, registryEntry.file), 'utf8')) as unknown,
@@ -719,13 +724,13 @@ describe('readDtsClassModelBundleJson', () => {
       expect(registerMethod?.parameters?.[0]?.type).toEqual({
         type: 'reference',
         name: 'AiAgentRegistration',
-        sourcePath: registrationSourcePath,
+        sourcePath: bundleSourcePath(registrationSourcePath),
       })
       expect(registerMethod?.paramsSchema).toMatchObject({
         type: 'object',
         properties: {
           registration: {
-            $ref: 'registration-types.d.ts.json#/$defs/AiAgentRegistration',
+            $ref: 'registration-types.ts.json#/$defs/AiAgentRegistration',
           },
         },
       })
@@ -771,7 +776,7 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [registrationPath, hostPath],
         outputDir,
       })
-      const hostEntry = result.manifest.files[hostSourcePath]
+      const hostEntry = result.manifest.files[bundleSourcePath(hostSourcePath)]
       if (hostEntry === undefined) throw new Error(`Missing host shard entry: ${hostSourcePath}`)
       const hostProjection = readDtsFileProjectionDocument(
         JSON.parse(readFileSync(resolve(outputDir, hostEntry.file), 'utf8')) as unknown,
@@ -922,8 +927,8 @@ describe('readDtsClassModelBundleJson', () => {
         rootFiles: [nodePath, edgePath],
         outputDir,
       })
-      const nodeEntry = result.manifest.files[nodeSourcePath]
-      const edgeEntry = result.manifest.files[edgeSourcePath]
+      const nodeEntry = result.manifest.files[bundleSourcePath(nodeSourcePath)]
+      const edgeEntry = result.manifest.files[bundleSourcePath(edgeSourcePath)]
       if (nodeEntry === undefined) throw new Error(`Missing node shard entry: ${nodeSourcePath}`)
       if (edgeEntry === undefined) throw new Error(`Missing edge shard entry: ${edgeSourcePath}`)
       const nodeProjection = readDtsFileProjectionDocument(
@@ -941,12 +946,12 @@ describe('readDtsClassModelBundleJson', () => {
       expect(nodeEdgesAttr?.schema).toEqual({
         type: 'array',
         items: {
-          $ref: 'tree-edge.d.ts.json#/$defs/TreeEdge',
+          $ref: 'tree-edge.ts.json#/$defs/TreeEdge',
         },
       })
       const edgeChildAttr = edgeModel.typeAlias.members.attributes.find(attribute => attribute.name === 'child')
       expect(edgeChildAttr?.schema).toEqual({
-        $ref: 'tree-node.d.ts.json#/$defs/TreeNode',
+        $ref: 'tree-node.ts.json#/$defs/TreeNode',
       })
 
       const loader = new DtsClassModelBundleLoader({
@@ -1050,7 +1055,7 @@ describe('readDtsClassModelBundleJson', () => {
       schemaVersion: DTS_FILE_PROJECTION_VERSION,
       module: {
         name: 'workspace:x',
-        sourcePath: 'class-model-emit/x.d.ts',
+        sourcePath: 'x.ts',
         sourceFile: 'x.ts',
         modulePath: 'x',
         jsdoc: 'Test module.',
@@ -1111,7 +1116,7 @@ describe('readDtsClassModelBundleJson', () => {
         elementType: {
           type: 'reference',
           name: 'AiAgentRegistration',
-          sourcePath: registrationSourcePath,
+          sourcePath: bundleSourcePath(registrationSourcePath),
           typeArguments: [{
             type: 'reference',
             name: 'TInput',
@@ -1132,7 +1137,7 @@ describe('readDtsClassModelBundleJson', () => {
               type: {
                 type: 'reference',
                 name: 'DataSetCrudTool',
-                sourcePath: toolSourcePath,
+                sourcePath: bundleSourcePath(toolSourcePath),
               },
             }],
             type: {

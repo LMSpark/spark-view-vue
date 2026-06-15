@@ -70,7 +70,7 @@ ClassModel 全量门禁 (verify:class-model:full)
 
 **推荐用法**
 
-1. 打开 **Run and Debug**（`.vscode/launch.json` 已配置）。
+1. 打开 **Run and Debug**（复制 `.vscode/launch.json.example` → `.vscode/launch.json`）。
 2. 选择配置，例如 `Build: packages (dry-run)` 或 `Build: ClassModel generate (full)`。
 3. F5 启动；在 `[build-trace]` 日志对应步骤自动断点，或在脚本里自行加 IDE 断点。
 

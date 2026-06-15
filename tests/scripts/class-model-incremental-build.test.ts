@@ -170,6 +170,77 @@ describe('class-model-incremental-build', () => {
     }
   })
 
+  it('skips unchanged shards when manifest keys use source repo paths', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-dts-incremental-source-keys-'))
+    try {
+      const repoRoot = root
+      const outputDir = join(root, 'generated/dts-class-model')
+      const emitSourcePath = 'class-model-emit/packages/demo/src/widget.d.ts'
+      const manifestSourcePath = 'packages/demo/src/widget.ts'
+      const sourceTs = join(repoRoot, 'packages/demo/src/widget.ts')
+      const shardRelative = dtsSourcePathToBundleRelativeJson(manifestSourcePath)
+      const shardPath = join(outputDir, shardRelative)
+      const mtime = new Date('2026-01-02T03:04:05.000Z')
+
+      mkdirSync(join(repoRoot, 'packages/demo/src'), { recursive: true })
+      writeFileSync(sourceTs, 'export class Widget {}\n', 'utf8')
+      utimesSync(sourceTs, mtime, mtime)
+      mkdirSync(join(outputDir, 'files/packages/demo/src'), { recursive: true })
+      writeFileSync(shardPath, JSON.stringify({
+        symbols: ['Widget'],
+        generatedAt: mtime.toISOString(),
+      }), 'utf8')
+
+      const existingManifest = {
+        files: {
+          [manifestSourcePath]: {
+            file: shardRelative,
+            module: { sourceFile: manifestSourcePath },
+          },
+        },
+      }
+      const existingDtsManifest = {
+        schemaVersion: 1,
+        entries: {
+          [manifestSourcePath]: {
+            sourceFile: manifestSourcePath,
+            sourceModifiedAt: mtime.toISOString(),
+            shardFile: shardRelative,
+          },
+        },
+      }
+
+      const plan = planIncrementalBundleBuild({
+        repoRoot,
+        outputDir,
+        emitSourcePaths: [emitSourcePath],
+        dtsFiles: [resolve(repoRoot, emitSourcePath)],
+        existingManifest,
+        existingDtsManifest,
+        resolveProgramRootFiles: () => [],
+      })
+
+      expect(plan.mode).toBe('incremental')
+      expect([...plan.unchangedSourcePaths]).toEqual([emitSourcePath])
+      expect(plan.changedSourcePaths.size).toBe(0)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('resolveEmitSourcePathsForIncrementalPlan maps source-path manifest keys to emit paths', () => {
+    expect(resolveEmitSourcePathsForIncrementalPlan({
+      configEmitSourcePaths: ['class-model-emit/phantom.d.ts'],
+      existingManifest: {
+        files: {
+          'packages/demo/src/widget.ts': { file: 'files/packages/demo/src/widget.ts.json' },
+        },
+      },
+    })).toEqual([
+      'class-model-emit/packages/demo/src/widget.d.ts',
+    ])
+  })
+
   it('resolveEmitSourcePathsForIncrementalPlan prefers manifest keys when manifest exists', () => {
     expect(resolveEmitSourcePathsForIncrementalPlan({
       configEmitSourcePaths: [

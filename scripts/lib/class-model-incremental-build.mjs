@@ -2,7 +2,12 @@ import { existsSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { readSourceModifiedAtIso } from '../../packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts'
-import { sourceFileFromEmitPath } from '../../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
+import {
+  readDtsManifestSnapshotEntry,
+  readManifestFileEntry,
+  resolveClassModelEmitPath,
+  sourceFileFromEmitPath,
+} from '../../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
 import { dtsSourcePathToBundleRelativeJson } from '../../packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts'
 
 export const DTS_MANIFEST_SCHEMA_VERSION = 1
@@ -48,7 +53,7 @@ export function planIncrementalBundleBuild(command) {
   }
 
   for (const sourcePath of Object.keys(command.existingManifest.files ?? {})) {
-    if (!emitSet.has(sourcePath)) removedSourcePaths.add(sourcePath)
+    if (!emitSet.has(resolveClassModelEmitPath(sourcePath))) removedSourcePaths.add(sourcePath)
   }
 
   const knownClassNamesBySourcePath = loadKnownClassNamesBySourcePath({
@@ -90,7 +95,9 @@ export function canSkipDeclarationEmit(plan) {
  */
 export function resolveEmitSourcePathsForIncrementalPlan(command) {
   const configPaths = [...command.configEmitSourcePaths].sort((left, right) => left.localeCompare(right))
-  const manifestPaths = Object.keys(command.existingManifest?.files ?? {}).sort((left, right) => left.localeCompare(right))
+  const manifestPaths = uniqueSortedStrings(
+    Object.keys(command.existingManifest?.files ?? {}).map(resolveClassModelEmitPath),
+  )
   if (manifestPaths.length === 0) return configPaths
   return manifestPaths
 }
@@ -106,11 +113,12 @@ export function augmentIncrementalPlanWithConfigDrift(plan, command) {
   const newConfigSourcePaths = new Set(plan.newConfigSourcePaths ?? [])
 
   for (const sourcePath of command.configEmitSourcePaths) {
-    if (manifestFiles[sourcePath] !== undefined) continue
+    if (readManifestFileEntry(command.existingManifest, sourcePath) !== undefined) continue
+    const snapshotEntry = readDtsManifestSnapshotEntry(command.existingDtsManifest, sourcePath)
     const sourceModifiedAt = readSourceModifiedAtIso({
       repoRoot: command.repoRoot,
       emitSourcePath: sourcePath,
-      sourceFile: command.existingDtsManifest?.entries?.[sourcePath]?.sourceFile,
+      sourceFile: snapshotEntry?.sourceFile,
     })
     if (sourceModifiedAt === undefined) continue
     newConfigSourcePaths.add(sourcePath)
@@ -118,7 +126,7 @@ export function augmentIncrementalPlanWithConfigDrift(plan, command) {
   }
 
   for (const sourcePath of Object.keys(manifestFiles)) {
-    if (!configSet.has(sourcePath)) plan.removedSourcePaths.add(sourcePath)
+    if (!configSet.has(resolveClassModelEmitPath(sourcePath))) plan.removedSourcePaths.add(sourcePath)
   }
 
   plan.newConfigSourcePaths = newConfigSourcePaths
@@ -144,21 +152,20 @@ function createFullBuildPlan(emitSourcePaths, dtsFiles) {
 }
 
 function isSourceShardUnchanged(command, sourcePath) {
-  const manifestEntry = command.existingManifest.files?.[sourcePath]
-  const shardRelative = manifestEntry?.file ?? dtsSourcePathToBundleRelativeJson(sourcePath)
+  const manifestEntry = readManifestFileEntry(command.existingManifest, sourcePath)
+  const shardRelative = manifestEntry?.file ?? dtsSourcePathToBundleRelativeJson(sourceFileFromEmitPath(sourcePath))
   const shardPath = resolve(command.outputDir, shardRelative)
   if (!existsSync(shardPath)) return false
 
+  const snapshotEntry = readDtsManifestSnapshotEntry(command.existingDtsManifest, sourcePath)
   const sourceModifiedAt = readSourceModifiedAtIso({
     repoRoot: command.repoRoot,
     emitSourcePath: sourcePath,
-    sourceFile: manifestEntry?.module?.sourceFile
-      ?? command.existingDtsManifest.entries?.[sourcePath]?.sourceFile,
+    sourceFile: manifestEntry?.module?.sourceFile ?? snapshotEntry?.sourceFile,
   })
   if (sourceModifiedAt === undefined) return false
 
-  const recordedAt = command.existingDtsManifest.entries?.[sourcePath]?.sourceModifiedAt
-    ?? readShardSourceModifiedAt(shardPath)
+  const recordedAt = snapshotEntry?.sourceModifiedAt ?? readShardSourceModifiedAt(shardPath)
   return recordedAt === sourceModifiedAt
 }
 
@@ -174,7 +181,7 @@ function readShardSourceModifiedAt(shardPath) {
 function loadKnownClassNamesBySourcePath(command) {
   const known = new Map()
   for (const sourcePath of command.unchangedSourcePaths) {
-    const entry = command.manifest.files?.[sourcePath]
+    const entry = readManifestFileEntry(command.manifest, sourcePath)
     if (entry?.file === undefined) continue
     const shardPath = resolve(command.outputDir, entry.file)
     if (!existsSync(shardPath)) continue
@@ -188,7 +195,7 @@ function loadKnownClassNamesBySourcePath(command) {
 /** 删除已从 emit 集移除的 shard 文件。 */
 export function removeObsoleteBundleShards(command) {
   for (const sourcePath of command.removedSourcePaths) {
-    const entry = command.existingManifest.files?.[sourcePath]
+    const entry = readManifestFileEntry(command.existingManifest, sourcePath)
     if (entry?.file === undefined) continue
     const shardPath = resolve(command.outputDir, entry.file)
     if (existsSync(shardPath)) rmSync(shardPath, { force: true })
@@ -231,7 +238,8 @@ export function writeDtsManifestSnapshot(command) {
     const sourceFile = entry.module?.sourceFile ?? sourceFileFromEmitPath(sourcePath)
     const sourceModifiedAt = readSourceModifiedAtIso({
       repoRoot: command.repoRoot,
-      emitSourcePath: sourcePath,
+      emitSourcePath: resolveClassModelEmitPath(sourcePath),
+      sourceFile,
     })
     entries[sourcePath] = {
       sourceFile,
@@ -244,4 +252,8 @@ export function writeDtsManifestSnapshot(command) {
     entries,
   }
   command.writeFileSync(command.manifestPath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
+}
+
+function uniqueSortedStrings(values) {
+  return [...new Set(values)].sort((left, right) => left.localeCompare(right))
 }

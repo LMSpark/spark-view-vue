@@ -67,7 +67,7 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 ```
 
 - 编译 refresh：`DtsBundleClassModelKnowledgeService.refresh()` + 宿主 `refreshBundle`（Node 见 `scripts/lib/class-model-knowledge-refresh.mjs`）
-- bundle 内 `sourcePath` 使用虚拟前缀 `class-model-emit/`（非磁盘目录）
+- 内存 emit 使用虚拟前缀 `class-model-emit/`（非磁盘目录）；落盘 manifest / shard 索引键为源码 repo 相对路径（如 `packages/.../foo.ts`）
 
 ## 生成物
 

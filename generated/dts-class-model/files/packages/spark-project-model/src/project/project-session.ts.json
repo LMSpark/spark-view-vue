@@ -1,0 +1,521 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
+  "module": {
+    "name": "@spark-appworks/spark-project-model:project/project-session",
+    "sourcePath": "packages/spark-project-model/src/project/project-session.ts",
+    "sourceFile": "packages/spark-project-model/src/project/project-session.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "project/project-session",
+    "jsdoc": "@module @spark-appworks/spark-project-model:project/project-session\n职责：提供项目模型层 project-session 能力，围绕 ProjectSessionState、ProjectSessionOwner、ProjectSession 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 project/project-session。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectSessionState",
+      "ProjectSessionOwner",
+      "ProjectSession"
+    ]
+  },
+  "$defs": {
+    "ProjectSessionState": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ProjectSessionState",
+      "properties": {
+        "selectedNodeId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "activePageId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "navigationDirty": {
+          "type": "boolean"
+        },
+        "navigationDirtyScope": {
+          "anyOf": [
+            {
+              "$ref": "project-types.ts.json#/$defs/ProjectNavigationDirtyScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "selectedNodeId",
+        "activePageId",
+        "navigationDirty",
+        "navigationDirtyScope"
+      ],
+      "additionalProperties": false
+    },
+    "ProjectSessionOwner": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ProjectSessionOwner",
+      "$defs": {
+        "method.findNodeById.params": {
+          "type": "object",
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.findNodeById.return": {
+          "anyOf": [
+            {
+              "$ref": "../navigation/project-node.ts.json#/$defs/ProjectNode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method.findConfigPageByPageId.params": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.findConfigPageByPageId.return": {
+          "anyOf": [
+            {
+              "$ref": "../page/config-page.ts.json#/$defs/ConfigPageNode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ProjectSession": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "ProjectSession",
+      "$defs": {
+        "constructor.params": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "$ref": "#/$defs/ProjectSessionOwner"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setNavigationDraft.params": {
+          "type": "object",
+          "properties": {
+            "draft": {
+              "anyOf": [
+                {
+                  "$ref": "../navigation/navigation-edit.ts.json#/$defs/NavigationNodeDraft"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setNavigationDraft.return": true,
+        "method.beginNavigationDraft.params": {
+          "type": "object",
+          "properties": {
+            "draft": {
+              "$ref": "../navigation/navigation-edit.ts.json#/$defs/NavigationNodeDraft"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.beginNavigationDraft.return": {
+          "$ref": "../navigation/navigation-edit.ts.json#/$defs/NavigationNodeDraft"
+        },
+        "method.discardNavigationDraft.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.discardNavigationDraft.return": true,
+        "method.markNavigationDirty.params": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "$ref": "project-types.ts.json#/$defs/ProjectNavigationDirtyScope"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.markNavigationDirty.return": true,
+        "method.markNavigationClean.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.markNavigationClean.return": true,
+        "method.setSelectedNodeId.params": {
+          "type": "object",
+          "properties": {
+            "nodeId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "silentIfMissing": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setSelectedNodeId.return": true,
+        "method.setActivePageId.params": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.setActivePageId.return": true,
+        "method.syncWithModel.params": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "method.syncWithModel.return": true
+      }
+    }
+  },
+  "generatedAt": "2026-06-14T20:06:39.869Z",
+  "models": {
+    "ProjectSessionState": {
+      "name": "ProjectSessionState",
+      "jsdoc": "Project Session State 的运行状态。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-project-model/src/project/project-session.ts",
+        "line": 12,
+        "className": "ProjectSessionState",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** selected Node Id 标识。 */\n    selectedNodeId: string | null;\n    /** active Page Id 标识。 */\n    activePageId: string | null;\n    /** navigation Dirty 字段。 */\n    navigationDirty: boolean;\n    /** navigation Dirty Scope 字段。 */\n    navigationDirtyScope: ProjectNavigationDirtyScope | null;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "selectedNodeId",
+              "jsdoc": "selected Node Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "activePageId",
+              "jsdoc": "active Page Id 标识。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "navigationDirty",
+              "jsdoc": "navigation Dirty 字段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "navigationDirtyScope",
+              "jsdoc": "navigation Dirty Scope 字段。",
+              "readable": true,
+              "writable": true
+            }
+          ]
+        }
+      }
+    },
+    "ProjectSessionOwner": {
+      "name": "ProjectSessionOwner",
+      "jsdoc": "Project Session Owner 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-project-model/src/project/project-session.ts",
+        "line": 23,
+        "className": "ProjectSessionOwner",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 按 nodeId 在导航树中查找项目节点；未找到返回 null */\n    findNodeById(nodeId: string): ProjectNode | null;\n    /** 按 pageId 查找已加载的配置页节点；仅返回已 hydrate 的 ConfigPageNode，未找到返回 null */\n    findConfigPageByPageId(pageId: string): ConfigPageNode | null;\n}",
+        "members": {
+          "methods": [
+            {
+              "name": "findNodeById",
+              "jsdoc": "按 nodeId 在导航树中查找项目节点；未找到返回 null",
+              "parameters": [
+                {
+                  "name": "nodeId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ProjectNode",
+                    "sourcePath": "packages/spark-project-model/src/navigation/project-node.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "findConfigPageByPageId",
+              "jsdoc": "按 pageId 查找已加载的配置页节点；仅返回已 hydrate 的 ConfigPageNode，未找到返回 null",
+              "parameters": [
+                {
+                  "name": "pageId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ConfigPageNode",
+                    "sourcePath": "packages/spark-project-model/src/page/config-page.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ProjectSession": {
+      "name": "ProjectSession",
+      "jsdoc": "ProjectModel 持有的设计过程态：选中、活动页、dirty 与导航草稿（不落盘）。",
+      "declarationKind": "class",
+      "provenance": {
+        "file": "packages/spark-project-model/src/project/project-session.ts",
+        "line": 32,
+        "className": "ProjectSession",
+        "declarationKind": "class"
+      },
+      "classDecl": {
+        "constructorMeta": {
+          "jsdoc": "创建 Project Session 实例。",
+          "signatureText": "constructor(owner: ProjectSessionOwner)",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": {
+                "type": "reference",
+                "name": "ProjectSessionOwner",
+                "sourcePath": "packages/spark-project-model/src/project/project-session.ts"
+              }
+            }
+          ]
+        },
+        "members": {
+          "methods": [
+            {
+              "name": "setNavigationDraft",
+              "jsdoc": "设置 Navigation Draft。",
+              "parameters": [
+                {
+                  "name": "draft",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "reference",
+                        "name": "NavigationNodeDraft",
+                        "sourcePath": "packages/spark-project-model/src/navigation/navigation-edit.ts"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "beginNavigationDraft",
+              "jsdoc": "执行 begin Navigation Draft 操作。",
+              "parameters": [
+                {
+                  "name": "draft",
+                  "type": {
+                    "type": "reference",
+                    "name": "NavigationNodeDraft",
+                    "sourcePath": "packages/spark-project-model/src/navigation/navigation-edit.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "name": "NavigationNodeDraft",
+                "sourcePath": "packages/spark-project-model/src/navigation/navigation-edit.ts"
+              }
+            },
+            {
+              "name": "discardNavigationDraft",
+              "jsdoc": "执行 discard Navigation Draft 操作。",
+              "parameters": [],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "markNavigationDirty",
+              "jsdoc": "执行 mark Navigation Dirty 操作。",
+              "parameters": [
+                {
+                  "name": "scope",
+                  "type": {
+                    "type": "reference",
+                    "name": "ProjectNavigationDirtyScope",
+                    "sourcePath": "packages/spark-project-model/src/project/project-types.ts"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "markNavigationClean",
+              "jsdoc": "执行 mark Navigation Clean 操作。",
+              "parameters": [],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "setSelectedNodeId",
+              "jsdoc": "set Selected Node Id 标识。",
+              "parameters": [
+                {
+                  "name": "nodeId",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "type": "unknown",
+                    "name": "{\n        silentIfMissing?: boolean;\n    }"
+                  },
+                  "flags": {
+                    "isOptional": true
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "setActivePageId",
+              "jsdoc": "set Active Page Id 标识。",
+              "parameters": [
+                {
+                  "name": "pageId",
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "syncWithModel",
+              "jsdoc": "执行 sync With Model 操作。",
+              "parameters": [],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

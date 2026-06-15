@@ -28,6 +28,10 @@ import {
   CLASS_MODEL_EMIT_PREFIX,
   CLASS_MODEL_EMIT_TSCONFIG,
   isClassModelEmitPath,
+  normalizeBundleManifestSourcePathSet,
+  readManifestFileEntry,
+  resolveClassModelEmitPath,
+  sourceFileFromEmitPath,
   toClassModelEmitPath,
 } from '../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
 import {
@@ -808,8 +812,9 @@ function prepareTargetedBuild(options) {
 
   for (const modelName of options.models) {
     const manifestEntry = existingManifest.classIndex?.[modelName]
-    if (manifestEntry !== undefined && dtsFileBySourcePath.has(manifestEntry.sourcePath)) {
-      targetSourcePaths.add(manifestEntry.sourcePath)
+    const manifestEmitSourcePath = manifestEntry === undefined ? undefined : resolveClassModelEmitPath(manifestEntry.sourcePath)
+    if (manifestEmitSourcePath !== undefined && dtsFileBySourcePath.has(manifestEmitSourcePath)) {
+      targetSourcePaths.add(manifestEmitSourcePath)
       continue
     }
 
@@ -879,7 +884,7 @@ function readTargetedBuildSeed(options) {
     if (manifestEntry === undefined) {
       throw new Error(`ClassModel target is not in the existing manifest: ${modelName}. Use --source for a new model, or run a full generate once.`)
     }
-    targetSourcePaths.add(manifestEntry.sourcePath)
+    targetSourcePaths.add(resolveClassModelEmitPath(manifestEntry.sourcePath))
   }
 
   for (const sourceInput of options.sources) {
@@ -888,7 +893,7 @@ function readTargetedBuildSeed(options) {
 
   const sourceFiles = []
   for (const sourcePath of targetSourcePaths) {
-    const manifestFile = existingManifest.files?.[sourcePath]
+    const manifestFile = readManifestFileEntry(existingManifest, sourcePath)
     const sourceFile = resolveSourceFileForDtsSourcePath({
       repoRoot: options.repoRoot,
       sourcePath,
@@ -909,6 +914,7 @@ function resolveSourceFileForDtsSourcePath(command) {
     candidates.push(resolve(command.repoRoot, command.manifestSourceFile))
   }
   const sourcePath = String(command.sourcePath).replace(/\\/g, '/')
+  candidates.push(resolve(command.repoRoot, sourceFileFromEmitPath(sourcePath)))
   if (isClassModelEmitPath(sourcePath) && sourcePath.endsWith('.d.ts')) {
     const withoutSuffix = sourcePath.endsWith('.vue.d.ts')
       ? sourcePath.slice(CLASS_MODEL_EMIT_PREFIX.length, -'.d.ts'.length)
@@ -936,12 +942,19 @@ function normalizeDtsSourcePathInput(input, repoRoot) {
   if (raw.length === 0) throw new Error('Empty --source value.')
 
   let normalized = raw.replace(/\\/g, '/')
+  normalized = normalized.replace(/^.*?generated\/dts-class-model\/runtime\/files\//u, '')
+  normalized = normalized.replace(/^.*?generated\/dts-class-model\/files\//u, '')
   normalized = normalized.replace(/^generated\/dts-class-model\/runtime\/files\//u, '')
   normalized = normalized.replace(/^generated\/dts-class-model\/files\//u, '')
   normalized = normalized.replace(/^runtime\/files\//u, '')
   normalized = normalized.replace(/^files\//u, '')
   if (normalized.endsWith('.json')) normalized = normalized.slice(0, -'.json'.length)
   if (isClassModelEmitPath(normalized)) return normalized
+  try {
+    return toClassModelEmitPath(normalized)
+  } catch {
+    // Absolute paths and non-source spellings fall through to repo-relative normalization.
+  }
 
   const absolutePath = isAbsolute(raw) ? resolve(raw) : resolve(repoRoot, raw)
   const repoPath = normalizeRepoPath(absolutePath, repoRoot)
@@ -1016,11 +1029,12 @@ function declaresNamedSymbol(node, symbolName) {
 function mergeChangedBundle(command) {
   const existingManifestPath = resolve(command.outputDir, 'manifest.json')
   const existingSemanticJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
+  const targetSourcePaths = normalizeBundleManifestSourcePathSet(command.changedSourcePaths)
   const mergedManifest = mergeBundleManifest({
     outputDir: command.outputDir,
     existingManifest: command.existingManifest,
     targetManifest: command.result.manifest,
-    targetSourcePaths: command.changedSourcePaths,
+    targetSourcePaths,
   })
   writeFileSync(existingManifestPath, `${JSON.stringify(mergedManifest, null, 2)}\n`, 'utf8')
   assertMergedBundleFilesExist(command.outputDir, mergedManifest.files)
@@ -1028,7 +1042,7 @@ function mergeChangedBundle(command) {
   const semanticReport = mergeSemanticGapReports({
     existing: command.existingSemanticReport,
     target: readJsonFile(command.result.semanticLogJsonPath),
-    targetSourcePaths: command.changedSourcePaths,
+    targetSourcePaths,
   })
   const semanticLogJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
   writeFileSync(semanticLogJsonPath, `${JSON.stringify(semanticReport, null, 2)}\n`, 'utf8')
@@ -1085,9 +1099,10 @@ function mergeTargetedBundle(command) {
 }
 
 function mergeBundleManifest(command) {
+  const targetSourcePaths = normalizeBundleManifestSourcePathSet(command.targetSourcePaths)
   const files = {}
   for (const [sourcePath, entry] of Object.entries(command.existingManifest.files ?? {})) {
-    if (!command.targetSourcePaths.has(sourcePath)) files[sourcePath] = entry
+    if (!targetSourcePaths.has(sourceFileFromEmitPath(sourcePath))) files[sourcePath] = entry
   }
   Object.assign(files, command.targetManifest.files)
   const rebuiltIndex = rebuildClassIndexFromBundleFiles(command.outputDir, files)
@@ -1136,10 +1151,11 @@ function writeDtsManifestFromBundleManifest(repoRoot, outputDir, manifest) {
 }
 
 function mergeSemanticGapReports(command) {
+  const targetSourcePaths = normalizeBundleManifestSourcePathSet(command.targetSourcePaths)
   const targetGaps = command.target.gaps ?? []
   const existingGaps = command.existing?.gaps ?? []
   const gaps = [
-    ...existingGaps.filter(gap => !command.targetSourcePaths.has(String(gap.declarationFile ?? '').replace(/\\/g, '/'))),
+    ...existingGaps.filter(gap => !targetSourcePaths.has(sourceFileFromEmitPath(String(gap.declarationFile ?? '').replace(/\\/g, '/')))),
     ...targetGaps,
   ].sort(compareSemanticGaps)
   return {

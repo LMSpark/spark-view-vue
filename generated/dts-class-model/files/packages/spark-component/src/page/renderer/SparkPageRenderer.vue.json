@@ -1,0 +1,397 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
+  "module": {
+    "name": "@spark-appworks/spark-component:page/renderer/SparkPageRenderer",
+    "sourcePath": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue",
+    "sourceFile": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/renderer/SparkPageRenderer",
+    "jsdoc": "@module @spark-appworks/spark-component:page/renderer/SparkPageRenderer\n职责：维护 @spark-appworks/spark-component 中 page/renderer/SparkPageRenderer 的模块能力，围绕 PageRuntimeErrorPhase、PageRuntimeErrorPayload、Props 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 page/renderer/SparkPageRenderer 的声明、导出和使用边界时，从本模块开始。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "PageRuntimeErrorPhase",
+      "PageRuntimeErrorPayload",
+      "Props"
+    ]
+  },
+  "$defs": {
+    "PageRuntimeErrorPhase": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "PageRuntimeErrorPhase",
+      "enum": [
+        "load",
+        "script-compile",
+        "init",
+        "script-function",
+        "render"
+      ]
+    },
+    "PageRuntimeErrorPayload": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "PageRuntimeErrorPayload",
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/PageRuntimeErrorPhase"
+        },
+        "message": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phase",
+        "message",
+        "pageId",
+        "at"
+      ],
+      "additionalProperties": false
+    },
+    "Props": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "Props",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "pageNode": {
+          "$ref": "../../../../spark-project-model/src/page/config-page.ts.json#/$defs/PageNodeLike"
+        },
+        "pageNodeRevision": {
+          "type": "number"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "enableCssScope": {
+          "type": "boolean"
+        },
+        "enableDataSet": {
+          "type": "boolean"
+        },
+        "messageService": true,
+        "confirmService": true
+      },
+      "required": [
+        "pageNode"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "method.beforeLoad.params": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.beforeLoad.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.afterLoad.params": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "$ref": "../../../../spark-project-model/src/page/config-page.ts.json#/$defs/PageNodeRenderConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.afterLoad.return": {
+          "type": "object",
+          "title": "Promise<void>"
+        },
+        "method.onError.params": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "object",
+              "title": "Error"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onError.return": true,
+        "method.onRuntimeError.params": {
+          "type": "object",
+          "properties": {
+            "payload": {
+              "$ref": "#/$defs/PageRuntimeErrorPayload"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method.onRuntimeError.return": true
+      }
+    }
+  },
+  "generatedAt": "2026-06-11T12:38:13.603Z",
+  "models": {
+    "PageRuntimeErrorPhase": {
+      "name": "PageRuntimeErrorPhase",
+      "jsdoc": "页面运行时错误发生阶段。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue",
+        "line": 9,
+        "className": "PageRuntimeErrorPhase",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "'load' | 'script-compile' | 'init' | 'script-function' | 'render'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'load'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'script-compile'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'init'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'script-function'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'render'"
+          }
+        ],
+        "members": {}
+      }
+    },
+    "PageRuntimeErrorPayload": {
+      "name": "PageRuntimeErrorPayload",
+      "jsdoc": "页面运行时错误上报载荷。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue",
+        "line": 11,
+        "className": "PageRuntimeErrorPayload",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    /** 发生错误的页面运行阶段。 */\n    phase: PageRuntimeErrorPhase;\n    /** 面向用户和日志的错误消息。 */\n    message: string;\n    /** 出错页面 ID。 */\n    pageId: string;\n    /** 错误发生时间。 */\n    at: string;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "phase",
+              "jsdoc": "发生错误的页面运行阶段。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "message",
+              "jsdoc": "面向用户和日志的错误消息。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "pageId",
+              "jsdoc": "出错页面 ID。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "at",
+              "jsdoc": "错误发生时间。",
+              "readable": true,
+              "writable": true
+            }
+          ]
+        }
+      }
+    },
+    "Props": {
+      "name": "Props",
+      "jsdoc": "SparkPageRenderer props — 对齐 h(type, props, children) 三段式。\n- type     = 'spark-page'（withDefaults 设定默认值）\n- props    = pageNode / pageId / enable* / 钩子等（本接口所有字段）\n- children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue",
+        "line": 28,
+        "className": "Props",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "Omit<SparkNode, 'type'> & {\n    /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */\n    type?: string;\n    /** 页面节点唯一入口；渲染器只消费 PageNode 内存态。 */\n    pageNode: PageNodeLike;\n    /** 外部变更版本号；同一 PageNode 内存内容变化时触发重渲染。 */\n    pageNodeRevision?: number;\n    /** 页面唯一标识符（可选校验值；默认取 pageNode.pageId） */\n    pageId?: string;\n    /** 是否启用 CSS 作用域隔离 @default true */\n    enableCssScope?: boolean;\n    /** 是否启用 DataSet 自动初始化 @default true */\n    enableDataSet?: boolean;\n    /** UI 消息服务接口 */\n    messageService?: PageServiceOverrides['messageService'];\n    /** UI 确认对话框服务接口 */\n    confirmService?: PageServiceOverrides['confirmService'];\n    /** 页面加载前钩子（loadNodeProps 之前） */\n    beforeLoad?: (pageId: string) => void | Promise<void>;\n    /** 页面加载后钩子（applyNodeProps 之后） */\n    afterLoad?: (state: PageNodeRenderConfig) => void | Promise<void>;\n    /** 错误处理函数 */\n    onError?: (error: Error) => void;\n    /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */\n    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void;\n}",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "Omit<SparkNode, 'type'>",
+            "targetName": "Omit"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "{\n    /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */\n    type?: string;\n    /** 页面节点唯一入口；渲染器只消费 PageNode 内存态。 */\n    pageNode: PageNodeLike;\n    /** 外部变更版本号；同一 PageNode 内存内容变化时触发重渲染。 */\n    pageNodeRevision?: number;\n    /** 页面唯一标识符（可选校验值；默认取 pageNode.pageId） */\n    pageId?: string;\n    /** 是否启用 CSS 作用域隔离 @default true */\n    enableCssScope?: boolean;\n    /** 是否启用 DataSet 自动初始化 @default true */\n    enableDataSet?: boolean;\n    /** UI 消息服务接口 */\n    messageService?: PageServiceOverrides['messageService'];\n    /** UI 确认对话框服务接口 */\n    confirmService?: PageServiceOverrides['confirmService'];\n    /** 页面加载前钩子（loadNodeProps 之前） */\n    beforeLoad?: (pageId: string) => void | Promise<void>;\n    /** 页面加载后钩子（applyNodeProps 之后） */\n    afterLoad?: (state: PageNodeRenderConfig) => void | Promise<void>;\n    /** 错误处理函数 */\n    onError?: (error: Error) => void;\n    /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */\n    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void;\n}"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "type",
+              "jsdoc": "组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "pageNode",
+              "jsdoc": "页面节点唯一入口；渲染器只消费 PageNode 内存态。",
+              "readable": true,
+              "writable": true
+            },
+            {
+              "name": "pageNodeRevision",
+              "jsdoc": "外部变更版本号；同一 PageNode 内存内容变化时触发重渲染。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "pageId",
+              "jsdoc": "页面唯一标识符（可选校验值；默认取 pageNode.pageId）",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enableCssScope",
+              "jsdoc": "是否启用 CSS 作用域隔离\n@default true",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enableDataSet",
+              "jsdoc": "是否启用 DataSet 自动初始化\n@default true",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "messageService",
+              "jsdoc": "UI 消息服务接口",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "confirmService",
+              "jsdoc": "UI 确认对话框服务接口",
+              "readable": true,
+              "writable": false
+            }
+          ],
+          "methods": [
+            {
+              "name": "beforeLoad",
+              "jsdoc": "页面加载前钩子（loadNodeProps 之前）",
+              "parameters": [
+                {
+                  "name": "pageId",
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "afterLoad",
+              "jsdoc": "页面加载后钩子（applyNodeProps 之后）",
+              "parameters": [
+                {
+                  "name": "state",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageNodeRenderConfig"
+                  }
+                }
+              ],
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Promise",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "onError",
+              "jsdoc": "错误处理函数",
+              "parameters": [
+                {
+                  "name": "error",
+                  "type": {
+                    "type": "reference",
+                    "name": "Error"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            },
+            {
+              "name": "onRuntimeError",
+              "jsdoc": "运行时错误回调（供外层采集脚本编译/初始化/加载错误）。",
+              "parameters": [
+                {
+                  "name": "payload",
+                  "type": {
+                    "type": "reference",
+                    "name": "PageRuntimeErrorPayload",
+                    "sourcePath": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

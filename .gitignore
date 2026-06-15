@@ -2,7 +2,8 @@ node_modules
 
 # Local IDE/workspace state
 .cursor/
-.vscode/
+.vscode/*
+!.vscode/launch.json.example
 .idea/
 .fleet/
 .husky/

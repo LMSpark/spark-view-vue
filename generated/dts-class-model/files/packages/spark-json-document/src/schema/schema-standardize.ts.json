@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 3,
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-standardize",
+    "sourcePath": "packages/spark-json-document/src/schema/schema-standardize.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-standardize.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-standardize",
+    "jsdoc": "@module @spark-appworks/spark-json-document:schema/schema-standardize\n职责：提供 JSON 文档和 schema 处理中的 schema-standardize 能力，围绕 StandardJsonSchema、StandardJsonSchemaObject 管理 schema 标准化、解析、校验或树策略。\n边界：只处理 JSON/schema/tree 抽象，不依赖 SPARK 页面运行时，也不直接操作业务 DataSet。\nAI用途：生成或校验 JSON 配置结构时，用本模块确认 schema/schema-standardize 的 schema 语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonSchemaType",
+      "JsonLiteralValue",
+      "StandardJsonSchema",
+      "StandardJsonSchemaObject"
+    ]
+  },
+  "$defs": {
+    "JsonSchemaType": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "JsonSchemaType",
+      "enum": [
+        "null",
+        "boolean",
+        "object",
+        "array",
+        "number",
+        "integer",
+        "string"
+      ]
+    },
+    "JsonLiteralValue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "JsonLiteralValue",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "StandardJsonSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "StandardJsonSchema",
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "title": "StandardJsonSchemaObject"
+        }
+      ]
+    },
+    "StandardJsonSchemaObject": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "StandardJsonSchemaObject",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "$ref": {
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonSchemaType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/JsonSchemaType"
+              }
+            }
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "title": "Record<string, StandardJsonSchema>"
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "items": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "prefixItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StandardJsonSchema"
+          }
+        },
+        "additionalProperties": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "enum": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JsonLiteralValue"
+          }
+        },
+        "const": {
+          "$ref": "#/$defs/JsonLiteralValue"
+        },
+        "anyOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StandardJsonSchema"
+          }
+        },
+        "oneOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StandardJsonSchema"
+          }
+        },
+        "allOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StandardJsonSchema"
+          }
+        },
+        "not": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Record<string, StandardJsonSchema>"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "generatedAt": "2026-06-14T13:58:22.059Z",
+  "models": {
+    "JsonSchemaType": {
+      "name": "JsonSchemaType",
+      "jsdoc": "Draft 2020-12 `type` 关键字允许的基础 JSON 类型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-json-document/src/schema/schema-standardize.ts",
+        "line": 14,
+        "className": "JsonSchemaType",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "'null' | 'boolean' | 'object' | 'array' | 'number' | 'integer' | 'string'",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "'null'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'boolean'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'object'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'array'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'number'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'integer'"
+          },
+          {
+            "kind": "union",
+            "typeText": "'string'"
+          }
+        ],
+        "members": {}
+      }
+    },
+    "JsonLiteralValue": {
+      "name": "JsonLiteralValue",
+      "jsdoc": "JSON Schema enum/const 可承载的 JSON 标量值。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-json-document/src/schema/schema-standardize.ts",
+        "line": 16,
+        "className": "JsonLiteralValue",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "string | number | boolean | null",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "string"
+          },
+          {
+            "kind": "union",
+            "typeText": "number"
+          },
+          {
+            "kind": "union",
+            "typeText": "boolean"
+          },
+          {
+            "kind": "union",
+            "typeText": "null"
+          }
+        ],
+        "members": {}
+      }
+    },
+    "StandardJsonSchema": {
+      "name": "StandardJsonSchema",
+      "jsdoc": "Standard Json Schema 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-json-document/src/schema/schema-standardize.ts",
+        "line": 18,
+        "className": "StandardJsonSchema",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "boolean | StandardJsonSchemaObject",
+        "declarationRelations": [
+          {
+            "kind": "union",
+            "typeText": "boolean"
+          },
+          {
+            "kind": "union",
+            "typeText": "StandardJsonSchemaObject",
+            "targetName": "StandardJsonSchemaObject"
+          }
+        ],
+        "members": {}
+      }
+    },
+    "StandardJsonSchemaObject": {
+      "name": "StandardJsonSchemaObject",
+      "jsdoc": "Standard Json Schema Object 的语义模型。",
+      "declarationKind": "typeAlias",
+      "provenance": {
+        "file": "packages/spark-json-document/src/schema/schema-standardize.ts",
+        "line": 20,
+        "className": "StandardJsonSchemaObject",
+        "declarationKind": "typeAlias"
+      },
+      "typeAlias": {
+        "declarationTypeText": "{\n    [keyword: string]: unknown;\n    /** $schema 字段。 */\n    $schema?: string;\n    /** $ref 字段。 */\n    $ref?: string;\n    /** 类型标识。 */\n    type?: JsonSchemaType | readonly JsonSchemaType[];\n    /** properties 字段。 */\n    properties?: Readonly<Record<string, StandardJsonSchema>>;\n    /** 是否必填。 */\n    required?: readonly string[];\n    /** items 字段。 */\n    items?: StandardJsonSchema;\n    /** prefix Items 字段。 */\n    prefixItems?: readonly StandardJsonSchema[];\n    /** additional Properties 字段。 */\n    additionalProperties?: StandardJsonSchema;\n    /** enum 字段。 */\n    enum?: readonly JsonLiteralValue[];\n    /** const 字段。 */\n    const?: JsonLiteralValue;\n    /** any Of 字段。 */\n    anyOf?: readonly StandardJsonSchema[];\n    /** one Of 字段。 */\n    oneOf?: readonly StandardJsonSchema[];\n    /** all Of 字段。 */\n    allOf?: readonly StandardJsonSchema[];\n    /** not 字段。 */\n    not?: StandardJsonSchema;\n    /** 显示标题。 */\n    title?: string;\n    /** description 字段。 */\n    description?: string;\n    /** $defs 字段。 */\n    $defs?: Readonly<Record<string, StandardJsonSchema>>;\n}",
+        "members": {
+          "attributes": [
+            {
+              "name": "$schema",
+              "jsdoc": "$schema 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "$ref",
+              "jsdoc": "$ref 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "type",
+              "jsdoc": "类型标识。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "properties",
+              "jsdoc": "properties 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "required",
+              "jsdoc": "是否必填。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "items",
+              "jsdoc": "items 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "prefixItems",
+              "jsdoc": "prefix Items 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "additionalProperties",
+              "jsdoc": "additional Properties 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "enum",
+              "jsdoc": "enum 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "const",
+              "jsdoc": "const 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "anyOf",
+              "jsdoc": "any Of 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "oneOf",
+              "jsdoc": "one Of 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "allOf",
+              "jsdoc": "all Of 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "not",
+              "jsdoc": "not 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "title",
+              "jsdoc": "显示标题。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "description",
+              "jsdoc": "description 字段。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "$defs",
+              "jsdoc": "$defs 字段。",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

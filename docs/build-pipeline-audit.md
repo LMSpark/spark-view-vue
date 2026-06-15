@@ -119,7 +119,7 @@ tsconfig.class-model-emit.json
 
 | 事实 | 说明 |
 |------|------|
-| 不落盘 `.d.ts` | 默认全程内存 emit；bundle 内虚拟键前缀 `class-model-emit/` |
+| 不落盘 `.d.ts` | 内存 emit 虚拟键 `class-model-emit/`；落盘 manifest/shard 索引键为源码 repo 相对路径 |
 | **L1 增量（已落地）** | emit 前规划；manifest shard mtime 未变 → **跳过 declaration emit + 投影**（实测 ~70s → ~3s）；仅刷新 `.dts-manifest.json` |
 | **config 漂移** | tsconfig 推导项多于 manifest 时记入 `newConfigSourcePaths`（如 `env.d.ts` / `vite-env.d.ts` 环境声明），**不阻断** `canSkipDeclarationEmit` |
 | **部分变更** | 仅 changed 项进 `projectOnlySourcePaths`；Program 用依赖闭包；仍全量内存 emit（**P3：L2 磁盘 buildinfo**） |

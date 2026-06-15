@@ -20,7 +20,7 @@ export const DTS_CLASS_MODEL_BUNDLE_VERSION = 1 as const
 export type DtsFileProjectionDocument = Readonly<{
   /** per-file 投影协议版本；与 bundle manifest 的 schemaVersion 独立演进。 */
   schemaVersion: typeof DTS_FILE_PROJECTION_VERSION
-  /** class-model-emit 下 `.d.ts` 的仓库相对路径，作为 shard 文件名和 manifest 索引键。 */
+  /** 源码 repo 相对路径（如 packages/.../foo.ts）；与 manifest.files 索引键及 shard 路径一致。 */
   sourcePath: string
   /** 该 shard 的模块级语义元数据：名称、JSDoc、组件归属和导出 symbol 列表。 */
   module: DtsFileModuleSemanticMeta
@@ -58,7 +58,7 @@ export type DtsFileModuleJsDocSource =
 export type DtsFileModuleSemanticMeta = Readonly<{
   /** 模块语义标识；monorepo 包内为 `packageName:modulePath`，workspace 根为 modulePath。 */
   name: string
-  /** class-model-emit 下 `.d.ts` 的仓库相对路径，与 DtsFileProjectionDocument.sourcePath 一致。 */
+  /** 源码 repo 相对路径；与 DtsFileProjectionDocument.sourcePath 及 manifest.files 键一致。 */
   sourcePath: string
   /** 对应 TypeScript/Vue 源文件的仓库相对路径；由 emit 路径反推，用于 gap 修复提示和组件归属推断。 */
   sourceFile: string
