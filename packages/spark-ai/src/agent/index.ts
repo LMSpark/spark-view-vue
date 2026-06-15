@@ -41,12 +41,27 @@ export type {
   AiAgentHostDryRunResult,
   AiAgentHostEnsureCommand,
   AiAgentHostEntryMap,
+  AiAgentHostFactoryInspectOptions,
+  AiAgentHostFactoryInspectResult,
   AiAgentHostOrchestrationSummary,
   AiAgentHostRegistrationDescription,
   AiAgentHostRegistrationSummary,
   AiAgentHostRunResult,
   CreateAiAgentHostOptions,
 } from './business/ai-host'
+
+export type {
+  BusinessFactoryAcceptanceReport,
+  BusinessFactoryAcceptanceReportInput,
+  BusinessFactoryCheck,
+  BusinessFactoryCheckStatus,
+  BusinessFactoryWorkflowGraph,
+  BusinessFactoryWorkflowGraphEdge,
+  BusinessFactoryWorkflowGraphNode,
+  BusinessFactoryWorkflowNodeStatus,
+  BusinessFactoryWorkflowPhaseId,
+  BusinessFactoryWorkflowPhaseKind,
+} from './business/business-factory'
 
 export {
   AiAgentRegistration,
