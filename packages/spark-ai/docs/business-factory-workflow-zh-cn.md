@@ -16,7 +16,9 @@
 
 ## 1. 核心结论
 
-业务工厂不是一个 `create` 回调。`create` 只是当前 `AiAgentHostEnsureCommand` 里的延迟 registration provider 字段，负责在 alias 尚未存在时提供一份 `AiAgentRegistration`。
+业务工厂不是一个 `create` 回调，也不是 `ensureXxxBusiness(options)` 这类业务函数。`create` 只是当前 `AiAgentHostEnsureCommand` 里的延迟 registration provider 字段，负责在 alias 尚未存在时提供一份 `AiAgentRegistration`；`ensureXxxBusiness()` 只能视为旧接入壳。
+
+目标态的主语必须是层级化 `AgentWorkflowDefinition` 数据：注册、验收、运行、交付都由统一 workflow engine 解释这份数据完成，而不是每个业务自己写一个散落的注册函数。
 
 完整业务工厂应包含工艺流程、阶段验收、消费矩阵和出厂回执：
 
@@ -125,15 +127,15 @@ type AiAgentHostEnsureCommand<TInput> = Readonly<{
 
 | 阶段 | 目标 | 输入 | 输出 | 验收点 | 当前锚点 |
 | ---- | ---- | ---- | ---- | ------ | -------- |
-| F0 能力定义 | 明确“这是哪类业务能力” | alias、moduleId、rootClassName、业务边界 | `BusinessCapabilityIdentity` | alias 稳定；moduleId 唯一；rootClassName 存在 | `ensureXxxBusiness()` |
+| F0 能力定义 | 明确“这是哪类业务能力” | alias、moduleId、rootClassName、业务边界 | `BusinessCapabilityIdentity` | alias 稳定；moduleId 唯一；rootClassName 存在 | `AgentWorkflowDefinition.identity` |
 | F1 原料绑定 | 绑定领域根对象和 APP 上下文 | moduleClass、instance/resolveInstance、manifest URL、delivery context | `BusinessFactoryMaterials` | 可解析领域实例；不把 instanceId 混成 alias | APP service |
 | F2 知识绑定 | 让 LLM 可查 API | JSON manifest、knowledge provider、rootClassName | 可查询知识闭包 | root class 可达；子模型链可达；componentIndex 可查 | `ClassModelKnowledgeService` |
 | F3 工单契约 | 把外部请求变成可执行任务 | paramsSchema、identityField、messageField（经由 `createSimpleInputContract` 映射到 orchestration）、normalize | `AiAgentInputContract` | normalize 前后 schema 均通过；scope 与 identity 一致 | `createAiAgentTask()` / `createSimpleInputContract()` |
 | F4 运行时装配 | 组装工具闭集和 script 执行器 | moduleClass、runtime options、knowledge、script runner | `AiAgentToolRuntime` | `runtime.inspect()` healthy；7 工具参数白名单正确 | `ClassModelAgentAdapter` |
 | F5 治理接入 | 控制工具调用过程 | before/after hooks、nudge、recovery、maxToolRounds | lifecycle policy | mutation gate 生效；失败提示可恢复；执行阶段可控 | tool-loop / executor |
-| F6 工厂验收 | 注册前做出厂检查 | sample input、runtime inspect、knowledge query、delivery plan | acceptance report | dryRun 通过；关键 guide/script 链路通过；delivery 策略明确 | `host.inspectFactory()` + 测试 |
-| F7 激活注册 | 把能力包接入 Host | alias、moduleId、registrationProvider | registry + alias map | alias 幂等；moduleId 不冲突；registration.moduleId 一致 | `Host.ensure()` |
-| F8 工单生产 | 执行一次业务请求 | alias、input、chat options | session + tool loop result | input 合法；session 可追踪；tool result 可诊断 | `Host.run()` |
+| F6 工厂验收 | 注册前做出厂检查 | sample input、runtime inspect、knowledge query、delivery plan | acceptance report | dryRun 通过；关键 guide/script 链路通过；delivery 策略明确 | `AgentWorkflowEngine.inspect()` |
+| F7 激活注册 | 把能力包接入 Host | workflowId、activation、registrationProviderRef | registry + alias map | alias 幂等；moduleId 不冲突；registration.moduleId 一致 | `AgentWorkflowEngine.activate()` |
+| F8 工单生产 | 执行一次业务请求 | workflowId、input、chat options | session + tool loop result | input 合法；session 可追踪；tool result 可诊断 | `AgentWorkflowEngine.run()` |
 | F9 交付回执 | 把 Working Copy 出厂 | dirty state、delivery context | save/rollback/trace result | 成功才保存；失败 rollback；回执进入 resultExtras | `AiDeliveryPort` |
 
 ### 4.1 最小可落地闭环
@@ -142,7 +144,7 @@ type AiAgentHostEnsureCommand<TInput> = Readonly<{
 
 | 信息 | 必须回答 | 可接受的首版来源 |
 | ---- | -------- | ---------------- |
-| identity | alias、moduleId、rootClassName 是否稳定且互不混用 | `ensureXxxBusiness()` 常量和 `rootClassName` |
+| identity | alias、moduleId、rootClassName 是否稳定且互不混用 | `AgentWorkflowDefinition.identity` |
 | materials | 领域实例怎么解析，是否隔离 session/tenant/project | APP service、`instance` 或 `resolveInstance` |
 | knowledge | manifest 是否可加载，root class 与子模型链是否可达 | `generated/dts-class-model/manifest.json` + knowledge provider |
 | contract | 外部 args 如何进入 schema、normalize、scope、orchestration | `AiAgentInputContract` |
@@ -270,95 +272,467 @@ type BusinessFactoryAcceptanceReport = Readonly<{
 
 因此，“业务工厂”可以向 AI 暴露为工具入口，但实现上必须按能力生产线治理，不能降级为一个 `create()`。
 
-## 8. 建议的工厂配方
+## 8. Agent Workflow 数据结构方案
 
-为了让后续业务接入更可控，可在概念层先形成 `BusinessCapabilityFactoryRecipe`，再逐步落代码。
+正确的主结构不是 `BusinessCapabilityFactoryRecipe` 这种把 class、provider、hook、delivery 混在一起的大对象，更不是 `ensureXxxBusiness()` 业务函数。目标态应拆成四个边界：
+
+| 层 | 形态 | 职责 | 是否可序列化 |
+| -- | ---- | ---- | ------------ |
+| `AgentWorkflowDesignDocument` | 可视化编辑稿 | 保存画布布局、草稿状态、编辑命令、校验快照，并内嵌待发布 workflow | 是 |
+| `AgentWorkflowDefinition` | 层级化数据 | 描述 F0-F9 每一阶段的身份、输入、证据和策略 | 是 |
+| `AgentWorkflowBindings` | 运行时绑定表 | 按 `bindingRef` 提供 class、provider、resolver、hook、delivery port | 否 |
+| `AgentWorkflowEngine` | 解释器 | 读取 definition + bindings，执行 inspect / activate / run / deliver | 否 |
+
+核心原则：
+
+1. 注册必须完全走 workflow 数据。`Host.ensure()` 只是 engine 内部激活步骤，不是业务接入主 API。
+2. definition 不直接放函数、class、实例或闭包，只放 `bindingRef`、策略、证据要求和可验证配置。
+3. bindings 是运行时依赖注入表，允许挂 `moduleClass`、`resolveInstance`、`systemPrompt`、gate、nudge、delivery port。
+4. engine 是唯一解释入口，业务侧不再直接拼 `ClassModelAgentAdapter.createRegistration()`。
+5. F0-F9 必须层级化表达，禁止把 `alias/moduleId/rootClassName/manifest/inputContract/delivery` 摊成大平层。
+6. 可视化编辑只编辑 `AgentWorkflowDesignDocument` 草稿；发布动作生成新的 `AgentWorkflowDefinition` 修订版，不能直接改 registry、registration 或业务实例。
+7. 画布布局是编辑元数据，必须与执行数据分离；节点位置、折叠状态、选中状态不能混进 F0-F9 执行语义。
+
+### 8.1 顶层结构
 
 ```typescript
-// 类型引用来自 spark-ai 包内：
-//   ClassModelKnowledgeProvider    → class-model-knowledge-service.ts
-//   ClassModelKnowledgeQueryInput  → class-model-knowledge-service.ts
-//   AiAgentBeforeFunctionCallOptions / AiAgentBeforeFunctionCallDirective → lifecycle-types.ts
-//   AiAgentAfterFunctionCallOptions / AiAgentLifecycleDirective → lifecycle-types.ts
-//   AiAgentToolLoopNudgeContext → registration-types.ts
-//   EnrichFunctionCallFailureCommand → function-call-recovery-enricher.ts
-//   AiAgentRuntimeContext → scope-types.ts
-//   AiDeliveryMode → ai-delivery-port.ts
+type AgentWorkflowDefinition = Readonly<{
+  kind: 'agent.workflow'
+  version: 1
+  workflowId: string
+  meta: AgentWorkflowMeta
+  factory: BusinessFactoryWorkflow
+}>
 
-type BusinessCapabilityFactoryRecipe<
-  TInput extends AiJsonParams = AiJsonParams,
-  TModule = unknown,
-> = Readonly<{
-  identity: {
+type BusinessFactoryWorkflow = Readonly<{
+  identity: WorkflowIdentity
+  materials: WorkflowMaterials
+  knowledge: WorkflowKnowledge
+  contract: WorkflowContract
+  runtime: WorkflowRuntime
+  governance: WorkflowGovernance
+  acceptance: WorkflowAcceptance
+  activation: WorkflowActivation
+  workOrder: WorkflowWorkOrder
+  delivery: WorkflowDelivery
+}>
+```
+
+### 8.2 F0 identity
+
+```typescript
+type WorkflowIdentity = Readonly<{
+  capability: {
     alias: string
     moduleId: string
     rootClassName: string
   }
-  materials: {
-    moduleClass: new (...args: unknown[]) => TModule
-    manifestUrl: string
-    resolveInstance?: (context: AiAgentRuntimeContext) => TModule
+  display: {
+    name: string
+    description: string
   }
-  knowledge: {
-    provider: ClassModelKnowledgeProvider
-    requiredQueries?: readonly ClassModelKnowledgeQueryInput[]
+  boundary: {
+    domain: string
+    ownsMutation: boolean
+    allowedScenes: readonly string[]
+    forbiddenScenes?: readonly string[]
   }
-  inputContract: AiAgentInputContract<TInput>
-  governance?: {
-    beforeFunctionCall?: (
-      instance: TModule,
-      options: AiAgentBeforeFunctionCallOptions,
-    ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
-    afterFunctionCall?: (
-      instance: TModule,
-      options: AiAgentAfterFunctionCallOptions,
-    ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
-    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
-    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
-  }
-  delivery?: {
-    mode: AiDeliveryMode
-    portName: string
-  }
-  accept?: (sampleInput: TInput) => Promise<BusinessFactoryAcceptanceReport>
-  provideRegistration: () => AiAgentRegistration<TInput>
 }>
 ```
 
-这个配方不要求立即替换现有 `ensureXxxBusiness()`，但它能把“工艺流程”从散落在 service、Host、runtime、Delivery 的隐式约定，提升成可查询、可测试、可验收的业务描述。
+### 8.3 F1 materials
 
-## 9. 可视化方案：AG-UI + Vue Flow
+```typescript
+type WorkflowMaterials = Readonly<{
+  domainRoot: {
+    bindingRef: string
+    className: string
+    packageName?: string
+  }
+  instance: {
+    resolverRef: string
+    scopeKey: 'businessInstanceId' | 'projectId' | 'tenantId' | string
+    lifetime: 'request' | 'session' | 'singleton'
+  }
+  artifacts: {
+    manifestUrlRef: string
+    generatedFrom: 'dts-class-model'
+  }
+  appContext?: {
+    tenantScoped: boolean
+    projectScoped: boolean
+    sessionScoped: boolean
+  }
+}>
+```
 
-> 方案状态：设计稿，暂不落代码。核心原则是 **Vue Flow 只负责画布和交互，AG-UI 只负责事件流，`spark-ai` 仍是 SSOT 和执行真源**。
+### 8.4 F2 knowledge
+
+```typescript
+type WorkflowKnowledge = Readonly<{
+  provider: {
+    bindingRef: string
+    kind: 'worker-dts-bundle' | 'dts-bundle' | 'custom'
+    rootClassName: string
+    manifestUrlRef: string
+  }
+  closure: {
+    requiredKinds: readonly string[]
+    requiredActions?: readonly string[]
+    requiredAttributes?: readonly string[]
+    requiredComponentIndexes?: readonly string[]
+  }
+  smoke: {
+    queries: readonly KnowledgeSmokeQuery[]
+    guideChecks: readonly KnowledgeGuideCheck[]
+    scriptChecks?: readonly ScriptSmokeCheck[]
+  }
+}>
+```
+
+### 8.5 F3 contract
+
+```typescript
+type WorkflowContract = Readonly<{
+  input: {
+    schemaRef: string
+    identityField: string
+    messageField: string
+    requiredFields: readonly string[]
+  }
+  normalize: {
+    policyRef?: string
+    validatesBeforeNormalize: boolean
+    validatesAfterNormalize: boolean
+  }
+  scope: {
+    businessRegistrationIdFrom: 'identity.moduleId'
+    businessInstanceIdFrom: string
+    eventModuleIdFrom?: string
+  }
+  orchestration: {
+    systemPromptRef: string
+    titleRef?: string
+    readonlySteps?: readonly string[]
+  }
+}>
+```
+
+### 8.6 F4 runtime
+
+```typescript
+type WorkflowRuntime = Readonly<{
+  adapter: {
+    kind: 'class-model-agent'
+    bindingRef: string
+  }
+  toolset: {
+    expectedToolNames: readonly string[]
+    executionToolNames: readonly string[]
+    parameterPolicy: 'strict'
+  }
+  script: {
+    executorRef: string
+    mode: 'readonly' | 'mutation' | 'mixed'
+    allowedGlobals?: readonly string[]
+  }
+  inspect: {
+    requiredStatus: 'ok' | 'warning'
+    failOnUnknownTool: boolean
+  }
+}>
+```
+
+### 8.7 F5 governance
+
+```typescript
+type WorkflowGovernance = Readonly<{
+  lifecycle: {
+    beforeFunctionCallRef?: string
+    afterFunctionCallRef?: string
+    gateScope: 'mutation' | 'allTools'
+  }
+  loop: {
+    maxToolRounds: number
+    nudgeRef?: string
+    planWithoutToolMarkers?: readonly string[]
+  }
+  recovery: {
+    enrichRecoveryHintsRef?: string
+    retryPolicy: 'none' | 'scriptRetry' | 'toolRetry'
+  }
+}>
+```
+
+### 8.8 F6 acceptance
+
+```typescript
+type WorkflowAcceptance = Readonly<{
+  sampleInputs: readonly SampleInputRef[]
+  gates: {
+    dryRun: 'required'
+    runtimeInspect: 'required'
+    knowledgeSmoke: 'required' | 'optional'
+    scriptSmoke: 'required' | 'optional'
+    deliveryPlan: 'required' | 'optional'
+  }
+  evidence: {
+    report: 'BusinessFactoryAcceptanceReport'
+    graph: 'BusinessFactoryWorkflowGraph'
+    requiredCheckCodes?: readonly string[]
+  }
+}>
+```
+
+### 8.9 F7 activation
+
+```typescript
+type WorkflowActivation = Readonly<{
+  host: {
+    targetRef: string
+    aliasPolicy: 'stable'
+    moduleIdPolicy: 'unique'
+  }
+  registration: {
+    providerRef: string
+    output: 'AiAgentRegistration'
+  }
+  conflict: {
+    onAliasConflict: 'fail'
+    onModuleIdConflict: 'fail'
+  }
+}>
+```
+
+### 8.10 F8 workOrder
+
+```typescript
+type WorkflowWorkOrder = Readonly<{
+  run: {
+    entrypoint: 'workflow.run'
+    delegatesTo: 'host.run'
+    inputRef: 'contract.input'
+  }
+  session: {
+    storeRef: string
+    trace: boolean
+  }
+  agUi?: {
+    enabled: boolean
+    emitFactoryGraph: boolean
+    emitToolTimeline: boolean
+  }
+}>
+```
+
+### 8.11 F9 delivery
+
+```typescript
+type WorkflowDelivery = Readonly<{
+  mode: 'none' | 'manual' | 'hostRunAuto'
+  portRef?: string
+  savePlan?: {
+    artifactScope: readonly string[]
+    commitMessageRef?: string
+  }
+  rollbackPlan?: {
+    onRunFailure: boolean
+    onDeliveryFailure: boolean
+  }
+  tracePlan?: {
+    includeResultExtras: boolean
+    includeArtifacts: boolean
+  }
+}>
+```
+
+### 8.12 Bindings 表
+
+```typescript
+type AgentWorkflowBindings = Readonly<{
+  classes: Record<string, unknown>
+  providers: Record<string, unknown>
+  resolvers: Record<string, unknown>
+  policies: Record<string, unknown>
+  prompts: Record<string, unknown>
+  schemas: Record<string, unknown>
+  stores: Record<string, unknown>
+  deliveryPorts: Record<string, unknown>
+}>
+```
+
+bindings 的职责是“把不可序列化能力挂到 ref 上”，不是重新描述 workflow。凡是能进 definition 的内容，不应重复塞进 bindings。
+
+### 8.13 后续 Engine 入口
+
+以下 API 是发布后的运行时目标，当前 JSON 文件保存阶段暂不实现。目标 API 应围绕 workflow，而不是围绕业务函数：
+
+```typescript
+registerAgentWorkflow(definition, bindings)
+inspectAgentWorkflow(workflowId, sampleInput)
+runAgentWorkflow(workflowId, input, chat?)
+deliverAgentWorkflow(workflowId, runResult)
+```
+
+旧的 `ensurePageDesignBusiness()` / `ensureProjectPlanningBusiness()` 只能作为兼容壳：
+
+```text
+legacy ensureXxxBusiness(options)
+  → load AgentWorkflowDefinition
+  → create AgentWorkflowBindings from options
+  → registerAgentWorkflow(definition, bindings)
+```
+
+这类旧函数不再是设计主语，也不能作为新增业务模板。
+
+### 8.14 可视化编辑稿
+
+第一轮只做编辑态 JSON 和文件保存，不做运行时。编辑稿模拟 Dify 的 workflow graph 结构：顶层是 app/workflow 元信息，画布在 `workflow.graph.nodes / workflow.graph.edges / workflow.graph.viewport`，SPARK 私有信息放进 `x_spark` 扩展。
+
+```json
+{
+  "kind": "agent.workflow.design",
+  "version": 1,
+  "id": "spark.project-planning",
+  "app": {
+    "id": "spark.project-planning",
+    "name": "项目规划",
+    "mode": "workflow",
+    "description": "",
+    "icon": "spark",
+    "icon_background": "#0f766e"
+  },
+  "workflow": {
+    "id": "spark.project-planning",
+    "version": 1,
+    "graph": {
+      "nodes": [],
+      "edges": [],
+      "viewport": { "x": 0, "y": 0, "zoom": 1 }
+    }
+  },
+  "x_spark": {
+    "schema": "spark.agent.workflow.design.v1",
+    "businessFactory": true,
+    "phaseModel": "F0-F9",
+    "draft": { "status": "draft", "dirtyPaths": [] },
+    "validation": { "status": "unknown", "issues": [] },
+    "history": { "commands": [] }
+  }
+}
+```
+
+后端文件保存位置：
+
+```text
+data/workflow-designs/{tenantId}/{projectId}/{workflowId}/design.json
+```
+
+当前已落地 REST 入口：
+
+| 方法 | 路径 | 用途 |
+| ---- | ---- | ---- |
+| `GET` | `/api/tenants/{tenantId}/projects/{projectId}/workflow-designs/__list` | 列出 workflow design |
+| `POST` | `/api/tenants/{tenantId}/projects/{projectId}/workflow-designs/__create` | 创建 scaffold `design.json` |
+| `GET` | `/api/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}/design.json` | 读取设计稿，支持 `timestamp` 条件读取 |
+| `PUT` | `/api/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}/design.json` | 覆盖保存设计稿 |
+| `DELETE` | `/api/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}` | 删除设计稿目录 |
+
+扁平兼容路径 `/api/workflow-designs/**` 使用 `X-Tenant-Id` 与 `X-Project-Id` 请求头解析上下文。
+
+### 8.15 循环与单模型编辑工具节点
+
+循环按 Dify 的 Loop 节点思路建模：主图只有 `start -> loop -> end`，业务工厂 F0-F9 位于 `loop.data.loop.subGraph` 内。循环节点保存变量、最大循环次数和退出条件；子图可以继续嵌套 loop 或 iteration。
+
+单模型编辑不是普通配置卡片，而是 Dify 风格工具节点。F0-F9 每个节点都是一次 `single_model_edit` 工具配置：
+
+```json
+{
+  "id": "phase.F0",
+  "type": "custom",
+  "position": { "x": 0, "y": 0 },
+  "data": {
+    "type": "tool",
+    "title": "Edit identity",
+    "provider_id": "spark.model-editor",
+    "provider_type": "builtin",
+    "tool_name": "single_model_edit",
+    "tool_label": "Single Model Edit",
+    "tool_config": {
+      "target": "node.data.model",
+      "operation": "replace-model",
+      "outputVariable": "updated_model"
+    },
+    "tool_parameters": {
+      "document_id": "{{#sys.workflow_id#}}",
+      "node_id": "phase.F0",
+      "section_path": "factory.identity",
+      "patch": "{}"
+    },
+    "model": {
+      "phaseId": "F0",
+      "sectionPath": "factory.identity",
+      "value": {}
+    },
+    "outputs": {
+      "updated_model": "object",
+      "validation_issues": "array[object]"
+    },
+    "x_spark": {
+      "nodeRole": "single-model-edit",
+      "phaseId": "F0",
+      "sectionPath": "factory.identity",
+      "modelPath": "workflow.graph.nodes[id=phase.F0].data.model",
+      "publishPath": "workflow.factory.identity"
+    }
+  }
+}
+```
+
+编辑器后续只需要识别 `data.type = "tool"` 且 `data.tool_name = "single_model_edit"`，就能把节点映射成“单模型编辑”表单；保存仍然是整份 `design.json`。
+
+## 9. 可视化查看与编辑方案：AG-UI + Vue Flow
+
+> 方案状态：设计稿，暂不落代码。核心原则是 **Vue Flow 负责画布查看与草稿编辑，AG-UI 负责运行事件流，`AgentWorkflowDefinition` + engine 仍是发布后执行真源**。
+
+可视化必须分成两种模式：
+
+| 模式 | 操作对象 | 输出 | 禁止事项 |
+| ---- | -------- | ---- | -------- |
+| 查看模式 | `BusinessFactoryWorkflowGraph`、AG-UI events、acceptance report | 运行态节点状态、检查项、证据、时间线 | 不修改 workflow，不修改 registration |
+| 编辑模式 | `AgentWorkflowDesignDocument` | 结构化 edit commands、draft validation、待发布 definition | 不直接写 registry，不直接创建业务实例，不把画布 layout 写进 F0-F9 |
 
 ### 9.1 分层边界
 
 ```text
 spark-ai
-  Host / Registration / dryRun / ToolLoop / Delivery
-  └─ 输出：业务工厂阶段、验收报告、AG-UI events
+  AgentWorkflowDefinition / Engine / Host / dryRun / ToolLoop / Delivery
+  ├─ 查看输出：业务工厂阶段、验收报告、AG-UI events
+  └─ 编辑输出：schema validation、bindingRef resolution、publish result
 
 AG-UI
   run/message/reasoning/tool_call/approval/custom events
   └─ 输出：运行时间线、工具调用时间线、人工审批状态
 
 Vue Flow
-  canvas nodes / edges / interaction
-  └─ 输出：可视化选择、展开、定位、过滤；不执行业务
+  canvas nodes / edges / editor forms / interaction
+  ├─ 查看输出：选择、展开、定位、过滤
+  └─ 编辑输出：WorkflowEditCommand、canvas layout、draft state
 ```
 
 禁止反向依赖：
 
 | 禁止项 | 原因 |
 | ------ | ---- |
-| Vue Flow 节点状态反写 `AiAgentRegistration` | 画布是视图，不是执行真源 |
+| Vue Flow 节点状态反写 `AiAgentRegistration` | 画布编辑的是 design document，不是运行期 registry |
 | AG-UI custom event 直接修改业务实例 | AG-UI 是事件协议，不是领域运行时 |
 | APP 侧绕过 `host.dryRun` 自造验收状态 | 会破坏参数检测和 runtime inspect 的统一入口 |
 | 画布节点直接调用 DeliveryPort | 交付必须由 APP run 生命周期统一控制 |
+| 画布 layout 字段混入 `AgentWorkflowDefinition.factory` | layout 只服务编辑体验，不能成为执行语义 |
 
 ### 9.2 Graph DTO 设计
 
-已在 `packages/spark-ai/src/agent/business/business-factory.ts` 提供画布无关 DTO，前端再薄映射到 Vue Flow。DTO 按 Vue Flow 习惯设计，但不导入 `@vue-flow/core`：
+运行态查看使用 `BusinessFactoryWorkflowGraph`。已在 `packages/spark-ai/src/agent/business/business-factory.ts` 提供画布无关 DTO，前端再薄映射到 Vue Flow。DTO 按 Vue Flow 习惯设计，但不导入 `@vue-flow/core`：
 
 ```typescript
 type BusinessFactoryWorkflowPhaseId =
@@ -412,7 +786,7 @@ type BusinessFactoryWorkflowGraph = Readonly<{
 
 ### 9.3 F0-F9 默认布局
 
-当前首版使用固定布局，不引入自动排版。这样每个阶段的位置稳定，方便截图、测试和用户记忆。
+查看模式和编辑模式都使用同一套 F0-F9 固定布局，不引入自动排版。这样每个阶段的位置稳定，方便截图、测试、草稿 diff 和用户记忆。
 
 ```text
 F0 能力定义 ─→ F1 原料绑定 ─→ F2 知识绑定 ─→ F3 工单契约 ─→ F4 运行时装配
@@ -429,7 +803,7 @@ F9 交付回执 ←─ F8 工单生产 ←─ F7 激活注册 ←─ F6 工厂�
 | F4 | `(1040, 0)` | runtime | 7 工具、script runner、runtime.inspect |
 | F5 | `(1040, 240)` | governance | gates、nudge、recovery、maxToolRounds |
 | F6 | `(780, 240)` | acceptance | dryRun、guide/script 链路、delivery plan |
-| F7 | `(520, 240)` | activation | Host.ensure、alias map、registry |
+| F7 | `(520, 240)` | activation | engine activate、alias map、registry |
 | F8 | `(260, 240)` | workOrder | Host.run、session、ToolLoop、tool calls |
 | F9 | `(0, 240)` | delivery | save、rollback、trace、resultExtras |
 
@@ -437,17 +811,59 @@ F9 交付回执 ←─ F8 工单生产 ←─ F7 激活注册 ←─ F6 工厂�
 
 | 阶段 | 可视化状态来源 |
 | ---- | -------------- |
-| F0 / F7 | `host.describe(alias)` 中 alias、moduleId 和 registration 摘要 |
-| F1 | 业务工厂 recipe 或 APP ensure 配置；首版可从人工声明读取 |
-| F2 | manifest 加载、rootClassName、knowledge query、componentIndex query |
-| F3 | `host.dryRun(alias, sampleInput)` 中 normalizedInput、scope、orchestration |
-| F4 | `runtime.inspect()` 的 `ok / warning / error` 和工具清单 |
-| F5 | registration hooks、executionToolNames、toolLoopNudge、recovery hints |
-| F6 | factory acceptance report 汇总 |
+| F0 | `AgentWorkflowDefinition.factory.identity` + schema validation |
+| F1 | `definition.factory.materials` + `AgentWorkflowBindings` resolution |
+| F2 | `definition.factory.knowledge` + manifest 加载、knowledge query、componentIndex query |
+| F3 | `definition.factory.contract` + `host.dryRun(alias, sampleInput)` 中 normalizedInput、scope、orchestration |
+| F4 | `definition.factory.runtime` + `runtime.inspect()` 的 `ok / warning / error` 和工具清单 |
+| F5 | `definition.factory.governance` + hooks、executionToolNames、toolLoopNudge、recovery hints 的绑定解析 |
+| F6 | `AgentWorkflowEngine.inspect()` 的 acceptance report 汇总 |
+| F7 | `AgentWorkflowEngine.activate()` 的 alias map、registry、registration 摘要 |
 | F8 | contract 与 activation 通过，且 identity/materials/knowledge/runtime/governance 无 fail 后标为 `ready`；实际 run 中由 AG-UI / stream event 标为 `running / passed / failed` |
 | F9 | APP DeliveryPort 的 save / rollback / trace 回执 |
 
-### 9.5 AG-UI custom events
+### 9.5 可视化编辑交互
+
+编辑器必须按层级 section 组织，不允许做成一个包含所有字段的大平层表单。推荐交互是“画布节点 + 右侧分层抽屉 + 底部校验/发布栏”：
+
+| 交互区 | 数据对象 | 必须能力 |
+| ------ | -------- | -------- |
+| F0-F9 画布节点 | `WorkflowCanvasNode` | 选中、移动、折叠、查看状态；移动只生成 `canvas.node.move` |
+| 节点抽屉 | `AgentWorkflowDefinition.factory[section]` | 分组编辑嵌套字段，提交结构化 `WorkflowEditCommand` |
+| 绑定面板 | `AgentWorkflowBindings` 的 ref 摘要 | 只选择/校验 `bindingRef`，不在 definition 内塞函数 |
+| 校验面板 | `WorkflowValidationSnapshot` | 展示 schema、bindingRef、acceptance sample、delivery plan 问题 |
+| 发布栏 | draft revision | validate 通过后发布新 `AgentWorkflowDefinition` revision |
+
+节点抽屉的最小层级：
+
+| 节点 | 抽屉 section | 子分组 |
+| ---- | ------------ | ------ |
+| F0 | `factory.identity` | `capability`、`display`、`boundary` |
+| F1 | `factory.materials` | `domainRoot`、`instance`、`artifacts`、`appContext` |
+| F2 | `factory.knowledge` | `provider`、`closure`、`smoke` |
+| F3 | `factory.contract` | `input`、`normalize`、`scope`、`orchestration` |
+| F4 | `factory.runtime` | `adapter`、`toolset`、`script`、`inspect` |
+| F5 | `factory.governance` | `lifecycle`、`loop`、`recovery` |
+| F6 | `factory.acceptance` | `sampleInputs`、`gates`、`evidence` |
+| F7 | `factory.activation` | `host`、`registration`、`conflict` |
+| F8 | `factory.workOrder` | `run`、`session`、`agUi` |
+| F9 | `factory.delivery` | `mode`、`portRef`、`savePlan`、`rollbackPlan`、`tracePlan` |
+
+编辑态数据流：
+
+```text
+User edits node drawer
+  → WorkflowEditCommand
+  → update AgentWorkflowDesignDocument.workflow
+  → validate changed section and cross-section refs
+  → update WorkflowValidationSnapshot
+  → preview BusinessFactoryWorkflowGraph
+  → publish definition revision
+```
+
+编辑器不能只保存“表单 JSON”。每一次编辑都应该能追踪到命令、sectionPath、revision 和 validation issue，这样后续才能做 diff、review、回滚和多人协作。
+
+### 9.6 AG-UI custom events
 
 现有 AG-UI adapter 已覆盖 run、message、reasoning、tool call 和 `spark.stream.event`。业务工厂画布建议只新增 custom events，不扩 AG-UI 官方事件语义：
 
@@ -473,9 +889,9 @@ AG-UI spark.factory.* custom events
   → Vue Flow nodes / edges
 ```
 
-### 9.6 前端薄映射
+### 9.7 前端薄映射
 
-Vue Flow 页面只做四件事：
+查看模式的 Vue Flow 页面只做四件事：
 
 1. 接收 `BusinessFactoryWorkflowGraph`。
 2. 把 graph DTO 映射为 Vue Flow `nodes / edges`。
@@ -505,49 +921,58 @@ const vueFlowEdges = graph.edges.map(edge => ({
 
 | 组件 | 职责 |
 | ---- | ---- |
-| `BusinessFactoryWorkflowGraph.vue` | Vue Flow 外壳，接收 graph |
-| `BusinessFactoryPhaseNode.vue` | 单个 F0-F9 节点 |
-| `BusinessFactoryPhaseDrawer.vue` | 节点详情、checks、evidence |
+| `BusinessFactoryWorkflowGraph.vue` | 查看模式 Vue Flow 外壳，接收 graph |
+| `BusinessFactoryWorkflowEditor.vue` | 编辑模式 Vue Flow 外壳，接收 design document |
+| `BusinessFactoryPhaseNode.vue` | 单个 F0-F9 节点，支持查看/编辑态差异 |
+| `BusinessFactoryPhaseDrawer.vue` | 节点详情、checks、evidence，编辑态展示 section form |
+| `BusinessFactoryValidationPanel.vue` | 展示 validation snapshot 和 publish blocker |
 | `useBusinessFactoryWorkflowGraph.ts` | AG-UI custom event reducer |
+| `useAgentWorkflowDesignDocument.ts` | design document reducer、edit command、publish 调用 |
 
-### 9.7 落地优先级
+### 9.8 落地优先级
 
 本表只描述可视化方案落地顺序；类型冻结、`dryRun` 增强和 delivery 诊断仍按 §11 的全局迭代路线执行。
 
 | 阶段 | 目标 | 当前状态 | 不做什么 |
 | ---- | ---- | -------- | -------- |
 | P0 文档冻结 | 固定 F0-F9、状态枚举、事件名、DTO 契约 | 已完成首版 | 不引入 UI 依赖 |
-| P1 静态画布 | 用 mock graph 渲染 Vue Flow 页面 | 待做 | 不接 Host，不接 AG-UI |
-| P2 dryRun 接入 | `host.inspectFactory()` 生成 F0-F9 首版状态 | 已完成首版 | 不执行 `Host.run` |
-| P3 AG-UI 运行态 | 消费 tool call / stream / custom events 更新 F8 | 待做 | 不改变 ToolLoop |
-| P4 Delivery 接入 | Delivery result 更新 F9 | 待做 | 不让画布直接保存 |
-| P5 Factory Report | 形成 `BusinessFactoryAcceptanceReport` 类型与测试 | 已完成首版 | 不一次性引入 builder DSL |
+| P1 运行态静态画布 | 用 mock graph 渲染 Vue Flow 查看页 | 待做 | 不接 Host，不接 AG-UI |
+| P2 编辑稿 schema | 定义 `AgentWorkflowDesignDocument`、edit command、validation issue | 待做 | 不做大平层表单 |
+| P3 编辑态画布 | 支持 F0-F9 节点抽屉编辑、保存草稿、生成 validation snapshot | 待做 | 不直接写 registration |
+| P4 dryRun 接入 | `AgentWorkflowEngine.inspect()` 生成 F0-F9 首版状态 | 待做 | 不执行真实 `run` |
+| P5 AG-UI 运行态 | 消费 tool call / stream / custom events 更新 F8 | 待做 | 不改变 ToolLoop |
+| P6 Delivery 接入 | Delivery result 更新 F9 | 待做 | 不让画布直接保存 |
+| P7 发布链路 | validate design document 后发布 definition revision | 待做 | 不允许未验证草稿进入 engine |
 
-### 9.8 验收标准
+### 9.9 验收标准
 
 首版可视化方案必须满足：
 
 | 验收点 | 标准 |
 | ------ | ---- |
-| SSOT | graph 来源于 `spark-ai`/APP 运行状态，不从 Vue Flow 反推 |
+| SSOT | 查看态 graph 来源于 engine/APP 运行状态；编辑态只发布 `AgentWorkflowDefinition` revision |
+| 可编辑 | F0-F9 都能在节点抽屉编辑嵌套 section，所有修改都生成 `WorkflowEditCommand` |
+| 可校验 | schema、bindingRef、acceptance sample、delivery plan 的 blocker 能在发布前展示 |
 | 可解释 | 任一红色/黄色节点都能展开看到 `code/message/fix/evidence` |
 | 可追踪 | F8 能定位到 AG-UI runId/threadId/toolCallId |
 | 可分层 | 可只看工厂阶段，也可点开查看 AG-UI timeline |
 | 可降级 | 没装 Vue Flow 时，graph DTO 仍可被日志/表格/诊断面板消费 |
-| 可测试 | P1 静态节点快照、P2 dryRun 投影、P3 event reducer 都有单测 |
+| 可测试 | 静态节点快照、edit command reducer、validation projector、event reducer 都有单测 |
 
 ## 10. 现状缺口
 
 | 缺口 | 影响 | 优先级 |
 | ---- | ---- | ------ |
-| `AiAgentHostEnsureCommand.create` 命名偏窄 | 容易误以为 `{ moduleId, create }` 就是业务工厂 | 高 |
+| 缺 `AgentWorkflowDefinition` 层级 schema | 注册仍靠代码拼装，无法从数据完整表达 F0-F9 | 高 |
+| 缺 `AgentWorkflowDesignDocument` 与 edit command schema | 可视化编辑只能做临时表单，无法 diff、review、publish、rollback | 高 |
+| 缺 `AgentWorkflowEngine` 解释入口 | inspect / activate / run / deliver 仍分散在 Host、adapter、APP service | 高 |
+| 现有接入函数仍承担注册入口 | 新业务容易继续把业务工厂误写成注册函数 | 高 |
 | 暂无完整 factory acceptance runner | knowledge query、script smoke、governance summary、delivery 策略仍需外部补充 checks | 高 |
-| Delivery 未进入能力配方 | Script 与交付边界清楚，但接新业务时仍靠人工记忆 | 高 |
-| `dryRun` 容易被误当完整验收 | guide/script、governance、delivery 未覆盖，问题会拖到真实 run 才暴露 | 高 |
-| 工艺阶段 graph 尚未接入前端与 AG-UI | Vue Flow 页面和运行态事件 reducer 还没有落地 | 中 |
+| Delivery 未进入 workflow definition | Script 与交付边界清楚，但接新业务时仍靠人工记忆 | 高 |
+| 可视化编辑器尚未落地 | 不能通过画布编辑 F0-F9，也不能发布 workflow revision | 高 |
+| `dryRun` 容易被误当完整验收 | guide/script、governance、delivery 未覆盖，问题会拖到真实 run 才暴露 | 中 |
 | AG-UI 尚无 `spark.factory.*` custom events，类型联合也未放开 | 工厂阶段无法跟运行时间线统一 | 中 |
 | 诊断面板未展示工厂阶段 | 出问题时只能看 registration/runtime/task 的局部信息 | 中 |
-| 旧文档仍有 `create` 简写 | 容易继续传播旧理解 | 中 |
 
 ## 11. 迭代路线
 
@@ -555,38 +980,51 @@ const vueFlowEdges = graph.edges.map(edge => ({
 
 | 迭代阶段 | 目标 | 改动范围 |
 | -------- | ---- | -------- |
-| 阶段 1 | 文档口径统一：`create` 是 provider，不是完整工厂 | docs |
-| 阶段 2 | 冻结 `BusinessFactoryAcceptanceReport` 与 `BusinessFactoryWorkflowGraph` DTO | 已有首版：spark-ai types + `host.inspectFactory()` |
-| 阶段 3 | 将 `host.dryRun` 扩展为 factory acceptance 的子集 | Host API 兼容增强 |
-| 阶段 4 | 新增 `spark.factory.*` AG-UI custom events | AG-UI mapper / app adapter |
-| 阶段 5 | 引入 APP 侧 Vue Flow 静态原型页 | app/component 层 |
-| 阶段 6 | 将 delivery plan 纳入接入 checklist 和诊断输出 | APP services + docs |
-| 阶段 7 | 新增 `registrationProvider` 兼容字段，保留 `create` | Host 类型与接入点 |
-| 阶段 8 | 可选引入 `BusinessCapabilityFactoryRecipe` builder | 新业务接入层 |
+| 阶段 1 | 冻结 Dify-like `design.json`：`app`、`workflow.graph`、`x_spark`、loop、tool 节点 | docs + server scaffold |
+| 阶段 2 | 后端文件保存：创建、读取、覆盖、列表、删除 `design.json` | `spark-ai-server` |
+| 阶段 3 | 单模型编辑工具节点：F0-F9 都是 `single_model_edit` tool node，模型在 `node.data.model` | `spark-ai-server` scaffold + docs |
+| 阶段 4 | JSON schema / validator：校验 graph、loop、tool node、sectionPath、model 结构 | server + shared schema |
+| 阶段 5 | 前端可视化编辑器：读取文件、渲染 graph、选中 tool node、编辑 `node.data.model`、保存文件 | app/component 层 |
+| 阶段 6 | 发布器：从 tool node 的 `data.model` 聚合为 `AgentWorkflowDefinition` | spark-ai shared |
+| 阶段 7 | 再考虑运行时：engine inspect / activate / run / deliver | spark-ai engine + Host 适配 |
+| 阶段 8 | 再接运行态可视化：AG-UI events、delivery、timeline | AG-UI mapper / app adapter |
 
-最低可执行标准：新增业务不只回答“怎么 create registration”，而是必须交付 identity、knowledge、contract、runtime、governance、acceptance、delivery 七类信息，并能通过 dryRun 与关键 guide/script 链路验证。
+当前最低可执行标准只看编辑态：后端能保存 Dify-like JSON 文件；JSON 支持 loop；F0-F9 每个可编辑单元都是 `single_model_edit` tool node；每个 tool node 都有自己的 `data.model`；前端后续只编辑并保存这份 JSON，不直接碰 Host、registration 或运行时。
 
 ## 12. 新业务接入验收清单
 
 本节是业务工厂的统一接入清单。其他文档可以链接本文，但业务工厂口径以本文为准。
 
-### 12.1 七件套
+### 12.1 当前阶段交付物
 
-新增业务不要只交一个 `create()`。接入评审时必须能给出下面七类材料：
+当前阶段不验收运行时，只验收编辑态 JSON 和文件保存。接入评审必须看到下面产物：
 
-| 材料 | 需要落到哪里 |
-|------|--------------|
-| identity | alias、moduleId、rootClassName 常量 |
-| materials | moduleClass、instance/resolveInstance、APP 上下文 |
-| knowledge | manifest URL、knowledge provider、root class 查询 |
-| contract | paramsSchema、identityField、normalize、scope、orchestration |
-| runtime | ClassModel 7 工具、script executor、runtime.inspect |
-| governance | gates、nudge、recovery、maxToolRounds |
-| delivery | manual/auto、save、rollback、trace、resultExtras |
+| 产物 | 必须包含 | 不能包含 |
+| ---- | -------- | -------- |
+| `design.json` | `kind/version/id/app/workflow.graph/x_spark` | 运行期实例、函数闭包、registration 对象 |
+| graph | `nodes/edges/viewport`，节点和边有稳定 id | 大平层表单字段 |
+| loop node | `data.type = "loop"`、`loop.variables`、`terminationConditions`、`subGraph` | 用回跳边伪造无限循环 |
+| single-model tool node | `data.type = "tool"`、`tool_name = "single_model_edit"`、`data.model`、`x_spark.phaseId/sectionPath/publishPath` | 把模型散落在节点外部隐藏对象里 |
+| file API | list/create/get/put/delete 都能读写同一份 `design.json` | 直接写前端 localStorage 当后端存储 |
 
-### 12.2 阶段清单
+### 12.2 F0-F9 数据清单
 
-#### A. 领域
+| 阶段 | tool node publishPath | 验收问题 |
+| ---- | --------------- | -------- |
+| F0 | `workflow.factory.identity` | `phase.F0` 是否是 `single_model_edit` tool node |
+| F1 | `workflow.factory.materials` | `phase.F1.data.model` 是否存在 |
+| F2 | `workflow.factory.knowledge` | sectionPath 是否为 `factory.knowledge` |
+| F3 | `workflow.factory.contract` | node id、sectionPath、publishPath 是否一致 |
+| F4 | `workflow.factory.runtime` | 运行时语义只保存为模型数据，不执行 |
+| F5 | `workflow.factory.governance` | loop 配置与治理模型分离 |
+| F6 | `workflow.factory.acceptance` | 当前只保存 acceptance 模型，不跑验收 |
+| F7 | `workflow.factory.activation` | 当前只保存 activation 模型，不激活 Host |
+| F8 | `workflow.factory.workOrder` | 当前只保存 workOrder 模型，不执行 run |
+| F9 | `workflow.factory.delivery` | 当前只保存 delivery 模型，不触发 save/rollback |
+
+### 12.3 阶段清单
+
+#### A. 领域模型
 
 - [ ] 根 class + `@module`（职责/边界/AI 用途）
 - [ ] 公开 mutator；子 model 经 public 属性可达
@@ -603,148 +1041,144 @@ const vueFlowEdges = graph.edges.map(edge => ({
 - [ ] `semantic-gaps.json` 可接受
 - [ ] mutator 回调 ref 闭包可达
 
-#### C. 能力包
+#### C. Workflow 数据
 
-- [ ] `host.ensure(alias, { moduleId, create })` 幂等；`create` 是当前 API 字段，概念上是 registration provider
-- [ ] `ClassModelAgentAdapter.createRegistration({ rootClassName, manifestUrl, knowledge, inputContract, sessionStore })`
-- [ ] `createSimpleInputContract({ businessId, identityField, messageField, paramsSchema, systemPrompt })`
-- [ ] `beforeFunctionCall` gates（仅拦 mutation）
-- [ ] `runtime.inspect()` 为 ok 或可解释的 warn
-- [ ] `host.dryRun(alias, sampleInput)` 通过
-- [ ] `create` / `registrationProvider` 不持有会跨 tenant/session 串扰的实例状态
+- [x] `design.json.kind/version/id` 固定
+- [x] `workflow.graph.nodes/edges/viewport` 齐全
+- [x] 主图包含 `start -> loop -> end`
+- [x] loop 节点包含 `data.loop.subGraph`
+- [x] F0-F9 都是 `single_model_edit` tool node
+- [x] 每个 tool node 都有自己的 `data.model`
+- [x] 每个 tool node 的 `x_spark.sectionPath` 与 `x_spark.publishPath` 一致
+- [x] validation snapshot 先保留在 `x_spark.validation`
 
 #### D. 运行
 
-- [ ] `host.run(alias, input, chat?)` 入口
-- [ ] 工单 DTO 与 `paramsSchema` 一致
-- [ ] `turnCallbacks` 已在 Host 构造时注入
-- [ ] `maxToolRounds` 已按业务风险设置
-- [ ] 请求级 `beforeFunctionCall` 与注册级 gate 的顺序已确认
+- [ ] 当前阶段不验收运行时
+- [ ] 不调用 `AgentWorkflowEngine.inspect/activate/run/deliver`
+- [ ] 不调用 Host registration
+- [ ] 不执行 tool loop
+- [ ] 不把编辑器保存动作绑定到业务实例 mutation
 
 #### E. 交付
 
-- [ ] Commit 时机：手动 save / Host Run auto-save
-- [ ] 可选 Receipt：`ai-host-run-bridge`
-- [ ] 明确：Script 不等于 Delivery
-- [ ] 成功 run 后 `delivery.save()` 的产物范围明确
-- [ ] run 失败或 delivery 失败时 `delivery.rollback()` 和错误 extras 明确
-- [ ] `delivery.trace()` 至少能保留 status、artifacts、message
+- [x] 当前阶段交付只等于保存 `design.json`
+- [x] 保存路径为 `data/workflow-designs/{tenantId}/{projectId}/{workflowId}/design.json`
+- [x] `GET` 支持 timestamp 条件读取
+- [x] `PUT` 只覆盖当前工作文件，不自动升版
+- [x] `DELETE` 只删除 workflow design 目录
 
-#### F. 验收
+#### F. 可视化
 
-- [ ] dryRun + guide/script smoke test
-- [ ] `host.inspectFactory(alias, sampleInput, options?)` 可生成 report + graph
-- [ ] 知识闭包：root + 关键子模型 + 关键 action/attribute guide
-- [ ] 脚本闭环：一个只读 `model_script` 或 sandbox smoke test
-- [ ] 治理闭环：mutation gate 拒绝路径可见
-- [ ] 交付闭环：save / rollback / resultExtras 可见
-- [ ] loader 闭包测试
-- [ ] DevSystem 或 staging Host Run
-- [ ] 模型收敛回归：`pnpm run verify:model-convergence`
+- [x] 前端只读取 `workflow.graph`
+- [x] loop 节点可展开 `subGraph`
+- [x] tool 节点按 `single_model_edit` 渲染单模型编辑器
+- [x] 编辑保存的是 `node.data.model`
+- [x] 画布移动只改变 node position
+- [x] 没有 Vue Flow 时，`design.json` 仍可被普通 JSON 编辑器读写
 
-## 13. 实际接入示例
+#### G. 验收
 
-当前仓库已有两个业务接入实例，可作为新增业务的参考模板。本节以 `ensureProjectPlanningBusiness` 为主例，展示从领域到交付的完整调用链。
+- [x] 后端服务测试覆盖 create/read/write/list/delete
+- [x] 后端服务测试覆盖 workflowId 路径与 JSON 内容一致
+- [x] 后端服务测试覆盖 loop subGraph 内存在 `single_model_edit`
+- [x] controller 测试覆盖租户/项目路径和扁平请求头路径
+- [x] 前端测试覆盖 `/workflow-designs` system-page 注册和 loop 子图 tool 节点解析
+- [x] 当前阶段不跑 dryRun、guide/script smoke、Host Run、delivery smoke
 
-### 13.1 调用链总览
+## 13. 当前实现示例
 
-```text
-ensureXxxBusiness(options)
-  ├─ 1. createSimpleInputContract()          → inputContract（F3）
-  ├─ 2. createWorkerDtsClassModelKnowledgeProvider()  → knowledge provider（F2）
-  ├─ 3. ClassModelAgentAdapter.createRegistration()   → registration 成品（F1+F4）
-  │     ├─ moduleClass / rootClassName / manifestUrl  → identity + materials（F0+F1）
-  │     ├─ knowledge                                  → 知识绑定（F2）
-  │     ├─ inputContract                              → 工单契约（F3）
-  │     ├─ sessionStore / hooks / nudge               → 治理接入（F5）
-  │     └─ → new AiAgentRegistration(options)
-  └─ 4. host.ensure(alias, { moduleId, create })      → 激活注册（F7）
-```
+当前实现覆盖编辑态 JSON 文件保存和 `/workflow-designs` 可视化编辑入口；不覆盖 Agent workflow 运行时。
 
-### 13.2 源码参考
+### 13.1 创建设计稿
 
-**`src/services/project-planning/project-planning-business.ts`** — 项目规划业务接入：
+```http
+POST /api/tenants/lmspark/projects/homepage/workflow-designs/__create
+Content-Type: application/json
 
-```typescript
-export function ensureProjectPlanningBusiness(
-  options: EnsureProjectPlanningBusinessOptions,
-): AiAgentHost {
-  return options.host.ensure(PROJECT_PLANNING_MODULE_ID, {
-    moduleId: PROJECT_PLANNING_MODULE_ID,
-    create: () =>
-      ClassModelAgentAdapter.createRegistration({
-        moduleClass: ProjectModel,
-        options: {
-          moduleId: PROJECT_PLANNING_MODULE_ID,
-          rootClassName: 'ProjectModel',
-          dtsClassModelManifestUrl,
-          knowledge: createWorkerDtsClassModelKnowledgeProvider({
-            workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
-            dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
-            rootClassName: 'ProjectModel',
-          }),
-          inputContract: createSimpleInputContract<ProjectPlanningAgentInput>({
-            businessId: PROJECT_PLANNING_MODULE_ID,
-            identityField: 'projectScopeKey',
-            messageField: 'requirement',
-            paramsSchema: projectPlanningInputSchema,
-            systemPrompt: createProjectPlanningSystemPrompt,
-          }),
-          resolveInstance: (context) => resolveProjectPlanningDomainRoot(options, context),
-          beforeFunctionCall: (_instance, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(hookOptions),
-          executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
-          toolLoopNudge: createProjectPlanningToolLoopNudge,
-        },
-      }),
-  })
+{
+  "workflowId": "spark.project-planning",
+  "title": "项目规划"
 }
 ```
 
-**`src/services/page-design/page-design-business.ts`** — 页面设计业务接入：结构相同，差异仅在 identityField（`pageId`）、messageField（`description`）、systemPrompt 和 resolveInstance。
-
-### 13.3 交付接入（APP 层）
-
-交付在 `host-run-provider` 层接入，不在 `ensureXxxBusiness` 内：
+服务端写入：
 
 ```text
-prepareXxxHostRun(event, host)
-  ├─ ensureXxxBusiness({ host, ... })        → 注册能力
-  ├─ host.run(alias, input, chat)            → 执行工单（F8）
-  └─ delivery.save() / delivery.rollback()   → 交付回执（F9）
+data/workflow-designs/lmspark/homepage/spark.project-planning/design.json
 ```
 
-参考文件：
-- `src/services/project-planning/project-planning-host-run-provider.ts`
-- `src/services/page-design/page-design-host-run-provider.ts`
-- `src/services/ai/ai-host-run-bridge.ts`
+### 13.2 生成的图结构
 
-### 13.4 验收接入（F6）
-
-```typescript
-// 生成首版工厂验收报告
-const report = host.inspectFactory(alias, sampleInput)
-
-// 传入补充 checks（knowledge smoke、delivery plan 等）
-const fullReport = host.inspectFactory(alias, sampleInput, {
-  knowledgeChecks: [
-    { phase: 'knowledge', status: 'pass', code: 'ROOT_CLASS_QUERY_OK', message: '...' },
-  ],
-  deliveryChecks: [
-    { phase: 'delivery', status: 'pass', code: 'DELIVERY_PLAN_OK', message: '...' },
-  ],
-})
+```text
+workflow.graph
+  nodes
+    start
+    loop.business-factory
+      data.type = "loop"
+      data.loop.subGraph
+        phase.F0  tool single_model_edit -> node.data.model -> workflow.factory.identity
+        phase.F1  tool single_model_edit -> node.data.model -> workflow.factory.materials
+        phase.F2  tool single_model_edit -> node.data.model -> workflow.factory.knowledge
+        phase.F3  tool single_model_edit -> node.data.model -> workflow.factory.contract
+        phase.F4  tool single_model_edit -> node.data.model -> workflow.factory.runtime
+        phase.F5  tool single_model_edit -> node.data.model -> workflow.factory.governance
+        phase.F6  tool single_model_edit -> node.data.model -> workflow.factory.acceptance
+        phase.F7  tool single_model_edit -> node.data.model -> workflow.factory.activation
+        phase.F8  tool single_model_edit -> node.data.model -> workflow.factory.workOrder
+        phase.F9  tool single_model_edit -> node.data.model -> workflow.factory.delivery
+        loop.exit
+    end
+  edges
+    start -> loop.business-factory -> end
 ```
 
-### 13.5 新业务接入检查要点
+### 13.3 保存设计稿
 
-| 步骤 | 对照 §12 清单 | 关键函数 |
-| ---- | -------------- | -------- |
-| 定义 identity | §12.2-A | 常量声明 |
-| 绑定 materials | §12.2-A | `resolveInstance` 或 `instance` |
-| 配置 knowledge | §12.2-B | `createWorkerDtsClassModelKnowledgeProvider` |
-| 构建 inputContract | §12.2-C | `createSimpleInputContract` |
-| 组装 registration | §12.2-C | `ClassModelAgentAdapter.createRegistration` |
-| 接入 governance | §12.2-C/D | `beforeFunctionCall`、`toolLoopNudge` |
-| 激活注册 | §12.2-C | `host.ensure` |
-| 接入 delivery | §12.2-E | host-run-provider 中 `delivery.save/rollback` |
-| 验收 | §12.2-F | `host.inspectFactory` + 补充 checks |
+```http
+PUT /api/tenants/lmspark/projects/homepage/workflow-designs/spark.project-planning/design.json
+Content-Type: application/json
+
+{
+  "kind": "agent.workflow.design",
+  "version": 1,
+  "id": "spark.project-planning",
+  "app": {
+    "id": "spark.project-planning",
+    "name": "项目规划",
+    "mode": "workflow"
+  },
+  "workflow": {
+    "id": "spark.project-planning",
+    "version": 1,
+    "graph": {
+      "nodes": [],
+      "edges": [],
+      "viewport": { "x": 0, "y": 0, "zoom": 1 }
+    }
+  },
+  "x_spark": {
+    "draft": {},
+    "validation": {}
+  }
+}
+```
+
+实际保存时 `workflow.graph.nodes` 必须包含至少一个 `single_model_edit` tool node；上面的请求只展示字段骨架。
+
+### 13.4 读取与列表
+
+```http
+GET /api/tenants/lmspark/projects/homepage/workflow-designs/spark.project-planning/design.json
+GET /api/tenants/lmspark/projects/homepage/workflow-designs/__list
+```
+
+扁平路径同样可用：
+
+```http
+GET /api/workflow-designs/__list
+X-Tenant-Id: lmspark
+X-Project-Id: homepage
+```
+
+当前阶段到此为止；不发布 definition，不注册 Host，不执行工单。

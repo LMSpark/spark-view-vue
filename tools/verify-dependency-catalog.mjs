@@ -16,11 +16,16 @@ const CATALOG_PACKAGES = new Set([
   'vue-router',
   'element-plus',
   '@element-plus/icons-vue',
+  '@vue-flow/background',
+  '@vue-flow/controls',
+  '@vue-flow/core',
+  '@vue-flow/minimap',
   'vxe-table',
   'axios',
   'ajv',
   'jmespath',
   'comlink',
+  '@ag-ui/core',
   'typescript',
   'vite',
   'vitest',
@@ -45,6 +50,7 @@ const RUNTIME_SINGLE_OWNER = new Map([
   ['ajv', '@spark-appworks/spark-json-document'],
   ['jmespath', '@spark-appworks/spark-json-document'],
   ['comlink', '@spark-appworks/spark-ai'],
+  ['@ag-ui/core', '@spark-appworks/spark-ai'],
 ])
 
 /** 应用壳运行时：仅根 package.json dependencies 安装。 */
@@ -53,6 +59,10 @@ const APP_SHELL_RUNTIME = new Set([
   'vue-router',
   'element-plus',
   '@element-plus/icons-vue',
+  '@vue-flow/background',
+  '@vue-flow/controls',
+  '@vue-flow/core',
+  '@vue-flow/minimap',
   'vxe-table',
 ])
 

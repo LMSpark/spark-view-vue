@@ -105,6 +105,14 @@
       "source": "src/views/app/CapabilityDemo.vue"
     },
     {
+      "path": "/workflow-designs",
+      "title": "工作流设计",
+      "icon": "Share",
+      "scope": "app",
+      "source": "src/views/app/WorkflowDesigns.vue",
+      "description": "Dify-like Agent workflow 设计稿编辑页"
+    },
+    {
       "path": "/dev",
       "title": "开发工作台",
       "icon": "Tools",

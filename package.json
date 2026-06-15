@@ -69,6 +69,10 @@
     },
     "dependencies": {
         "@element-plus/icons-vue": "catalog:",
+        "@vue-flow/background": "catalog:",
+        "@vue-flow/controls": "catalog:",
+        "@vue-flow/core": "catalog:",
+        "@vue-flow/minimap": "catalog:",
         "@spark-appworks/spark-app": "workspace:*",
         "@spark-appworks/spark-component": "workspace:*",
         "@spark-appworks/spark-data": "workspace:*",

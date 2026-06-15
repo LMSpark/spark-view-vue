@@ -50,6 +50,14 @@
                     "path": "/dbms"
                 },
                 {
+                    "id": "platform-workflow-designs",
+                    "nodeKind": "system-page",
+                    "title": "工作流设计",
+                    "description": "Agent workflow 设计稿 JSON 编辑",
+                    "icon": "Share",
+                    "path": "/workflow-designs"
+                },
+                {
                     "id": "platform-cache",
                     "nodeKind": "system-page",
                     "title": "缓存管理",

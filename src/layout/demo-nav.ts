@@ -145,6 +145,7 @@ export const demoNavRoot: ProjectModelData = {
         { id: 'users', nodeKind: 'page', title: '用户管理', icon: 'UserFilled', path: '/users' },
         { id: 'permission-render', nodeKind: 'page', title: '权限渲染', icon: 'Lock', path: '/permission-render' },
         { id: 'dev-system', nodeKind: 'system-page', title: '开发系统', icon: 'Lightning', path: '/dev' },
+        { id: 'workflow-designs', nodeKind: 'system-page', title: '工作流设计', icon: 'Share', path: '/workflow-designs' },
         { id: 'cache-manager', nodeKind: 'system-page', title: '缓存管理', icon: 'Coin', path: '/cache-manager' },
         { id: 'dashboard', nodeKind: 'system-page', title: '管理仪表板', icon: 'HomeFilled', path: '/dashboard' },
         { id: 'about', nodeKind: 'system-page', title: '关于系统', icon: 'InfoFilled', path: '/about' },

@@ -25,6 +25,14 @@
                     "title": "开发工作台",
                     "icon": "Lightning",
                     "path": "/dev"
+                },
+                {
+                    "id": "workflow-designs",
+                    "nodeKind": "system-page",
+                    "title": "工作流设计",
+                    "description": "Agent workflow 设计稿 JSON 编辑",
+                    "icon": "Share",
+                    "path": "/workflow-designs"
                 }
             ]
         }

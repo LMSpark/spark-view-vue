@@ -24,5 +24,6 @@ describe('Vue page registry', () => {
     expect(navTree.homePath).toBe('/')
     expect(navTree.children.some(node => node.path === '/about')).toBe(true)
     expect(options.some(option => option.path === '/dev' && option.scope === 'app')).toBe(true)
+    expect(options.some(option => option.path === '/workflow-designs' && option.source === 'src/views/app/WorkflowDesigns.vue')).toBe(true)
   })
 })

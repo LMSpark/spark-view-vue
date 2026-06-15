@@ -32,6 +32,9 @@ spark:
       s3-access-key: ${PAGES_STORAGE_S3_ACCESS_KEY:}
       s3-secret-key: ${PAGES_STORAGE_S3_SECRET_KEY:}
 
+  workflow-designs:
+    storage-dir: ${WORKFLOW_DESIGNS_DIR:./data/workflow-designs}
+
   rate-limit:
     enabled: ${SPARK_RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${SPARK_RATE_LIMIT_RPM:600}

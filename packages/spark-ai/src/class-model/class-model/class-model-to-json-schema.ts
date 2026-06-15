@@ -23,7 +23,7 @@ import {
   buildObjectJsonSchema,
   extractConstOrSingleEnumValue,
   finalizeDraft2020SchemaDocument,
-  isReadableRequiredAttribute,
+  isWritableRequiredAttribute,
   modelDescription,
 } from './json-schema-emit'
 import {
@@ -57,7 +57,7 @@ function buildClassModelDraft(model: DtsTypeDeclarationModel): StandardJsonSchem
   for (const attribute of jsonSchemaAttributes(model)) {
     if (!attribute.readable) continue
     properties[attribute.name] = standardizeJsonSchema(attribute.schema ?? true)
-    if (isReadableRequiredAttribute(attribute.readable, attribute.flags?.isOptional === true)) {
+    if (isWritableRequiredAttribute(attribute.readable, attribute.writable)) {
       required.push(attribute.name)
     }
   }
@@ -200,7 +200,7 @@ function localShapeRelationTargetNames(model: DtsTypeDeclarationModel): readonly
 }
 
 function relationTargetNames(
-  relations: readonly { kind: string; targetName?: string }[] | undefined,
+  relations: ReadonlyArray<{ kind: string; targetName?: string }> | undefined,
   allowedKinds: ReadonlySet<string>,
 ): readonly string[] {
   const names: string[] = []
@@ -233,17 +233,17 @@ function mergeObjectSchemas(
   }
 
   if (!hasProperties) return ownSchema
-  const merged: Record<string, unknown> = {
+  const merged: StandardJsonSchemaObject = {
     ...ownSchema,
     properties,
     additionalProperties: false,
   }
   if (required.size > 0) {
-    merged['required'] = [...required]
+    merged.required = [...required]
   } else {
-    delete merged['required']
+    delete merged.required
   }
-  return merged as StandardJsonSchemaObject
+  return merged
 }
 
 /** Shard 级映射：优先读 model.jsonSchema，否则现场计算。 */

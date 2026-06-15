@@ -12,12 +12,14 @@ import com.spark.ai.config.DynamicDataSourceProperties;
 import com.spark.ai.config.OpenAiProperties;
 import com.spark.ai.config.PagesConfigProperties;
 import com.spark.ai.config.RateLimitProperties;
+import com.spark.ai.config.WorkflowDesignProperties;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableConfigurationProperties({
     OpenAiProperties.class,
     PagesConfigProperties.class,
+    WorkflowDesignProperties.class,
     DynamicDataSourceProperties.class,
     AiSessionProperties.class,
     RateLimitProperties.class

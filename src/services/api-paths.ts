@@ -60,6 +60,11 @@ export function getPageApi(): string {
   return `${getScopePath()}/pages-config`
 }
 
+/** Workflow 设计稿 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/workflow-designs` */
+export function getWorkflowDesignApi(): string {
+  return `${getScopePath()}/workflow-designs`
+}
+
 
 
 /** 项目管理 API 基础路径 — `/api/tenants/{tenantId}/projects` */
