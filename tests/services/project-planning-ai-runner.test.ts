@@ -3,6 +3,7 @@ import { ProjectModel, ProjectWorkspace } from '@spark-appworks/spark-project-mo
 import {
   createAiRunAdapter,
   type AiRunAdapterState,
+  type AiRunSnapshot,
   type AiRunBeforeFunctionCall,
   type AiRunTraceSink,
 } from '@spark-appworks/spark-app'
@@ -99,6 +100,21 @@ function createToolCallRecord(): AiAgentToolCallRecord {
   }
 }
 
+function emptyAiRunSnapshot(): AiRunSnapshot {
+  return {
+    trace: {
+      streamText: '',
+      reasoningText: '',
+      isStreaming: false,
+      isReasoning: false,
+      entries: [],
+      toolCalls: [],
+    },
+    agUiEvents: [],
+    timeline: [],
+  }
+}
+
 function createTraceSink(): AiRunTraceSink {
   return {
     appendUserMessage: vi.fn(),
@@ -187,6 +203,8 @@ describe('runProjectPlanningAiSession', () => {
     const adapter: AiRunAdapterState = {
       isRunning: vi.fn(() => false),
       abort: vi.fn(),
+      snapshot: vi.fn(emptyAiRunSnapshot),
+      subscribe: vi.fn(() => () => {}),
       run: vi.fn(async () => 'completed' as const),
     }
 

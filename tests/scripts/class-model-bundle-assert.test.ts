@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
-// @ts-ignore TS7016 -- Node .mjs helper；契约见 scripts/lib/class-model-bundle-assert.d.ts
+// @ts-ignore TS7016 -- Node .mjs helper
 import { assertClassModelBundleComplete, assertClassModelGuideExecutableSchemas, assertClassModelSemanticGapsZero } from '../../scripts/lib/class-model-bundle-assert.mjs'
 
 const repoRoot = process.cwd()

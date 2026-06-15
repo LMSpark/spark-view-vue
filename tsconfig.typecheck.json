@@ -57,6 +57,8 @@
     "src/**/*.vue",
     "src/**/*.d.ts",
     "tests/**/*.ts",
+    "tests/**/*.d.ts",
+    "scripts/lib/**/*.d.ts",
     "packages/spark-ai/src/**/*.ts",
     "packages/spark-json-document/src/**/*.ts",
     "packages/spark-json-document/src/**/*.d.ts"

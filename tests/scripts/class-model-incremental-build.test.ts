@@ -2,16 +2,9 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
-
-import {
-  augmentIncrementalPlanWithConfigDrift,
-  canSkipDeclarationEmit,
-  planIncrementalBundleBuild,
-  readDtsManifestSnapshot,
-  resolveEmitSourcePathsForIncrementalPlan,
-  writeDtsManifestSnapshot,
-} from '../../scripts/lib/class-model-incremental-build.mjs'
-import { dtsSourcePathToBundleRelativeJson } from '../../packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts'
+// @ts-ignore TS7016 -- Node .mjs helper
+import { augmentIncrementalPlanWithConfigDrift, canSkipDeclarationEmit, planIncrementalBundleBuild, readDtsManifestSnapshot, resolveEmitSourcePathsForIncrementalPlan, writeDtsManifestSnapshot } from '../../scripts/lib/class-model-incremental-build.mjs'
+import { dtsSourcePathToBundleRelativeJson } from '../../packages/spark-ai/src/class-model/class-model/dts-bundle-url'
 
 describe('class-model-incremental-build', () => {
   it('treats legacy array .dts-manifest as full rebuild', () => {
@@ -122,7 +115,7 @@ describe('class-model-incremental-build', () => {
             },
           },
         },
-        resolveProgramRootFiles: changed => changed.map(path => resolve(repoRoot, path)),
+        resolveProgramRootFiles: (changed: string[]) => changed.map((path: string) => resolve(repoRoot, path)),
       })
 
       expect(plan.mode).toBe('incremental')
@@ -280,7 +273,7 @@ describe('class-model-incremental-build', () => {
         },
       },
       existingDtsManifest: { schemaVersion: 1, entries: {} },
-      resolveProgramRootFiles: paths => paths,
+      resolveProgramRootFiles: (paths: string[]) => paths,
     })
     expect(augmented.changedSourcePaths.size).toBe(0)
     expect([...augmented.newConfigSourcePaths ?? []]).toEqual([])

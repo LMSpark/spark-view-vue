@@ -6,7 +6,7 @@ import {
   type AiAgentTurnCallbacks,
 } from '@spark-appworks/spark-ai/agent'
 import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
-import type { AiRunAdapterState } from '@spark-appworks/spark-app'
+import type { AiRunAdapterState, AiRunSnapshot } from '@spark-appworks/spark-app'
 import { runPageDesignAiSession } from '@/services/page-design/page-design-ai-runner'
 
 const mocks = vi.hoisted(() => ({
@@ -69,10 +69,27 @@ function createCapabilityConsumer(host: AiAgentHost): SparkCapabilityConsumer {
   return name => name.read(host)
 }
 
+function emptyAiRunSnapshot(): AiRunSnapshot {
+  return {
+    trace: {
+      streamText: '',
+      reasoningText: '',
+      isStreaming: false,
+      isReasoning: false,
+      entries: [],
+      toolCalls: [],
+    },
+    agUiEvents: [],
+    timeline: [],
+  }
+}
+
 function createAdapter(run: AiRunAdapterState['run']): AiRunAdapterState {
   return {
     isRunning: vi.fn(() => false),
     abort: vi.fn(),
+    snapshot: vi.fn(emptyAiRunSnapshot),
+    subscribe: vi.fn(() => () => {}),
     run,
   }
 }
