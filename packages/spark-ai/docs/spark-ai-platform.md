@@ -4,7 +4,7 @@
 >
 > 状态：2026-06，以 **main** 已落地代码为准；执行入口收敛为 ClassModel 7 工具闭集。
 > **全仓 AI 主文档（SSOT）**。整合 `end-to-end-platform.md`、`business-capability-onboarding.md`、`native-runtime-and-agent-flow-zh-cn.md`，并对照 `packages/spark-ai` 与 `src/services/**` 源码校正偏差。  
-> 专题深潜仍见：`transport-and-session-zh-cn.md`、`pagedesign-devsystem-zh-cn.md`。
+> 专题深潜仍见：`class-model-knowledge-system-zh-cn.md`、`business-factory-workflow-zh-cn.md`、`transport-and-session-zh-cn.md`、`pagedesign-devsystem-zh-cn.md`。
 
 ---
 
@@ -95,10 +95,13 @@ Script 只在内存里改领域对象；交付是持久化 + 回执。两阶段�
 
 ### 1.4 业务工厂（`Host.ensure`）
 
-工厂不生产「订单」，生产 **业务能力包** `AiAgentRegistration`：
+工厂不生产「订单」，生产 **业务能力包** `AiAgentRegistration`。`Host.ensure` 是当前激活门；完整工艺流程和阶段验收见 [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md)。
 
 ```text
-Host.ensure('pageDesign', { moduleId, create })
+Host.ensure(alias, {
+  moduleId,
+  create: registrationProvider,   // 当前 API 字段；概念上是 provider
+})
         │
         ▼
 AiAgentRegistration = {
@@ -325,12 +328,15 @@ Node 端（E2E / 测试）可跳过 Worker，直接用 `DtsClassModelBundleLoade
 
 ## 5. L2：业务工厂
 
-### 5.1 工厂模式 = `Host.ensure`
+### 5.1 工厂激活门 = `Host.ensure`
+
+`create` 是当前 API 字段名；概念上它是 `registrationProvider`，只在 alias 不存在时提供一份 `AiAgentRegistration`。它不是完整业务工厂。完整工艺流程包含能力定义、知识绑定、工单契约、运行时装配、治理、验收、激活、工单运行和 Delivery。
 
 ```typescript
 // ⚠️ moduleId 是必填字段，不可省略
 host.ensure('pageDesign', {
-  moduleId: 'pageDesign',       // ← 必填
+  moduleId: 'pageDesign',       // ← 必填；Host 用它做幂等与冲突检测
+  // 当前字段名叫 create；架构语义上应理解为 registration provider。
   create: () => ClassModelAgentAdapter.createRegistration({
     moduleClass: ProjectModel,   // ← 必填：领域根 class
     options: {                   // ← 所有业务配置在此子对象内
@@ -961,6 +967,7 @@ pnpm run test
 | ---- | ---- |
 | **本文（全仓 AI SSOT）** | `packages/spark-ai/docs/spark-ai-platform.md` |
 | ClassModel 知识体系 | `packages/spark-ai/docs/class-model-knowledge-system-zh-cn.md` |
+| 业务工厂注册体系 | `packages/spark-ai/docs/business-factory-workflow-zh-cn.md` |
 | 接入 checklist 附录 | `packages/spark-ai/docs/business-capability-onboarding.md` |
 | 端到端方案稿 + Phase 细节 | `packages/spark-ai/docs/end-to-end-platform.md` |
 | native-runtime 速查 | `packages/spark-ai/docs/native-runtime-and-agent-flow-zh-cn.md` |

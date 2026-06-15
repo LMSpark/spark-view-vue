@@ -23,7 +23,7 @@ import {
   buildObjectJsonSchema,
   extractConstOrSingleEnumValue,
   finalizeDraft2020SchemaDocument,
-  isWritableRequiredAttribute,
+  isReadableRequiredAttribute,
   modelDescription,
 } from './json-schema-emit'
 import {
@@ -57,7 +57,7 @@ function buildClassModelDraft(model: DtsTypeDeclarationModel): StandardJsonSchem
   for (const attribute of jsonSchemaAttributes(model)) {
     if (!attribute.readable) continue
     properties[attribute.name] = standardizeJsonSchema(attribute.schema ?? true)
-    if (isWritableRequiredAttribute(attribute.readable, attribute.writable)) {
+    if (isReadableRequiredAttribute(attribute.readable, attribute.flags?.isOptional === true)) {
       required.push(attribute.name)
     }
   }
@@ -127,7 +127,7 @@ export function attachModelJsonSchemas(
     result[className] = shouldAttachModelJsonSchema(model)
       ? {
           ...model,
-          jsonSchema: classModelToJsonSchema(model),
+          jsonSchema: classModelToJsonSchemaWithLocalRelations(model, models),
         }
       : model
   }
@@ -159,12 +159,100 @@ function jsonSchemaConstructor(model: DtsTypeDeclarationModel): ConstructorMeta 
   return model.declarationKind === 'class' ? model.classDecl.constructorMeta : undefined
 }
 
+function classModelToJsonSchemaWithLocalRelations(
+  model: DtsTypeDeclarationModel,
+  models: Readonly<Record<string, DtsTypeDeclarationModel>>,
+): StandardJsonSchemaObject {
+  const ownSchema = classModelToJsonSchema(model)
+  const relatedSchemas = localRelationSchemas(model, models, new Set([model.name]))
+  if (relatedSchemas.length === 0) return ownSchema
+  return mergeObjectSchemas(ownSchema, relatedSchemas)
+}
+
+function localRelationSchemas(
+  model: DtsTypeDeclarationModel,
+  models: Readonly<Record<string, DtsTypeDeclarationModel>>,
+  seen: Set<string>,
+): readonly StandardJsonSchemaObject[] {
+  const schemas: StandardJsonSchemaObject[] = []
+  for (const targetName of localShapeRelationTargetNames(model)) {
+    if (seen.has(targetName)) continue
+    const target = models[targetName]
+    if (target === undefined) continue
+    seen.add(targetName)
+    schemas.push(...localRelationSchemas(target, models, seen))
+    schemas.push(classModelToJsonSchema(target))
+  }
+  return schemas
+}
+
+function localShapeRelationTargetNames(model: DtsTypeDeclarationModel): readonly string[] {
+  if (model.declarationKind === 'class') {
+    return relationTargetNames(model.classDecl.declarationRelations, new Set(['extends']))
+  }
+  if (model.declarationKind === 'interface') {
+    return relationTargetNames(model.interfaceDecl.declarationRelations, new Set(['extends']))
+  }
+  if (model.declarationKind === 'typeAlias') {
+    return relationTargetNames(model.typeAlias.declarationRelations, new Set(['alias', 'intersection']))
+  }
+  return []
+}
+
+function relationTargetNames(
+  relations: readonly { kind: string; targetName?: string }[] | undefined,
+  allowedKinds: ReadonlySet<string>,
+): readonly string[] {
+  const names: string[] = []
+  for (const relation of relations ?? []) {
+    if (!allowedKinds.has(relation.kind)) continue
+    const targetName = relation.targetName
+    if (targetName === undefined || targetName.length === 0) continue
+    names.push(targetName)
+  }
+  return names
+}
+
+function mergeObjectSchemas(
+  ownSchema: StandardJsonSchemaObject,
+  relatedSchemas: readonly StandardJsonSchemaObject[],
+): StandardJsonSchemaObject {
+  const properties: Record<string, StandardJsonSchema> = {}
+  const required = new Set<string>()
+  let hasProperties = false
+
+  for (const schema of [...relatedSchemas, ownSchema]) {
+    const schemaProperties = schema.properties
+    if (schemaProperties !== undefined) {
+      hasProperties = true
+      Object.assign(properties, schemaProperties)
+    }
+    for (const name of schema.required ?? []) {
+      required.add(String(name))
+    }
+  }
+
+  if (!hasProperties) return ownSchema
+  const merged: Record<string, unknown> = {
+    ...ownSchema,
+    properties,
+    additionalProperties: false,
+  }
+  if (required.size > 0) {
+    merged['required'] = [...required]
+  } else {
+    delete merged['required']
+  }
+  return merged as StandardJsonSchemaObject
+}
+
 /** Shard 级映射：优先读 model.jsonSchema，否则现场计算。 */
 export function shardToJsonSchemas(
   shard: DtsFileProjectionDocument,
 ): Readonly<Record<string, StandardJsonSchemaObject>> {
   const result: Record<string, StandardJsonSchemaObject> = {}
-  for (const [className, model] of Object.entries(shard.models)) {
+  const models = attachModelJsonSchemas(shard.models)
+  for (const [className, model] of Object.entries(models)) {
     result[className] = classModelToJsonSchema(model)
   }
   return result

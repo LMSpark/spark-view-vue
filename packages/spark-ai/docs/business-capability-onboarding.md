@@ -1,6 +1,6 @@
 # 新业务能力接入清单
 
-> **速查附录**：可打印 checklist。全仓主文档见 [`spark-ai-platform.md`](spark-ai-platform.md) §12；业务抽象见该文 §1，完整上下文亦见 [`end-to-end-platform.md`](end-to-end-platform.md)。
+> **速查附录**：可打印 checklist。全仓主文档见 [`spark-ai-platform.md`](spark-ai-platform.md) §12；业务工厂阶段验收见 [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md)；业务抽象见主文档 §1。
 
 ## 五层必答题
 
@@ -31,11 +31,11 @@
 
 ### C · 能力包（APP）
 
-- [ ] `host.ensure(alias, { create })` 幂等
+- [ ] `host.ensure(alias, { moduleId, create })` 幂等；`create` 是当前 API 字段，概念上是 registration provider
 - [ ] `ClassModelAgentAdapter.createRegistration({ rootClassName, manifestUrl, knowledge, inputContract, sessionStore })`
 - [ ] `createSimpleInputContract({ businessId, identityField, messageField, paramsSchema })`
 - [ ] `beforeFunctionCall` gates（仅拦 mutation）
-- [ ] `host.dryRun(alias, sampleInput)` 通过
+- [ ] `host.dryRun(alias, sampleInput)` 通过，并补齐知识查询、子模型链和 Delivery 策略验收
 
 ### D · 运行
 

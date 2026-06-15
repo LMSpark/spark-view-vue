@@ -1,6 +1,6 @@
 # SPARK AI 端到端平台方案
 
-> **历史方案稿（保留路线图与 Phase 审核细节）**。全仓 AI 主文档已整合为 [`spark-ai-platform.md`](spark-ai-platform.md)（含五概念、L0–L5、native-runtime 代码真值、接入 checklist）。日常优先读主文档。
+> **历史方案稿（保留路线图与 Phase 审核细节）**。全仓 AI 主文档已整合为 [`spark-ai-platform.md`](spark-ai-platform.md)（含五概念、L0–L5、native-runtime 代码真值、接入 checklist）。业务工厂注册体系、阶段验收和 `create` 命名边界以 [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) 为准。日常优先读主文档。
 >
 > 从 `.d.ts` 声明 → ClassModel JSON → LLM 知识体系 → **业务工厂（能力包）** → **工单 + 聊天** → **Script 变更执行** → **交付**。  
 > 状态：2026-06，以 **main** 已落地代码为准；执行入口收敛为 ClassModel 7 工具闭集。
@@ -48,7 +48,10 @@
 **工厂不生产「订单」，生产「业务能力包」**——一份可重复使用的 `AiAgentRegistration`：
 
 ```text
-Host.ensure('pageDesign', { create })
+Host.ensure(alias, {
+  moduleId,
+  create: registrationProvider,   // 当前 API 字段；概念上是 provider
+})
         │
         ▼
 AiAgentRegistration = {
@@ -150,7 +153,7 @@ flowchart TB
   end
 
   subgraph L2["L2 业务工厂 · 能力注册"]
-    ENSURE["AiAgentHost.ensure(alias, create)"]
+    ENSURE["AiAgentHost.ensure(alias, command)"]
     ADAPTER["ClassModelAgentAdapter"]
     REG["AiAgentRegistration<br/>能力包"]
     CONTRACT["inputContract<br/>工单入口"]
@@ -299,21 +302,24 @@ pnpm run generate:class-model-surface
 
 ## 6. L2：业务工厂
 
-### 6.1 工厂模式 = `Host.ensure`
+### 6.1 工厂激活门 = `Host.ensure`
 
-不是独立 Factory 类，而是 **幂等注册工厂**：
+不是独立 Factory 类，而是 **幂等注册激活门**。`create` 是当前 API 字段名；概念上它是 registration provider，不是完整工艺流程。完整流程见 [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md)。
 
 ```typescript
 host.ensure('pageDesign', {
   moduleId: 'pageDesign',
   create: () => ClassModelAgentAdapter.createRegistration({
-    moduleId: 'pageDesign',
-    instance: projectModel,
-    rootClassName: 'ProjectModel',
-    dtsClassModelManifestUrl,
-    knowledge: createPageDesignClassModelKnowledgeProvider(),
-    beforeFunctionCall: evaluatePageDesignMutationToolGate,
-    buildToolLoopNudge: buildPageDesignToolLoopNudge,
+    moduleClass: ProjectModel,
+    options: {
+      moduleId: 'pageDesign',
+      instance: projectModel,
+      rootClassName: 'ProjectModel',
+      dtsClassModelManifestUrl,
+      knowledge: createPageDesignClassModelKnowledgeProvider(),
+      beforeFunctionCall: evaluatePageDesignMutationToolGate,
+      toolLoopNudge: buildPageDesignToolLoopNudge,
+    },
   }),
 })
 ```
@@ -780,22 +786,23 @@ export function ensureXxxBusiness(options: {
   return options.host.ensure('xxxAlias', {
     moduleId: 'xxxModuleId',
     create: () => ClassModelAgentAdapter.createRegistration({
-      moduleId: 'xxxModuleId',
-      name: '…',
-      description: '…',
-      instance: options.getInstance(),
-      rootClassName: 'RootDomainModel',
-      dtsClassModelManifestUrl,
-      knowledge: createXxxKnowledgeProvider(),
-      inputContract: createSimpleInputContract({
-        businessId: 'xxxModuleId',
-        paramsSchema: { /* 工单 schema */ },
-        identityField: 'instanceId',
-        messageField: 'description',
-        systemPrompt: '…',
-      }),
-      sessionStore: …,
-      beforeFunctionCall: evaluateXxxGate,
+      moduleClass: RootDomainModel,
+      options: {
+        moduleId: 'xxxModuleId',
+        instance: options.getInstance(),
+        rootClassName: 'RootDomainModel',
+        dtsClassModelManifestUrl,
+        knowledge: createXxxKnowledgeProvider(),
+        inputContract: createSimpleInputContract({
+          businessId: 'xxxModuleId',
+          paramsSchema: { /* 工单 schema */ },
+          identityField: 'instanceId',
+          messageField: 'description',
+          systemPrompt: '…',
+        }),
+        sessionStore: …,
+        beforeFunctionCall: evaluateXxxGate,
+      },
     }),
   })
 }
