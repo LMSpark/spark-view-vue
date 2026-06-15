@@ -1,4 +1,4 @@
-﻿# 业务工厂注册体系
+# 业务工厂注册体系
 
 > 状态：2026-06-15，按当前 `main` 源码校正。本文把“业务工厂”定义为一条可验收的能力生产线：从业务域原料出发，生产可注册、可查询、可校验、可治理、可运行、可交付的 `AiAgentRegistration` 能力包。
 
@@ -8,11 +8,11 @@
 >
 > | 文档 | 与本文的关系 |
 > | ---- | ------------ |
-> | [usiness-capability-onboarding.md](business-capability-onboarding.md) | 速查 checklist，本文 §12 的精简版；接入新业务时两份对照使用 |
-> | [g-ui-adapter-zh-cn.md](ag-ui-adapter-zh-cn.md) | AG-UI 协议映射层；本文 §9.5 factory custom events 必须扩展该文档定义的 SparkAgUiCustomEventName 联合类型 |
-> | [	ransport-and-session-zh-cn.md](transport-and-session-zh-cn.md) | 底层 transport 与 session 机制；AG-UI adapter 不参与 session 创建和历史持久化 |
+> | [`business-capability-onboarding.md`](business-capability-onboarding.md) | 速查 checklist，本文 §12 的精简版；接入新业务时两份对照使用 |
+> | [`ag-ui-adapter-zh-cn.md`](ag-ui-adapter-zh-cn.md) | AG-UI 协议映射层；本文 §9.5 factory custom events 必须扩展该文档定义的 SparkAgUiCustomEventName 联合类型 |
+> | [`transport-and-session-zh-cn.md`](transport-and-session-zh-cn.md) | 底层 transport 与 session 机制；AG-UI adapter 不参与 session 创建和历史持久化 |
 >
-> 业务工厂定义了 F0-F9 工艺阶段；onboarding checklist 按接入动作组织；AG-UI adapter 负责把工厂运行态事件投影为标准事件流。三者数据流：工厂阶段 → ` host.inspectFactory() ` → 报告与图 DTO → AG-UI custom events → 前端画布与 timeline。
+> 业务工厂定义了 F0-F9 工艺阶段；onboarding checklist 按接入动作组织；AG-UI adapter 负责把工厂运行态事件投影为标准事件流。三者数据流：工厂阶段 → `host.inspectFactory()` → 报告与图 DTO → AG-UI custom events → 前端画布与 timeline。
 
 ## 1. 核心结论
 
@@ -66,7 +66,7 @@
 
 ### 2.1 当前实现覆盖面
 
-按源码看，当前已经实现的是“可注册、可 dryRun、可 Host Run、可 APP 层交付”的分散能力；`host.inspectFactory(alias, sampleInput, checks?)` 已能把 dryRun 投影成首版 `BusinessFactoryAcceptanceReport` 和 `BusinessFactoryWorkflowGraph`。它还不是完整验收执行器：knowledge smoke、script smoke、governance summary 和 delivery plan 仍需要 APP 或后续 helper 通过补充 checks 接入。
+按源码看，当前已经实现的是“可注册、可 dryRun、可 Host Run、可 APP 层交付”的分散能力；`host.inspectFactory(alias, sampleInput, options?)` 已能把 dryRun 投影成首版 `BusinessFactoryAcceptanceReport` 和 `BusinessFactoryWorkflowGraph`。它还不是完整验收执行器：knowledge smoke、script smoke、governance summary 和 delivery plan 仍需要 APP 或后续 helper 通过补充 checks 接入。
 
 | 能力 | 当前是否已实现 | 证据 | 还缺什么 |
 | ---- | -------------- | ---- | -------- |
@@ -76,7 +76,7 @@
 | Runtime inspect | 已实现 | `host.describe()`、`host.dryRun()` 调 `runtime.inspect()` | 缺知识闭包和 guide/script smoke test |
 | Tool loop 治理 | 已实现 | `beforeFunctionCall`、`afterFunctionCall`、`toolLoopNudge`、`executionToolNames` | 缺在验收报告里显式展示策略 |
 | Delivery 回执 | APP 层已实现 | `AiDeliveryPort`、pageDesign/projectPlanning Host Run provider | 未纳入 `spark-ai` dryRun 或 factory report |
-| 工厂报告/图 DTO | 首版已实现 | `business-factory.ts`、`` host.inspectFactory() `` | 仍需接入知识、治理、Delivery 的真实补充 checks |
+| 工厂报告/图 DTO | 首版已实现 | `business-factory.ts`、`host.inspectFactory()` | 仍需接入知识、治理、Delivery 的真实补充 checks |
 | AG-UI run timeline | 已实现基础事件 | `createAiRunAdapter()`、`spark.stream.event`、tool call events | 未实现 `spark.factory.*` custom events |
 | 工厂阶段图 | DTO 已实现 | `BusinessFactoryWorkflowGraph` | 需要前端 reducer、Vue Flow 页面和截图测试 |
 
@@ -131,7 +131,7 @@ type AiAgentHostEnsureCommand<TInput> = Readonly<{
 | F3 工单契约 | 把外部请求变成可执行任务 | paramsSchema、identityField、messageField（经由 `createSimpleInputContract` 映射到 orchestration）、normalize | `AiAgentInputContract` | normalize 前后 schema 均通过；scope 与 identity 一致 | `createAiAgentTask()` / `createSimpleInputContract()` |
 | F4 运行时装配 | 组装工具闭集和 script 执行器 | moduleClass、runtime options、knowledge、script runner | `AiAgentToolRuntime` | `runtime.inspect()` healthy；7 工具参数白名单正确 | `ClassModelAgentAdapter` |
 | F5 治理接入 | 控制工具调用过程 | before/after hooks、nudge、recovery、maxToolRounds | lifecycle policy | mutation gate 生效；失败提示可恢复；执行阶段可控 | tool-loop / executor |
-| F6 工厂验收 | 注册前做出厂检查 | sample input、runtime inspect、knowledge query、delivery plan | acceptance report | dryRun 通过；关键 guide/script 链路通过；delivery 策略明确 | `` host.inspectFactory() `` + 测试 |
+| F6 工厂验收 | 注册前做出厂检查 | sample input、runtime inspect、knowledge query、delivery plan | acceptance report | dryRun 通过；关键 guide/script 链路通过；delivery 策略明确 | `host.inspectFactory()` + 测试 |
 | F7 激活注册 | 把能力包接入 Host | alias、moduleId、registrationProvider | registry + alias map | alias 幂等；moduleId 不冲突；registration.moduleId 一致 | `Host.ensure()` |
 | F8 工单生产 | 执行一次业务请求 | alias、input、chat options | session + tool loop result | input 合法；session 可追踪；tool result 可诊断 | `Host.run()` |
 | F9 交付回执 | 把 Working Copy 出厂 | dirty state、delivery context | save/rollback/trace result | 成功才保存；失败 rollback；回执进入 resultExtras | `AiDeliveryPort` |
@@ -154,7 +154,7 @@ type AiAgentHostEnsureCommand<TInput> = Readonly<{
 
 ## 5. 工厂验收报告
 
-当前 `dryRun` 已能覆盖注册、输入契约、scope、orchestration 和 runtime inspect；`host.inspectFactory(alias, sampleInput, checks?)` 已把它提升为首版显式报告，用于 APP 启动自检、CI、诊断面板和按需加载验收。未传补充 checks 时，该报告会把 dryRun 无法证明的阶段标为 warn。
+当前 `dryRun` 已能覆盖注册、输入契约、scope、orchestration 和 runtime inspect；`host.inspectFactory(alias, sampleInput, options?)` 已把它提升为首版显式报告，用于 APP 启动自检、CI、诊断面板和按需加载验收。未传补充 checks 时，该报告会把 dryRun 无法证明的阶段标为 warn。
 
 当前契约：
 
@@ -518,7 +518,7 @@ const vueFlowEdges = graph.edges.map(edge => ({
 | ---- | ---- | -------- | -------- |
 | P0 文档冻结 | 固定 F0-F9、状态枚举、事件名、DTO 契约 | 已完成首版 | 不引入 UI 依赖 |
 | P1 静态画布 | 用 mock graph 渲染 Vue Flow 页面 | 待做 | 不接 Host，不接 AG-UI |
-| P2 dryRun 接入 | `` host.inspectFactory() `` 生成 F0-F9 首版状态 | 已完成首版 | 不执行 `Host.run` |
+| P2 dryRun 接入 | `host.inspectFactory()` 生成 F0-F9 首版状态 | 已完成首版 | 不执行 `Host.run` |
 | P3 AG-UI 运行态 | 消费 tool call / stream / custom events 更新 F8 | 待做 | 不改变 ToolLoop |
 | P4 Delivery 接入 | Delivery result 更新 F9 | 待做 | 不让画布直接保存 |
 | P5 Factory Report | 形成 `BusinessFactoryAcceptanceReport` 类型与测试 | 已完成首版 | 不一次性引入 builder DSL |
@@ -551,16 +551,18 @@ const vueFlowEdges = graph.edges.map(edge => ({
 
 ## 11. 迭代路线
 
-| 阶段 | 目标 | 改动范围 |
-| ---- | ---- | -------- |
-| A | 文档口径统一：`create` 是 provider，不是完整工厂 | docs |
-| B | 冻结 `BusinessFactoryAcceptanceReport` 与 `BusinessFactoryWorkflowGraph` DTO | 已有首版：spark-ai types + `` host.inspectFactory() `` |
-| C | 将 `host.dryRun` 扩展为 factory acceptance 的子集 | Host API 兼容增强 |
-| D | 新增 `spark.factory.*` AG-UI custom events | AG-UI mapper / app adapter |
-| E | 引入 APP 侧 Vue Flow 静态原型页 | app/component 层 |
-| F | 将 delivery plan 纳入接入 checklist 和诊断输出 | APP services + docs |
-| G | 新增 `registrationProvider` 兼容字段，保留 `create` | Host 类型与接入点 |
-| H | 可选引入 `BusinessCapabilityFactoryRecipe` builder | 新业务接入层 |
+> 迭代阶段用"阶段 1/2/…"编号，以区别于工艺流程 F0-F9。
+
+| 迭代阶段 | 目标 | 改动范围 |
+| -------- | ---- | -------- |
+| 阶段 1 | 文档口径统一：`create` 是 provider，不是完整工厂 | docs |
+| 阶段 2 | 冻结 `BusinessFactoryAcceptanceReport` 与 `BusinessFactoryWorkflowGraph` DTO | 已有首版：spark-ai types + `host.inspectFactory()` |
+| 阶段 3 | 将 `host.dryRun` 扩展为 factory acceptance 的子集 | Host API 兼容增强 |
+| 阶段 4 | 新增 `spark.factory.*` AG-UI custom events | AG-UI mapper / app adapter |
+| 阶段 5 | 引入 APP 侧 Vue Flow 静态原型页 | app/component 层 |
+| 阶段 6 | 将 delivery plan 纳入接入 checklist 和诊断输出 | APP services + docs |
+| 阶段 7 | 新增 `registrationProvider` 兼容字段，保留 `create` | Host 类型与接入点 |
+| 阶段 8 | 可选引入 `BusinessCapabilityFactoryRecipe` builder | 新业务接入层 |
 
 最低可执行标准：新增业务不只回答“怎么 create registration”，而是必须交付 identity、knowledge、contract、runtime、governance、acceptance、delivery 七类信息，并能通过 dryRun 与关键 guide/script 链路验证。
 
@@ -631,7 +633,7 @@ const vueFlowEdges = graph.edges.map(edge => ({
 #### F. 验收
 
 - [ ] dryRun + guide/script smoke test
-- [ ] `host.inspectFactory(alias, sampleInput, checks?)` 可生成 report + graph
+- [ ] `host.inspectFactory(alias, sampleInput, options?)` 可生成 report + graph
 - [ ] 知识闭包：root + 关键子模型 + 关键 action/attribute guide
 - [ ] 脚本闭环：一个只读 `model_script` 或 sandbox smoke test
 - [ ] 治理闭环：mutation gate 拒绝路径可见
@@ -639,3 +641,110 @@ const vueFlowEdges = graph.edges.map(edge => ({
 - [ ] loader 闭包测试
 - [ ] DevSystem 或 staging Host Run
 - [ ] 模型收敛回归：`pnpm run verify:model-convergence`
+
+## 13. 实际接入示例
+
+当前仓库已有两个业务接入实例，可作为新增业务的参考模板。本节以 `ensureProjectPlanningBusiness` 为主例，展示从领域到交付的完整调用链。
+
+### 13.1 调用链总览
+
+```text
+ensureXxxBusiness(options)
+  ├─ 1. createSimpleInputContract()          → inputContract（F3）
+  ├─ 2. createWorkerDtsClassModelKnowledgeProvider()  → knowledge provider（F2）
+  ├─ 3. ClassModelAgentAdapter.createRegistration()   → registration 成品（F1+F4）
+  │     ├─ moduleClass / rootClassName / manifestUrl  → identity + materials（F0+F1）
+  │     ├─ knowledge                                  → 知识绑定（F2）
+  │     ├─ inputContract                              → 工单契约（F3）
+  │     ├─ sessionStore / hooks / nudge               → 治理接入（F5）
+  │     └─ → new AiAgentRegistration(options)
+  └─ 4. host.ensure(alias, { moduleId, create })      → 激活注册（F7）
+```
+
+### 13.2 源码参考
+
+**`src/services/project-planning/project-planning-business.ts`** — 项目规划业务接入：
+
+```typescript
+export function ensureProjectPlanningBusiness(
+  options: EnsureProjectPlanningBusinessOptions,
+): AiAgentHost {
+  return options.host.ensure(PROJECT_PLANNING_MODULE_ID, {
+    moduleId: PROJECT_PLANNING_MODULE_ID,
+    create: () =>
+      ClassModelAgentAdapter.createRegistration({
+        moduleClass: ProjectModel,
+        options: {
+          moduleId: PROJECT_PLANNING_MODULE_ID,
+          rootClassName: 'ProjectModel',
+          dtsClassModelManifestUrl,
+          knowledge: createWorkerDtsClassModelKnowledgeProvider({
+            workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
+            dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
+            rootClassName: 'ProjectModel',
+          }),
+          inputContract: createSimpleInputContract<ProjectPlanningAgentInput>({
+            businessId: PROJECT_PLANNING_MODULE_ID,
+            identityField: 'projectScopeKey',
+            messageField: 'requirement',
+            paramsSchema: projectPlanningInputSchema,
+            systemPrompt: createProjectPlanningSystemPrompt,
+          }),
+          resolveInstance: (context) => resolveProjectPlanningDomainRoot(options, context),
+          beforeFunctionCall: (_instance, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(hookOptions),
+          executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
+          toolLoopNudge: createProjectPlanningToolLoopNudge,
+        },
+      }),
+  })
+}
+```
+
+**`src/services/page-design/page-design-business.ts`** — 页面设计业务接入：结构相同，差异仅在 identityField（`pageId`）、messageField（`description`）、systemPrompt 和 resolveInstance。
+
+### 13.3 交付接入（APP 层）
+
+交付在 `host-run-provider` 层接入，不在 `ensureXxxBusiness` 内：
+
+```text
+prepareXxxHostRun(event, host)
+  ├─ ensureXxxBusiness({ host, ... })        → 注册能力
+  ├─ host.run(alias, input, chat)            → 执行工单（F8）
+  └─ delivery.save() / delivery.rollback()   → 交付回执（F9）
+```
+
+参考文件：
+- `src/services/project-planning/project-planning-host-run-provider.ts`
+- `src/services/page-design/page-design-host-run-provider.ts`
+- `src/services/ai/ai-host-run-bridge.ts`
+
+### 13.4 验收接入（F6）
+
+```typescript
+// 生成首版工厂验收报告
+const report = host.inspectFactory(alias, sampleInput)
+
+// 传入补充 checks（knowledge smoke、delivery plan 等）
+const fullReport = host.inspectFactory(alias, sampleInput, {
+  knowledgeChecks: [
+    { phase: 'knowledge', status: 'pass', code: 'ROOT_CLASS_QUERY_OK', message: '...' },
+  ],
+  deliveryChecks: [
+    { phase: 'delivery', status: 'pass', code: 'DELIVERY_PLAN_OK', message: '...' },
+  ],
+})
+```
+
+### 13.5 新业务接入检查要点
+
+| 步骤 | 对照 §12 清单 | 关键函数 |
+| ---- | -------------- | -------- |
+| 定义 identity | §12.2-A | 常量声明 |
+| 绑定 materials | §12.2-A | `resolveInstance` 或 `instance` |
+| 配置 knowledge | §12.2-B | `createWorkerDtsClassModelKnowledgeProvider` |
+| 构建 inputContract | §12.2-C | `createSimpleInputContract` |
+| 组装 registration | §12.2-C | `ClassModelAgentAdapter.createRegistration` |
+| 接入 governance | §12.2-C/D | `beforeFunctionCall`、`toolLoopNudge` |
+| 激活注册 | §12.2-C | `host.ensure` |
+| 接入 delivery | §12.2-E | host-run-provider 中 `delivery.save/rollback` |
+| 验收 | §12.2-F | `host.inspectFactory` + 补充 checks |
