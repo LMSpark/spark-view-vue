@@ -50,12 +50,6 @@
       "name": "BaseScopeContext",
       "jsdoc": "Base Scope Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/scopeFactories.ts",
-        "line": 10,
-        "className": "BaseScopeContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** data Source 字段。 */\n    dataSource: TSource | null | undefined;\n    /** model Permission 字段。 */\n    modelPermission: ModelPermission | undefined;\n    /** module Context 字段。 */\n    moduleContext?: ModuleContext | null | undefined;\n}",
         "members": {

@@ -112,14 +112,10 @@
       "name": "FieldValueUpdateEmitter",
       "jsdoc": "Field Value Update Emitter 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
-        "line": 3,
-        "className": "FieldValueUpdateEmitter",
-        "declarationKind": "typeAlias",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    (event: 'update:modelValue', value: TValue): void;\n}",
@@ -130,14 +126,10 @@
       "name": "FieldValueUpdateEmits",
       "jsdoc": "Field Value Update Emits 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
-        "line": 7,
-        "className": "FieldValueUpdateEmits",
-        "declarationKind": "typeAlias",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** update:model Value 字段。 */\n    'update:modelValue': [value: TValue];\n}",
@@ -157,14 +149,10 @@
       "name": "UseControlledFieldChangeOptions",
       "jsdoc": "Use Controlled Field Change Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
-        "line": 13,
-        "className": "UseControlledFieldChangeOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** get Value 回调。 */\n    getValue: () => TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** sync Value 回调。 */\n    syncValue: (value: TValue) => void;\n    /** after Default 回调。 */\n    afterDefault?: (nextValue: TValue, previousValue: TValue) => void | Promise<void>;\n    /** handler Source 字段。 */\n    handlerSource?: Readonly<Record<string, unknown>>;\n}",

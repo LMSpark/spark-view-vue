@@ -165,12 +165,6 @@
       "name": "PrimaryKeyDelegate",
       "jsdoc": "Primary Key Delegate 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/primary-key-delegate.ts",
-        "line": 33,
-        "className": "PrimaryKeyDelegate",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "@param _getColumns 获取当前 DataTable 的列定义（用于推导主键）\n@param _getColumnMap 获取列名→列定义 Map（用于 _coercePkValue O(1) 查找）\n@param _getRows 获取当前行数组（用于主键生成器 / 补计算触发点）\n@param _registerComputed 向 ComputedColumnDelegate 注册计算列（用于合成 _pk）",

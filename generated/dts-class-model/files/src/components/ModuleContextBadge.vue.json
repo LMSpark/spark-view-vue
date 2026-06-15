@@ -38,12 +38,6 @@
       "name": "Props",
       "jsdoc": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/components/ModuleContextBadge.vue",
-        "line": 3,
-        "className": "Props",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前模块上下文配置对象。 */\n    config?: SparkNode;\n    /** 徽标前置标签文本。 */\n    label?: string;\n    /** 配置为空时展示的文本。 */\n    emptyText?: string;\n}",
         "members": {

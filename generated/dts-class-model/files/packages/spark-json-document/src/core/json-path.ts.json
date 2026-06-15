@@ -36,12 +36,6 @@
       "name": "JsonPath",
       "jsdoc": "JSONPath：路径段数组（string = 对象键，number = 数组索引）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-path.ts",
-        "line": 9,
-        "className": "JsonPath",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Array<string | number>",
         "declarationRelations": [

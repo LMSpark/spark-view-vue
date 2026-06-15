@@ -167,15 +167,11 @@
       "name": "JsonTreeEditorProps",
       "jsdoc": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/editors/JsonTreeEditor.vue",
-        "line": 3,
-        "className": "JsonTreeEditorProps",
-        "declarationKind": "typeAlias",
-        "componentName": "JsonTreeEditor",
-        "componentLevel": "infrastructure",
-        "componentLayer": "editor",
-        "componentDirectory": "editors"
+      "component": {
+        "name": "JsonTreeEditor",
+        "level": "infrastructure",
+        "layer": "editor",
+        "directory": "editors"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 固定编辑器类型，用于组件注册和配置识别。 */\n    type?: 'json-tree-editor';\n    /** 字段绑定名，映射到 DataView 行字段 */\n    field?: string;\n    /** 显示标签 */\n    label?: string;\n    /** r-table 内列宽 */\n    width?: number;\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 已解析的 JSON 文档对象 */\n    documentValue?: Sjd.JsonDocument | null;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: {\n        [key: string]: unknown;\n    } | null;\n    /** 筛选框占位文本 */\n    filterPlaceholder?: string;\n    /** 策略聚合对象（复杂场景一次传入） */\n    policy?: Sjd.JsonTreePolicy;\n    /** 根节点标签 */\n    rootLabel?: string;\n    /** 判断路径是否受保护 */\n    isProtected?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑键名 */\n    canEditKey?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑类型 */\n    canEditType?: (path: Sjd.JsonPath) => boolean;\n    /** 推荐子节点键名 */\n    suggestChildKey?: (target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string;\n    /** 创建数组默认子项 */\n    createDefaultArrayItem?: (parentPath: Sjd.JsonPath) => Sjd.JsonValue;\n    /** 创建对象默认子值 */\n    createDefaultObjectValue?: (parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue;\n}",

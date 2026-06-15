@@ -32,12 +32,6 @@
       "name": "TableMetadataLike",
       "jsdoc": "Table Metadata Like 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/metadata.ts",
-        "line": 3,
-        "className": "TableMetadataLike",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Omit<TableMetadata, 'tableName'> & {\n    /** 数据表名。 */\n    tableName?: string;\n}",
         "declarationRelations": [

@@ -231,12 +231,6 @@
       "name": "PrimaryPreset",
       "jsdoc": "Primary Preset 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/useColorScheme.ts",
-        "line": 2,
-        "className": "PrimaryPreset",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name: string;\n    /** color 字段。 */\n    color: string;\n}",
         "members": {
@@ -261,12 +255,6 @@
       "name": "NavColorSet",
       "jsdoc": "Nav Color Set 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/useColorScheme.ts",
-        "line": 9,
-        "className": "NavColorSet",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** header Bg 字段。 */\n    headerBg: string;\n    /** sidebar Bg 字段。 */\n    sidebarBg: string;\n    /** text Color 字段。 */\n    textColor: string;\n}",
         "members": {
@@ -297,12 +285,6 @@
       "name": "NavPreset",
       "jsdoc": "Nav Preset 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/useColorScheme.ts",
-        "line": 18,
-        "className": "NavPreset",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name: string;\n    /** color 字段。 */\n    color: string;\n    /** light 字段。 */\n    light: NavColorSet;\n    /** dark 字段。 */\n    dark: NavColorSet;\n}",
         "members": {
@@ -339,12 +321,6 @@
       "name": "StyleColorSet",
       "jsdoc": "Style Color Set 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/useColorScheme.ts",
-        "line": 29,
-        "className": "StyleColorSet",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** bg 字段。 */\n    bg: string;\n    /** 当前页码。 */\n    page: string;\n    /** overlay 字段。 */\n    overlay: string;\n    /** soft 字段。 */\n    soft: string;\n    /** sunken 字段。 */\n    sunken: string;\n    /** hover 字段。 */\n    hover: string;\n    /** selected 字段。 */\n    selected: string;\n    /** text Primary 字段。 */\n    textPrimary: string;\n    /** text Regular 字段。 */\n    textRegular: string;\n    /** text Secondary 字段。 */\n    textSecondary: string;\n    /** text Placeholder 字段。 */\n    textPlaceholder: string;\n    /** border 字段。 */\n    border: string;\n    /** border Light 字段。 */\n    borderLight: string;\n    /** divider 字段。 */\n    divider: string;\n    /** chrome Border 字段。 */\n    chromeBorder: string;\n    /** control Bg 字段。 */\n    controlBg: string;\n    /** control Border 字段。 */\n    controlBorder: string;\n    /** control Border Hover 字段。 */\n    controlBorderHover: string;\n    /** shadow 字段。 */\n    shadow: string;\n    /** shadow Light 字段。 */\n    shadowLight: string;\n    /** shadow Panel 字段。 */\n    shadowPanel: string;\n    /** scrollbar Thumb 字段。 */\n    scrollbarThumb: string;\n    /** scrollbar Thumb Hover 字段。 */\n    scrollbarThumbHover: string;\n}",
         "members": {
@@ -495,12 +471,6 @@
       "name": "StylePreset",
       "jsdoc": "Style Preset 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/useColorScheme.ts",
-        "line": 78,
-        "className": "StylePreset",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name: string;\n    /** description 字段。 */\n    description: string;\n    /** icon 字段。 */\n    icon: string;\n    /** primary Color 字段。 */\n    primaryColor: string;\n    /** nav Index 字段。 */\n    navIndex: number;\n    /** light 字段。 */\n    light: StyleColorSet;\n    /** dark 字段。 */\n    dark: StyleColorSet;\n}",
         "members": {

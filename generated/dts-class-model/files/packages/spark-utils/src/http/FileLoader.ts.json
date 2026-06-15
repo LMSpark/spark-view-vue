@@ -372,12 +372,6 @@
       "name": "LoadOptionBase",
       "jsdoc": "Load Option Base 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 36,
-        "className": "LoadOptionBase",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** false = 返回原始字符串，不 JSON.parse（默认 true） */\n    /** 跳过缓存强制重新请求（默认 false） */\n    forceRefresh?: boolean;\n    /** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */\n    expirationLevel?: number;\n}",
         "members": {
@@ -402,12 +396,6 @@
       "name": "FileLoaderStoreInput",
       "jsdoc": "File Loader Store Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 44,
-        "className": "FileLoaderStoreInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 缓存键（通常为文件路径）。 */\n    key: string;\n    /** 要缓存的数据（任意可 JSON 序列化的值）。 */\n    data: unknown;\n    /** 后端源文件版本戳，用于条件读取和缓存失效判定。 */\n    sourceTimestamp: string;\n    /** 过期级别，对应 expirationTiers 中的 level；缺省使用全局默认值。 */\n    expirationLevel?: number | undefined;\n}>",
         "declarationRelations": [
@@ -451,12 +439,6 @@
       "name": "JsonLoadOptions",
       "jsdoc": "Json Load Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 55,
-        "className": "JsonLoadOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "LoadOptionBase & {\n    /** 是否将响应体按 JSON 解析（默认 true）。 */\n    parseJSON?: true;\n}",
         "declarationRelations": [
@@ -486,12 +468,6 @@
       "name": "TextLoadOptions",
       "jsdoc": "Text Load Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 60,
-        "className": "TextLoadOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "LoadOptionBase & {\n    /** 是否将响应体按 JSON 解析（false=返回原始字符串）。 */\n    parseJSON: false;\n}",
         "declarationRelations": [
@@ -521,12 +497,6 @@
       "name": "TransformLoadOptions",
       "jsdoc": "Transform Load Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 65,
-        "className": "TransformLoadOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "LoadOptionBase & {\n    /**\n       * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。\n       * 提供后 load() 返回 T（变换结果），而非原始 JSON。\n       */\n    transform: (rawContent: string) => T | Promise<T>;\n}",
         "declarationRelations": [
@@ -584,12 +554,6 @@
       "name": "LoadOptions",
       "jsdoc": "load() 选项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 73,
-        "className": "LoadOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "JsonLoadOptions | TextLoadOptions | TransformLoadOptions<T>",
         "declarationRelations": [
@@ -616,12 +580,6 @@
       "name": "TransformedFileLoadOptions",
       "jsdoc": "Transformed File Load Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 75,
-        "className": "TransformedFileLoadOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Pick<LoadOptionBase, 'forceRefresh'>",
         "declarationRelations": [
@@ -638,12 +596,6 @@
       "name": "TransformedFileLoader",
       "jsdoc": "Transformed File Loader 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 77,
-        "className": "TransformedFileLoader",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建带变换缓存的文件加载器。",
@@ -808,12 +760,6 @@
       "name": "FileLoader",
       "jsdoc": "File Loader 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/FileLoader.ts",
-        "line": 92,
-        "className": "FileLoader",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 File Loader 实例。",

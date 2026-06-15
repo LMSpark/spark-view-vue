@@ -9,6 +9,7 @@ import type {
   DtsTypeDeclarationModel,
   ComponentClassModelLayer,
   ComponentClassModelLevel,
+  ComponentProfileMeta,
   SourceProvenanceMeta,
 } from './types'
 
@@ -100,6 +101,34 @@ export type DtsClassModelBundleClassEntry = Readonly<{
   file: string
 }>
 
+/** Dts Class Model Bundle Component Entry 是 componentIndex.entries 的规范化行。 */
+export type DtsClassModelBundleComponentEntry = Readonly<{
+  /** DtsTypeDeclarationModel className；也是 componentIndex.entries 的键。 */
+  className: string
+  /** 声明所在源码路径；与 manifest.files/sourcePath 对齐。 */
+  sourcePath: string
+  /** 承载该 class 声明的 shard JSON 文件名。 */
+  file: string
+  /** 可查询组件画像；仅包含 query/guide 实际消费的字段。 */
+  component: ComponentProfileMeta
+}>
+
+/** Dts Class Model Bundle Component Index：entries 是表，by* 是倒排索引。 */
+export type DtsClassModelBundleComponentIndex = Readonly<{
+  /** className → component entry，保存一次完整行。 */
+  entries: Readonly<Record<string, DtsClassModelBundleComponentEntry>>
+  /** component.name → className[]。 */
+  byName: Readonly<Record<string, readonly string[]>>
+  /** component.type → className[]。 */
+  byType: Readonly<Record<string, readonly string[]>>
+  /** component.level → className[]，如 table-level / row-level / field-level。 */
+  byLevel: Readonly<Record<string, readonly string[]>>
+  /** component.layer → className[]，如 data-view-container / row-scope / data-field。 */
+  byLayer: Readonly<Record<string, readonly string[]>>
+  /** component.directory → className[]。 */
+  byDirectory: Readonly<Record<string, readonly string[]>>
+}>
+
 /** Dts Class Model Bundle Manifest 的语义模型。 */
 export type DtsClassModelBundleManifest = Readonly<{
   /** bundle 协议版本；loader 据此判断是否需要迁移或拒绝不兼容 manifest。 */
@@ -112,6 +141,8 @@ export type DtsClassModelBundleManifest = Readonly<{
   files: Readonly<Record<string, DtsClassModelBundleFileEntry>>
   /** className → 类条目；跨 shard 全局索引，duplicate 时仅保留 keptFile 对应条目。 */
   classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>
+  /** 组件查询倒排索引；让 table-level/row-level/field-level 等查询无需扫全量 shard。 */
+  componentIndex?: DtsClassModelBundleComponentIndex
   /** 同名 class 冲突记录；manifest 构建时后者被跳过，仅保留 keptFile。 */
   duplicates?: readonly DtsClassModelDuplicateRecord[]
 }>

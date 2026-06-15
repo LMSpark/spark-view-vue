@@ -157,12 +157,6 @@
       "name": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
       "jsdoc": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
-        "line": 5,
-        "className": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ClassModelKnowledgeWorkerInitInput & Readonly<{\n    /** Worker 脚本的 URL，用于在主线程创建 Web Worker 实例；必须指向知识链路的 worker 入口文件。 */\n    workerUrl: string | URL;\n    /** 传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。 */\n    workerOptions?: WorkerOptions;\n    /** 自定义 Worker 创建函数，用于替代默认的 new Worker()；在非浏览器环境或需要拦截 Worker 生命周期时注入。 */\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
         "declarationRelations": [
@@ -237,12 +231,6 @@
       "name": "WorkerClassModelKnowledgeProvider",
       "jsdoc": "主线程 knowledge provider。\n成熟 Worker 通信由 Comlink 负责；主线程只传 metadata/catalog URL 和小查询参数。\n注意：本文件不得 import spark-json-document，也不得 import generated metadata JSON。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
-        "line": 20,
-        "className": "WorkerClassModelKnowledgeProvider",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Worker Class Model Knowledge Provider 实例。",

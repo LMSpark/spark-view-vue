@@ -108,12 +108,6 @@
       "name": "DevPageFileName",
       "jsdoc": "Dev Page File Name 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 6,
-        "className": "DevPageFileName",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Extract<PageNodeFileName, string>",
         "declarationRelations": [
@@ -130,12 +124,6 @@
       "name": "PageConfigPageSummary",
       "jsdoc": "Page Config Page Summary 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 8,
-        "className": "PageConfigPageSummary",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key];\n}",
         "members": {}
@@ -145,12 +133,6 @@
       "name": "NavigationNodeDraftNode",
       "jsdoc": "Navigation Node Draft Node 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 12,
-        "className": "NavigationNodeDraftNode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [Key in keyof ProjectNavigationNodeDraftNode]: ProjectNavigationNodeDraftNode[Key];\n}",
         "members": {}
@@ -160,12 +142,6 @@
       "name": "RunPageDesignAiOptions",
       "jsdoc": "Run Page Design Ai Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 16,
-        "className": "RunPageDesignAiOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key];\n}",
         "members": {}
@@ -175,12 +151,6 @@
       "name": "EditableProjectOption",
       "jsdoc": "Editable Project Option 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 20,
-        "className": "EditableProjectOption",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ProjectSummary & {\n    /** tenant Id 标识。 */\n    tenantId: string;\n}",
         "declarationRelations": [
@@ -210,12 +180,6 @@
       "name": "StatusMessage",
       "jsdoc": "Status Message 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 25,
-        "className": "StatusMessage",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 展示文本。 */\n    text: string;\n    /** 类型标识。 */\n    type: 'success' | 'warning' | 'error' | 'info';\n    /** time 字段。 */\n    time: string;\n}",
         "members": {
@@ -246,12 +210,6 @@
       "name": "DevContextConfig",
       "jsdoc": "Dev Context Config 的配置结构。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 34,
-        "className": "DevContextConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
         "members": {
@@ -282,12 +240,6 @@
       "name": "DevWorkspaceTab",
       "jsdoc": "Dev Workspace Tab 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 43,
-        "className": "DevWorkspaceTab",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'props' | 'preview' | DevPageFileName",
         "declarationRelations": [
@@ -312,12 +264,6 @@
       "name": "DevState",
       "jsdoc": "Dev State 的运行状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/useDevState.ts",
-        "line": 192,
-        "className": "DevState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ReturnType<typeof useDevState>",
         "declarationRelations": [

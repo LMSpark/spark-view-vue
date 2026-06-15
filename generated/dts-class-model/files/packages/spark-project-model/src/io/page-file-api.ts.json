@@ -197,12 +197,6 @@
       "name": "PageFileCreateParams",
       "jsdoc": "Page File Create Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/page-file-api.ts",
-        "line": 16,
-        "className": "PageFileCreateParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "PageFileCreateOptions & {\n    /** page Id 标识。 */\n    pageId: string;\n}",
         "declarationRelations": [
@@ -232,12 +226,6 @@
       "name": "PageFileApiOptions",
       "jsdoc": "Page File Api Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/page-file-api.ts",
-        "line": 21,
-        "className": "PageFileApiOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** get Page Files Api 回调。 */\n    getPageFilesApi: () => string;\n    /** http 字段。 */\n    http: HttpClientBase;\n}",
         "members": {
@@ -267,12 +255,6 @@
       "name": "PageFileApi",
       "jsdoc": "Page File Api 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/page-file-api.ts",
-        "line": 28,
-        "className": "PageFileApi",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page File Api 实例。",

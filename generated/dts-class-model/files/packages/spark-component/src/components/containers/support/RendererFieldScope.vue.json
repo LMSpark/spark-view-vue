@@ -11,7 +11,12 @@
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "RendererFieldScopeProps"
-    ]
+    ],
+    "componentName": "RendererFieldScope",
+    "componentType": "r-field-scope",
+    "componentLevel": "row-level",
+    "componentLayer": "row-scope",
+    "componentDirectory": "containers/support"
   },
   "$defs": {
     "RendererFieldScopeProps": {
@@ -86,11 +91,12 @@
       "name": "RendererFieldScopeProps",
       "jsdoc": "r-field-scope 字段宿主容器属性，负责提供行上下文和表单布局。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/RendererFieldScope.vue",
-        "line": 4,
-        "className": "RendererFieldScopeProps",
-        "declarationKind": "typeAlias"
+      "component": {
+        "name": "RendererFieldScope",
+        "type": "r-field-scope",
+        "level": "row-level",
+        "layer": "row-scope",
+        "directory": "containers/support"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 固定组件类型，用于注册表识别字段宿主容器。 */\n    type?: 'r-field-scope';\n    /** 字段宿主容器节点 ID。 */\n    id?: string;\n    /** 表单数据模型 */\n    model?: DataRow;\n    /** 字段组件配置列表 */\n    children?: SparkNode[];\n    /** CSS Grid 列数 */\n    gridColumns?: number;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 自适应最小宽度 */\n    autoFitMinWidth?: string;\n    /** 默认跨列数 */\n    defaultColSpan?: number;\n    /** 最后一行不满时自动拉宽 */\n    autoFillLastRow?: boolean;\n    /** 标签位置 */\n    labelPosition?: 'top' | 'left' | 'right';\n    /** 标签宽度 */\n    labelWidth?: string;\n    /** 内联模式 */\n    inline?: boolean;\n    /** 紧凑模式 */\n    compact?: boolean;\n}",

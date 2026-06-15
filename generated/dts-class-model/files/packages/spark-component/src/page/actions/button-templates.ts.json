@@ -110,12 +110,6 @@
       "name": "ButtonTemplateProps",
       "jsdoc": "Button Template Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/actions/button-templates.ts",
-        "line": 19,
-        "className": "ButtonTemplateProps",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** button Type 字段。 */\n    buttonType?: 'primary' | 'success' | 'warning' | 'danger' | 'info';\n    /** plain 字段。 */\n    plain?: boolean;\n    /** 展示文本。 */\n    text?: boolean;\n    /** link 字段。 */\n    link?: boolean;\n    /** round 字段。 */\n    round?: boolean;\n    /** circle 字段。 */\n    circle?: boolean;\n    /** button Size 大小。 */\n    buttonSize?: 'large' | 'default' | 'small';\n    /** icon 字段。 */\n    icon?: string;\n}",
         "members": {
@@ -176,12 +170,6 @@
       "name": "ResolvedButtonStyle",
       "jsdoc": "Resolved Button Style 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/actions/button-templates.ts",
-        "line": 38,
-        "className": "ResolvedButtonStyle",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** button Type 字段。 */\n    buttonType: string;\n    /** button Size 大小。 */\n    buttonSize: string;\n    /** plain 字段。 */\n    plain: boolean;\n    /** 展示文本。 */\n    text: boolean;\n    /** link 字段。 */\n    link: boolean;\n    /** round 字段。 */\n    round: boolean;\n    /** circle 字段。 */\n    circle: boolean;\n    /** icon 字段。 */\n    icon: string | undefined;\n    /** 展示标签。 */\n    label: string | undefined;\n}",
         "members": {

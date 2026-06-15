@@ -365,12 +365,6 @@
       "name": "SubtreeFieldPolicy",
       "jsdoc": "子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 27,
-        "className": "SubtreeFieldPolicy",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'unrestricted'",
         "members": {}
@@ -380,12 +374,6 @@
       "name": "ThemeMode",
       "jsdoc": "主题模式",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 30,
-        "className": "ThemeMode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'light' | 'dark' | 'auto'",
         "declarationRelations": [
@@ -409,12 +397,6 @@
       "name": "ThemeCapability",
       "jsdoc": "主题服务能力接口（最小契约，不含 Vue 响应式）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 32,
-        "className": "ThemeCapability",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前生效的主题模式（light 或 dark）。 */\n    readonly current: 'light' | 'dark';\n    /** 用户选择的主题模式（含 auto）。 */\n    readonly mode: ThemeMode;\n    /** 设置主题模式。 */\n    setMode(mode: ThemeMode): void;\n    /** 当前是否为暗色主题。 */\n    readonly isDark: boolean;\n    /** 在 light/dark 之间切换主题。 */\n    toggle(): void;\n}",
         "members": {
@@ -474,12 +456,6 @@
       "name": "ModuleContextItem",
       "jsdoc": "模块列表项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 45,
-        "className": "ModuleContextItem",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string | number;\n    /** 显示标题。 */\n    title: string;\n}",
         "members": {
@@ -504,12 +480,6 @@
       "name": "ModuleContext",
       "jsdoc": "当前模块上下文快照",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 52,
-        "className": "ModuleContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** selected 字段。 */\n    selected: string | number | null;\n    /** items 字段。 */\n    items: readonly ModuleContextItem[];\n    /** node Id 标识。 */\n    nodeId: string;\n}",
         "members": {
@@ -540,12 +510,6 @@
       "name": "ModuleContextCapability",
       "jsdoc": "MODULE_CONTEXT 能力接口",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 61,
-        "className": "ModuleContextCapability",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 获取当前模块上下文快照。 */\n    getCurrent(): ModuleContext | null;\n    /** 订阅模块上下文变更，返回取消订阅函数。 */\n    subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void;\n}",
         "members": {
@@ -649,12 +613,6 @@
       "name": "PageComponentInstanceEntry",
       "jsdoc": "Page Component Instance Entry 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 68,
-        "className": "PageComponentInstanceEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown>;\n}",
         "members": {
@@ -685,12 +643,6 @@
       "name": "PageComponentApiEntry",
       "jsdoc": "Page Component Api Entry 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 77,
-        "className": "PageComponentApiEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** api 字段。 */\n    api: unknown;\n}",
         "members": {
@@ -721,12 +673,6 @@
       "name": "PageComponentRegistry",
       "jsdoc": "页面内组件实例/API 注册表能力接口",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 86,
-        "className": "PageComponentRegistry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 注册组件实例元数据。 */\n    registerInstance(entry: PageComponentInstanceEntry): void;\n    /** 注销指定 id 的组件实例。 */\n    unregisterInstance(id: string): void;\n    /** 列出已注册实例，可按 type 过滤。 */\n    listInstances(type?: string): PageComponentInstanceEntry[];\n    /** 按 id 获取组件实例元数据。 */\n    getInstance(id: string): PageComponentInstanceEntry | null;\n    /** 注册组件暴露的运行时 API。 */\n    registerApi(entry: PageComponentApiEntry): void;\n    /** 注销指定 id 的组件 API。 */\n    unregisterApi(id: string): void;\n    /** 列出已注册 API，可按 type 过滤。 */\n    listApis(type?: string): PageComponentApiEntry[];\n    /** 按 id 获取组件 API 对象。 */\n    getApi<T = unknown>(id: string): T | null;\n    /** 按 type 获取同类组件 API 列表。 */\n    getApisByType<T = unknown>(type: string): T[];\n}",
         "members": {
@@ -932,12 +878,6 @@
       "name": "PageCssScopeCapability",
       "jsdoc": "页面作用域 CSS 注入能力（由 SparkPageRenderer 提供）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-keys.ts",
-        "line": 107,
-        "className": "PageCssScopeCapability",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 向当前页面作用域注入 CSS 文本。 */\n    inject(css: string): void;\n}",
         "members": {

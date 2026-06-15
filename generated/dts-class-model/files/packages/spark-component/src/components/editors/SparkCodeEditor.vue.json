@@ -62,16 +62,12 @@
       "name": "Props",
       "jsdoc": "SparkCodeEditor 组件属性，描述代码内容、语言和编辑器外观。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/editors/SparkCodeEditor.vue",
-        "line": 2,
-        "className": "Props",
-        "declarationKind": "typeAlias",
-        "componentName": "SparkCodeEditor",
-        "componentType": "code-editor",
-        "componentLevel": "infrastructure",
-        "componentLayer": "editor",
-        "componentDirectory": "editors"
+      "component": {
+        "name": "SparkCodeEditor",
+        "type": "code-editor",
+        "level": "infrastructure",
+        "layer": "editor",
+        "directory": "editors"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 编辑器内容 */\n    modelValue?: string;\n    /** 语言模式；当前只加载脚本与样式两类 CodeMirror language package。 */\n    language?: 'javascript' | 'css';\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否自动换行 */\n    lineWrapping?: boolean;\n}",

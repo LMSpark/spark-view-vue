@@ -269,12 +269,6 @@
       "name": "AiAgentChatMessage",
       "jsdoc": "单条聊天消息（对齐 OpenAI message 格式），判别联合：role='tool' 必须有 tool_call_id",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/chat/chat-types.ts",
-        "line": 10,
-        "className": "AiAgentChatMessage",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system';\n    content: string;\n}> | Readonly<{\n    role: 'tool';\n    content: string;\n    tool_call_id: string;\n}>",
         "declarationRelations": [
@@ -296,12 +290,6 @@
       "name": "AiAgentChatRequest",
       "jsdoc": "聊天请求。\n必填：\nhistoryMsgs — 历史消息列表（包含当前用户输入）\n可选回调（流式传输）：\nonReasoning — 推理过程增量回调\nonDelta     — 文本增量回调\nonUsage     — token 用量回调\nonStreamEvent — 原始 AI turn 事件回调\nonToolCall  — 工具调用记录回调\nbeforeFunctionCall — 本次请求级工具执行前置裁决\n可选控制：\nturn        — 轮次元数据（未提供时自动生成）\nsystemPrompt — 额外的系统提示词\nsignal      — AbortSignal（取消请求）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/chat/chat-types.ts",
-        "line": 37,
-        "className": "AiAgentChatRequest",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 历史消息列表（含当前用户输入），按时间顺序排列 */\n    historyMsgs: readonly AiAgentChatMessage[];\n    /** 轮次元数据；未提供时由 tool-loop 自动生成 */\n    turn?: AiAgentTurnMeta;\n    /** 额外的系统提示词，追加到业务默认 systemPrompt 之后 */\n    systemPrompt?: string;\n    /** 中断信号，触发后取消正在进行的 LLM 请求 */\n    signal?: AbortSignal;\n    /** 推理过程增量回调：模型输出 reasoning token 时逐段调用 */\n    onReasoning?: (reasoning: string) => void;\n    /** 文本增量回调：模型输出正文 token 时逐段调用 */\n    onDelta?: (delta: string) => void;\n    /** token 用量回调：每次模型返回 usage 时调用，参数为原始 usage 对象 */\n    onUsage?: (usageRaw: Record<string, unknown>) => void;\n    /** 原始 AI turn 事件回调：所有 SSE 事件经此透传，用于调试或自定义处理 */\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    /** 工具调用记录回调：每次 function tool 完成后调用 */\n    onToolCall?: (record: AiAgentToolCallRecord) => void;\n    /** 本次请求级工具执行前置裁决：返回 deny 则跳过执行，返回 allow 则继续 */\n    beforeFunctionCall?: (options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n}>",
         "declarationRelations": [
@@ -479,12 +467,6 @@
       "name": "AiAgentStreamEvent",
       "jsdoc": "AI turn 事件（一次模型 turn 在 APP 公共 SSE 中的事件单元）。\ntype      — 事件类型（delta / reasoning / usage / result / error / tool-result 等）\ndata      — 事件数据（字符串）\nturnKey   — turn 隔离键（kind + 顶层 instanceId + turnId）\nstreamKey — turn 内流键（turnKey + streamId）\nscope     — 事件作用域（含 kind / 顶层 instanceId / eventModuleId / turnId）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/chat/chat-types.ts",
-        "line": 67,
-        "className": "AiAgentStreamEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 事件类型标识（delta / reasoning / usage / result / error / tool-result 等） */\n    type: string;\n    /** 事件数据，类型随 type 变化：delta 时为 string，其余通常为 object */\n    data: unknown;\n    /** turn 隔离键：kind + 顶层 instanceId + turnId，用于 SSE 多路复用 */\n    turnKey: string;\n    /** turn 内流键：turnKey + streamId，区分同一 turn 中的多个并行流 */\n    streamKey: string;\n    /** 事件作用域：含业务注册 ID、实例 ID、事件模块 ID 和轮次 ID */\n    scope: {\n        readonly businessRegistrationId: string;\n        readonly businessInstanceId: string;\n        readonly eventModuleId: string;\n        readonly turnId: string;\n    };\n}>",
         "declarationRelations": [
@@ -534,12 +516,6 @@
       "name": "AiAgentToolCallRecord",
       "jsdoc": "工具调用记录（用于前端展示和调试）。\n每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onToolCall 回调\n将本记录传给业务方。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/chat/chat-types.ts",
-        "line": 89,
-        "className": "AiAgentToolCallRecord",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 工具调用参数（原始值，未截断） */\n    args: unknown;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为空（非 function calling 场景） */\n    callId?: string;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果（原始值，类型由具体工具决定） */\n    result: AiAgentFunctionCallResult<unknown>;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
         "declarationRelations": [
@@ -607,12 +583,6 @@
       "name": "AiAgentTurnMeta",
       "jsdoc": "轮次元数据。\nturnId          — 轮次 ID（UUID）\nseq             — 序号\nbaseRevision    — 基础版本号（历史消息数 - 1）\nqueuedAt        — 排队时间（ISO 字符串）\nstartedAt       — 开始时间（ISO 字符串）\nmaxParallelTurns — 最大并行轮次（当前固定为 1）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/chat/chat-types.ts",
-        "line": 116,
-        "className": "AiAgentTurnMeta",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 轮次 ID（UUID），全局唯一标识一次模型 turn */\n    turnId: string;\n    /** 轮次序号，从 1 开始递增 */\n    seq: number;\n    /** 基础版本号 = 历史消息数 - 1，用于增量同步定位 */\n    baseRevision: number;\n    /** 排队时间（ISO 8601 字符串） */\n    queuedAt: string;\n    /** 开始执行时间（ISO 8601 字符串） */\n    startedAt: string;\n    /** 最大并行轮次数，当前固定为 1（串行执行） */\n    maxParallelTurns: number;\n}>",
         "declarationRelations": [

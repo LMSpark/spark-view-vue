@@ -36,18 +36,12 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-15T01:38:56.960Z",
+  "generatedAt": "2026-06-15T02:32:35.988Z",
   "models": {
     "ProjectDtsSourceFileProjectionOptions": {
       "name": "ProjectDtsSourceFileProjectionOptions",
       "jsdoc": "Project Dts Source File Projection Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
-        "line": 6,
-        "className": "ProjectDtsSourceFileProjectionOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 仓库根目录的绝对路径，用于归一化 .d.ts 文件路径为 repo 相对路径。 */\n    repoRoot: string;\n    /** 待投影 .d.ts 文件的绝对路径。 */\n    absolutePath: string;\n    /** TypeScript SourceFile AST 实例（已解析完成）。 */\n    sourceFile: ts.SourceFile;\n    /** 是否仅投影 export 声明；默认 false 时投影全部顶层声明。 */\n    exportedOnly?: boolean;\n}>",
         "declarationRelations": [

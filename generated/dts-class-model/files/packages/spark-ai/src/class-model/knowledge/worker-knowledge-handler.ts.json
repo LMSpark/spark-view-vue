@@ -51,12 +51,6 @@
       "name": "CreateClassModelKnowledgeWorkerApiOptions",
       "jsdoc": "Create Class Model Knowledge Worker Api Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
-        "line": 11,
-        "className": "CreateClassModelKnowledgeWorkerApiOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 远程 JSON 获取函数，用于 Worker 内部拉取 manifest/shard；默认使用 fetch()。 */\n    fetchJson?: (url: string) => Promise<unknown>;\n    /** 外部编译/刷新钩子，Worker 在 refresh 时调用以触发宿主侧重新生成知识包。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** 知识包刷新策略：'never' 不自动刷新（默认），'before-first-load' 首次加载前刷新一次，'always' 每次查询前刷新。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
         "declarationRelations": [

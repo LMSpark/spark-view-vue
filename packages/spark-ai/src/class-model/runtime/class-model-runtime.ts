@@ -5,7 +5,7 @@
  * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonValue } from '../../json'
-import type { ClassModelDocument } from '../class-model/types'
+import type { ClassModelDocument, ComponentClassModelLayer, ComponentClassModelLevel } from '../class-model/types'
 import {
   ClassModelKnowledgeService,
   type ClassModelKnowledgeProvider,
@@ -35,6 +35,28 @@ export type ClassModelRuntimeOptions = Readonly<{
 export type ClassModelToolArgs = Readonly<Record<string, AiJsonValue>>
 
 export type { ClassModelToolSpec } from '../tools/class-model-tool-specs'
+
+const COMPONENT_LEVELS = new Set<ComponentClassModelLevel>([
+  'table-level',
+  'row-level',
+  'container',
+  'field-level',
+  'display',
+  'infrastructure',
+])
+
+const COMPONENT_LAYERS = new Set<ComponentClassModelLayer>([
+  'data-view-container',
+  'row-scope',
+  'layout-container',
+  'zone-container',
+  'data-field',
+  'field-support',
+  'data-display',
+  'static-display',
+  'editor',
+  'support',
+])
 
 /** Class Model Tool Result 的返回结果。 */
 export type ClassModelToolResult = Readonly<{
@@ -120,10 +142,24 @@ public async executeTool(
   ): Promise<ClassModelToolResult> {
     switch (toolName) {
       case CLASS_MODEL_TOOL_NAMES.query: {
-        rejectUnknownArgs(toolName, args, ['kind', 'keyword', 'includeMembers'])
+        rejectUnknownArgs(toolName, args, [
+          'kind',
+          'keyword',
+          'componentName',
+          'componentType',
+          'componentLevel',
+          'componentLayer',
+          'componentDirectory',
+          'includeMembers',
+        ])
         return okResult(await this.knowledge.query({
           ...optionalStringProperty(args, 'kind'),
           ...optionalStringProperty(args, 'keyword'),
+          ...optionalStringProperty(args, 'componentName'),
+          ...optionalStringProperty(args, 'componentType'),
+          ...optionalComponentLevelProperty(args, 'componentLevel'),
+          ...optionalComponentLayerProperty(args, 'componentLayer'),
+          ...optionalStringProperty(args, 'componentDirectory'),
           includeMembers: args['includeMembers'] === true,
         }))
       }
@@ -259,6 +295,30 @@ function optionalString(args: ClassModelToolArgs, key: string): string | undefin
 function optionalStringProperty(args: ClassModelToolArgs, key: string): Record<string, string> {
   const value = optionalString(args, key)
   return value === undefined ? {} : { [key]: value }
+}
+
+function optionalComponentLevelProperty(
+  args: ClassModelToolArgs,
+  key: string,
+): { componentLevel?: ComponentClassModelLevel } {
+  const value = optionalString(args, key)
+  if (value === undefined) return {}
+  if (!COMPONENT_LEVELS.has(value as ComponentClassModelLevel)) {
+    throw new ClassModelToolArgsError(`参数 "${key}" 必须是组件层级之一: ${[...COMPONENT_LEVELS].join(', ')}。`)
+  }
+  return { componentLevel: value as ComponentClassModelLevel }
+}
+
+function optionalComponentLayerProperty(
+  args: ClassModelToolArgs,
+  key: string,
+): { componentLayer?: ComponentClassModelLayer } {
+  const value = optionalString(args, key)
+  if (value === undefined) return {}
+  if (!COMPONENT_LAYERS.has(value as ComponentClassModelLayer)) {
+    throw new ClassModelToolArgsError(`参数 "${key}" 必须是组件分层之一: ${[...COMPONENT_LAYERS].join(', ')}。`)
+  }
+  return { componentLayer: value as ComponentClassModelLayer }
 }
 
 function optionalStringArrayProperty(args: ClassModelToolArgs, key: string): Record<string, readonly string[]> {

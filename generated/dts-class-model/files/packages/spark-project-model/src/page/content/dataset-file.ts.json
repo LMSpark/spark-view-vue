@@ -131,12 +131,6 @@
       "name": "PageDataSetFile",
       "jsdoc": "Page Data Set File 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/content/dataset-file.ts",
-        "line": 12,
-        "className": "PageDataSetFile",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page Data Set File 实例。",

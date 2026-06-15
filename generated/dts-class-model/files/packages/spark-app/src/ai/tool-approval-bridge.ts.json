@@ -180,12 +180,6 @@
       "name": "AiToolApprovalRequest",
       "jsdoc": "Ai Tool Approval Request 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/tool-approval-bridge.ts",
-        "line": 10,
-        "className": "AiToolApprovalRequest",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 审批请求唯一标识。 */\n    id: string;\n    /** 发起 tool call 的业务模块 id。 */\n    moduleId: string;\n    /** 业务模块实例 id。 */\n    moduleInstanceId: string;\n    /** Agent 实例 id。 */\n    instanceId: string;\n    /** 待审批的工具名称。 */\n    toolName: string;\n    /** 工具调用参数。 */\n    args: AiJsonParams;\n    /** 请求创建时间戳（毫秒）。 */\n    requestedAt: number;\n}>",
         "declarationRelations": [
@@ -247,12 +241,6 @@
       "name": "AiToolApprovalBridgeSnapshot",
       "jsdoc": "Ai Tool Approval Bridge Snapshot 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/tool-approval-bridge.ts",
-        "line": 27,
-        "className": "AiToolApprovalBridgeSnapshot",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前待审批请求列表。 */\n    pending: readonly AiToolApprovalRequest[];\n}>",
         "declarationRelations": [
@@ -278,12 +266,6 @@
       "name": "AiToolApprovalBridgeListener",
       "jsdoc": "Ai Tool Approval Bridge Listener 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/tool-approval-bridge.ts",
-        "line": 32,
-        "className": "AiToolApprovalBridgeListener",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(snapshot: AiToolApprovalBridgeSnapshot) => void",
         "members": {}
@@ -293,12 +275,6 @@
       "name": "AiToolApprovalRequestIdFactory",
       "jsdoc": "Ai Tool Approval Request Id Factory 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/tool-approval-bridge.ts",
-        "line": 34,
-        "className": "AiToolApprovalRequestIdFactory",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 为 tool call 审批请求生成唯一 id。 */\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
         "declarationRelations": [
@@ -342,12 +318,6 @@
       "name": "AiToolApprovalBridgeOptions",
       "jsdoc": "Ai Tool Approval Bridge Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/tool-approval-bridge.ts",
-        "line": 39,
-        "className": "AiToolApprovalBridgeOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 自定义当前时间戳来源（默认 Date.now）。 */\n    now?: () => number;\n    /** 自定义审批请求 id 工厂。 */\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
         "declarationRelations": [
@@ -384,12 +354,6 @@
       "name": "AiToolApprovalBridge",
       "jsdoc": "Ai Tool Approval Bridge 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/tool-approval-bridge.ts",
-        "line": 46,
-        "className": "AiToolApprovalBridge",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Tool Approval Bridge 实例。",

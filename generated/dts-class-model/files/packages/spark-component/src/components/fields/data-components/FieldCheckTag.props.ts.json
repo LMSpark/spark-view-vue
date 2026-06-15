@@ -40,16 +40,12 @@
       "name": "RCheckTagProps",
       "jsdoc": "RCheck Tag Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldCheckTag.props.ts",
-        "line": 9,
-        "className": "RCheckTagProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldCheckTag",
-        "componentType": "r-check-tag",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldCheckTag",
+        "type": "r-check-tag",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 是否选中 */\n    checked?: boolean;\n    /** 标签文本 */\n    label?: string;\n}",

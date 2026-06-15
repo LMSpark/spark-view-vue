@@ -515,12 +515,6 @@
       "name": "ProjectNavigationDirtyScope",
       "jsdoc": "Project Navigation Dirty Scope 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 11,
-        "className": "ProjectNavigationDirtyScope",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'node' | 'root'",
         "declarationRelations": [
@@ -540,12 +534,6 @@
       "name": "ProjectModelEvent",
       "jsdoc": "Project Model Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 13,
-        "className": "ProjectModelEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    type: 'navigation.changed';\n    projectId: string;\n    revision: number;\n    scope: ProjectNavigationDirtyScope;\n    nodeId?: string;\n} | {\n    type: 'selection.changed';\n    projectId: string;\n    revision: number;\n    nodeId: string | null;\n    pageId: string | null;\n} | {\n    type: 'page.file.changed';\n    projectId: string;\n    revision: number;\n    pageId: string;\n    fileName: PageNodeFileName;\n} | {\n    type: 'runtime.changed';\n    projectId: string;\n    revision: number;\n    pageId?: string;\n}",
         "declarationRelations": [
@@ -573,12 +561,6 @@
       "name": "ProjectModelEventListener",
       "jsdoc": "Project Model Event Listener 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 38,
-        "className": "ProjectModelEventListener",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(event: ProjectModelEvent) => void",
         "members": {}
@@ -588,12 +570,6 @@
       "name": "ProjectPageFileWriteCommand",
       "jsdoc": "Project Page File Write Command 的命令参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 40,
-        "className": "ProjectPageFileWriteCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 目标配置页 pageId；省略时使用当前 activePage。 */\n    pageId?: string | undefined;\n    /** 要写入的页面四文件名。 */\n    fileName: PageNodeFileName;\n    /** 新的文件文本内容，只写入内存模型，落盘由工作区编排。 */\n    text: string;\n}",
         "members": {
@@ -624,12 +600,6 @@
       "name": "ProjectNavigationProjection",
       "jsdoc": "Project Navigation Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 49,
-        "className": "ProjectNavigationProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** navigation Root 字段。 */\n    navigationRoot: ProjectModelData;\n    /** tree Data 字段。 */\n    treeData: ProjectNodeData[];\n    /** selected Node 字段。 */\n    selectedNode: ProjectNodeData | null;\n    /** selected Node Id 标识。 */\n    selectedNodeId: string | null;\n    /** navigation Location 字段。 */\n    navigationLocation: ProjectNodeLocation | null;\n    /** navigation Draft 字段。 */\n    navigationDraft: NavigationNodeDraft | null;\n    /** page Features 字段。 */\n    pageFeatures: ProjectPageNodeSummary[];\n}",
         "members": {
@@ -684,12 +654,6 @@
       "name": "ProjectActivePageProjection",
       "jsdoc": "Project Active Page Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 66,
-        "className": "ProjectActivePageProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** rule Json 字段。 */\n    ruleJson: string;\n    /** page Data Json 字段。 */\n    pageDataJson: string;\n    /** script 字段。 */\n    script: string;\n    /** style 字段。 */\n    style: string;\n    /** parse Errors 字段。 */\n    parseErrors: Record<PageNodeFileName, string | null>;\n    /** 是否 is Loaded。 */\n    isLoaded: boolean;\n}",
         "members": {
@@ -744,12 +708,6 @@
       "name": "ProjectDirtyProjection",
       "jsdoc": "Project Dirty Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 83,
-        "className": "ProjectDirtyProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** dirty Files 字段。 */\n    dirtyFiles: Set<PageNodeFileName>;\n    /** 是否 has Any File Dirty。 */\n    hasAnyFileDirty: boolean;\n    /** navigation Dirty 字段。 */\n    navigationDirty: boolean;\n    /** 是否 has Any Dirty。 */\n    hasAnyDirty: boolean;\n}",
         "members": {
@@ -786,12 +744,6 @@
       "name": "ProjectPlanningInput",
       "jsdoc": "项目级策划输入：短需求 + 可选详细说明附件引用。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 94,
-        "className": "ProjectPlanningInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 项目级短需求；优先 navigation 根节点 description，否则 project.description。 */\n    requirement: string;\n    /** 策划详细说明附件引用；正文由工作区解析后传给 LLM。 */\n    planningAttachmentRef?: string;\n}>",
         "declarationRelations": [
@@ -823,12 +775,6 @@
       "name": "NavigationPlanningInput",
       "jsdoc": "单个导航节点策划输入：节点 description + 可选附件引用。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 101,
-        "className": "NavigationPlanningInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 目标导航节点 ID；对应 navigation tree 中的唯一标识。 */\n    nodeId: string;\n    /** 节点标题；用于 LLM 策划上下文中标识节点语义。 */\n    title: string;\n    /** 节点类型标识（如 page/group/link）；影响策划策略分支。 */\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    /** 策划详细说明附件引用；省略时仅使用 requirement。 */\n    planningAttachmentRef?: string;\n}>",
         "declarationRelations": [
@@ -878,12 +824,6 @@
       "name": "ProjectPlanningCompletionInput",
       "jsdoc": "项目策划完成动作输入；由 agent_complete 转发到领域模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 114,
-        "className": "ProjectPlanningCompletionInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 策划完成摘要；由 LLM 生成，归纳整个策划过程的结论。 */\n    summary?: string;\n}>",
         "declarationRelations": [
@@ -909,12 +849,6 @@
       "name": "ProjectPlanningCompletionResult",
       "jsdoc": "项目策划完成动作结果；失败结果会回灌给 LLM 继续补查/补执行。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 119,
-        "className": "ProjectPlanningCompletionResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    ok: true;\n    completed: true;\n    summary: string;\n    moduleCount: number;\n    pageCount: number;\n}> | Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    /** 领域模型需要的业务能力名；由 AI runtime 的知识体系翻译为具体查询和代理执行步骤。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
         "declarationRelations": [
@@ -936,12 +870,6 @@
       "name": "ProjectInfo",
       "jsdoc": "Project Info 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 136,
-        "className": "ProjectInfo",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 租户 ID；多租户环境下用于隔离项目。 */\n    tenantId?: string | undefined;\n    /** 项目唯一 ID。 */\n    projectId: string;\n    /** 项目名称。 */\n    name: string;\n    /** 项目类型标识。 */\n    projectType: string;\n    /** 项目图标名。 */\n    icon?: string | undefined;\n    /** 项目描述，供导航、规划和 AI 设计理解项目目标。 */\n    description: string;\n    /** 策划详细说明附件引用（文件 ID / 工作区路径等，由 IO 层约定）。 */\n    planningAttachmentRef?: string | undefined;\n    /** 项目首页导航节点 ID。 */\n    homeNodeId?: string | undefined;\n    /** 项目排序值。 */\n    order: number;\n    /** 项目创建时间。 */\n    createdAt?: string | undefined;\n    /** 项目更新时间。 */\n    updatedAt?: string | undefined;\n}",
         "members": {
@@ -1020,12 +948,6 @@
       "name": "ProjectInfoInput",
       "jsdoc": "Project Info Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 161,
-        "className": "ProjectInfoInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Partial<Omit<ProjectInfo, 'projectId'>> & {\n    /** 可选项目 ID；未提供时由 ProjectModel 构造参数补齐。 */\n    projectId?: string | undefined;\n}",
         "declarationRelations": [
@@ -1055,12 +977,6 @@
       "name": "ProjectModelInitOptions",
       "jsdoc": "纯领域构造参数（无 IO）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-types.ts",
-        "line": 166,
-        "className": "ProjectModelInitOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前 ProjectModel 绑定的项目 ID。 */\n    projectId: string;\n    /** 可选项目基础信息；缺省字段由 ProjectModel 使用默认值补齐。 */\n    project?: ProjectInfoInput | undefined;\n}",
         "members": {

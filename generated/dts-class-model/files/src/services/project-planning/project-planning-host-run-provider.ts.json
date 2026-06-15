@@ -35,12 +35,6 @@
       "name": "ProjectPlanningDeliveryContext",
       "jsdoc": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-host-run-provider.ts",
-        "line": 19,
-        "className": "ProjectPlanningDeliveryContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** headless ProjectWorkspace 实例，持有当前项目的导航树和配置页模型 */\n    editor: ProjectWorkspace;\n    /** Host Run 成功结束后是否自动保存导航树变更；false 时仅标记 dirty 不落盘 */\n    saveNavigationAfterRun: boolean;\n}>",
         "declarationRelations": [

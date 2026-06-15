@@ -80,16 +80,12 @@
       "name": "RAvatarProps",
       "jsdoc": "RAvatar Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/data-components/DisplayAvatar.props.ts",
-        "line": 9,
-        "className": "RAvatarProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayAvatar",
-        "componentType": "r-avatar",
-        "componentLevel": "display",
-        "componentLayer": "data-display",
-        "componentDirectory": "display/data-components"
+      "component": {
+        "name": "DisplayAvatar",
+        "type": "r-avatar",
+        "level": "display",
+        "layer": "data-display",
+        "directory": "display/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<string> & {\n    /** 头像尺寸 */\n    avatarSize?: number | 'large' | 'default' | 'small';\n    /** 头像形状 */\n    shape?: 'circle' | 'square';\n    /** 图片地址 */\n    src?: string;\n    /** 响应式图像集合 */\n    srcSet?: string;\n    /** 图片替代文本 */\n    alt?: string;\n    /** 图片填充方式 */\n    fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';\n    /** 文本头像内容 */\n    text?: string;\n    /** 图标名称 */\n    icon?: string;\n}",

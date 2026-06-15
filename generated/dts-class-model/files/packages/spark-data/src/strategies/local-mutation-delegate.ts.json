@@ -175,12 +175,6 @@
       "name": "EmitRowsChangedFn",
       "jsdoc": "Emit Rows Changed Fn 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/local-mutation-delegate.ts",
-        "line": 23,
-        "className": "EmitRowsChangedFn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (options?: {\n        selectionChanged?: boolean;\n    }): void;\n}",
         "members": {}
@@ -190,12 +184,6 @@
       "name": "PostMutationFn",
       "jsdoc": "Post Mutation Fn 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/local-mutation-delegate.ts",
-        "line": 29,
-        "className": "PostMutationFn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (affectedRows: DataRow[] | 'all' | null): void;\n}",
         "members": {}
@@ -205,12 +193,6 @@
       "name": "LocalMutationDelegate",
       "jsdoc": "Local Mutation Delegate 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/local-mutation-delegate.ts",
-        "line": 33,
-        "className": "LocalMutationDelegate",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Local Mutation Delegate 实例。",

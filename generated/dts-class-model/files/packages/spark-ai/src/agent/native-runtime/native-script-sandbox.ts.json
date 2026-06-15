@@ -20,12 +20,6 @@
       "name": "AiNativeScriptSandboxContext",
       "jsdoc": "Ai Native Script Sandbox Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts",
-        "line": 17,
-        "className": "AiNativeScriptSandboxContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<Record<string, unknown>>",
         "declarationRelations": [

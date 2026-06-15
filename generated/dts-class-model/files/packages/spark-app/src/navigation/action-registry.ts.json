@@ -129,12 +129,6 @@
       "name": "NavigationActionContext",
       "jsdoc": "Navigation Action Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/action-registry.ts",
-        "line": 10,
-        "className": "NavigationActionContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** command 字段。 */\n    command: string;\n    /** node 字段。 */\n    node?: ProjectNodeData;\n    /** 来源对象。 */\n    source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell';\n}",
         "members": {
@@ -165,12 +159,6 @@
       "name": "NavigationActionHandler",
       "jsdoc": "Navigation Action Handler 的回调函数契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/action-registry.ts",
-        "line": 19,
-        "className": "NavigationActionHandler",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (context: NavigationActionContext): void | Promise<void>;\n}",
         "members": {}
@@ -180,12 +168,6 @@
       "name": "NavigationActionRegistry",
       "jsdoc": "Navigation Action Registry 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/action-registry.ts",
-        "line": 23,
-        "className": "NavigationActionRegistry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 注册 command 到 handler 的映射；返回卸载函数，调用即反注册；重复注册会覆盖 */\n    register(command: string, handler: NavigationActionHandler): () => void;\n    /** 按 command 取消注册；返回是否实际移除（command 不存在时返回 false） */\n    unregister(command: string): boolean;\n    /** 检查 command 是否已注册 */\n    has(command: string): boolean;\n    /** 按 command 查找并执行 handler；context 会与 command 合并为完整 NavigationActionContext；未注册时返回 false */\n    execute(command: string, context?: Omit<NavigationActionContext, 'command'>): Promise<boolean>;\n    /** 返回当前所有已注册的 command 标识列表 */\n    getCommands(): string[];\n}",
         "members": {

@@ -68,7 +68,7 @@ LLM request
 
 | 工具 | 参数 |
 |------|------|
-| `model_query` | `kind?`, `keyword?`, `includeMembers?` |
+| `model_query` | `kind?`, `keyword?`, `componentName?`, `componentType?`, `componentLevel?`, `componentLayer?`, `componentDirectory?`, `includeMembers?` |
 | `model_class_guide` | `kind` |
 | `model_attribute_guide` | `kind`, `attributeName` |
 | `model_action_guide` | `kind`, `actionName` |
@@ -133,7 +133,7 @@ ClassModelRuntime.executeTool('model_script')
 生产 **不读** `generated/dts-class-model/runtime/`。`model_script` 的 API 元数据来自 guide shard：
 
 ```text
-manifest.json + files/**/*.d.ts.json
+manifest.json + files/**/*.json
   → DtsClassModelBundleLoader.buildLoadedSurface()
   → createRuntimeApiMetadataFromSurface() / buildRuntimeApiMetadata()
   → executeDtsNativeScript()

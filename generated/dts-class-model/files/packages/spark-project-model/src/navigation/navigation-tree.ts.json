@@ -105,12 +105,6 @@
       "name": "NormalizeNavRootInput",
       "jsdoc": "Normalize Nav Root Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-tree.ts",
-        "line": 11,
-        "className": "NormalizeNavRootInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    id?: string | undefined;\n    /** 显示标题。 */\n    title?: string | undefined;\n    /** child Placement 字段。 */\n    childPlacement?: string | undefined;\n    /** 子节点集合。 */\n    children?: ProjectNodeData[] | undefined;\n    /** icon 字段。 */\n    icon?: string | undefined;\n    /** description 字段。 */\n    description?: string | undefined;\n    /** planning Attachment Ref 字段。 */\n    planningAttachmentRef?: string | undefined;\n    /** version 字段。 */\n    version?: string | undefined;\n    /** node Kind 字段。 */\n    nodeKind?: 'module' | 'system-directory' | undefined;\n    /** home Path 路径。 */\n    homePath?: string | undefined;\n}",
         "members": {
@@ -183,12 +177,6 @@
       "name": "BuildProjectPageSummariesOptions",
       "jsdoc": "Build Project Page Summaries Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-tree.ts",
-        "line": 47,
-        "className": "BuildProjectPageSummariesOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** description Context 字段。 */\n    descriptionContext?: readonly ProjectDescriptionContext[];\n}",
         "members": {
@@ -207,12 +195,6 @@
       "name": "TreeNodeLike",
       "jsdoc": "树节点最小接口——避免循环依赖",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-tree.ts",
-        "line": 57,
-        "className": "TreeNodeLike",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    /** 将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式 */\n    toNodeData(): ProjectNodeData;\n}",
         "members": {

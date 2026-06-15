@@ -93,12 +93,6 @@
       "name": "PageContextDeps",
       "jsdoc": "buildPageContext 所需的依赖引用",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/context/buildPageContext.ts",
-        "line": 20,
-        "className": "PageContextDeps",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** DataSet getter（闭包引用，每次调用返回最新值） */\n    getDataSet: () => DataSet | null;\n    /** page Route 字段。 */\n    pageRoute: PageRoute;\n    /** page Container 字段。 */\n    pageContainer: Ref<HTMLElement | null>;\n    /** page Service 字段。 */\n    pageService: PageServiceCapability;\n    /** 页面级组件注册中心 getter（可选） */\n    getComponentRegistry?: () => PageComponentRegistry | null;\n    /** 模块上下文 getter（可选，每次调用返回最新快照） */\n    getModuleContext?: () => ModuleContext | null;\n}",
         "members": {

@@ -98,12 +98,6 @@
       "name": "StringSchemaOptions",
       "jsdoc": "String Schema Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-helpers.ts",
-        "line": 9,
-        "className": "StringSchemaOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['string', 'null']）。 */\n    nullable?: boolean;\n    /** 最小字符串长度约束。 */\n    minLength?: number;\n}>",
         "declarationRelations": [
@@ -135,12 +129,6 @@
       "name": "NumberSchemaOptions",
       "jsdoc": "Number Schema Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-helpers.ts",
-        "line": 16,
-        "className": "NumberSchemaOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['number', 'null']）。 */\n    nullable?: boolean;\n}>",
         "declarationRelations": [
@@ -166,12 +154,6 @@
       "name": "BooleanSchemaOptions",
       "jsdoc": "Boolean Schema Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-helpers.ts",
-        "line": 21,
-        "className": "BooleanSchemaOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 是否允许 null 值（type 变为 ['boolean', 'null']）。 */\n    nullable?: boolean;\n}>",
         "declarationRelations": [
@@ -197,12 +179,6 @@
       "name": "EnumSchemaOptions",
       "jsdoc": "Enum Schema Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-helpers.ts",
-        "line": 34,
-        "className": "EnumSchemaOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 枚举值的 JSON Schema 类型（默认按 values 推断）。 */\n    type?: 'string' | 'number';\n    /** 是否允许 null 值（enum 追加 null）。 */\n    nullable?: boolean;\n}>",
         "declarationRelations": [
@@ -234,12 +210,6 @@
       "name": "ObjectSchemaOptions",
       "jsdoc": "Object Schema Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-helpers.ts",
-        "line": 45,
-        "className": "ObjectSchemaOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 必填属性名列表。 */\n    required?: readonly string[];\n    /** schema 描述文本。 */\n    description?: string;\n    /** 额外属性的 schema 约束（false 表示禁止额外属性）。 */\n    additionalProperties?: JsonSchema;\n}>",
         "declarationRelations": [

@@ -152,12 +152,6 @@
       "name": "NavigationTreeNodeLike",
       "jsdoc": "Navigation Tree Node Like 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-index.ts",
-        "line": 10,
-        "className": "NavigationTreeNodeLike",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    /** order 字段。 */\n    readonly order: number;\n    /** 将索引节点转回完整 ProjectNodeData；用于从扁平索引重建树结构或输出持久化格式 */\n    toNodeData(): ProjectNodeData;\n}",
         "members": {
@@ -200,12 +194,6 @@
       "name": "NavigationIndex",
       "jsdoc": "导航索引：id → node 映射 + pid → children 查询。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-index.ts",
-        "line": 24,
-        "className": "NavigationIndex",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Navigation Index 实例。",

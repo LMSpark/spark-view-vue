@@ -58,16 +58,12 @@
       "name": "RCardProps",
       "jsdoc": "RCard Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererCard.props.ts",
-        "line": 9,
-        "className": "RCardProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererCard",
-        "componentType": "r-card",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererCard",
+        "type": "r-card",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 卡片头部文本 */\n    header?: string;\n    /** 阴影显示策略 */\n    shadow?: 'always' | 'hover' | 'never';\n    /** 卡片主体样式 */\n    bodyStyle?: Record<string, unknown> | string;\n    /** 卡片主体 class */\n    bodyClass?: string;\n}",

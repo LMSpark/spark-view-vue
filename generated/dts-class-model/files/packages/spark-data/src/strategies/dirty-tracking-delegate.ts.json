@@ -404,12 +404,6 @@
       "name": "FieldChange",
       "jsdoc": "单字段变更记录（from → to）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/dirty-tracking-delegate.ts",
-        "line": 44,
-        "className": "FieldChange",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 修改前的原始值 */\n    from: unknown;\n    /** 修改后的当前值 */\n    to: unknown;\n}",
         "members": {
@@ -434,12 +428,6 @@
       "name": "RowDiff",
       "jsdoc": "行级字段变更映射（字段名 → 变更）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/dirty-tracking-delegate.ts",
-        "line": 51,
-        "className": "RowDiff",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [field: string]: FieldChange;\n}",
         "members": {}
@@ -449,12 +437,6 @@
       "name": "SaveChangesData",
       "jsdoc": "saveChanges() 执行结果（三态统计）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/dirty-tracking-delegate.ts",
-        "line": 57,
-        "className": "SaveChangesData",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 新增行成功提交数 */\n    createdCount: number;\n    /** 编辑行成功保存数 */\n    savedCount: number;\n    /** 删除行成功提交数 */\n    deletedCount: number;\n    /** 总失败数（三态合计） */\n    failedCount: number;\n    /** 失败的行主键列表（可用于精准重试或 UI 高亮） */\n    failedIds: Array<string | number>;\n    /** 失败行的错误详情映射（主键 → 错误消息，用于诊断和 UI 提示） */\n    failedErrors: Record<string | number, string>;\n}",
         "members": {
@@ -503,12 +485,6 @@
       "name": "DirtyTrackingDelegate",
       "jsdoc": "Dirty Tracking Delegate 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/dirty-tracking-delegate.ts",
-        "line": 72,
-        "className": "DirtyTrackingDelegate",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Dirty Tracking Delegate 实例。",

@@ -87,16 +87,12 @@
       "name": "RBadgeProps",
       "jsdoc": "RBadge Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/data-components/DisplayBadge.props.ts",
-        "line": 9,
-        "className": "RBadgeProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayBadge",
-        "componentType": "r-badge",
-        "componentLevel": "display",
-        "componentLayer": "data-display",
-        "componentDirectory": "display/data-components"
+      "component": {
+        "name": "DisplayBadge",
+        "type": "r-badge",
+        "level": "display",
+        "layer": "data-display",
+        "directory": "display/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<string | number> & {\n    /** 徽标显示值（优先使用该字段渲染角标）。 */\n    badgeValue?: string | number;\n    /** 徽标的最大显示阈值；超出后按 `99+` 这类形式展示。 */\n    max?: number;\n    /** 是否仅显示小红点。 */\n    isDot?: boolean;\n    /** 是否隐藏徽标。 */\n    hiddenBadge?: boolean;\n    /** 徽标主题类型。 */\n    badgeType?: '' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 值为 0 时是否仍显示徽标。 */\n    showZero?: boolean;\n    /** 自定义徽标颜色。 */\n    color?: string;\n    /** 徽标偏移量 [x, y]。 */\n    offset?: [number, number];\n    /** 徽标内联样式对象。 */\n    badgeStyle?: object;\n    /** 徽标附加 class。 */\n    badgeClass?: string;\n}",

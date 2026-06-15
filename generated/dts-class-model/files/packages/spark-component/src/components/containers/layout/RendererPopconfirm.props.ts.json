@@ -87,16 +87,12 @@
       "name": "RPopconfirmProps",
       "jsdoc": "RPopconfirm Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererPopconfirm.props.ts",
-        "line": 9,
-        "className": "RPopconfirmProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererPopconfirm",
-        "componentType": "r-popconfirm",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererPopconfirm",
+        "type": "r-popconfirm",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 确认框标题 */\n    title?: string;\n    /** 确认按钮文案 */\n    confirmButtonText?: string;\n    /** 取消按钮文案 */\n    cancelButtonText?: string;\n    /** 确认按钮类型 */\n    confirmButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 取消按钮类型 */\n    cancelButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 图标名称 */\n    icon?: string;\n    /** 图标颜色 */\n    iconColor?: string;\n    /** 是否隐藏图标 */\n    hideIcon?: boolean;\n    /** 自动隐藏延迟（毫秒） */\n    hideAfter?: number;\n    /** 浮层宽度 */\n    width?: number | string;\n}",

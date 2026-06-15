@@ -710,12 +710,6 @@
       "name": "DataSetConfig",
       "jsdoc": "Data Set Config 的配置结构。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset.ts",
-        "line": 15,
-        "className": "DataSetConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** data Set Name 名称。 */\n    dataSetName: string;\n    /** tables 字段。 */\n    tables: Record<string, TableMetadata>;\n    /** schema Version 字段。 */\n    schemaVersion?: number | undefined;\n    /** table Relations 字段。 */\n    tableRelations?: TableRelation[] | undefined;\n    /** view Dependencies 字段。 */\n    viewDependencies?: ViewDependency[] | undefined;\n    /** version 字段。 */\n    version?: number | undefined;\n    /** page Id 标识。 */\n    pageId?: string | undefined;\n    /** save Changes 字段。 */\n    saveChanges?: DataSetSaveChangesConfig | undefined;\n    /** layout 字段。 */\n    layout?: DataSetMetadata['layout'] | undefined;\n}",
         "members": {
@@ -782,12 +776,6 @@
       "name": "DataSet",
       "jsdoc": "Data Set 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset.ts",
-        "line": 36,
-        "className": "DataSet",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建数据集实例\n@param config 数据集配置",

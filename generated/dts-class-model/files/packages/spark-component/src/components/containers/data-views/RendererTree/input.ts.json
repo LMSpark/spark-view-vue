@@ -59,16 +59,12 @@
       "name": "RendererTreeInputProps",
       "jsdoc": "Renderer Tree Input Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/RendererTree/input.ts",
-        "line": 5,
-        "className": "RendererTreeInputProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTree",
-        "componentType": "r-enderer-tree-input",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "name": "RendererTree",
+        "type": "r-enderer-tree-input",
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 子节点集合。 */\n    children?: SparkNode['children'] | undefined;\n    /** toolbar 字段。 */\n    toolbar?: RToolbarProps | undefined;\n    /** actions 字段。 */\n    actions?: RToolbarProps | undefined;\n    /** editor 字段。 */\n    editor?: REditorProps | undefined;\n}",
@@ -106,16 +102,12 @@
       "name": "RendererTreeInputOptions",
       "jsdoc": "Renderer Tree Input Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/RendererTree/input.ts",
-        "line": 16,
-        "className": "RendererTreeInputOptions",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTree",
-        "componentType": "r-tree",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "name": "RendererTree",
+        "type": "r-tree",
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: RendererTreeInputProps;\n}",

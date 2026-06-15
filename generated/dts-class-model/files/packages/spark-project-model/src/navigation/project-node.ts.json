@@ -702,12 +702,6 @@
       "name": "ChildPlacement",
       "jsdoc": "子节点布局位置：决定子节点在 UI 中的渲染区域。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 5,
-        "className": "ChildPlacement",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'",
         "declarationRelations": [
@@ -743,12 +737,6 @@
       "name": "NavNodeKind",
       "jsdoc": "项目节点类型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 7,
-        "className": "NavNodeKind",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'system-directory' | 'module' | 'system-page' | 'system-action' | 'page' | 'link' | 'ref'",
         "declarationRelations": [
@@ -788,12 +776,6 @@
       "name": "NavPermissionMode",
       "jsdoc": "权限未匹配时的展示模式。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 9,
-        "className": "NavPermissionMode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'none' | 'masked' | 'invisible'",
         "declarationRelations": [
@@ -817,12 +799,6 @@
       "name": "ProjectNodeFamily",
       "jsdoc": "Project Node Family 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 11,
-        "className": "ProjectNodeFamily",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'module' | 'config-page' | 'system-page' | 'system-action' | 'link' | 'ref'",
         "declarationRelations": [
@@ -858,12 +834,6 @@
       "name": "ProjectDescriptionContext",
       "jsdoc": "Project Description Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 13,
-        "className": "ProjectDescriptionContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 上下文来源节点 ID。 */\n    nodeId: string;\n    /** 上下文来源节点标题。 */\n    title: string;\n    /** 上下文来源节点类型。 */\n    nodeKind: string;\n    /** 上下文来源节点描述文本。 */\n    description: string;\n}",
         "members": {
@@ -900,12 +870,6 @@
       "name": "NavContextItem",
       "jsdoc": "上下文下拉选项项。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 24,
-        "className": "NavContextItem",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 选项稳定值，会写入导航上下文状态。 */\n    id: string | number;\n    /** 选项展示标题。 */\n    title: string;\n}",
         "members": {
@@ -930,12 +894,6 @@
       "name": "NavContextConfig",
       "jsdoc": "动态上下文配置：描述 ProjectNode 上下文的来源和交互行为。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 31,
-        "className": "NavContextConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 上下文选项来源；字符串表示远端/命名来源，数组表示内联静态选项。 */\n    source: string | NavContextItem[];\n    /** 上下文未选择时的占位提示。 */\n    placeholder?: string | undefined;\n    /** 上下文默认选中值。 */\n    defaultValue?: string | number | undefined;\n    /** 写入路由或查询参数时使用的参数名。 */\n    paramName?: string | undefined;\n}",
         "members": {
@@ -972,12 +930,6 @@
       "name": "ProjectNodeData",
       "jsdoc": "项目树节点的可序列化数据形状。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 42,
-        "className": "ProjectNodeData",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 导航节点唯一 ID。 */\n    id: string;\n    /** 导航节点标题。 */\n    title: string;\n    /** 节点业务描述，供 AI 策划和页面设计理解用途。 */\n    description?: string | undefined;\n    /** 节点策划详细说明附件引用；正文由工作区解析后传给 LLM。 */\n    planningAttachmentRef?: string | undefined;\n    /** 节点版本号或版本标签。 */\n    version?: string | undefined;\n    /** 节点图标名。 */\n    icon?: string | undefined;\n    /** 导航节点类型，决定页面、模块、链接、引用等行为。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 子节点在应用壳中的布局区域。 */\n    childPlacement?: ChildPlacement | undefined;\n    /** 导航上下文配置或静态上下文选项。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 同级排序值，数值越小越靠前。 */\n    order?: number | undefined;\n    /** 是否在导航中隐藏。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用该导航节点。 */\n    disabled?: boolean | undefined;\n    /** 是否在该节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 权限不匹配时的展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 子导航节点。 */\n    children?: ProjectNodeData[] | undefined;\n    /** 页面路由路径。 */\n    path?: string | undefined;\n    /** link 节点的打开目标。 */\n    linkTarget?: 'iframe' | 'new-tab' | 'self' | undefined;\n    /** 重定向目标路径。 */\n    redirect?: string | undefined;\n    /** ref 节点引用的目标节点 ID。 */\n    refId?: string | undefined;\n    /** ref 节点解析后的目标路径。 */\n    refPath?: string | undefined;\n    /** ref 节点引用的目标项目 ID。 */\n    refProjectId?: string | undefined;\n    /** ref 引用是否已失效。 */\n    refBroken?: boolean | undefined;\n    /** pageDesign 实现放行闸门；缺省过渡期为 open。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
         "members": {
@@ -1134,12 +1086,6 @@
       "name": "ProjectNodeNavigationPatch",
       "jsdoc": "Project Node Navigation Patch 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 93,
-        "className": "ProjectNodeNavigationPatch",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 新标题。 */\n    title: string;\n    /** 新节点类型。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 新图标名。 */\n    icon?: string | undefined;\n    /** 是否在节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 新节点描述。 */\n    description?: string | undefined;\n    /** 新策划详细说明附件引用。 */\n    planningAttachmentRef?: string | undefined;\n    /** 新路由路径。 */\n    path?: string | undefined;\n    /** link 节点新打开目标。 */\n    linkTarget?: string | undefined;\n    /** 新子节点布局区域。 */\n    childPlacement?: string | undefined;\n    /** 新同级排序值。 */\n    order?: number | undefined;\n    /** 是否隐藏节点。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用节点。 */\n    disabled?: boolean | undefined;\n    /** 新 ref 目标节点 ID。 */\n    refId?: string | undefined;\n    /** 新权限展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 新导航上下文配置。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 新 pageDesign 实现放行闸门。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 新上游契约就绪状态。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
         "members": {
@@ -1254,12 +1200,6 @@
       "name": "ProjectNodeLocation",
       "jsdoc": "Project Node Location 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 130,
-        "className": "ProjectNodeLocation",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 命中的节点数据。 */\n    node: ProjectNodeData;\n    /** 父节点数据；根节点无父级时为 null。 */\n    parent: ProjectNodeData | null;\n    /** 父节点 ID；根节点无父级时为 null。 */\n    parentId: string | null;\n    /** 节点在父级 children 中的索引。 */\n    index: number;\n}",
         "members": {
@@ -1296,12 +1236,6 @@
       "name": "ProjectModelData",
       "jsdoc": "项目模型的可序列化根数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 142,
-        "className": "ProjectModelData",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Omit<ProjectNodeData, 'id' | 'nodeKind' | 'children' | 'childPlacement'> & {\n    /** 项目根节点 ID。 */\n    id?: string | undefined;\n    /** 项目根节点类型。 */\n    nodeKind?: 'module' | 'system-directory' | undefined;\n    /** 项目标题。 */\n    title: string;\n    /** 项目根节点子级布局区域。 */\n    childPlacement: 'header' | 'sidebar';\n    /** 项目导航树根级子节点。 */\n    children: ProjectNodeData[];\n    /** 项目首页路径。 */\n    homePath?: string | undefined;\n}",
         "declarationRelations": [
@@ -1361,12 +1295,6 @@
       "name": "RegionItems",
       "jsdoc": "按区域分组的导航节点列表。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 157,
-        "className": "RegionItems",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 顶部导航区域节点。 */\n    header: ProjectNodeData[];\n    /** 侧边栏区域节点。 */\n    sidebar: ProjectNodeData[];\n    /** 工具栏区域节点。 */\n    toolbar: ProjectNodeData[];\n    /** 用户菜单区域节点。 */\n    userMenu: ProjectNodeData[];\n}",
         "members": {
@@ -1403,12 +1331,6 @@
       "name": "RegionVisibility",
       "jsdoc": "各区域是否可见。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 168,
-        "className": "RegionVisibility",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 顶部导航是否可见。 */\n    header: boolean;\n    /** 侧边栏是否可见。 */\n    sidebar: boolean;\n    /** 工具栏是否可见。 */\n    toolbar: boolean;\n    /** 用户菜单是否可见。 */\n    userMenu: boolean;\n}",
         "members": {
@@ -1445,12 +1367,6 @@
       "name": "NavContextState",
       "jsdoc": "导航上下文运行时状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 179,
-        "className": "NavContextState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前上下文配置。 */\n    config: NavContextConfig;\n    /** 绑定该上下文的导航节点 ID。 */\n    nodeId: string;\n    /** 当前选中上下文值。 */\n    selected: string | number | null;\n    /** 当前可选上下文项。 */\n    items: NavContextItem[];\n    /** 上下文选项是否正在加载。 */\n    loading: boolean;\n    /** 上下文加载错误消息。 */\n    error: string | null;\n}",
         "members": {
@@ -1499,12 +1415,6 @@
       "name": "ProjectPageSurface",
       "jsdoc": "导航页在模型侧的页面表面（不携带应用框架实现细节）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 194,
-        "className": "ProjectPageSurface",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'config-files' | 'system-page' | 'link' | 'ref' | 'none'",
         "declarationRelations": [
@@ -1536,12 +1446,6 @@
       "name": "ProjectPageNodeSummary",
       "jsdoc": "Project Page Node Summary 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 196,
-        "className": "ProjectPageNodeSummary",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Record<string, unknown> & {\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}",
         "declarationRelations": [
@@ -1643,12 +1547,6 @@
       "name": "ProjectNodeModelOptions",
       "jsdoc": "Project Node Model Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 225,
-        "className": "ProjectNodeModelOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前导航节点数据快照。 */\n    node: ProjectNodeData;\n    /** 父节点 ID；根级节点传空字符串。 */\n    pid: string;\n    /** 祖先或上下文描述链。 */\n    descriptionContext?: readonly ProjectDescriptionContext[];\n}",
         "members": {
@@ -1679,12 +1577,6 @@
       "name": "ProjectNode",
       "jsdoc": "导航节点基类。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/project-node.ts",
-        "line": 236,
-        "className": "ProjectNode",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Project Node 实例。",

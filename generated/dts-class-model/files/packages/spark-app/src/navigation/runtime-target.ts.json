@@ -162,12 +162,6 @@
       "name": "NavNodeRouteTargetKind",
       "jsdoc": "Nav Node Route Target Kind 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 9,
-        "className": "NavNodeRouteTargetKind",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'page' | 'external-link' | 'cross-project-ref'",
         "declarationRelations": [
@@ -191,12 +185,6 @@
       "name": "NavNodeRouteTarget",
       "jsdoc": "Nav Node Route Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 11,
-        "className": "NavNodeRouteTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'route';\n    /** route Kind 字段。 */\n    routeKind: NavNodeRouteTargetKind;\n    /** 资源路径。 */\n    path: string;\n}",
         "members": {
@@ -227,12 +215,6 @@
       "name": "NavNodeExternalTarget",
       "jsdoc": "Nav Node External Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 20,
-        "className": "NavNodeExternalTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'external';\n    /** mode 字段。 */\n    mode: 'new-tab' | 'self';\n    /** href 字段。 */\n    href: string;\n}",
         "members": {
@@ -263,12 +245,6 @@
       "name": "NavNodeActionTarget",
       "jsdoc": "Nav Node Action Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 29,
-        "className": "NavNodeActionTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'action';\n    /** command 字段。 */\n    command: string;\n}",
         "members": {
@@ -293,12 +269,6 @@
       "name": "NavNodeContainerTarget",
       "jsdoc": "Nav Node Container Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 36,
-        "className": "NavNodeContainerTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'container';\n    /** redirect 字段。 */\n    redirect?: string;\n}",
         "members": {
@@ -323,12 +293,6 @@
       "name": "NavNodeHiddenTarget",
       "jsdoc": "Nav Node Hidden Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 43,
-        "className": "NavNodeHiddenTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'hidden';\n    /** reason 字段。 */\n    reason: 'sub-page';\n}",
         "members": {
@@ -353,12 +317,6 @@
       "name": "NavNodeRuntimeTarget",
       "jsdoc": "Nav Node Runtime Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/runtime-target.ts",
-        "line": 50,
-        "className": "NavNodeRuntimeTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "NavNodeRouteTarget | NavNodeExternalTarget | NavNodeActionTarget | NavNodeContainerTarget | NavNodeHiddenTarget",
         "declarationRelations": [

@@ -71,14 +71,10 @@
       "name": "UseChoiceFieldStateOptions",
       "jsdoc": "Use Choice Field State Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.ts",
-        "line": 3,
-        "className": "UseChoiceFieldStateOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: OptionFieldStateProps<TValue>;\n    /** field Type 字段。 */\n    fieldType: string;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** coerce 回调。 */\n    coerce: (rawValue: unknown) => TValue;\n}",

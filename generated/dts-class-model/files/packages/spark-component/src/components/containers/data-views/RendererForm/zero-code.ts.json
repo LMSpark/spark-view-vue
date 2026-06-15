@@ -59,16 +59,12 @@
       "name": "RendererFormZeroCodeOptions",
       "jsdoc": "Renderer Form Zero Code Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.ts",
-        "line": 12,
-        "className": "RendererFormZeroCodeOptions",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererForm",
-        "componentType": "r-form",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "name": "RendererForm",
+        "type": "r-form",
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** form Model 字段。 */\n    formModel: Record<string, unknown>;\n    /** native Form Ref 字段。 */\n    nativeFormRef: ValueRef<unknown>;\n    /** 诊断日志接口。 */\n    logger: LoggerApi;\n}",

@@ -63,16 +63,12 @@
       "name": "RStatisticProps",
       "jsdoc": "RStatistic Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/data-components/DisplayStatistic.props.ts",
-        "line": 9,
-        "className": "RStatisticProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayStatistic",
-        "componentType": "r-statistic",
-        "componentLevel": "display",
-        "componentLayer": "data-display",
-        "componentDirectory": "display/data-components"
+      "component": {
+        "name": "DisplayStatistic",
+        "type": "r-statistic",
+        "level": "display",
+        "layer": "data-display",
+        "directory": "display/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<number | string> & {\n    /** 统计标题 */\n    title?: string;\n    /** 小数精度 */\n    precision?: number;\n    /** 小数分隔符 */\n    decimalSeparator?: string;\n    /** 千分位分隔符 */\n    groupSeparator?: string;\n    /** 前缀 */\n    prefix?: string;\n    /** 后缀 */\n    suffix?: string;\n    /** 数值样式 */\n    valueStyle?: Record<string, unknown> | string;\n}",

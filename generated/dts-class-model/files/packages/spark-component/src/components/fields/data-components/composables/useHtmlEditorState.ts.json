@@ -79,14 +79,10 @@
       "name": "UseHtmlEditorStateOptions",
       "jsdoc": "Use Html Editor State Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.ts",
-        "line": 5,
-        "className": "UseHtmlEditorStateOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** editor Ref 字段。 */\n    editorRef: Ref<HTMLElement | null>;\n    /** field Value 字段。 */\n    fieldValue: ValueRef<unknown>;\n    /** 是否 is Current Field Editable。 */\n    isCurrentFieldEditable: ValueRef<boolean>;\n    /** sync Value 回调。 */\n    syncValue: (value: string) => void;\n    /** emit Update 回调。 */\n    emitUpdate: (value: string) => void;\n    /** get Row Raw Value 回调。 */\n    getRowRawValue: (row: DataRow) => unknown;\n}",

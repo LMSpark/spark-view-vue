@@ -74,7 +74,7 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 | 文件 | 命令 |
 |------|------|
 | `generated/dts-class-model/manifest.json` | `pnpm run generate:class-model-surface` |
-| `generated/dts-class-model/files/**.d.ts.json` | `pnpm run generate:class-model-surface` |
+| `generated/dts-class-model/files/**/*.json` | `pnpm run generate:class-model-surface` |
 
 ## 入口
 

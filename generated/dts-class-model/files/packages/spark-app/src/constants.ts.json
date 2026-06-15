@@ -21,12 +21,6 @@
       "name": "ErrorCode",
       "jsdoc": "Error Code 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/constants.ts",
-        "line": 52,
-        "className": "ErrorCode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "typeof ErrorCodes[keyof typeof ErrorCodes]",
         "members": {}
@@ -36,12 +30,6 @@
       "name": "Environment",
       "jsdoc": "Environment 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/constants.ts",
-        "line": 69,
-        "className": "Environment",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "typeof Environments[keyof typeof Environments]",
         "members": {}

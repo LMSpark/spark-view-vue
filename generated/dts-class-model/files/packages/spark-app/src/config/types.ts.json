@@ -250,12 +250,6 @@
       "name": "ConfigSourceOptions",
       "jsdoc": "配置源类型",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/config/types.ts",
-        "line": 18,
-        "className": "ConfigSourceOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 配置源类型 */\n    type: 'local' | 'remote';\n    /** API 端点配置（远程加载） */\n    api?: {\n        defaultConfigEndpoint: string;\n        tenantConfigEndpoint: string;\n        timeout?: number;\n        headers?: Record<string, string>;\n    };\n    /** 本地文件路径配置 */\n    local?: {\n        defaultConfigPath: string;\n        tenantConfigTemplate: string;\n    };\n}",
         "members": {
@@ -286,12 +280,6 @@
       "name": "FullTenantInfo",
       "jsdoc": "租户信息（完整版，含 logo/theme 等展示字段）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/config/types.ts",
-        "line": 37,
-        "className": "FullTenantInfo",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** tenant Code 字段。 */\n    tenantCode?: string;\n    /** logo 字段。 */\n    logo?: string;\n    /** theme 字段。 */\n    theme?: {\n        primaryColor?: string;\n        [key: string]: unknown;\n    };\n}",
         "members": {
@@ -334,12 +322,6 @@
       "name": "AppFullConfig",
       "jsdoc": "完整的应用配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/config/types.ts",
-        "line": 55,
-        "className": "AppFullConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 配置源设置 */\n    configSource?: ConfigSourceOptions;\n    /** 租户信息 */\n    tenant?: FullTenantInfo;\n    /** 路由配置 */\n    router: {\n        mode: 'history' | 'hash';\n        base?: string;\n    };\n    /** 挂载点 */\n    mountTarget: string;\n    /** UI 插件配置（简单: true / 详细: PluginConfigItem） */\n    plugins: Record<string, boolean | PluginConfigItem>;\n    /** SPARK 组件系统 */\n    spark: {\n        enabled: boolean;\n    };\n    /** PageNode 运行配置 */\n    pageNode: {\n        apiBaseUrl: string;\n        timeout?: number;\n        homePath: string;\n    };\n    /** 应用基础配置 */\n    config: {\n        apiBaseUrl: string;\n        logLevel: 'debug' | 'info' | 'warn' | 'error';\n        enableMock?: boolean;\n        version: string;\n        features: {\n            enableExport?: boolean;\n            enableOffline?: boolean;\n        };\n    };\n    /** Logger 配置 */\n    logger: AppLoggerConfig;\n}",
         "members": {
@@ -406,12 +388,6 @@
       "name": "TenantConfig",
       "jsdoc": "租户配置（可覆盖默认配置的部分）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/config/types.ts",
-        "line": 96,
-        "className": "TenantConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Partial<AppFullConfig> & {\n    /** tenant 字段。 */\n    tenant: FullTenantInfo;\n}",
         "declarationRelations": [

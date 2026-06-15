@@ -256,12 +256,6 @@
       "name": "NavigationNodeDraftNode",
       "jsdoc": "Navigation Node Draft Node 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 15,
-        "className": "NavigationNodeDraftNode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 显示标题。 */\n    title: string;\n    /** icon 字段。 */\n    icon: string;\n    /** node Kind 字段。 */\n    nodeKind: NavNodeKind;\n    /** divider After 字段。 */\n    dividerAfter: boolean;\n    /** description 字段。 */\n    description: string;\n    /** planning Attachment Ref 字段。 */\n    planningAttachmentRef: string;\n    /** 资源路径。 */\n    path: string;\n    /** link Target 字段。 */\n    linkTarget: NonNullable<ProjectNodeData['linkTarget']>;\n    /** child Placement 字段。 */\n    childPlacement: string;\n    /** order 字段。 */\n    order: number;\n    /** hidden 字段。 */\n    hidden: boolean;\n    /** 是否禁用。 */\n    disabled: boolean;\n    /** ref Id 标识。 */\n    refId: string;\n    /** permission Mode 字段。 */\n    permissionMode: NavPermissionMode;\n    /** impl Gate 字段。 */\n    implGate?: ProjectNodeData['implGate'];\n    /** upstream Contracts Satisfied 字段。 */\n    upstreamContractsSatisfied?: boolean;\n}",
         "members": {
@@ -376,12 +370,6 @@
       "name": "NavigationNodePatch",
       "jsdoc": "Navigation Node Patch 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 52,
-        "className": "NavigationNodePatch",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Partial<Omit<NavigationNodeDraftNode, 'id'>> & {\n    /** 运行上下文。 */\n    context?: string | NavContextItem[] | NavContextConfig;\n}",
         "declarationRelations": [
@@ -411,12 +399,6 @@
       "name": "NavigationContextEditConfigDto",
       "jsdoc": "Navigation Context Edit Config Dto 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 57,
-        "className": "NavigationContextEditConfigDto",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
         "members": {
@@ -447,12 +429,6 @@
       "name": "NavigationContextEditDto",
       "jsdoc": "Navigation Context Edit Dto 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 66,
-        "className": "NavigationContextEditDto",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 是否 has Context。 */\n    hasContext: boolean;\n    /** items 字段。 */\n    items: Array<{\n        id: string;\n        title: string;\n    }>;\n    /** 配置对象。 */\n    config: NavigationContextEditConfigDto;\n}",
         "members": {
@@ -483,12 +459,6 @@
       "name": "NavigationNodeDraft",
       "jsdoc": "Navigation Node Draft 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 78,
-        "className": "NavigationNodeDraft",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** node 字段。 */\n    node: NavigationNodeDraftNode;\n    /** 运行上下文。 */\n    context: NavigationContextEditDto;\n}",
         "members": {
@@ -513,12 +483,6 @@
       "name": "NavigationNodeDraftApplyResult",
       "jsdoc": "Navigation Node Draft Apply Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 85,
-        "className": "NavigationNodeDraftApplyResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** patch 字段。 */\n    patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>;\n    /** warnings 字段。 */\n    warnings: string[];\n}",
         "members": {
@@ -543,12 +507,6 @@
       "name": "NavigationNodePatchTarget",
       "jsdoc": "Navigation Node Patch Target 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/navigation/navigation-edit.ts",
-        "line": 92,
-        "className": "NavigationNodePatchTarget",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** 将导航补丁应用到目标节点；修改节点的可编辑字段（title/icon/path/hidden 等），但不改变 id 和树结构 */\n    applyNavigationPatch(patch: ProjectNodeNavigationPatch): void;\n}",
         "members": {

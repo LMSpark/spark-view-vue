@@ -59,16 +59,12 @@
       "name": "RPopoverProps",
       "jsdoc": "RPopover Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererPopover.props.ts",
-        "line": 10,
-        "className": "RPopoverProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererPopover",
-        "componentType": "r-popover",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererPopover",
+        "type": "r-popover",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkFloatingLayerProps & SparkTitleContentProps & {\n    /** 浮层正文节点列表。 */\n    contentChildren?: SparkNode[];\n    /** 浮层宽度。 */\n    width?: number | string;\n    /** 浮层触发方式。 */\n    trigger?: 'click' | 'hover' | 'focus' | 'contextmenu';\n}",

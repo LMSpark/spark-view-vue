@@ -47,12 +47,6 @@
       "name": "PageScriptCaller",
       "jsdoc": "页面脚本函数调用签名。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/binding/build-page-children.ts",
-        "line": 23,
-        "className": "PageScriptCaller",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
         "members": {}
@@ -62,12 +56,6 @@
       "name": "BuildPageChildrenOptions",
       "jsdoc": "buildPageChildren 运行时依赖。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/binding/build-page-children.ts",
-        "line": 27,
-        "className": "BuildPageChildrenOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */\n    callFunc: PageScriptCaller;\n    /** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */\n    actionCtx: ActionExecutionContext;\n}",
         "members": {

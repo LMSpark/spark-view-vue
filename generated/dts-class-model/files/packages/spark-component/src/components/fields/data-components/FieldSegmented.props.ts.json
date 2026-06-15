@@ -44,16 +44,12 @@
       "name": "RSegmentedProps",
       "jsdoc": "分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldSegmented.props.ts",
-        "line": 9,
-        "className": "RSegmentedProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldSegmented",
-        "componentType": "r-segmented",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldSegmented",
+        "type": "r-segmented",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<string | number, string | number | {\n    label: string;\n    value: string | number;\n    disabled?: boolean;\n}> & {\n    /** 尺寸 */\n    size?: 'large' | 'default' | 'small';\n    /** 是否占满容器宽度 */\n    block?: boolean;\n}",

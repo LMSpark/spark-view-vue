@@ -89,12 +89,6 @@
       "name": "ActionsAlign",
       "jsdoc": "@module\n@spark-appworks /spark-component:components/containers/support/RendererActions.types\n职责：维护\n@spark-appworks /spark-component 中 components/containers/support/RendererActions.types 的模块能力，围绕 ActionsAlign、ActionsPosition、PermissionDeniedBehavior 等 4 个公开契约 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/containers/support/RendererActions.types 的声明、导出和使用边界时，从本模块开始。\n动作区内容对齐方式。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/RendererActions.types.ts",
-        "line": 8,
-        "className": "ActionsAlign",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'left' | 'center' | 'right'",
         "declarationRelations": [
@@ -118,12 +112,6 @@
       "name": "ActionsPosition",
       "jsdoc": "动作区停靠位置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/RendererActions.types.ts",
-        "line": 10,
-        "className": "ActionsPosition",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'left' | 'right'",
         "declarationRelations": [
@@ -143,12 +131,6 @@
       "name": "PermissionDeniedBehavior",
       "jsdoc": "动作区固定策略。\n- `true`：沿用宿主默认固定行为\n- `'left' | 'right'`：显式固定到指定侧\n- `false | undefined`：不额外固定\n权限不足时的动作呈现策略。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/RendererActions.types.ts",
-        "line": 19,
-        "className": "PermissionDeniedBehavior",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'hide' | 'disable'",
         "declarationRelations": [
@@ -168,12 +150,6 @@
       "name": "RendererActionsProps",
       "jsdoc": "表格行动作列配置属性。\n用于 `r-table` 的 `actions` 属性，描述行动作操作列的列元数据与子动作节点。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/RendererActions.types.ts",
-        "line": 26,
-        "className": "RendererActionsProps",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 行动作列停靠位置（列在表格的左侧或右侧） */\n    position?: ActionsPosition;\n    /** 操作列单元格文本对齐方式 */\n    align?: ActionsAlign;\n    /** 列固定策略 */\n    fixed?: boolean | ActionsPosition;\n    /** 列标题文本 */\n    label?: string;\n    /** 列宽度 */\n    width?: number | string;\n    /** 列附加 CSS class */\n    class?: string;\n}",
         "declarationRelations": [

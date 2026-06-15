@@ -77,12 +77,6 @@
       "name": "SparkAgUiRunInput",
       "jsdoc": "AG-UI run 输入的 SPARK 公开别名，供 adapter 接收标准 thread/run/message/tool 配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 9,
-        "className": "SparkAgUiRunInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "RunAgentInput",
         "declarationRelations": [
@@ -99,12 +93,6 @@
       "name": "SparkAgUiEvent",
       "jsdoc": "AG-UI 事件联合类型的 SPARK 公开别名，用于事件流投影和外部 client 消费。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 11,
-        "className": "SparkAgUiEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AGUIEvent",
         "declarationRelations": [
@@ -121,12 +109,6 @@
       "name": "SparkAgUiBaseEvent",
       "jsdoc": "AG-UI 基础事件类型的 SPARK 公开别名，用于只读 timeline 和调试视图。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 13,
-        "className": "SparkAgUiBaseEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "BaseEvent",
         "declarationRelations": [
@@ -143,12 +125,6 @@
       "name": "SparkAgUiTool",
       "jsdoc": "AG-UI tool 描述的 SPARK 公开别名，用于从 transport tool spec 映射标准工具定义。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 15,
-        "className": "SparkAgUiTool",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Tool",
         "declarationRelations": [
@@ -165,12 +141,6 @@
       "name": "SparkAgUiMessage",
       "jsdoc": "AG-UI message 类型的 SPARK 公开别名，用于后续 generative UI 或消息投影扩展。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 17,
-        "className": "SparkAgUiMessage",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Message",
         "declarationRelations": [
@@ -187,12 +157,6 @@
       "name": "SparkAgUiRunRef",
       "jsdoc": "SPARK run 在 AG-UI 事件中的稳定定位信息。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 19,
-        "className": "SparkAgUiRunRef",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** AG-UI thread 唯一标识，对应 RunAgentInput.threadId，跨 run 保持不变。 */\n    threadId: string;\n    /** 单次 run 的唯一标识，每次调用 RunAgentInput 生成新 runId。 */\n    runId: string;\n    /** 父 run 标识；用于嵌套 run 场景（如子 agent 调用），顶层 run 时为 undefined。 */\n    parentRunId?: string;\n}>",
         "declarationRelations": [
@@ -230,12 +194,6 @@
       "name": "SparkAgUiEventMetadata",
       "jsdoc": "SPARK 生成 AG-UI 事件时附加的时间戳和原始事件调试数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 28,
-        "className": "SparkAgUiEventMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 事件产生的 Unix 毫秒时间戳；未采集时为 undefined（非 0）。 */\n    timestamp?: number;\n    /** 原始 AG-UI 事件引用，仅供调试；生产代码不应依赖此字段的内容结构。 */\n    rawEvent?: unknown;\n}>",
         "declarationRelations": [
@@ -267,12 +225,6 @@
       "name": "SparkAgUiTextMessageRole",
       "jsdoc": "SPARK 首版 AG-UI 文本消息支持的角色集合。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 35,
-        "className": "SparkAgUiTextMessageRole",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'assistant' | 'user' | 'system' | 'developer'",
         "declarationRelations": [
@@ -300,12 +252,6 @@
       "name": "SparkAgUiCustomEventName",
       "jsdoc": "SPARK 以 AG-UI CUSTOM 事件承载的扩展事件名称。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-        "line": 37,
-        "className": "SparkAgUiCustomEventName",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'spark.toolApproval.requested' | 'spark.toolApproval.resolved' | 'spark.stream.event'",
         "declarationRelations": [

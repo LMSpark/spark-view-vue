@@ -154,12 +154,6 @@
       "name": "ProjectReferenceClientOptions",
       "jsdoc": "Project Reference Client Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/project-reference-client.ts",
-        "line": 10,
-        "className": "ProjectReferenceClientOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** http 字段。 */\n    http: HttpClientBase;\n    /** get Projects Api 回调。 */\n    getProjectsApi: () => string;\n    /** get Project Navigation Api 回调。 */\n    getProjectNavigationApi: (projectId: string) => string;\n}",
         "members": {
@@ -206,12 +200,6 @@
       "name": "ProjectSummary",
       "jsdoc": "Project Summary 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/project-reference-client.ts",
-        "line": 19,
-        "className": "ProjectSummary",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** project Id 标识。 */\n    projectId: string;\n    /** 显示或业务名称。 */\n    name: string;\n    /** icon 字段。 */\n    icon: string;\n    /** description 字段。 */\n    description: string;\n}",
         "members": {
@@ -248,12 +236,6 @@
       "name": "ProjectPageReference",
       "jsdoc": "Project Page Reference 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/project-reference-client.ts",
-        "line": 30,
-        "className": "ProjectPageReference",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ProjectPageNodeSummary & {\n    /** project Id 标识。 */\n    projectId: string;\n}",
         "declarationRelations": [
@@ -283,12 +265,6 @@
       "name": "ListProjectReferencesOptions",
       "jsdoc": "List Project References Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/project-reference-client.ts",
-        "line": 35,
-        "className": "ListProjectReferencesOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** exclude Project Id 标识。 */\n    excludeProjectId?: string;\n}",
         "members": {
@@ -307,12 +283,6 @@
       "name": "ProjectReferenceClient",
       "jsdoc": "Project Reference Client 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/project-reference-client.ts",
-        "line": 40,
-        "className": "ProjectReferenceClient",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Project Reference Client 实例。",

@@ -61,16 +61,12 @@
       "name": "RDisplayCountdownProps",
       "jsdoc": "RDisplay Countdown Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.ts",
-        "line": 10,
-        "className": "RDisplayCountdownProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayCountdown",
-        "componentType": "display-countdown",
-        "componentLevel": "display",
-        "componentLayer": "static-display",
-        "componentDirectory": "display/non-data-components"
+      "component": {
+        "name": "DisplayCountdown",
+        "type": "display-countdown",
+        "level": "display",
+        "layer": "static-display",
+        "directory": "display/non-data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 目标时间（时间戳或 Date） */\n    value?: number | Date;\n    /** 格式化字符串，如 HH:mm:ss */\n    format?: string;\n    /** 前缀文本 */\n    prefix?: string;\n    /** 后缀文本 */\n    suffix?: string;\n    /** 标题 */\n    title?: string;\n    /** 值样式 */\n    valueStyle?: CSSProperties;\n}",

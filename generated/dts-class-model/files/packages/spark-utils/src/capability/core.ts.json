@@ -117,12 +117,6 @@
       "name": "CapabilityReader",
       "jsdoc": "@module\n@spark-appworks /spark-utils:capability/core\n职责：提供框架无关的 core 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\nSpark 能力系统核心 —— 框架无关的原语。\n本模块刻意保持对 UI、DOM、路由、数据层的零依赖。\n提供能力键类型、上下文树定义，以及 provide / consume 原语。\n能力值读取器：把运行时 unknown 显式校验为能力类型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/capability/core.ts",
-        "line": 14,
-        "className": "CapabilityReader",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (value: unknown): value is T;\n}",
         "members": {}
@@ -132,12 +126,6 @@
       "name": "CapabilityKey",
       "jsdoc": "带运行时校验的能力键。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-utils/src/capability/core.ts",
-        "line": 18,
-        "className": "CapabilityKey",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Capability Key 实例。",
@@ -227,12 +215,6 @@
       "name": "CapabilityName",
       "jsdoc": "未具体化类型的能力名（用于 Map 的 key）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/capability/core.ts",
-        "line": 34,
-        "className": "CapabilityName",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "CapabilityKey<unknown>",
         "declarationRelations": [
@@ -249,12 +231,6 @@
       "name": "SparkCapabilityConsumer",
       "jsdoc": "能力消费函数签名：给定键返回实现或 null。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/capability/core.ts",
-        "line": 36,
-        "className": "SparkCapabilityConsumer",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    <T>(name: CapabilityKey<T>): T | null;\n}",
         "members": {}
@@ -264,12 +240,6 @@
       "name": "CapabilityTypeMap",
       "jsdoc": "能力类型映射表（模块增强入口）。\n各包通过 TypeScript module augmentation 扩展此映射，实现编译期的能力类型安全。\n扩展此接口，实现编译期的能力类型安全。",
       "declarationKind": "interface",
-      "provenance": {
-        "file": "packages/spark-utils/src/capability/core.ts",
-        "line": 45,
-        "className": "CapabilityTypeMap",
-        "declarationKind": "interface"
-      },
       "interfaceDecl": {
         "members": {}
       }
@@ -278,12 +248,6 @@
       "name": "CapabilityContext",
       "jsdoc": "能力树节点：持有本地能力 Map，以及指向父节点的可选链。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-utils/src/capability/core.ts",
-        "line": 48,
-        "className": "CapabilityContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前能力上下文节点 ID，用于调试、日志和父子链定位。 */\n    id: string;\n    /** 当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。 */\n    type: string;\n    /** 父级能力上下文；消费能力时会沿此链向上查找。 */\n    parent?: CapabilityContext;\n    /** 当前节点本地提供的能力实现表，key 为 CapabilityKey。 */\n    capabilities: Map<CapabilityName, unknown>;\n}",
         "members": {

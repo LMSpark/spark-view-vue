@@ -134,12 +134,6 @@
       "name": "PageRuleFile",
       "jsdoc": "Page Rule File 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/content/rule-file.ts",
-        "line": 3,
-        "className": "PageRuleFile",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page Rule File 实例。",

@@ -205,7 +205,7 @@ type MethodParameterMeta = Readonly<{
 ### 6.3 生成物
 
 - 重跑 dts-class-model bundle 生成；`semantic-gaps.json` gapCount 仍为 0。
-- spot-check：`business-registry.d.ts.json`、`config-page.d.ts.json`。
+- spot-check：`business-registry.ts.json`、`config-page.ts.json`。
 
 ---
 

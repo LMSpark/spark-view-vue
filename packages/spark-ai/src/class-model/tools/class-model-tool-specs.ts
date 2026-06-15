@@ -42,6 +42,19 @@ function buildClassModelQueryTool(): ClassModelToolSpec {
     properties: {
       kind: { type: 'string', description: 'Optional exact DtsTypeDeclarationModel kind.' },
       keyword: { type: 'string', description: 'Optional keyword matched against model/member names and summaries.' },
+      componentName: { type: 'string', description: 'Optional exact SPARK component name, for example RendererTable or FieldText.' },
+      componentType: { type: 'string', description: 'Optional exact SPARK component type, for example r-table or r-text.' },
+      componentLevel: {
+        type: 'string',
+        enum: ['table-level', 'row-level', 'container', 'field-level', 'display', 'infrastructure'],
+        description: 'Optional SPARK component level.',
+      },
+      componentLayer: {
+        type: 'string',
+        enum: ['data-view-container', 'row-scope', 'layout-container', 'zone-container', 'data-field', 'field-support', 'data-display', 'static-display', 'editor', 'support'],
+        description: 'Optional SPARK component architecture layer.',
+      },
+      componentDirectory: { type: 'string', description: 'Optional SPARK component directory, for example containers/data-views or fields/data-components.' },
       includeMembers: { type: 'boolean', description: 'When true, include compact attribute and method summaries.' },
     },
   })

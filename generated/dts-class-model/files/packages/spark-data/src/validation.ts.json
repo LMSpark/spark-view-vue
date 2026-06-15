@@ -172,12 +172,6 @@
       "name": "ValidationError",
       "jsdoc": "校验错误",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/validation.ts",
-        "line": 17,
-        "className": "ValidationError",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 字段名 */\n    field: string;\n    /** 错误消息 */\n    message: string;\n    /** 错误代码 */\n    code: string;\n    /** 实际值 */\n    value?: unknown;\n}",
         "members": {
@@ -214,12 +208,6 @@
       "name": "ValidationResult",
       "jsdoc": "校验结果",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/validation.ts",
-        "line": 30,
-        "className": "ValidationResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 是否有效 */\n    valid: boolean;\n    /** 错误列表 */\n    errors: ValidationError[];\n}",
         "members": {
@@ -244,12 +232,6 @@
       "name": "RowValidator",
       "jsdoc": "行级校验函数",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/validation.ts",
-        "line": 39,
-        "className": "RowValidator",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (row: DataRow): ValidationError[] | null;\n}",
         "members": {}
@@ -259,12 +241,6 @@
       "name": "DataSchema",
       "jsdoc": "数据模式（包含列定义和校验规则）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/validation.ts",
-        "line": 45,
-        "className": "DataSchema",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 列定义 */\n    columns: DataColumn[];\n    /** 自定义行级校验 */\n    validate?: RowValidator;\n}",
         "members": {
@@ -289,12 +265,6 @@
       "name": "DataValidator",
       "jsdoc": "数据校验器\n基于数据模式（列定义 + 自定义规则）校验行数据",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/validation.ts",
-        "line": 56,
-        "className": "DataValidator",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Data Validator 实例。",

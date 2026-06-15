@@ -105,16 +105,12 @@
       "name": "RProgressProps",
       "jsdoc": "RProgress Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/data-components/DisplayProgress.props.ts",
-        "line": 9,
-        "className": "RProgressProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayProgress",
-        "componentType": "r-progress",
-        "componentLevel": "display",
-        "componentLayer": "data-display",
-        "componentDirectory": "display/data-components"
+      "component": {
+        "name": "DisplayProgress",
+        "type": "r-progress",
+        "level": "display",
+        "layer": "data-display",
+        "directory": "display/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<number> & {\n    /** 百分比值（优先级高于 value/field） */\n    percentage?: number;\n    /** 进度条类型 */\n    progressType?: 'line' | 'circle' | 'dashboard';\n    /** 线宽 */\n    strokeWidth?: number;\n    /** 线形时文本是否内嵌 */\n    textInside?: boolean;\n    /** 状态 */\n    status?: 'success' | 'exception' | 'warning';\n    /** 是否不确定进度 */\n    indeterminate?: boolean;\n    /** 动画时长（毫秒） */\n    duration?: number;\n    /** 进度色 */\n    color?: string | Array<{\n        color: string;\n        percentage: number;\n    }>;\n    /** 圆形进度宽度 */\n    circleWidth?: number;\n    /** 是否显示文本 */\n    showText?: boolean;\n    /** 线帽样式 */\n    strokeLinecap?: 'butt' | 'round' | 'square';\n    /** 文本模板 */\n    formatText?: string;\n}",

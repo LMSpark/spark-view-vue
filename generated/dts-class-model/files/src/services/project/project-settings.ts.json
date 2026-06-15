@@ -205,12 +205,6 @@
       "name": "ProjectLayoutPlacement",
       "jsdoc": "Project Layout Placement 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 9,
-        "className": "ProjectLayoutPlacement",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'header' | 'sidebar'",
         "declarationRelations": [
@@ -230,12 +224,6 @@
       "name": "ProjectDetail",
       "jsdoc": "项目详情：从后端 API 读取的项目元数据投影",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 11,
-        "className": "ProjectDetail",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 租户 ID，多租户隔离标识 */\n    tenantId: string;\n    /** 项目 ID，项目唯一标识 */\n    projectId: string;\n    /** 项目名称 */\n    name: string;\n    /** 项目类型（如 lowcode / procode 等） */\n    projectType: string;\n    /** 项目图标资源标识 */\n    icon: string;\n    /** 项目描述 */\n    description: string;\n    /** 首页节点 ID，null 表示未配置首页 */\n    homeNodeId: string | null;\n    /** 项目排序权重，数值越小越靠前 */\n    order: number;\n}",
         "members": {
@@ -296,12 +284,6 @@
       "name": "ProjectHomeNodeOption",
       "jsdoc": "首页节点候选项，从导航树中筛选可配置为首页的节点",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 30,
-        "className": "ProjectHomeNodeOption",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 节点 ID */\n    id: string;\n    /** 节点标题 */\n    title: string;\n    /** 节点路由路径 */\n    path: string;\n    /** 组合标签：\"{title} — {path}\"，用于下拉选择器展示 */\n    label: string;\n}",
         "members": {
@@ -338,12 +320,6 @@
       "name": "ProjectRuntimeSettings",
       "jsdoc": "项目运行时设置：聚合项目详情、导航布局与首页候选列表，供 Shell 初始化使用",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 41,
-        "className": "ProjectRuntimeSettings",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 项目详情元数据 */\n    project: ProjectDetail;\n    /** 子页面放置位置：header=顶部标签栏 / sidebar=侧边栏 */\n    childPlacement: ProjectLayoutPlacement;\n    /** 导航根模块 ID，null 表示导航未加载；用于保存布局时定位后端节点 */\n    rootModuleId: string | null;\n    /** 可配置为首页的节点候选列表 */\n    homeNodeOptions: ProjectHomeNodeOption[];\n}",
         "members": {
@@ -380,12 +356,6 @@
       "name": "ProjectRuntimeSettingsInput",
       "jsdoc": "保存项目运行时设置的输入参数，只包含用户可修改的字段",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 52,
-        "className": "ProjectRuntimeSettingsInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 子页面放置位置 */\n    childPlacement: ProjectLayoutPlacement;\n    /** 首页节点 ID，null 表示清除首页配置 */\n    homeNodeId: string | null;\n}",
         "members": {
@@ -410,12 +380,6 @@
       "name": "SaveProjectRuntimeSettingsCommand",
       "jsdoc": "保存项目运行时设置的命令参数",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 60,
-        "className": "SaveProjectRuntimeSettingsCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 租户 ID */\n    tenantId: string;\n    /** 项目 ID */\n    projectId: string;\n    /** 当前生效的运行时设置（用于 diff 判断哪些字段需要保存） */\n    current: ProjectRuntimeSettings;\n    /** 用户修改后的输入参数 */\n    input: ProjectRuntimeSettingsInput;\n}>",
         "declarationRelations": [
@@ -459,12 +423,6 @@
       "name": "ProjectUiSettings",
       "jsdoc": "项目 UI 偏好设置：持久化到 localStorage，不涉及后端 API",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-settings.ts",
-        "line": 72,
-        "className": "ProjectUiSettings",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 是否优先展示顶部头部（header-first 布局） */\n    headerFirst: boolean;\n    /** 侧边栏是否折叠 */\n    sidebarCollapsed: boolean;\n    /** 是否显示页脚 */\n    showFooter: boolean;\n    /** 页面模式：single=单页 / multi=多页标签 */\n    pageMode: PageMode;\n}",
         "members": {

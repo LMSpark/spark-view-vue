@@ -59,16 +59,12 @@
       "name": "RDescriptionsProps",
       "jsdoc": "RDescriptions Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptions.props.ts",
-        "line": 9,
-        "className": "RDescriptionsProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayDescriptions",
-        "componentType": "r-descriptions",
-        "componentLevel": "display",
-        "componentLayer": "static-display",
-        "componentDirectory": "display/non-data-components"
+      "component": {
+        "name": "DisplayDescriptions",
+        "type": "r-descriptions",
+        "level": "display",
+        "layer": "static-display",
+        "directory": "display/non-data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 描述列表标题 */\n    title?: string;\n    /** 操作区附加内容 */\n    extra?: string;\n    /** 是否显示边框 */\n    border?: boolean;\n    /** 每行展示的描述列数 */\n    column?: number;\n    /** 排列方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 尺寸 */\n    descriptionsSize?: 'large' | 'default' | 'small';\n}",

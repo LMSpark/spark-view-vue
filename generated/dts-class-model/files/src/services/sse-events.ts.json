@@ -256,12 +256,6 @@
       "name": "FileChangeEvent",
       "jsdoc": "File Change Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 15,
-        "className": "FileChangeEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** 文件路径或文件对象。 */\n    file: string;\n    /** 事件时间戳。 */\n    timestamp: number;\n}",
         "members": {
@@ -292,12 +286,6 @@
       "name": "DataBatchJobEvent",
       "jsdoc": "Data Batch Job Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 24,
-        "className": "DataBatchJobEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n    /** job Id 标识。 */\n    jobId: string;\n    /** 当前状态。 */\n    status: string;\n    /** completed 字段。 */\n    completed: number;\n    /** 总记录数。 */\n    total: number;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** 操作结果。 */\n    result?: unknown;\n    /** 错误对象或错误信息。 */\n    error?: string;\n}",
         "members": {
@@ -364,12 +352,6 @@
       "name": "DataChangeEvent",
       "jsdoc": "Data Change Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 45,
-        "className": "DataChangeEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n    /** 数据表名。 */\n    tableName: string;\n    /** operation 字段。 */\n    operation: string;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** job Id 标识。 */\n    jobId?: string;\n}",
         "members": {
@@ -418,12 +400,6 @@
       "name": "ServerNotificationEvent",
       "jsdoc": "Server Notification Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 60,
-        "className": "ServerNotificationEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** 用户可读消息。 */\n    message: string;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** notification Id 标识。 */\n    notificationId?: string;\n    /** level 字段。 */\n    level?: string;\n    /** category 字段。 */\n    category?: string;\n    /** 来源对象。 */\n    source?: string;\n    /** action Url 地址。 */\n    actionUrl?: string;\n}",
         "members": {
@@ -484,12 +460,6 @@
       "name": "AiHostRunRequestEvent",
       "jsdoc": "Ai Host Run Request Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 79,
-        "className": "AiHostRunRequestEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** request Id 标识。 */\n    requestId: string;\n    /** alias 字段。 */\n    alias: string;\n    /** args 字段。 */\n    args: Record<string, unknown>;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** timeout Ms 字段。 */\n    timeoutMs?: number;\n    /** reason 字段。 */\n    reason?: string;\n}",
         "members": {
@@ -538,12 +508,6 @@
       "name": "AiHostRunResultStatus",
       "jsdoc": "Ai Host Run Result Status 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 94,
-        "className": "AiHostRunResultStatus",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'completed' | 'failed' | 'timeout' | 'busy' | 'unknown_alias' | 'non_runnable' | 'invalid_args' | 'cancelled'",
         "declarationRelations": [
@@ -587,12 +551,6 @@
       "name": "AiHostRunResultEvent",
       "jsdoc": "Ai Host Run Result Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/sse-events.ts",
-        "line": 96,
-        "className": "AiHostRunResultEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** request Id 标识。 */\n    requestId: string;\n    /** alias 字段。 */\n    alias: string;\n    /** 当前状态。 */\n    status: AiHostRunResultStatus;\n    /** duration Ms 字段。 */\n    durationMs?: number;\n    /** client Timestamp 字段。 */\n    clientTimestamp?: number;\n    /** server Timestamp 字段。 */\n    serverTimestamp?: number;\n    /** session Id 标识。 */\n    sessionId?: string;\n    /** business Registration Id 标识。 */\n    businessRegistrationId?: string;\n    /** business Instance Id 标识。 */\n    businessInstanceId?: string;\n    /** 展示文本。 */\n    text?: string;\n    /** reasoning 字段。 */\n    reasoning?: string;\n    /** tool Calls 字段。 */\n    toolCalls?: unknown;\n    /** 错误对象或错误信息。 */\n    error?: unknown;\n}",
         "members": {

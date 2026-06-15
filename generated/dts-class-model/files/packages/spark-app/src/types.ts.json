@@ -401,12 +401,6 @@
       "name": "AppEnvironment",
       "jsdoc": "应用环境",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 23,
-        "className": "AppEnvironment",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'development' | 'production' | 'test'",
         "declarationRelations": [
@@ -430,12 +424,6 @@
       "name": "UserInfo",
       "jsdoc": "用户信息",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 28,
-        "className": "UserInfo",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n    /** avatar 字段。 */\n    avatar?: string;\n    /** roles 字段。 */\n    readonly roles: string[];\n    /** permissions 字段。 */\n    readonly permissions: string[];\n}",
         "members": {
@@ -490,12 +478,6 @@
       "name": "TenantInfo",
       "jsdoc": "租户信息",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 47,
-        "className": "TenantInfo",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** tenant Code 字段。 */\n    tenantCode?: string;\n    /** 配置对象。 */\n    config?: Record<string, unknown>;\n    /** features 字段。 */\n    features?: string[];\n}",
         "members": {
@@ -538,12 +520,6 @@
       "name": "EnvironmentInfo",
       "jsdoc": "环境信息",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 62,
-        "className": "EnvironmentInfo",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** mode 字段。 */\n    mode: AppEnvironment;\n    /** api Base Url 地址。 */\n    apiBaseUrl: string;\n    /** version 字段。 */\n    version: string;\n    /** build Time 字段。 */\n    buildTime?: string;\n}",
         "members": {
@@ -580,12 +556,6 @@
       "name": "AppContext",
       "jsdoc": "应用全局上下文接口\n作用域：整个 SPA 应用\n生命周期：应用启动时创建，应用关闭时销毁（单例）\n用途：\n- 存储应用级全局信息（用户、租户、环境）\n- 提供跨页面共享的配置和状态\n- 支持 SSR/CSR 环境检测\n注意：\n- 此 Context 是应用级单例，所有页面共享\n- 不应存储页面级状态，避免内存泄漏\n- 通过依赖注入（DI）在需要时注入到组件中\n典型使用场景：\n- 权限校验（基于 user/tenant）\n- 环境判断（SSR vs CSR）\n- 全局配置读取",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 93,
-        "className": "AppContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 用户信息 */\n    user: UserInfo;\n    /** 租户信息 */\n    tenant: TenantInfo;\n    /** 环境信息 */\n    env: EnvironmentInfo;\n    /** 全局配置 */\n    config: Record<string, unknown>;\n    /** 初始化时间 */\n    initializedAt: string;\n}",
         "members": {
@@ -628,12 +598,6 @@
       "name": "AppConfig",
       "jsdoc": "应用配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 108,
-        "className": "AppConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** API 基础地址 */\n    apiBaseUrl: string;\n    /** 日志级别 */\n    logLevel?: LogLevel;\n    /** 是否启用 Mock */\n    enableMock?: boolean;\n    /** 是否启用远程配置加载 */\n    enableRemoteConfig?: boolean;\n    /** 应用版本 */\n    version?: string;\n    /** 功能开关 */\n    features?: {\n        enableExport?: boolean;\n        enableOffline?: boolean;\n    };\n}",
         "members": {
@@ -682,12 +646,6 @@
       "name": "BootstrapContext",
       "jsdoc": "Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 128,
-        "className": "BootstrapContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AppContext & {\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 主题服务（仅在启用 theme 选项时存在） */\n    theme?: ThemeCapability;\n}",
         "declarationRelations": [
@@ -729,12 +687,6 @@
       "name": "BootstrapOptions",
       "jsdoc": "初始化选项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 139,
-        "className": "BootstrapOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** Vue 应用实例 */\n    app: App;\n    /** Vue Router 实例 */\n    router: Router;\n    /** 应用配置 */\n    config: AppConfig;\n    /** 认证配置（可选，不提供则使用 authenticate 函数） */\n    auth?: AuthConfig;\n    /** 挂载目标元素选择器（默认 '#app'） */\n    mountTarget?: string;\n    /** 主题服务实例（由 start() 创建并传入，或手动传入） */\n    themeService?: ThemeCapability;\n    /** 挂载前钩子 */\n    beforeMount?: (context: BootstrapContext) => void | Promise<void>;\n    /** 挂载后钩子 */\n    afterMount?: (context: BootstrapContext) => void | Promise<void>;\n}",
         "members": {
@@ -851,12 +803,6 @@
       "name": "RouterGuardOptions",
       "jsdoc": "路由守卫选项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 160,
-        "className": "RouterGuardOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 自定义权限检查 */\n    checkPermission?: (permissions: string[], required: string[]) => boolean;\n}",
         "members": {
@@ -899,12 +845,6 @@
       "name": "ErrorHandlerOptions",
       "jsdoc": "错误处理选项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 167,
-        "className": "ErrorHandlerOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 错误回调 */\n    onError?: (error: Error, context: ErrorContext) => void;\n    /** 自定义错误分类 */\n    errorClassifier?: (error: Error) => ErrorType;\n    /** 错误类型处理回调（消费层实现 UI 交互） */\n    onErrorByType?: (type: ErrorType, error: Error) => void;\n}",
         "members": {
@@ -985,12 +925,6 @@
       "name": "ErrorContext",
       "jsdoc": "错误上下文接口\n作用域：单次错误发生时的临时上下文\n生命周期：错误捕获时创建，用于错误日志记录和上报\n用途：\n- 记录错误发生的位置和时间\n- 为错误监控和追踪提供结构化信息\n- 支持错误日志聚合和分析\n典型使用场景：\n- 组件渲染失败时记录 source\n- API 请求错误时记录 info 和 timestamp\n- 用户操作异常时进行错误上报",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 191,
-        "className": "ErrorContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 错误来源（组件名） */\n    source?: string;\n    /** 组件文件路径（Vue SFC __file） */\n    file?: string;\n    /** 错误信息 */\n    info: string;\n    /** 时间戳 */\n    timestamp: number;\n}",
         "members": {
@@ -1027,12 +961,6 @@
       "name": "ErrorType",
       "jsdoc": "错误类型",
       "declarationKind": "enum",
-      "provenance": {
-        "file": "packages/spark-app/src/types.ts",
-        "line": 204,
-        "className": "ErrorType",
-        "declarationKind": "enum"
-      },
       "enumDecl": {
         "members": [
           {

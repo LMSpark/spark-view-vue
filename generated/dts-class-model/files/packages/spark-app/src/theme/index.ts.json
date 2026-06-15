@@ -79,12 +79,6 @@
       "name": "ThemeCapability",
       "jsdoc": "Theme Capability 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/theme/index.ts",
-        "line": 29,
-        "className": "ThemeCapability",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ComponentThemeCapability & {\n    /** 切换 localStorage 作用域键；传入 null 重置为默认（无作用域）键。切换后自动从新作用域重新加载已存储的主题模式并持久化 */\n    setStorageScope(scopeKey: string | null): void;\n}",
         "declarationRelations": [
@@ -134,12 +128,6 @@
       "name": "ThemeServiceOptions",
       "jsdoc": "主题服务配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/theme/index.ts",
-        "line": 36,
-        "className": "ThemeServiceOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 初始模式（默认 'auto'） */\n    initialMode?: ThemeMode;\n    /** localStorage 存储键名（默认 'spark-theme-mode'） */\n    storageKey?: string;\n    /** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */\n    storageScope?: string | null;\n}",
         "members": {
@@ -170,12 +158,6 @@
       "name": "ThemeServiceReactive",
       "jsdoc": "响应式主题服务（内部使用，组件层可直接读 ref）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/theme/index.ts",
-        "line": 45,
-        "className": "ThemeServiceReactive",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ThemeCapability & {\n    /** 响应式当前模式 */\n    readonly modeRef: Ref<ThemeMode>;\n    /** 响应式 isDark */\n    readonly isDarkRef: ComputedRef<boolean>;\n}",
         "declarationRelations": [

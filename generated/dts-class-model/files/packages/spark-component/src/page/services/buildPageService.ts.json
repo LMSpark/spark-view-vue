@@ -83,12 +83,6 @@
       "name": "PageServiceOverrides",
       "jsdoc": "可选的外部 UI 服务注入（测试或宿主覆盖用）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/services/buildPageService.ts",
-        "line": 16,
-        "className": "PageServiceOverrides",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** message Service 回调。 */\n    messageService?: {\n        success: (msg: string) => void;\n        warning: (msg: string) => void;\n        error: (msg: string) => void;\n        info: (msg: string) => void;\n    } | undefined;\n    /** confirm Service 回调。 */\n    confirmService?: {\n        confirm: (msg: string, title?: string) => Promise<unknown>;\n        alert: (msg: string, title?: string) => Promise<unknown>;\n        prompt?: (msg: string, title?: string) => Promise<string | null>;\n    } | undefined;\n    /** page Service 字段。 */\n    pageService?: Partial<PageServiceCapability> | undefined;\n}",
         "members": {

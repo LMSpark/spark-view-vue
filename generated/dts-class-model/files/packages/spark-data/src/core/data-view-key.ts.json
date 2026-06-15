@@ -290,12 +290,6 @@
       "name": "DataMember",
       "jsdoc": "Data Member 的语义模型。",
       "declarationKind": "enum",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 21,
-        "className": "DataMember",
-        "declarationKind": "enum"
-      },
       "enumDecl": {
         "members": [
           {
@@ -383,12 +377,6 @@
       "name": "DataViewKeyDescriptor",
       "jsdoc": "Data View Key Descriptor 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 50,
-        "className": "DataViewKeyDescriptor",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** DataSet scope, present only for cross-page `#scope` references. */\n    scope?: string;\n    /** DataTable name. */\n    tableName: string;\n    /** DataView id. */\n    viewId: string;\n    /** Original dataViewKey string. */\n    raw: string;\n    /** Whether this key uses the cross-page `#scope` prefix. */\n    crossPage?: boolean;\n}",
         "members": {
@@ -431,12 +419,6 @@
       "name": "DataViewMemberDescriptor",
       "jsdoc": "Data View Member Descriptor 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 63,
-        "className": "DataViewMemberDescriptor",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataViewKeyDescriptor & {\n    /** DataView output member. */\n    dataMember: DataMember;\n    /** Optional business field/path inside object-shaped members. */\n    dataField?: string;\n}",
         "declarationRelations": [
@@ -472,12 +454,6 @@
       "name": "DataViewMemberInput",
       "jsdoc": "Data View Member Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 70,
-        "className": "DataViewMemberInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** DataView 定位键。 */\n    dataViewKey: string | undefined;\n    /** DataView 成员名。 */\n    dataMember: DataMember | `${DataMember}` | undefined;\n    /** DataView 成员字段路径。 */\n    dataField?: string | undefined;\n}",
         "members": {
@@ -508,12 +484,6 @@
       "name": "DataViewMemberObject",
       "jsdoc": "Data View Member Object 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 79,
-        "className": "DataViewMemberObject",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [key: string]: unknown;\n}",
         "members": {}
@@ -523,12 +493,6 @@
       "name": "DataViewMemberValue",
       "jsdoc": "Data View Member Value 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 83,
-        "className": "DataViewMemberValue",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataRow | AggregateResultRow | readonly DataRow[] | readonly DataColumn[] | DataViewMemberObject | readonly unknown[] | string | number | boolean | bigint | symbol | null | undefined | Error",
         "declarationRelations": [
@@ -600,12 +564,6 @@
       "name": "DataViewMemberBinding",
       "jsdoc": "Data View Member Binding 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 90,
-        "className": "DataViewMemberBinding",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型判别字段。 */\n    kind: 'value';\n    /** 当前值。 */\n    value: DataViewMemberValue;\n    /** 来源对象。 */\n    source: DataSource;\n    /** descriptor 字段。 */\n    descriptor: DataViewMemberDescriptor;\n}",
         "members": {
@@ -642,12 +600,6 @@
       "name": "DataViewKeyDiagnosticStatus",
       "jsdoc": "Data View Key Diagnostic Status 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 102,
-        "className": "DataViewKeyDiagnosticStatus",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'ok' | 'invalid-key' | 'missing-dataset' | 'missing-table' | 'missing-view'",
         "declarationRelations": [
@@ -679,12 +631,6 @@
       "name": "DataViewKeyDiagnostic",
       "jsdoc": "Data View Key Diagnostic 的诊断信息。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 104,
-        "className": "DataViewKeyDiagnostic",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** ok 字段。 */\n    ok: boolean;\n    /** 当前状态。 */\n    status: DataViewKeyDiagnosticStatus;\n    /** raw Key 键。 */\n    rawKey: string;\n    /** descriptor 字段。 */\n    descriptor: DataViewKeyDescriptor | null;\n    /** 用户可读消息。 */\n    message: string;\n}",
         "members": {
@@ -727,12 +673,6 @@
       "name": "DataViewMemberDiagnosticStatus",
       "jsdoc": "Data View Member Diagnostic Status 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 117,
-        "className": "DataViewMemberDiagnosticStatus",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataViewKeyDiagnosticStatus | 'invalid-member' | 'empty-current-row' | 'empty-selection' | 'missing-field' | 'unsupported-data-field'",
         "declarationRelations": [
@@ -769,12 +709,6 @@
       "name": "DataViewMemberDiagnostic",
       "jsdoc": "Data View Member Diagnostic 的诊断信息。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 119,
-        "className": "DataViewMemberDiagnostic",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** ok 字段。 */\n    ok: boolean;\n    /** 当前状态。 */\n    status: DataViewMemberDiagnosticStatus;\n    /** raw Key 键。 */\n    rawKey: string;\n    /** descriptor 字段。 */\n    descriptor: DataViewMemberDescriptor | null;\n    /** 用户可读消息。 */\n    message: string;\n}",
         "members": {
@@ -817,12 +751,6 @@
       "name": "ResolvedDataViewCapabilities",
       "jsdoc": "Resolved Data View Capabilities 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/data-view-key.ts",
-        "line": 135,
-        "className": "ResolvedDataViewCapabilities",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** Resolved DataView, or null when unavailable. */\n    dataSource: DataView | null;\n    /** Resolved row-like context, or null when unavailable. */\n    dataRow: DataRow | null;\n}",
         "members": {

@@ -32,12 +32,6 @@
       "name": "SparkPluginOptions",
       "jsdoc": "Spark Plugin Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/system/plugin.ts",
-        "line": 10,
-        "className": "SparkPluginOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 自定义注册表（测试/隔离场景用） */\n    registry?: ComponentRegistry;\n}",
         "members": {

@@ -327,12 +327,6 @@
       "name": "AiRunTraceSink",
       "jsdoc": "外部 trace sink 接口：宿主方可实现此接口在 run 生命周期中接收观测数据",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 14,
-        "className": "AiRunTraceSink",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
         "declarationRelations": [
@@ -492,12 +486,6 @@
       "name": "AiRunErrorFormatter",
       "jsdoc": "Ai Run Error Formatter 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 36,
-        "className": "AiRunErrorFormatter",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(error: unknown) => string",
         "members": {}
@@ -507,12 +495,6 @@
       "name": "AiRunBeforeFunctionCall",
       "jsdoc": "Ai Run Before Function Call 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 38,
-        "className": "AiRunBeforeFunctionCall",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>",
         "members": {}
@@ -522,12 +504,6 @@
       "name": "AiRunAbortHandler",
       "jsdoc": "Ai Run Abort Handler 的回调函数契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 40,
-        "className": "AiRunAbortHandler",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(reason: string) => void",
         "members": {}
@@ -537,12 +513,6 @@
       "name": "AiRunAdapterRunStatus",
       "jsdoc": "Ai Run Adapter Run Status 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 42,
-        "className": "AiRunAdapterRunStatus",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'completed' | 'aborted'",
         "declarationRelations": [
@@ -562,12 +532,6 @@
       "name": "AiRunHost",
       "jsdoc": "AI 运行宿主接口：封装 AiAgentHost.run() 调用，便于 adapter 在不依赖具体 Host 实现的情况下发起 run",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 44,
-        "className": "AiRunHost",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
         "declarationRelations": [
@@ -628,12 +592,6 @@
       "name": "AiRunAdapterOptions",
       "jsdoc": "adapter 全局配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 49,
-        "className": "AiRunAdapterOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 自定义错误格式化函数，将 run 抛出的 error 转为展示文本；默认使用 error.message */\n    formatError?: AiRunErrorFormatter;\n}>",
         "declarationRelations": [
@@ -659,12 +617,6 @@
       "name": "AiRunAdapterCommand",
       "jsdoc": "单次 AI run 的启动命令参数",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 54,
-        "className": "AiRunAdapterCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgUiRunInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgUiEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
         "declarationRelations": [
@@ -763,12 +715,6 @@
       "name": "AiRunTimelineEvent",
       "jsdoc": "AG-UI timeline 中给组件展示的单条事件摘要。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 79,
-        "className": "AiRunTimelineEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 事件序号，从 1 开始递增 */\n    sequence: number;\n    /** AG-UI 事件类型标识 */\n    type: string;\n    /** 事件时间戳（Unix 毫秒） */\n    timestamp: number;\n    /** 事件 payload 的截断预览文本，超出 360 字符自动截断 */\n    payloadPreview: string;\n}>",
         "declarationRelations": [
@@ -812,12 +758,6 @@
       "name": "AiRunSnapshot",
       "jsdoc": "headless AI run adapter 暴露给 UI 的完整只读快照。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 90,
-        "className": "AiRunSnapshot",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgUiEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
         "declarationRelations": [
@@ -855,12 +795,6 @@
       "name": "AiRunListener",
       "jsdoc": "AI run snapshot 变化监听器，订阅者应只读消费快照而不持有可变内部状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 99,
-        "className": "AiRunListener",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(snapshot: AiRunSnapshot) => void",
         "members": {}
@@ -870,12 +804,6 @@
       "name": "AiRunAdapterState",
       "jsdoc": "headless AI run adapter 状态接口：UI 通过此接口发起/中断 run、读取快照、订阅变化",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/ai/ai-run-adapter.ts",
-        "line": 101,
-        "className": "AiRunAdapterState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 是否有活跃的 run 正在执行 */\n    isRunning(): boolean;\n    /** 中断当前 run（仅在有活跃 run 时生效） */\n    abort(reason?: string): void;\n    /** 获取当前只读快照 */\n    snapshot(): AiRunSnapshot;\n    /** 订阅快照变化；返回取消订阅函数 */\n    subscribe(listener: AiRunListener): () => void;\n    /** 发起一次 AI run；同一时刻只允许一个活跃 run，重复调用会抛错 */\n    run<TInput extends AiJsonParams>(command: AiRunAdapterCommand<TInput>): Promise<AiRunAdapterRunStatus>;\n}>",
         "declarationRelations": [

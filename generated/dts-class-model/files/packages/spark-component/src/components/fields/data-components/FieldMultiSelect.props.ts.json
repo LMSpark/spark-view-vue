@@ -62,16 +62,12 @@
       "name": "MultiValue",
       "jsdoc": "多选字段值数组；每一项是最终写入业务字段的候选值。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.props.ts",
-        "line": 9,
-        "className": "MultiValue",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldMultiSelect",
-        "componentType": "r-multi-select",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldMultiSelect",
+        "type": "r-multi-select",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "Array<string | number | boolean>",
@@ -89,16 +85,12 @@
       "name": "RMultiSelectProps",
       "jsdoc": "RMulti Select Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.props.ts",
-        "line": 11,
-        "className": "RMultiSelectProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldMultiSelect",
-        "componentType": "r-multi-select",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldMultiSelect",
+        "type": "r-multi-select",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<MultiValue> & {\n    /** 选中项较多时是否折叠标签。 */\n    collapseTags?: boolean;\n    /** 折叠标签时是否在悬停中展示完整内容。 */\n    collapseTagsTooltip?: boolean;\n    /** 折叠后最多显示的标签数量。 */\n    maxCollapseTags?: number;\n}",

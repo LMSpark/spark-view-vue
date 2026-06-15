@@ -105,12 +105,6 @@
       "name": "ValidationRuleType",
       "jsdoc": "验证规则类型",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/column-validation.ts",
-        "line": 17,
-        "className": "ValidationRuleType",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'required' | 'type' | 'minLength' | 'maxLength' | 'min' | 'max' | 'pattern'",
         "declarationRelations": [
@@ -150,12 +144,6 @@
       "name": "ColumnValidationRule",
       "jsdoc": "框架无关的验证规则描述符",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/column-validation.ts",
-        "line": 19,
-        "className": "ColumnValidationRule",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    type: 'required' | 'type';\n    message: string;\n} | {\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n} | {\n    type: 'pattern';\n    message: string;\n    value: string;\n}",
         "declarationRelations": [

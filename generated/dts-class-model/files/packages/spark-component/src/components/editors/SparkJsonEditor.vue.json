@@ -108,16 +108,12 @@
       "name": "SparkJsonEditorMode",
       "jsdoc": "JSON 编辑器支持的展示模式。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/editors/SparkJsonEditor.vue",
-        "line": 3,
-        "className": "SparkJsonEditorMode",
-        "declarationKind": "typeAlias",
-        "componentName": "SparkJsonEditor",
-        "componentType": "json-editor",
-        "componentLevel": "infrastructure",
-        "componentLayer": "editor",
-        "componentDirectory": "editors"
+      "component": {
+        "name": "SparkJsonEditor",
+        "type": "json-editor",
+        "level": "infrastructure",
+        "layer": "editor",
+        "directory": "editors"
       },
       "typeAlias": {
         "declarationTypeText": "'text' | 'tree' | 'table'",
@@ -142,16 +138,12 @@
       "name": "Props",
       "jsdoc": "SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/editors/SparkJsonEditor.vue",
-        "line": 5,
-        "className": "Props",
-        "declarationKind": "typeAlias",
-        "componentName": "SparkJsonEditor",
-        "componentType": "json-editor",
-        "componentLevel": "infrastructure",
-        "componentLayer": "editor",
-        "componentDirectory": "editors"
+      "component": {
+        "name": "SparkJsonEditor",
+        "type": "json-editor",
+        "level": "infrastructure",
+        "layer": "editor",
+        "directory": "editors"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 编辑模式 */\n    mode?: SparkJsonEditorMode;\n    /** 缩进空格数 */\n    indentation?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否显示主菜单栏 */\n    mainMenuBar?: boolean;\n    /** 是否显示导航栏 */\n    navigationBar?: boolean;\n    /** 是否显示状态栏 */\n    statusBar?: boolean;\n    /** 是否提示格式化 */\n    askToFormat?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: JSONSchema | null;\n    /** JSON Schema 定义引用 */\n    schemaDefinitions?: JSONSchemaDefinitions | null;\n    /** 是否启用 Schema 校验 */\n    enableSchemaValidation?: boolean;\n    /** 是否启用 Schema 枚举渲染 */\n    enableSchemaEnumRenderer?: boolean;\n}",

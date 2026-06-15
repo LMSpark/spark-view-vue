@@ -35,12 +35,8 @@
       "name": "SessionDiagnosticsPanelProps",
       "jsdoc": "Session Diagnostics Panel Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.ts",
-        "line": 9,
-        "className": "SessionDiagnosticsPanelProps",
-        "declarationKind": "typeAlias",
-        "componentName": "SessionDiagnosticsPanel"
+      "component": {
+        "name": "SessionDiagnosticsPanel"
       },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 诊断数据投影（永远非 null，由外部 runtime 生成）；loading 期间内容可能不完整 */\n    data: SessionDiagnosticsData;\n    /** 诊断数据仍在加载或刷新中；true 时 UI 应显示加载指示器，data 仍可用但不完整 */\n    loading?: boolean;\n}>",

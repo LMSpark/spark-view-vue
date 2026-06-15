@@ -301,12 +301,6 @@
       "name": "PluginConfigItem",
       "jsdoc": "插件配置项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/plugins/registry.ts",
-        "line": 16,
-        "className": "PluginConfigItem",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 是否启用 */\n    enabled: boolean;\n    /** 插件选项 */\n    options?: Record<string, unknown>;\n    /** 是否懒加载 */\n    lazy?: boolean;\n    /** 优先级（数字越小越先加载） */\n    priority?: number;\n}",
         "members": {
@@ -343,12 +337,6 @@
       "name": "PluginLoader",
       "jsdoc": "插件配置类型（支持简单布尔值或详细配置）\n插件加载器定义",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/plugins/registry.ts",
-        "line": 32,
-        "className": "PluginLoader",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 插件 ID */\n    id: string;\n    /** 插件名称 */\n    name: string;\n    /** 模块路径或包名 */\n    module: string;\n    /** 动态导入函数 */\n    loader: () => Promise<{\n        default: Plugin;\n    }>;\n    /** 默认配置 */\n    defaultOptions?: Record<string, unknown>;\n    /** 插件描述 */\n    description?: string;\n    /** 插件版本 */\n    version?: string;\n}",
         "members": {
@@ -414,12 +402,6 @@
       "name": "PluginInstance",
       "jsdoc": "插件实例（加载后的结果）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/plugins/registry.ts",
-        "line": 53,
-        "className": "PluginInstance",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 插件对象 */\n    plugin: Plugin;\n    /** 插件选项 */\n    options?: Record<string, unknown>;\n    /** 加载器信息 */\n    loader: PluginLoader;\n}",
         "members": {
@@ -450,12 +432,6 @@
       "name": "PluginRegistry",
       "jsdoc": "Plugin Registry 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/plugins/registry.ts",
-        "line": 62,
-        "className": "PluginRegistry",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "Plugin Registry 的语义模型。",
@@ -656,12 +632,6 @@
       "name": "PluginManager",
       "jsdoc": "插件管理器 - 负责加载和管理插件生命周期",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/plugins/registry.ts",
-        "line": 95,
-        "className": "PluginManager",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "插件管理器 - 负责加载和管理插件生命周期",

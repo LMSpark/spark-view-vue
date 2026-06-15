@@ -205,12 +205,6 @@
       "name": "DataSetHistoryStorageAdapter",
       "jsdoc": "Data Set History Storage Adapter 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 3,
-        "className": "DataSetHistoryStorageAdapter",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 按存储键读取持久化内容；键不存在时返回 null。 */\n    getItem(key: string): string | null;\n    /** 将键值对写入持久化存储；覆盖同名键的已有值。 */\n    setItem(key: string, value: string): void;\n    /** 按存储键删除持久化内容；键不存在时静默忽略。 */\n    removeItem(key: string): void;\n}",
         "members": {
@@ -290,12 +284,6 @@
       "name": "DataSetHistoryScope",
       "jsdoc": "Data Set History Scope 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 12,
-        "className": "DataSetHistoryScope",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** data Set Name 名称。 */\n    dataSetName?: string;\n    /** page Id 标识。 */\n    pageId?: string;\n    /** scope Id 标识。 */\n    scopeId?: string;\n    /** namespace 字段。 */\n    namespace?: string;\n}",
         "members": {
@@ -332,12 +320,6 @@
       "name": "DataSetSnapshotSelector",
       "jsdoc": "Data Set Snapshot Selector 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 23,
-        "className": "DataSetSnapshotSelector",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** entry Id 标识。 */\n    entryId?: string;\n    /** version 字段。 */\n    version?: number;\n}",
         "members": {
@@ -362,12 +344,6 @@
       "name": "DataSetHistorySnapshot",
       "jsdoc": "Data Set History Snapshot 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 30,
-        "className": "DataSetHistorySnapshot",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** version 字段。 */\n    version: number;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** data Set Name 名称。 */\n    dataSetName: string;\n    /** page Id 标识。 */\n    pageId?: string;\n    /** 展示标签。 */\n    label?: string;\n    /** summary 字段。 */\n    summary?: string;\n    /** snapshot 字段。 */\n    snapshot: DataSetMetadata;\n    /** source Data 字段。 */\n    sourceData?: Record<string, unknown>;\n}",
         "members": {
@@ -434,12 +410,6 @@
       "name": "DataSetHistoryListOptions",
       "jsdoc": "Data Set History List Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 51,
-        "className": "DataSetHistoryListOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetHistoryScope & {\n    /** adapter 字段。 */\n    adapter?: DataSetHistoryStorageAdapter | null;\n}",
         "declarationRelations": [
@@ -469,12 +439,6 @@
       "name": "DataSetSnapshotCommitOptions",
       "jsdoc": "Data Set Snapshot Commit Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 56,
-        "className": "DataSetSnapshotCommitOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetHistoryListOptions & {\n    /** max Entries 字段。 */\n    maxEntries?: number;\n    /** 展示标签。 */\n    label?: string;\n    /** summary 字段。 */\n    summary?: string;\n    /** source Data 字段。 */\n    sourceData?: Record<string, unknown>;\n    /** version 字段。 */\n    version?: number;\n    /** 事件时间戳。 */\n    timestamp?: number;\n}",
         "declarationRelations": [
@@ -534,12 +498,6 @@
       "name": "DataSetCommitSnapshotOptions",
       "jsdoc": "Data Set Commit Snapshot Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-history.ts",
-        "line": 71,
-        "className": "DataSetCommitSnapshotOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Omit<DataSetSnapshotCommitOptions, 'version'> & {\n    /** bump Version 字段。 */\n    bumpVersion?: boolean;\n}",
         "declarationRelations": [

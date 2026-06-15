@@ -44,16 +44,12 @@
       "name": "RendererSectionZeroCodeOptions",
       "jsdoc": "Renderer Section Zero Code Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererSection/zero-code.ts",
-        "line": 10,
-        "className": "RendererSectionZeroCodeOptions",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererSection",
-        "componentType": "r-section",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererSection",
+        "type": "r-section",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** collapsed 字段。 */\n    collapsed: ValueRef<boolean>;\n    /** collapsible 字段。 */\n    collapsible: ValueRef<boolean>;\n}",

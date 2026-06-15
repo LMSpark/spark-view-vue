@@ -78,12 +78,6 @@
       "name": "AiAgentRegistry",
       "jsdoc": "Host 内部业务注册表，按 moduleId 保存 AI 业务定义并保护注册期不变量。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/business-registry.ts",
-        "line": 10,
-        "className": "AiAgentRegistry",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "Host 内部业务注册表，按 moduleId 保存 AI 业务定义并保护注册期不变量。",

@@ -40,16 +40,12 @@
       "name": "RAnchorLinkProps",
       "jsdoc": "RAnchor Link Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.ts",
-        "line": 9,
-        "className": "RAnchorLinkProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererAnchorLink",
-        "componentType": "r-anchor-link",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererAnchorLink",
+        "type": "r-anchor-link",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 锚点链接 */\n    href?: string;\n    /** 链接标题 */\n    title?: string;\n}",

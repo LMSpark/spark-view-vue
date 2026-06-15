@@ -92,16 +92,12 @@
       "name": "RCollapseProps",
       "jsdoc": "RCollapse Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.ts",
-        "line": 10,
-        "className": "RCollapseProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererCollapse",
-        "componentType": "r-collapse",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererCollapse",
+        "type": "r-collapse",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 当前展开的面板 */\n    modelValue?: string | number | Array<string | number>;\n    /** 展开/折叠切换回调 */\n    onChange?: (value: string | number | Array<string | number>) => void;\n}",

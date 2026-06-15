@@ -79,12 +79,6 @@
       "name": "RendererSetupReturn",
       "jsdoc": "Renderer Setup Return 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/renderer/useRendererSetup.ts",
-        "line": 38,
-        "className": "RendererSetupReturn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 路由能力实例（消费方如 buildPageService / 页面动作可能需要） */\n    router: Router;\n    /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */\n    sparkProvide: UseSparkComponentReturn['sparkProvide'];\n    /** SPARK 能力消费函数（优先本地，再沿 parent 链查找） */\n    sparkConsume: UseSparkComponentReturn['sparkConsume'];\n    /** 是否正在加载 */\n    loading: Ref<boolean>;\n    /** 加载失败的错误消息（空字符串表示无错误） */\n    error: Ref<string>;\n    /** 页面级组件注册中心（实例 + API） */\n    componentRegistry: PageComponentRegistry;\n    /** 页面运行时服务能力载荷（用于下游注入到 DataSet 等运行时） */\n    pageRuntimeServices: PageRuntimeServicesCapability;\n    /**\n     * 带竞态保护的异步加载封装\n     *\n     * 每次调用递增序列号；如果在 `fn` 执行期间出现新的 `runLoad` 调用，\n     * `isStale()` 返回 `true`，旧请求的结果会被静默丢弃。\n     *\n     * @param fn      实际加载逻辑；执行中可随时调用 `isStale()` 检查是否已过期\n     * @param onError 错误回调（仅对未过期请求触发，通常传入 `props.onError`）\n     */\n    runLoad: (fn: (isStale: () => boolean) => Promise<void>, onError?: (err: Error) => void) => Promise<void>;\n}",
         "members": {

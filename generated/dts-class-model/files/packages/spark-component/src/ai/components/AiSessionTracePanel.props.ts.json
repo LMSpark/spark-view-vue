@@ -50,12 +50,8 @@
       "name": "AiSessionTracePanelProps",
       "jsdoc": "AiSessionTracePanel 根组件 Props。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/ai/components/AiSessionTracePanel.props.ts",
-        "line": 11,
-        "className": "AiSessionTracePanelProps",
-        "declarationKind": "typeAlias",
-        "componentName": "AiSessionTracePanel"
+      "component": {
+        "name": "AiSessionTracePanel"
       },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 外部 AI runtime 传入的 live 流展示条目。 */\n    entries: readonly StreamDisplayEntry[];\n    /** 是否正在接收流式增量。 */\n    isStreaming: boolean;\n    /** 是否正在接收推理文本。 */\n    isReasoning: boolean;\n    /** 外部诊断投影（永远有值，含空摘要）。 */\n    diagnostics: SessionDiagnosticsData;\n    /** 面板高度 CSS 值，默认 '100%'。 */\n    height?: string;\n    /** 无 live entries 且诊断投影为空时的占位文本。 */\n    emptyText?: string;\n}>",

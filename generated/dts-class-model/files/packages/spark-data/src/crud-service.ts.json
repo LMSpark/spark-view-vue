@@ -259,12 +259,6 @@
       "name": "CrudService",
       "jsdoc": "业务层CRUD服务\n封装网络请求，提供类型安全的CRUD操作\n自动处理权限、数据转换、分页等业务逻辑",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/crud-service.ts",
-        "line": 22,
-        "className": "CrudService",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建CRUD服务实例\n@param api CRUD API配置\n@param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 HttpClientBase 实例（共享 auth/拦截器）",

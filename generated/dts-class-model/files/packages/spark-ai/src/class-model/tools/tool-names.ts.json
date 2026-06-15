@@ -20,12 +20,6 @@
       "name": "ClassModelToolName",
       "jsdoc": "Class Model Tool Name 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/tools/tool-names.ts",
-        "line": 23,
-        "className": "ClassModelToolName",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "typeof CLASS_MODEL_TOOL_NAMES[keyof typeof CLASS_MODEL_TOOL_NAMES]",
         "members": {}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 一气呵成生成 DTS ClassModel 产物：
 // 1. TypeScript + Volar 在内存中生成 .d.ts
-// 2. 每个 .d.ts 生成一个同路径 .d.ts.json（guide SSOT，生产 guide + script 共用）
+// 2. 每个声明投影按原生源路径生成 .ts.json / .vue.json shard（guide SSOT，生产 guide + script 共用）
 // 3. 写入 generated/dts-class-model/manifest.json
 // 4. 写入缺 JSDoc 语义补充报告 semantic-gaps.json
 // 5. 默认全量：每次重建 DTS ClassModel bundle；需要临时增量时显式传 --incremental

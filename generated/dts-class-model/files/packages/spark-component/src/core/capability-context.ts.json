@@ -40,12 +40,6 @@
       "name": "SparkRuntimeOwner",
       "jsdoc": "Spark Runtime Owner 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/capability-context.ts",
-        "line": 23,
-        "className": "SparkRuntimeOwner",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** parent 字段。 */\n    parent?: SparkRuntimeOwner | null;\n    /** page Root 字段。 */\n    pageRoot?: unknown;\n}",
         "members": {

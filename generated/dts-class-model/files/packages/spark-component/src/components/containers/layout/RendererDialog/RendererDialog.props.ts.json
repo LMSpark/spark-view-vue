@@ -49,16 +49,12 @@
       "name": "RDialogProps",
       "jsdoc": "RDialog Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererDialog/RendererDialog.props.ts",
-        "line": 11,
-        "className": "RDialogProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererDialog",
-        "componentType": "r-dialog",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererDialog",
+        "type": "r-dialog",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkVisibilityContainerProps & SparkGridLayoutProps & {\n    /** 结构化头部 */\n    header?: RHeaderProps;\n    /** 结构化底部 */\n    footer?: RFooterProps;\n    /** 对话框标题 */\n    title?: string;\n    /** 控制显隐 */\n    modelValue?: boolean;\n    /** 内容区 CSS 类名 */\n    bodyClass?: string;\n}",

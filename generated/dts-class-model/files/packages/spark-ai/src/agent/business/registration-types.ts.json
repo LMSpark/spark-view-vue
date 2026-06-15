@@ -287,12 +287,6 @@
       "name": "AiAgentToolLoopNudgeReason",
       "jsdoc": "Ai Agent Tool Loop Nudge Reason 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/registration-types.ts",
-        "line": 15,
-        "className": "AiAgentToolLoopNudgeReason",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'plan_without_tool' | 'execution_phase' | 'model_script_retry'",
         "declarationRelations": [
@@ -316,12 +310,6 @@
       "name": "AiAgentToolLoopNudgeContext",
       "jsdoc": "Ai Agent Tool Loop Nudge Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/registration-types.ts",
-        "line": 17,
-        "className": "AiAgentToolLoopNudgeContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 触发 nudge 的原因：plan_without_tool = LLM 未调用工具即产出计划，execution_phase = 已进入执行阶段，model_script_retry = model_script 失败重试。 */\n    reason: AiAgentToolLoopNudgeReason;\n    /** 业务模块实例 ID，用于定位 nudge 上下文所属的具体实例。 */\n    moduleInstanceId: string;\n    /** 运行时上下文，含业务 ID、实例 ID、session ID 等定位信息。 */\n    runtimeContext: AiAgentRuntimeContext;\n}>",
         "declarationRelations": [
@@ -359,12 +347,6 @@
       "name": "AiAgentRegistrationOptions",
       "jsdoc": "Ai Agent Registration Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/registration-types.ts",
-        "line": 26,
-        "className": "AiAgentRegistrationOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 业务模块唯一标识，对应注册 runtime 的根业务 ID */\n    moduleId: string;\n    /** 面向 LLM 的业务名称，出现在系统提示中 */\n    name: string;\n    /** 面向 LLM 的业务描述，说明该业务能做什么 */\n    description: string;\n    /** ClassModel 工具运行时——承载工具闭集、知识快照和脚本执行 */\n    runtime: AiAgentToolRuntime;\n    /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */\n    inputContract?: AiAgentInputContract<TInput>;\n    /** 会话历史持久化存储；必须显式注入，registry 不再自动创建默认 store。 */\n    sessionStore: AiAgentSessionStore;\n    /**\n     * 动态系统提示生成器——每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。\n     * 可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。\n     */\n    systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined;\n    /**\n     * 工具调用前置处理器——runtime.executeTool 前触发。\n     * 典型用途：人工审批、权限策略、只读/危险操作拦截。reject/abort 不会执行 runtime 工具。\n     */\n    beforeFunctionCall?: (options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    /**\n     * 工具调用后置处理器——LLM 每次完成工具调用后触发。\n     * 接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。\n     * 典型用途：校验结果、追加后续提示、标记步骤完成。\n     */\n    afterFunctionCall?: (options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** 会话启动回调——AiAgentBusiness.createSession() 时调用一次 */\n    onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>;\n    /**\n     * 业务实例结束回调——AiAgentBusiness.endInstance() 时调用。\n     * context 提供当前运行时上下文，directive 携带结束指令。\n     */\n    onEndBusinessInstance?: (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    /**\n     * 模块实例释放回调——业务实例被清理时调用。\n     * 用于释放外部系统持有的资源（如关闭 WebSocket、清理临时文件等）。\n     */\n    releaseModuleInstance?: (moduleInstanceId: string) => void;\n    /** tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    /** 视为“已进入执行阶段”的工具名；默认仅 model_script。 */\n    executionToolNames?: ReadonlySet<string>;\n    /** 扩展 plan-without-tool 检测关键词（小写匹配）。 */\n    planWithoutToolMarkers?: readonly string[];\n    /** FC 失败恢复：业务域补充 RECOVERY_HINT。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
         "declarationRelations": [
@@ -655,12 +637,6 @@
       "name": "AiAgentRegistration",
       "jsdoc": "Ai Agent Registration 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/registration-types.ts",
-        "line": 77,
-        "className": "AiAgentRegistration",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Registration 实例。",

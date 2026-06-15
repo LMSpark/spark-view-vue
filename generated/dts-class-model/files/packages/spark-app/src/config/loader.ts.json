@@ -160,12 +160,6 @@
       "name": "ConfigLoader",
       "jsdoc": "配置加载器",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/config/loader.ts",
-        "line": 21,
-        "className": "ConfigLoader",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "私有构造函数，确保运行时配置缓存只通过 getInstance 维护一个进程内单例。",
@@ -277,12 +271,6 @@
       "name": "TenantResolver",
       "jsdoc": "租户识别器",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/config/loader.ts",
-        "line": 72,
-        "className": "TenantResolver",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "租户识别器",

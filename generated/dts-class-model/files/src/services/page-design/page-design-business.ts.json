@@ -117,12 +117,6 @@
       "name": "PageDesignRunInput",
       "jsdoc": "Page Design Run Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/page-design/page-design-business.ts",
-        "line": 23,
-        "className": "PageDesignRunInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** description 字段。 */\n    description: string;\n    /** readPlanningProjection 的 effectiveDescription；runner 必填。 */\n    effectiveDescription: string;\n    /** 项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。 */\n    projectId?: string;\n    /** planning Title 字段。 */\n    planningTitle?: string;\n    /** planning Path 路径。 */\n    planningPath?: string;\n    /** mode 字段。 */\n    mode?: PageDesignRunMode;\n    /** allowed Operations 字段。 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** preserve Existing Interactions 字段。 */\n    preserveExistingInteractions?: boolean;\n    /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */\n    strictImplGate?: boolean;\n}",
         "members": {
@@ -195,12 +189,6 @@
       "name": "ResolvePageDesignPlanningContextOptions",
       "jsdoc": "Resolve Page Design Planning Context Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/page-design/page-design-business.ts",
-        "line": 46,
-        "className": "ResolvePageDesignPlanningContextOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。 */\n    fallbackDescription?: string;\n}",
         "members": {
@@ -219,12 +207,6 @@
       "name": "EnsurePageDesignBusinessOptions",
       "jsdoc": "Ensure Page Design Business Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/page-design/page-design-business.ts",
-        "line": 51,
-        "className": "EnsurePageDesignBusinessOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 宿主运行时信息。 */\n    host: AiAgentHost;\n    /** get Page Design Editor 回调。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n    /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n}",
         "members": {

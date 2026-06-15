@@ -61,12 +61,6 @@
       "name": "ProjectSwitchService",
       "jsdoc": "Project Switch Service 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-shell.ts",
-        "line": 12,
-        "className": "ProjectSwitchService",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 切换到指定项目并刷新壳层导航；projectId 为目标项目标识，切换后会重新加载路由和 ProjectWorkspace。 */\n    switchAndReload(projectId: string): Promise<void>;\n}",
         "members": {
@@ -102,12 +96,6 @@
       "name": "ProjectWorkspaceScope",
       "jsdoc": "Project Workspace Scope 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-shell.ts",
-        "line": 22,
-        "className": "ProjectWorkspaceScope",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 租户 ID，用于多租户 API 隔离；作为 ProjectWorkspace 缓存键的一部分（tenantId:projectId）。 */\n    tenantId: string;\n    /** 项目 ID，标识 ProjectWorkspace 绑定的项目；未提供时回退到用户默认项目或 'homepage'。 */\n    projectId: string;\n}",
         "members": {
@@ -132,12 +120,6 @@
       "name": "ShellNavRootListener",
       "jsdoc": "Shell Nav Root Listener 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project/project-shell.ts",
-        "line": 32,
-        "className": "ShellNavRootListener",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(navData: ProjectModelData | null) => void",
         "members": {}

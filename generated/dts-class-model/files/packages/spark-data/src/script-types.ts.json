@@ -77,12 +77,6 @@
       "name": "PermissionActionContext",
       "jsdoc": "权限动作上下文（脚本可用）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/script-types.ts",
-        "line": 15,
-        "className": "PermissionActionContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** model Permission 字段。 */\n    modelPermission?: ModelPermission;\n    /** 当前行数据。 */\n    row?: DataRow | null;\n}",
         "members": {
@@ -107,12 +101,6 @@
       "name": "FieldRenderState",
       "jsdoc": "字段渲染状态（脚本可用）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/script-types.ts",
-        "line": 22,
-        "className": "FieldRenderState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** visibility 字段。 */\n    visibility: FieldVisibility;\n    /** readable 字段。 */\n    readable: boolean;\n    /** editable 字段。 */\n    editable: boolean;\n    /** display Value 字段。 */\n    displayValue: string | undefined;\n    /** 是否 should Render。 */\n    shouldRender: boolean;\n}",
         "members": {

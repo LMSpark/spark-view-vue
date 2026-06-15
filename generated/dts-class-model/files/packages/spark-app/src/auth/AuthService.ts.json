@@ -128,12 +128,6 @@
       "name": "AuthService",
       "jsdoc": "认证服务实现类\n架构特点：\n- 单例模式（通过工厂函数创建）\n- 支持 Mock 模式（开发环境）\n- 自动 Token 刷新\n- 完整的生命周期钩子\n- 错误处理和日志记录",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/auth/AuthService.ts",
-        "line": 30,
-        "className": "AuthService",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 AuthService 实例\n@param config 可选的认证配置。如果不提供，将使用默认配置或延迟初始化\n@example ```typescript\n// 使用默认配置（延迟初始化）\nconst auth = new AuthService()\n// 使用自定义配置\nconst auth = new AuthService({\napiBaseUrl: '/api',\nenableMock: true,\ntokenStorage: 'sessionStorage'\n})\n```",

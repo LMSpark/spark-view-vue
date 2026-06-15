@@ -37,16 +37,12 @@
       "name": "RIconProps",
       "jsdoc": "RIcon Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldIcon.props.ts",
-        "line": 9,
-        "className": "RIconProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldIcon",
-        "componentType": "r-icon",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldIcon",
+        "type": "r-icon",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<string> & {\n    /** 图标名称解析时使用的 class 前缀。 */\n    classPrefix?: string;\n}",

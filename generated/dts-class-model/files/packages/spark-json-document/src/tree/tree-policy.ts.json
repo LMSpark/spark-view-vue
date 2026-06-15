@@ -20,12 +20,6 @@
       "name": "ResolvedPolicy",
       "jsdoc": "Resolved Policy 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/tree/tree-policy.ts",
-        "line": 14,
-        "className": "ResolvedPolicy",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Required<JsonTreePolicy>",
         "declarationRelations": [

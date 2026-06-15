@@ -50,16 +50,12 @@
       "name": "RUploadProps",
       "jsdoc": "RUpload Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldUpload.props.ts",
-        "line": 9,
-        "className": "RUploadProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldUpload",
-        "componentType": "r-upload",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldUpload",
+        "type": "r-upload",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkUploadFieldProps & {\n    /** 选择文件后是否立即开始上传。 */\n    autoUpload?: boolean;\n    /** 是否展示已选择文件列表。 */\n    showFileList?: boolean;\n    /** 允许上传的文件数量上限。 */\n    limit?: number;\n    /** 上传列表展示样式。 */\n    listType?: 'text' | 'picture' | 'picture-card';\n}",

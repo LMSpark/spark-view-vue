@@ -59,16 +59,12 @@
       "name": "RTextareaProps",
       "jsdoc": "RTextarea Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldTextarea.props.ts",
-        "line": 9,
-        "className": "RTextareaProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldTextarea",
-        "componentType": "r-textarea",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldTextarea",
+        "type": "r-textarea",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkMultilineFieldProps<string> & {\n    /** 是否根据内容自动伸缩高度。 */\n    autosize?: boolean | {\n        minRows?: number;\n        maxRows?: number;\n    };\n    /** 最大输入长度。 */\n    maxlength?: number;\n    /** 是否显示字数统计。 */\n    showWordLimit?: boolean;\n}",

@@ -255,12 +255,6 @@
       "name": "EmitCurrentRowChangedFn",
       "jsdoc": "Emit Current Row Changed Fn 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/selection-delegate.ts",
-        "line": 10,
-        "className": "EmitCurrentRowChangedFn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (originatorId?: string): void;\n}",
         "members": {}
@@ -270,12 +264,6 @@
       "name": "EmitSelectedRowsChangedFn",
       "jsdoc": "Emit Selected Rows Changed Fn 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/selection-delegate.ts",
-        "line": 14,
-        "className": "EmitSelectedRowsChangedFn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (originatorId?: string): void;\n}",
         "members": {}
@@ -285,12 +273,6 @@
       "name": "SelectionDelegate",
       "jsdoc": "Selection Delegate 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/selection-delegate.ts",
-        "line": 18,
-        "className": "SelectionDelegate",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Selection Delegate 实例。",

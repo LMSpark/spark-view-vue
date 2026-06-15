@@ -137,7 +137,7 @@ tsconfig.class-model-emit.json
 | 文件 | 角色 | 运行时 | CI |
 |------|------|--------|-----|
 | `manifest.json` | guide 目录 + `classIndex` 路由 | ✅ | `assertClassModelBundleComplete` |
-| `files/**/*.d.ts.json` | 单文件 ClassModel shard（`generatedAt` = 源 mtime） | ✅ 懒加载 | shard 完整性 |
+| `files/**/*.json` | 单文件 ClassModel shard，按原生 `.ts/.vue` 源路径命名（`generatedAt` = 源 mtime） | ✅ 懒加载 | shard 完整性 |
 | `semantic-gaps.json` | module/model/constructor JSDoc 审计 | ❌ | `gapCount === 0` |
 | `.dts-manifest.json` | 增量构建 mtime 索引 | ❌ | `class-model-incremental-build.test.ts` |
 

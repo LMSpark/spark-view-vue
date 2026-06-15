@@ -1,6 +1,6 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json
- * 职责：结构化校验 DTS DtsTypeDeclarationModel manifest 和 shard JSON，读取 module、model、attribute、method、provenance 与 relation 字段。
+ * 职责：结构化校验 DTS DtsTypeDeclarationModel manifest 和 shard JSON，读取 module、model、component、attribute、method 与 relation 字段。
  * 边界：只做 JSON 协议解析和 fail-fast 校验，不生成 bundle、不访问网络，也不修复缺失语义。
  * AI用途：运行时或测试加载 generated/dts-class-model 失败时，用本模块确认是哪一层 JSON 字段不符合协议。
  */
@@ -20,9 +20,12 @@ import type {
   MethodParameterMeta,
   MethodParameterStyle,
   SourceProvenanceMeta,
+  ComponentProfileMeta,
 } from './types'
 import type {
   DtsClassModelBundleClassEntry,
+  DtsClassModelBundleComponentEntry,
+  DtsClassModelBundleComponentIndex,
   DtsClassModelBundleFileEntry,
   DtsClassModelBundleManifest,
   DtsClassModelDuplicateRecord,
@@ -58,6 +61,7 @@ const TYPE_DECLARATION_KINDS = new Set<NonNullable<DtsTypeDeclarationModel['decl
 
 const COMPONENT_LEVELS = new Set<ComponentClassModelLevel>([
   'table-level',
+  'row-level',
   'container',
   'field-level',
   'display',
@@ -66,6 +70,7 @@ const COMPONENT_LEVELS = new Set<ComponentClassModelLevel>([
 
 const COMPONENT_LAYERS = new Set<ComponentClassModelLayer>([
   'data-view-container',
+  'row-scope',
   'layout-container',
   'zone-container',
   'data-field',
@@ -132,6 +137,7 @@ export function readDtsClassModelBundleManifest(value: unknown): DtsClassModelBu
     path: 'manifest.duplicates',
     parseEntry: parseDuplicateRecord,
   })
+  const componentIndex = readOptionalComponentIndex(record, 'componentIndex', 'manifest.componentIndex')
   return {
     schemaVersion: DTS_CLASS_MODEL_BUNDLE_VERSION,
     protocol: DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
@@ -148,6 +154,7 @@ export function readDtsClassModelBundleManifest(value: unknown): DtsClassModelBu
       path: 'manifest.classIndex',
       parseEntry: parseBundleClassEntry,
     }),
+    ...(componentIndex === undefined ? {} : { componentIndex }),
     ...(duplicates === undefined ? {} : { duplicates }),
   }
 }
@@ -279,6 +286,59 @@ function parseBundleClassEntry(value: unknown, path: string): DtsClassModelBundl
   }
 }
 
+function readOptionalComponentIndex(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): DtsClassModelBundleComponentIndex | undefined {
+  if (!Object.hasOwn(record, field)) return undefined
+  const raw = requireJsonRecord(record[field], path)
+  return {
+    entries: readRequiredStringKeyedRecord({
+      record: raw,
+      field: 'entries',
+      path: `${path}.entries`,
+      parseEntry: parseComponentIndexEntry,
+    }),
+    byName: readRequiredClassNameBucketRecord(raw, 'byName', `${path}.byName`),
+    byType: readRequiredClassNameBucketRecord(raw, 'byType', `${path}.byType`),
+    byLevel: readRequiredClassNameBucketRecord(raw, 'byLevel', `${path}.byLevel`),
+    byLayer: readRequiredClassNameBucketRecord(raw, 'byLayer', `${path}.byLayer`),
+    byDirectory: readRequiredClassNameBucketRecord(raw, 'byDirectory', `${path}.byDirectory`),
+  }
+}
+
+function parseComponentIndexEntry(value: unknown, path: string): DtsClassModelBundleComponentEntry {
+  const record = requireJsonRecord(value, path)
+  return {
+    className: readRequiredString(record, 'className', `${path}.className`),
+    sourcePath: readRequiredString(record, 'sourcePath', `${path}.sourcePath`),
+    file: readRequiredString(record, 'file', `${path}.file`),
+    component: parseComponentProfile(record['component'], `${path}.component`),
+  }
+}
+
+function readRequiredClassNameBucketRecord(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): Record<string, readonly string[]> {
+  return readRequiredStringKeyedRecord({
+    record,
+    field,
+    path,
+    parseEntry: readStringArrayEntry,
+  })
+}
+
+function readStringArrayEntry(value: unknown, path: string): readonly string[] {
+  if (!Array.isArray(value)) throw new Error(`${path} must be an array.`)
+  return value.map((entry, index) => {
+    if (typeof entry !== 'string') throw new Error(`${path}[${String(index)}] must be a string.`)
+    return entry
+  })
+}
+
 function parseDuplicateRecord(value: unknown, path: string): DtsClassModelDuplicateRecord {
   const record = requireJsonRecord(value, path)
   return {
@@ -322,11 +382,14 @@ function parseClassModel(value: unknown, path: string): DtsTypeDeclarationModel 
     assertDraft2020Schema(jsonSchema, `${path}.jsonSchema`)
   }
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
+  const component = readOptionalComponentProfile(record, 'component', `${path}.component`)
+    ?? componentProfileFromProvenance(provenance)
   const common = {
     name,
     jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
     declarationKind,
     ...(jsonSchema === undefined ? {} : { jsonSchema }),
+    ...(component === undefined ? {} : { component }),
     ...(provenance === undefined ? {} : { provenance }),
   }
   if (declarationKind === 'class') {
@@ -741,6 +804,62 @@ function readOptionalSourceProvenance(
 ): SourceProvenanceMeta | undefined {
   if (!Object.hasOwn(record, field)) return undefined
   return parseSourceProvenance(record[field], path)
+}
+
+function readOptionalComponentProfile(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): ComponentProfileMeta | undefined {
+  if (!Object.hasOwn(record, field)) return undefined
+  const value = record[field]
+  if (value === undefined) return undefined
+  const component = parseComponentProfile(value, path)
+  return Object.keys(component).length === 0 ? undefined : component
+}
+
+function parseComponentProfile(value: unknown, path: string): ComponentProfileMeta {
+  const record = requireJsonRecord(value, path)
+  const level = readOptionalDeclarationKind({
+    record,
+    field: 'level',
+    path: `${path}.level`,
+    allowed: COMPONENT_LEVELS,
+  })
+  const layer = readOptionalDeclarationKind({
+    record,
+    field: 'layer',
+    path: `${path}.layer`,
+    allowed: COMPONENT_LAYERS,
+  })
+  return {
+    ...optionalStringProperty(record, 'name', `${path}.name`),
+    ...optionalStringProperty(record, 'type', `${path}.type`),
+    ...(level === undefined ? {} : { level }),
+    ...(layer === undefined ? {} : { layer }),
+    ...optionalStringProperty(record, 'directory', `${path}.directory`),
+  }
+}
+
+function componentProfileFromProvenance(provenance: SourceProvenanceMeta | undefined): ComponentProfileMeta | undefined {
+  if (provenance === undefined) return undefined
+  const component: ComponentProfileMeta = {
+    ...(provenance.componentName === undefined ? {} : { name: provenance.componentName }),
+    ...(provenance.componentType === undefined ? {} : { type: provenance.componentType }),
+    ...(provenance.componentLevel === undefined ? {} : { level: provenance.componentLevel }),
+    ...(provenance.componentLayer === undefined ? {} : { layer: provenance.componentLayer }),
+    ...(provenance.componentDirectory === undefined ? {} : { directory: provenance.componentDirectory }),
+  }
+  return Object.keys(component).length === 0 ? undefined : component
+}
+
+function optionalStringProperty(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): Record<string, string> {
+  const value = readOptionalString(record, field, path)
+  return value === undefined ? {} : { [field]: value }
 }
 
 function parseSourceProvenance(value: unknown, path: string): SourceProvenanceMeta {

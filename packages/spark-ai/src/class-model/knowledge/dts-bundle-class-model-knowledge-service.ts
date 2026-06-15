@@ -5,7 +5,7 @@
  * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/knowledge/dts-bundle-class-model-knowledge-service 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonValue } from '../../json'
-import { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
+import { DtsClassModelBundleLoader, type DtsClassModelComponentQuery } from '../class-model/dts-class-model-bundle-loader'
 import {
   ClassModelKnowledgeService,
   type ClassModelAttributeGuideInput,
@@ -108,6 +108,8 @@ public async refresh(requestedClassName?: string): Promise<void> {
     /** 查询参数。 */
 public async query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue> {
     await this.loadForInput(input.kind)
+    const componentQuery = componentQueryFromKnowledgeInput(input)
+    if (componentQuery !== undefined) await this.options.loader.ensureComponentQuery(componentQuery)
     return this.delegate().query(input)
   }
 
@@ -163,4 +165,17 @@ function normalizeRequiredText(value: unknown, field: string): string {
     throw new Error(`DTS DtsTypeDeclarationModel knowledge requires ${field}.`)
   }
   return trimmed
+}
+
+function componentQueryFromKnowledgeInput(
+  input: ClassModelKnowledgeQueryInput,
+): DtsClassModelComponentQuery | undefined {
+  const query: DtsClassModelComponentQuery = {
+    ...(input.componentName === undefined ? {} : { name: input.componentName }),
+    ...(input.componentType === undefined ? {} : { type: input.componentType }),
+    ...(input.componentLevel === undefined ? {} : { level: input.componentLevel }),
+    ...(input.componentLayer === undefined ? {} : { layer: input.componentLayer }),
+    ...(input.componentDirectory === undefined ? {} : { directory: input.componentDirectory }),
+  }
+  return Object.keys(query).length === 0 ? undefined : query
 }

@@ -37,16 +37,12 @@
       "name": "RNumberProps",
       "jsdoc": "RNumber Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldNumber.props.ts",
-        "line": 9,
-        "className": "RNumberProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldNumber",
-        "componentType": "r-number",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldNumber",
+        "type": "r-number",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkRangeNumericFieldProps<number | [number | undefined, number | undefined]> & {\n    /** 数值展示与写回时使用的小数精度。 */\n    precision?: number;\n}",

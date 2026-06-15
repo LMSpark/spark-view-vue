@@ -67,12 +67,6 @@
       "name": "AiAgentDiagnosticEventInput",
       "jsdoc": "Ai Agent Diagnostic Event Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/diagnostic-events.ts",
-        "line": 10,
-        "className": "AiAgentDiagnosticEventInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前 chat 请求，含 onStreamEvent 回调。 */\n    request: AiAgentChatRequest;\n    /** 业务作用域，用于构造 turnKey 与 streamKey。 */\n    scope: AiAgentScope;\n    /** 当前 turn 元信息（turnId 等）。 */\n    turn: AiAgentTurnMeta;\n    /** 诊断事件类型：LLM 请求前或流式追加。 */\n    type: 'llm-request' | 'llm-append';\n    /** 待序列化为 JSON 的 LLM 诊断载荷。 */\n    data: unknown;\n}>",
         "declarationRelations": [
@@ -122,12 +116,6 @@
       "name": "ToolResultEventInput",
       "jsdoc": "Tool Result Event Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/diagnostic-events.ts",
-        "line": 23,
-        "className": "ToolResultEventInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前 chat 请求，含 onStreamEvent 回调。 */\n    request: AiAgentChatRequest;\n    /** 业务作用域，用于构造 turnKey 与 streamKey。 */\n    scope: AiAgentScope;\n    /** 当前 turn 元信息（turnId 等）。 */\n    turn: AiAgentTurnMeta;\n    /** 事件归属的能力模块 ID，前端据此路由 UI。 */\n    eventModuleId: string;\n    /** 待序列化为 JSON 的工具结果载荷。 */\n    data: unknown;\n}>",
         "declarationRelations": [

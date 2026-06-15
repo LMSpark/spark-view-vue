@@ -67,12 +67,6 @@
       "name": "ClassModelFailureModeRecoveryCommand",
       "jsdoc": "Class Model Failure Mode Recovery Command 的命令参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.ts",
-        "line": 15,
-        "className": "ClassModelFailureModeRecoveryCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 触发恢复的动作调用返回结果，code 用于匹配 failureMode.code，msg 用于 when 条件文本匹配 */\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    /** 模块实例 ID（如页面 ID），用于将 fix 模板中的 <pageId> 占位符替换为实际值 */\n    moduleInstanceId?: string;\n}>",
         "declarationRelations": [
@@ -104,12 +98,6 @@
       "name": "ClassModelFailureModeRecoveryContext",
       "jsdoc": "Class Model Failure Mode Recovery Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.ts",
-        "line": 25,
-        "className": "ClassModelFailureModeRecoveryContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** API 对象的 kind 标识，用于定位失败动作所属的 ClassModel API 类别 */\n    kind: string;\n    /** 失败动作名称，用于在 recovery hint 中反查 model_action_guide */\n    actionName: string;\n    /** 匹配到的失败模式定义，含 code/when/fix 等字段，驱动 hint 生成 */\n    mode: AiApiActionFailureMode;\n}>",
         "declarationRelations": [

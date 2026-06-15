@@ -115,7 +115,7 @@ import {
 | `SparkAgUiTextMessageRole` | `'assistant' | 'user' | 'system' | 'developer'` |
 | `SparkAgUiCustomEventName` | `'spark.toolApproval.requested' | 'spark.toolApproval.resolved' | 'spark.stream.event'` |
 
-注意：`generated/dts-class-model/.../ag-ui-types.d.ts.json` 已能投影这些类型别名；`ag-ui-mapper.d.ts.json` 当前只有模块元信息，没有函数 symbols。查 mapper 函数 API 时以源码和 public barrel 测试为准。
+注意：`generated/dts-class-model/.../ag-ui-types.ts.json` 已能投影这些类型别名；`ag-ui-mapper.ts.json` 当前只有模块元信息，没有函数 symbols。查 mapper 函数 API 时以源码和 public barrel 测试为准。
 
 ### 工具定义映射
 
@@ -513,7 +513,7 @@ AG-UI adapter 不参与：
 | Tool args 不是模型实时流 | tool event 来自完成后的 `AiAgentToolCallRecord` | 若底层能暴露 tool call partial，可新增 chunk 或增量 args 事件 |
 | Abort 不发 RUN_ERROR | 设计上 abort 是用户主动中断 | UI 需要把 `'aborted'` 返回值和 trace system-message 当作终态 |
 | `RUN_ERROR` 不带 run ref | mapper 当前只发 message/code | 需要强关联时可新增 SPARK helper，利用 AG-UI passthrough 字段加 `threadId/runId` |
-| mapper JSON shard 缺函数 symbols | 当前 `.d.ts.json` 只投影类型别名 | 查函数走源码；后续可增强 d.ts 投影函数 symbol 支持 |
+| mapper JSON shard 缺函数 symbols | 当前 JSON shard 只投影类型别名 | 查函数走源码；后续可增强函数 symbol 投影支持 |
 
 ## 排错表
 

@@ -44,14 +44,10 @@
       "name": "CreateContainerCrudContextOptions",
       "jsdoc": "Create Container Crud Context Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/zero-code-shared.ts",
-        "line": 11,
-        "className": "CreateContainerCrudContextOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */\n    eventDefaults?: Parameters<typeof createCrudDispatcher>[1];\n}",

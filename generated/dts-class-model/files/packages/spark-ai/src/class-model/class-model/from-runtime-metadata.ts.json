@@ -40,12 +40,6 @@
       "name": "RuntimeDocumentInput",
       "jsdoc": "Runtime Document Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/from-runtime-metadata.ts",
-        "line": 11,
-        "className": "RuntimeDocumentInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 共享 JSON Schema 定义，映射为 ClassModelDocument.$defs。 */\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    /** 运行时 API 元数据数组；首元素作为 ClassModelDocument.module（真源），缺失时 throw。 */\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
         "declarationRelations": [

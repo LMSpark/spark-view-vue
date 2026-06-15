@@ -110,16 +110,12 @@
       "name": "NativeTableLike",
       "jsdoc": "r-table 运行时需要调用的 Element Plus table 原生能力集合。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/RendererTable/zero-code.ts",
-        "line": 12,
-        "className": "NativeTableLike",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTable",
-        "componentType": "r-table",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "name": "RendererTable",
+        "type": "r-table",
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 清空 UI 层多选状态。 */\n    clearSelection?: () => void;\n    /** 设置指定行在 UI 层的选中状态。 */\n    toggleRowSelection?: (row: DataRow, selected?: boolean) => void;\n    /** 设置 UI 层当前行；传 null 清空当前行。 */\n    setCurrentRow?: (row: DataRow | null) => void;\n    /** 重新计算表格列宽和布局。 */\n    doLayout?: () => void;\n}",
@@ -204,16 +200,12 @@
       "name": "RendererTableZeroCodeOptions",
       "jsdoc": "创建 r-table zero-code API 和事件桥接所需的运行时输入。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/RendererTable/zero-code.ts",
-        "line": 23,
-        "className": "RendererTableZeroCodeOptions",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTable",
-        "componentType": "r-table",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "name": "RendererTable",
+        "type": "r-table",
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** r-table 的组件属性集合，包含事件回调和配置透传。 */\n    props: Readonly<Record<string, unknown>>;\n    /** 当前解析出的 DataView。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** Element Plus table 原生组件 ref。 */\n    nativeTableRef: ValueRef<NativeTableLike | null>;\n    /** 当前行变更的来源 id，用于避免 DataView selection 回环。 */\n    currentRowOriginatorId?: string;\n    /** 多选变更的来源 id，用于避免 DataView selection 回环。 */\n    selectedRowsOriginatorId?: string;\n    /** 表格运行时诊断日志。 */\n    logger: LoggerApi;\n}",

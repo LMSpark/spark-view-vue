@@ -141,12 +141,6 @@
       "name": "AiAgentTarget",
       "jsdoc": "业务定位基类，用两个 ID 精确定位一个顶层业务实例：\nbusinessRegistrationId — 顶层 kind（对应 BusinessRegistry 中的注册项）\nbusinessInstanceId     — 顶层实例 ID（同一次会话内不变）",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/scope-types.ts",
-        "line": 13,
-        "className": "AiAgentTarget",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Target 实例。",
@@ -190,12 +184,6 @@
       "name": "AiAgentScope",
       "jsdoc": "业务作用域（继承自定位基类），在业务定位基础上追加运行时标识。\ninstanceId        — 顶层实例 ID，参与 kind + instanceId 生成后端 sessionId\nruntimeInstanceId — 工具 runtime 内部实例 ID（当前同顶层实例 ID）\nScope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期，\n同时也是 turnKey / streamKey 的数据来源。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/scope-types.ts",
-        "line": 33,
-        "className": "AiAgentScope",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Scope 实例。",
@@ -260,12 +248,6 @@
       "name": "AiAgentRuntimeContext",
       "jsdoc": "传递给生命周期回调的精简上下文。\nmoduleId         — 业务模块 ID（对应 registration.moduleId）\nmoduleInstanceId — 顶层模块实例 ID（pageId、leaveDraftId 等）\ninstanceId       — 顶层实例 ID；后端 sessionId 由 moduleId + instanceId 生成\n与 Scope 的区别：不含 businessRegistrationId / businessInstanceId，\n因为生命周期回调已在具体业务实例内部执行，无需重复定位。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/scope-types.ts",
-        "line": 54,
-        "className": "AiAgentRuntimeContext",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Runtime Context 实例。",
@@ -322,12 +304,6 @@
       "name": "AiAgentAppendMessageOptions",
       "jsdoc": "Ai Agent Append Message Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/scope-types.ts",
-        "line": 71,
-        "className": "AiAgentAppendMessageOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** 消息角色：user / assistant / system / tool */\n    role: AiAgentMessageRole;\n    /** 消息正文 */\n    content: string;\n    /** 消息来源标注（用于区分用户输入 / LLM 输出 / 工具返回值） */\n    source?: AiAgentMessageSource;\n    /** 附加元数据（如工具调用 ID、token 用量等） */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [

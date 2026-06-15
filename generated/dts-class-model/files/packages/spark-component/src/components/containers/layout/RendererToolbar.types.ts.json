@@ -91,16 +91,12 @@
       "name": "InlineAlign",
       "jsdoc": "工具栏交叉轴对齐方式。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts",
-        "line": 11,
-        "className": "InlineAlign",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererToolbar",
-        "componentType": "r-toolbar",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererToolbar",
+        "type": "r-toolbar",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "'start' | 'center' | 'end' | 'stretch'",
@@ -129,16 +125,12 @@
       "name": "InlineJustify",
       "jsdoc": "工具栏主轴分布方式。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts",
-        "line": 13,
-        "className": "InlineJustify",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererToolbar",
-        "componentType": "r-toolbar",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererToolbar",
+        "type": "r-toolbar",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "'start' | 'center' | 'end' | 'space-between'",
@@ -167,16 +159,12 @@
       "name": "RToolbarProps",
       "jsdoc": "`RendererToolbar` Vue 组件公开属性。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts",
-        "line": 17,
-        "className": "RToolbarProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererToolbar",
-        "componentType": "r-toolbar",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererToolbar",
+        "type": "r-toolbar",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkTableModelProps & {\n    /** 尾部动作区（通常放次要按钮） */\n    tail?: RTailProps;\n    /** 工具栏停靠位置 */\n    position?: ToolbarPosition;\n    /** 工具栏附加 class */\n    class?: string;\n    /** 主区内元素间距 */\n    gap?: number | string;\n    /** 主区与尾区间距 */\n    zoneGap?: number | string;\n    /** 交叉轴对齐 */\n    align?: InlineAlign;\n    /** 主轴分布 */\n    justify?: InlineJustify;\n}",

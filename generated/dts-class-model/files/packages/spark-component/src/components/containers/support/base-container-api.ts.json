@@ -255,12 +255,6 @@
       "name": "BaseCrudContainerApi",
       "jsdoc": "数据容器 CRUD API（统一最小公约数）。\n该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/base-container-api.ts",
-        "line": 19,
-        "className": "BaseCrudContainerApi",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 获取容器绑定的 DataView 数据源。 */\n    getDataSource(): DataView | null;\n    /** 新增一行并提交到远端，返回新行或 CRUD 结果。 */\n    addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>;\n    /** 按主键 id 更新行并提交到远端。 */\n    editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>;\n    /** 按主键 id 删除行并提交到远端。 */\n    removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>;\n}",
         "members": {
@@ -446,12 +440,6 @@
       "name": "BaseContainerApi",
       "jsdoc": "表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/base-container-api.ts",
-        "line": 32,
-        "className": "BaseContainerApi",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "BaseCrudContainerApi & {\n    /** 获取当前选中/聚焦的行。 */\n    getCurrentRow(): DataRow | null;\n    /** 刷新容器绑定的 DataView 数据。 */\n    refresh(): Promise<void>;\n    /** 在本地 DataView 追加一行（不立即提交远端）。 */\n    appendRow(row: DataRow): void;\n    /** 按主键 id 在本地更新行数据（不立即提交远端）。 */\n    updateRowById(id: string | number, patch: Partial<DataRow>): boolean;\n    /** 按主键 id 在本地删除行（不立即提交远端）。 */\n    deleteRowById(id: string | number): boolean;\n    /** 设置当前选中/聚焦的行。 */\n    setCurrentRow(row: DataRow | null): void;\n    /** 按主键 id 设置当前行，返回是否找到目标行。 */\n    setCurrentRowById(id: string | number | null): boolean;\n}",
         "declarationRelations": [
@@ -646,12 +634,6 @@
       "name": "VisibilityContainerApi",
       "jsdoc": "可见性容器 API（Dialog/Drawer 等）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/base-container-api.ts",
-        "line": 51,
-        "className": "VisibilityContainerApi",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 打开容器（显示面板）。 */\n    open(): void;\n    /** 关闭容器（隐藏面板）。 */\n    close(): void;\n    /** 查询容器当前是否可见。 */\n    isVisible(): boolean;\n    /** 切换容器可见状态。 */\n    toggle(): void;\n}",
         "members": {

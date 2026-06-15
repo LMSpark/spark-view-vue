@@ -131,12 +131,6 @@
       "name": "ScriptCallback",
       "jsdoc": "Script Callback 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
-        "line": 5,
-        "className": "ScriptCallback",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(...args: readonly unknown[]) => unknown",
         "members": {}
@@ -146,12 +140,6 @@
       "name": "ScriptActionArg",
       "jsdoc": "Script Action Arg 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
-        "line": 7,
-        "className": "ScriptActionArg",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AiJsonParams | ScriptCallback",
         "declarationRelations": [
@@ -173,12 +161,6 @@
       "name": "AiNativePathContext",
       "jsdoc": "Ai Native Path Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
-        "line": 9,
-        "className": "AiNativePathContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 从 root 到当前 API 对象的路径段（属性/action 名序列）。 */\n    segments: readonly string[];\n    /** 可选 Host 运行时上下文，供 takesContext action 注入。 */\n    host?: AiAgentRuntimeHostContext;\n}>",
         "declarationRelations": [
@@ -210,12 +192,6 @@
       "name": "AiApiScriptContextCommand",
       "jsdoc": "Ai Api Script Context Command 的命令参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
-        "line": 16,
-        "className": "AiApiScriptContextCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 业务实例对象，作为 script 上下文的 root target。 */\n    instance: unknown;\n    /** 该实例对应的 API 对象元数据（actions/attributes 白名单）。 */\n    api: AiApiObjectMetadata;\n    /** 路径与 Host 上下文，供 action 调用链传递。 */\n    ctx: AiNativePathContext;\n    /** 参数校验选项，控制 schema 校验严格度。 */\n    validateOptions?: AiJsonSchemaValidateOptions;\n}>",
         "declarationRelations": [
@@ -259,12 +235,6 @@
       "name": "ExecuteAiApiActionCommand",
       "jsdoc": "Execute Ai Api Action Command 的命令参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
-        "line": 27,
-        "className": "ExecuteAiApiActionCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 接收 action 调用的业务 target 对象。 */\n    target: unknown;\n    /** 待执行的 API action 元数据。 */\n    action: AiApiActionMetadata;\n    /** script 传入的参数或 callback，归一化前原始形态。 */\n    args: ScriptActionArg;\n    /** 路径与 Host 上下文，供 takesContext action 使用。 */\n    ctx: AiNativePathContext;\n    /** 参数校验选项，控制 schema 校验严格度。 */\n    validateOptions?: AiJsonSchemaValidateOptions;\n}>",
         "declarationRelations": [
@@ -314,12 +284,6 @@
       "name": "AiApiScriptActionFailure",
       "jsdoc": "Ai Api Script Action Failure 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
-        "line": 42,
-        "className": "AiApiScriptActionFailure",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Api Script Action Failure 实例。",

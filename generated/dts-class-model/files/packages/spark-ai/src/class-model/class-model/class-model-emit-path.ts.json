@@ -20,12 +20,6 @@
       "name": "ClassModelEmitSource",
       "jsdoc": "DtsTypeDeclarationModel 内存 emit 来源标识（对应 tsconfig.class-model-emit.json）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
-        "line": 10,
-        "className": "ClassModelEmitSource",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "typeof CLASS_MODEL_EMIT_SOURCE",
         "members": {}

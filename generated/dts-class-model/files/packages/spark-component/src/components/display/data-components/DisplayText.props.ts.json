@@ -71,16 +71,12 @@
       "name": "RTextDisplayProps",
       "jsdoc": "RText Display Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/data-components/DisplayText.props.ts",
-        "line": 9,
-        "className": "RTextDisplayProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayText",
-        "componentType": "r-text-display",
-        "componentLevel": "display",
-        "componentLayer": "data-display",
-        "componentDirectory": "display/data-components"
+      "component": {
+        "name": "DisplayText",
+        "type": "r-text-display",
+        "level": "display",
+        "layer": "data-display",
+        "directory": "display/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<unknown> & {\n    /** 包裹标签名，如 span/div */\n    tag?: string;\n    /** 前缀 */\n    prefix?: string;\n    /** 后缀 */\n    suffix?: string;\n    /** 格式化方式 */\n    format?: 'number' | 'currency' | 'percent' | 'date';\n    /** 小数精度 */\n    precision?: number;\n    /** 空值占位文本 */\n    placeholder?: string;\n    /** 文本 class */\n    textClass?: string;\n    /** 文本样式 */\n    textStyle?: Record<string, unknown> | string;\n}",

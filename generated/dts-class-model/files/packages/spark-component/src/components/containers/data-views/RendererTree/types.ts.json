@@ -308,16 +308,12 @@
       "name": "RendererTreeApi",
       "jsdoc": "Renderer Tree Api 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/RendererTree/types.ts",
-        "line": 10,
-        "className": "RendererTreeApi",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTree",
-        "componentType": "r-tree",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "name": "RendererTree",
+        "type": "r-tree",
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "BaseCrudContainerApi & {\n    /** 获取当前树组件绑定的全部节点数据。 */\n    getTreeData(): DataRow[];\n    /** 获取底层 Element Plus 树组件实例。 */\n    getNativeTree(): unknown;\n    /** 获取当前高亮/选中的树节点。 */\n    getCurrentNode(): DataRow | null;\n    /** 按节点 key 设置当前高亮节点。 */\n    setCurrentKey(key: string | number): void;\n    /** 展开树到指定节点。 */\n    expandToNode(key: string | number): Promise<void>;\n    /** 按关键字过滤树节点显示。 */\n    filter(keyword: string): void;\n    /** 获取勾选节点列表，可选仅叶子节点或包含半选节点。 */\n    getCheckedNodes(leafOnly?: boolean, includeHalfChecked?: boolean): DataRow[];\n    /** 获取当前勾选节点的 key 列表。 */\n    getCheckedKeys(): Array<string | number>;\n    /** 按 key 列表设置勾选状态。 */\n    setCheckedKeys(keys: Array<string | number>): void;\n    /** 移动节点到新的父节点下，可选指定插入位置。 */\n    moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>;\n    /** 在指定父节点下追加子节点。 */\n    appendNode(parentKey: string | number | null, nodeData: DataRow): void;\n    /** 在参考节点之前插入同级节点。 */\n    insertBefore(refKey: string | number, nodeData: DataRow): void;\n    /** 在参考节点之后插入同级节点。 */\n    insertAfter(refKey: string | number, nodeData: DataRow): void;\n    /** 按 key 局部更新节点数据，返回是否找到目标节点。 */\n    updateNode(key: string | number, patch: Partial<DataRow>): boolean;\n    /** 按 key 删除节点，返回是否成功移除。 */\n    removeNode(key: string | number): boolean;\n}",

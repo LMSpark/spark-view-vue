@@ -149,12 +149,6 @@
       "name": "JsonValidationIssue",
       "jsdoc": "单条校验问题",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-validator.ts",
-        "line": 9,
-        "className": "JsonValidationIssue",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 资源路径。 */\n    path: string;\n    /** 用户可读消息。 */\n    message: string;\n}",
         "members": {
@@ -179,12 +173,6 @@
       "name": "JsonValidationResult",
       "jsdoc": "校验结果：ok + issues 列表",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-validator.ts",
-        "line": 16,
-        "className": "JsonValidationResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 校验是否通过；true 表示无问题，false 表示 issues 中至少有一条校验问题。 */\n    ok: boolean;\n    /** 校验问题列表；ok 为 true 时为空数组，ok 为 false 时包含所有不满足 schema 的诊断条目。 */\n    issues: readonly JsonValidationIssue[];\n}>",
         "declarationRelations": [
@@ -216,12 +204,6 @@
       "name": "JsonSchemaValidateOptions",
       "jsdoc": "校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-validator.ts",
-        "line": 23,
-        "className": "JsonSchemaValidateOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 附加到 schema 根的 $defs 映射表，键为定义名，值为对应 JSON Schema；用于解析 schema 内部的 #/$defs/* 引用。 */\n    schemaDefs?: Readonly<Record<string, JsonSchema>>;\n}>",
         "declarationRelations": [
@@ -247,12 +229,6 @@
       "name": "JsonSchemaValidator",
       "jsdoc": "Json Schema Validator 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-validator.ts",
-        "line": 28,
-        "className": "JsonSchemaValidator",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "静态工具类禁止实例化；所有校验入口必须通过 static 方法共享同一个 AJV 2020 实例。",

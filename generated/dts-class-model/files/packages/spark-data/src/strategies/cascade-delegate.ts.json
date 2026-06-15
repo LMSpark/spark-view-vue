@@ -61,12 +61,6 @@
       "name": "CascadeDelegate",
       "jsdoc": "Cascade Delegate 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/cascade-delegate.ts",
-        "line": 9,
-        "className": "CascadeDelegate",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Cascade Delegate 实例。",

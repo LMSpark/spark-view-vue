@@ -1389,12 +1389,6 @@
       "name": "DataSetCrudToolCreateTableOptions",
       "jsdoc": "创建数据表时的输入参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 14,
-        "className": "DataSetCrudToolCreateTableOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "TableSemanticMetadata & {\n    /**\n       * 表名。\n       * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。\n       */\n    tableName: string;\n    /**\n     * 初始列定义。\n     */\n    columns: DataColumn[];\n    /**\n     * 可选的 CRUD API 配置。\n     * 传入后，表及其视图可直接走远端 CRUD 能力。\n     */\n    api?: CrudApi | string | boolean;\n    /**\n     * 可选的 CRUD 运行配置。\n     */\n    crudConfig?: CrudOperationConfig;\n    /**\n     * 需要一起创建或初始化的视图配置。\n     * 其中 default 视图不会新建，只会复用建表时自动创建的实例并应用配置。\n     */\n    views?: Record<string, ViewMetadata>;\n}",
         "declarationRelations": [
@@ -1448,12 +1442,6 @@
       "name": "DataSetCrudToolColumnUpdate",
       "jsdoc": "字段更新项。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 42,
-        "className": "DataSetCrudToolColumnUpdate",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 要更新的列名。 */\n    columnName: string;\n    /** 要合并到列定义上的字段更新；不应包含 name 重命名。 */\n    updates: Partial<DataColumn>;\n}",
         "members": {
@@ -1478,12 +1466,6 @@
       "name": "DataSetCrudToolUpdateTableOptions",
       "jsdoc": "更新数据表时的输入参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 51,
-        "className": "DataSetCrudToolUpdateTableOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /**\n     * 需要新增的列。\n     * 内部统一走 DataTable.addColumns，保证 validator 与 DataView 列缓存同步刷新。\n     */\n    columnsToAdd?: DataColumn[];\n    /**\n     * 需要更新的列定义。\n     */\n    columnUpdates?: DataSetCrudToolColumnUpdate[];\n    /**\n     * 需要删除的列名列表。\n     */\n    columnsToRemove?: string[];\n    /**\n     * 新的 CRUD API 配置。\n     */\n    api?: CrudApi | string | boolean;\n    /**\n     * 新的 CRUD 运行配置。\n     * 传入 null 表示显式移除已有 crudConfig。\n     */\n    crudConfig?: CrudOperationConfig | null;\n    /**\n     * 新的资源类型。\n     * 传入 null 表示显式清空已有 resourceType。\n     */\n    resourceType?: TableResourceType | null;\n    /**\n     * 新的资源 ID。\n     * 传入 null 表示显式清空已有 resourceId。\n     */\n    resourceId?: string | null;\n    /**\n     * 新的业务分类。\n     * 传入 null 表示显式清空已有 businessCategory。\n     */\n    businessCategory?: TableBusinessCategory | null;\n    /**\n     * default 视图需要替换的整批行数据。\n     */\n    defaultRows?: DataRow[];\n}",
         "members": {
@@ -1550,12 +1532,6 @@
       "name": "RelationSelector",
       "jsdoc": "关系选择器。\n默认可用 parentTable + childTable 定位；当同一父子表之间存在多条关系时，\n需要继续提供 parentField / childField 做字段级消歧。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 100,
-        "className": "RelationSelector",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 父表表名。 */\n    parentTable: string;\n    /** 子表表名。 */\n    childTable: string;\n    /** 父表关联字段；同一父子表存在多条关系时用于消歧。 */\n    parentField?: string;\n    /** 子表关联字段；同一父子表存在多条关系时用于消歧。 */\n    childField?: string;\n}",
         "members": {
@@ -1592,12 +1568,6 @@
       "name": "DataSetCrudToolTableNameParams",
       "jsdoc": "表名参数对象。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 111,
-        "className": "DataSetCrudToolTableNameParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 表名。 */\n    tableName: string;\n}",
         "members": {
@@ -1616,12 +1586,6 @@
       "name": "DataSetCrudToolReplaceFromJsonOptions",
       "jsdoc": "外部快照替换选项。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 116,
-        "className": "DataSetCrudToolReplaceFromJsonOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 是否将替换结果写入历史栈，默认 true。 */\n    commitHistory?: boolean;\n}",
         "members": {
@@ -1640,12 +1604,6 @@
       "name": "DataSetCrudToolColumnSelectorParams",
       "jsdoc": "表字段定位参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 121,
-        "className": "DataSetCrudToolColumnSelectorParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & {\n    /** 列名。 */\n    columnName: string;\n}",
         "declarationRelations": [
@@ -1675,12 +1633,6 @@
       "name": "DataSetCrudToolCreateColumnParams",
       "jsdoc": "新增字段参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 126,
-        "className": "DataSetCrudToolCreateColumnParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & {\n    /** 新列定义。 */\n    column: DataColumn;\n}",
         "declarationRelations": [
@@ -1710,12 +1662,6 @@
       "name": "DataSetCrudToolUpdateColumnParams",
       "jsdoc": "更新字段参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 131,
-        "className": "DataSetCrudToolUpdateColumnParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolColumnSelectorParams & {\n    /** 要合并到现有列定义上的更新内容。 */\n    updates: Partial<DataColumn>;\n}",
         "declarationRelations": [
@@ -1745,12 +1691,6 @@
       "name": "DataSetCrudToolRenameColumnParams",
       "jsdoc": "重命名字段参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 136,
-        "className": "DataSetCrudToolRenameColumnParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolColumnSelectorParams & {\n    /** 新列名。 */\n    newColumnName: string;\n}",
         "declarationRelations": [
@@ -1780,12 +1720,6 @@
       "name": "DataSetCrudToolUpdateTableParams",
       "jsdoc": "更新表参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 141,
-        "className": "DataSetCrudToolUpdateTableParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & DataSetCrudToolUpdateTableOptions",
         "declarationRelations": [
@@ -1807,12 +1741,6 @@
       "name": "DataSetCrudToolRenameTableParams",
       "jsdoc": "重命名表参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 143,
-        "className": "DataSetCrudToolRenameTableParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & {\n    /** 新表名。 */\n    newTableName: string;\n}",
         "declarationRelations": [
@@ -1842,12 +1770,6 @@
       "name": "DataSetCrudToolViewSelectorParams",
       "jsdoc": "视图定位参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 148,
-        "className": "DataSetCrudToolViewSelectorParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & {\n    /** 视图 ID；省略时使用 default 视图。 */\n    viewId?: string;\n}",
         "declarationRelations": [
@@ -1877,12 +1799,6 @@
       "name": "DataSetCrudToolCreateViewParams",
       "jsdoc": "创建视图参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 153,
-        "className": "DataSetCrudToolCreateViewParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & {\n    /** 新视图 ID。 */\n    viewId: string;\n    /** 可选视图配置。 */\n    config?: ViewMetadata;\n}",
         "declarationRelations": [
@@ -1918,12 +1834,6 @@
       "name": "DataSetCrudToolUpdateViewParams",
       "jsdoc": "更新视图参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 160,
-        "className": "DataSetCrudToolUpdateViewParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 要合并到视图配置上的更新内容。 */\n    updates: Partial<ViewMetadata>;\n}",
         "declarationRelations": [
@@ -1953,12 +1863,6 @@
       "name": "DataSetCrudToolDeleteViewParams",
       "jsdoc": "删除视图参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 165,
-        "className": "DataSetCrudToolDeleteViewParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolTableNameParams & {\n    /** 要删除的视图 ID。 */\n    viewId: string;\n}",
         "declarationRelations": [
@@ -1988,12 +1892,6 @@
       "name": "DataSetCrudToolAggregateSelectorParams",
       "jsdoc": "聚合配置定位参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 170,
-        "className": "DataSetCrudToolAggregateSelectorParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 聚合配置 key，即 aggregateResult 的输出字段名。 */\n    key: string;\n}",
         "declarationRelations": [
@@ -2023,12 +1921,6 @@
       "name": "DataSetCrudToolAddAggregateParams",
       "jsdoc": "新增聚合参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 175,
-        "className": "DataSetCrudToolAddAggregateParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolAggregateSelectorParams & {\n    /** 聚合列配置。 */\n    config: AggregateColumnConfig;\n}",
         "declarationRelations": [
@@ -2058,12 +1950,6 @@
       "name": "DataSetCrudToolUpdateAggregateParams",
       "jsdoc": "更新聚合参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 180,
-        "className": "DataSetCrudToolUpdateAggregateParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolAggregateSelectorParams & {\n    /** 要合并到聚合配置上的更新内容。 */\n    updates: Partial<AggregateColumnConfig>;\n}",
         "declarationRelations": [
@@ -2093,12 +1979,6 @@
       "name": "DataSetCrudToolSetComputeExpressionParams",
       "jsdoc": "设置计算表达式参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 185,
-        "className": "DataSetCrudToolSetComputeExpressionParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolColumnSelectorParams & {\n    /** 新计算表达式。 */\n    expression: string;\n}",
         "declarationRelations": [
@@ -2128,12 +2008,6 @@
       "name": "DataSetCrudToolRowSelectorParams",
       "jsdoc": "行定位参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 190,
-        "className": "DataSetCrudToolRowSelectorParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 行主键值。 */\n    id: string | number;\n}",
         "declarationRelations": [
@@ -2163,12 +2037,6 @@
       "name": "DataSetCrudToolCreateRowParams",
       "jsdoc": "新增行参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 195,
-        "className": "DataSetCrudToolCreateRowParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 新行数据。 */\n    data: Partial<DataRow>;\n}",
         "declarationRelations": [
@@ -2198,12 +2066,6 @@
       "name": "DataSetCrudToolCreateRowsParams",
       "jsdoc": "批量新增行参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 200,
-        "className": "DataSetCrudToolCreateRowsParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 待新增的行数据列表。 */\n    items: Array<Partial<DataRow>>;\n}",
         "declarationRelations": [
@@ -2233,12 +2095,6 @@
       "name": "DataSetCrudToolUpdateRowParams",
       "jsdoc": "更新行参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 205,
-        "className": "DataSetCrudToolUpdateRowParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolRowSelectorParams & {\n    /** 要合并到目标行上的字段更新。 */\n    data: Partial<DataRow>;\n}",
         "declarationRelations": [
@@ -2268,12 +2124,6 @@
       "name": "DataSetCrudToolUpdateRowsItem",
       "jsdoc": "批量更新行的单条输入。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 210,
-        "className": "DataSetCrudToolUpdateRowsItem",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 目标行主键值。 */\n    id: string | number;\n    /** 要合并到目标行上的字段更新。 */\n    data: Partial<DataRow>;\n}",
         "members": {
@@ -2298,12 +2148,6 @@
       "name": "DataSetCrudToolUpdateRowsParams",
       "jsdoc": "批量更新行参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 217,
-        "className": "DataSetCrudToolUpdateRowsParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 待更新的行列表。 */\n    items: DataSetCrudToolUpdateRowsItem[];\n}",
         "declarationRelations": [
@@ -2333,12 +2177,6 @@
       "name": "DataSetCrudToolDeleteRowsParams",
       "jsdoc": "批量删除行参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 222,
-        "className": "DataSetCrudToolDeleteRowsParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolViewSelectorParams & {\n    /** 待删除行的主键值列表。 */\n    ids: Array<string | number>;\n}",
         "declarationRelations": [
@@ -2368,12 +2206,6 @@
       "name": "DataSetCrudToolCreateRelationParams",
       "jsdoc": "创建表关系参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 227,
-        "className": "DataSetCrudToolCreateRelationParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 父表表名。 */\n    parentTable: string;\n    /** 子表表名。 */\n    childTable: string;\n    /** 父表关联字段。 */\n    parentField: string;\n    /** 子表关联字段。 */\n    childField: string;\n    /** 可选关系名称。 */\n    relationName?: string;\n}",
         "members": {
@@ -2416,12 +2248,6 @@
       "name": "DataSetCrudToolUpdateRelationParams",
       "jsdoc": "更新表关系参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 240,
-        "className": "DataSetCrudToolUpdateRelationParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 用于定位原关系的选择器。 */\n    selector: RelationSelector;\n    /** 要合并到关系定义上的更新内容。 */\n    updates: Partial<TableRelation>;\n}",
         "members": {
@@ -2446,12 +2272,6 @@
       "name": "DataSetCrudToolDependencySelectorParams",
       "jsdoc": "视图依赖定位参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 247,
-        "className": "DataSetCrudToolDependencySelectorParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 父表表名。 */\n    parentTable: string;\n    /** 子表表名。 */\n    childTable: string;\n}",
         "members": {
@@ -2476,12 +2296,6 @@
       "name": "DataSetCrudToolCreateDependencyParams",
       "jsdoc": "创建视图依赖参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 254,
-        "className": "DataSetCrudToolCreateDependencyParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 新视图依赖定义。 */\n    dependency: ViewDependency;\n}",
         "members": {
@@ -2500,12 +2314,6 @@
       "name": "DataSetCrudToolUpdateDependencyParams",
       "jsdoc": "更新视图依赖参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 259,
-        "className": "DataSetCrudToolUpdateDependencyParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataSetCrudToolDependencySelectorParams & {\n    /** 要合并到依赖定义上的更新内容。 */\n    updates: Partial<ViewDependency>;\n}",
         "declarationRelations": [
@@ -2535,12 +2343,6 @@
       "name": "DataSetCrudTool",
       "jsdoc": "DataSet 级统一 CRUD facade。\n设计目标：\n1. 构造时只要求 dataSetName，外部无需先手动拼装 DataSet。\n2. 统一收口表、列、视图、行、关系、依赖这几类对象的常用操作。\n3. 全部复用现有 DataSet/DataTable/DataView 能力，避免再造第二套状态模型。\n4. 所有公开方法统一使用单一对象参数，便于 LLM / 动态调度直接传 JSON object。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/dataset-crud-tool.ts",
-        "line": 273,
-        "className": "DataSetCrudTool",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建一个绑定到指定 dataSetName 的统一 CRUD 工具。\n@param dataSetName DataSet 名称。",

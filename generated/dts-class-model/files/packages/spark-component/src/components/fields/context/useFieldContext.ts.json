@@ -223,12 +223,6 @@
       "name": "FieldContextProps",
       "jsdoc": "Field Context Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/useFieldContext.ts",
-        "line": 7,
-        "className": "FieldContextProps",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型标识。 */\n    type: string;\n    /** display Label 字段。 */\n    displayLabel: string;\n    /** 绑定字段名。 */\n    fieldName: string;\n    /** width 字段。 */\n    width: number | undefined;\n    /** resizable 字段。 */\n    resizable?: boolean;\n    /** title Align 字段。 */\n    titleAlign?: 'left' | 'center' | 'right';\n    /** value Align 字段。 */\n    valueAlign?: 'left' | 'center' | 'right';\n    /** header Cell Class Name 名称。 */\n    headerCellClassName?: string;\n    /** cell Class Name 名称。 */\n    cellClassName?: string;\n    /** title Class Name 名称。 */\n    titleClassName?: string;\n    /** value Class Name 名称。 */\n    valueClassName?: string;\n    /** sortable 字段。 */\n    sortable: boolean | 'custom';\n    /** merged Children 字段。 */\n    mergedChildren: SparkNode[];\n    /** 是否 is Current Field Hidden。 */\n    isCurrentFieldHidden: boolean;\n    /** 是否 should Render Current Field。 */\n    shouldRenderCurrentField: boolean;\n    /** current Display Value 字段。 */\n    currentDisplayValue: string;\n    /** 是否 is Table Cell Hidden。 */\n    isTableCellHidden: (row: DataRow) => boolean;\n    /** get Table Cell Display Value 回调。 */\n    getTableCellDisplayValue: (row: DataRow) => string;\n    /** validation Rules 字段。 */\n    validationRules: FormItemRule[];\n}",
         "members": {
@@ -379,12 +373,6 @@
       "name": "FieldPermissionForContext",
       "jsdoc": "Field Permission For Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/useFieldContext.ts",
-        "line": 48,
-        "className": "FieldPermissionForContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 绑定字段名。 */\n    fieldName: ComputedRef<string>;\n    /** display Label 字段。 */\n    displayLabel: ComputedRef<string>;\n    /** 是否 is Current Field Hidden。 */\n    isCurrentFieldHidden: ComputedRef<boolean>;\n    /** 是否 should Render Current Field。 */\n    shouldRenderCurrentField: ComputedRef<boolean>;\n    /** current Display Value 字段。 */\n    currentDisplayValue: ComputedRef<string>;\n    /** 是否 is Table Cell Hidden。 */\n    isTableCellHidden: (row: DataRow) => boolean;\n    /** get Table Cell Display Value 回调。 */\n    getTableCellDisplayValue: (row: DataRow) => string;\n    /** validation Rules 字段。 */\n    validationRules: ComputedRef<FormItemRule[]>;\n}",
         "members": {
@@ -469,12 +457,6 @@
       "name": "OptionalWithUndefined",
       "jsdoc": "Optional With Undefined 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/useFieldContext.ts",
-        "line": 67,
-        "className": "OptionalWithUndefined",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [K in keyof T]?: T[K] | undefined;\n}",
         "members": {}
@@ -484,12 +466,6 @@
       "name": "FieldContextInputProps",
       "jsdoc": "Field Context Input Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/useFieldContext.ts",
-        "line": 71,
-        "className": "FieldContextInputProps",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "OptionalWithUndefined<Pick<SparkNodeProps, 'type' | 'children'>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps, 'width' | 'resizable' | 'titleAlign' | 'valueAlign' | 'headerCellClassName' | 'cellClassName' | 'titleClassName' | 'valueClassName' | 'sortable'>> & {\n    /** 类型标识。 */\n    type: string;\n}",
         "declarationRelations": [

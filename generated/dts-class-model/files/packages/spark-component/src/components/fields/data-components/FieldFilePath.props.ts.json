@@ -40,16 +40,12 @@
       "name": "RFilePathProps",
       "jsdoc": "RFile Path Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldFilePath.props.ts",
-        "line": 9,
-        "className": "RFilePathProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldFilePath",
-        "componentType": "r-file-path",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldFilePath",
+        "type": "r-file-path",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkFilePickerFieldProps",

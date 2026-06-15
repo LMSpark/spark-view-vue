@@ -156,12 +156,6 @@
       "name": "DefaultAiAgentSessionStoreOptions",
       "jsdoc": "存储选项：允许注入自定义时间源（便于测试）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/default-session-store.ts",
-        "line": 10,
-        "className": "DefaultAiAgentSessionStoreOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 时间戳生成函数；默认 Date.now，注入后用于测试中固定时间或加速时间流动 */\n    now?: () => number;\n}>",
         "declarationRelations": [
@@ -190,12 +184,6 @@
       "name": "DefaultAiAgentSessionStore",
       "jsdoc": "Default Ai Agent Session Store 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/default-session-store.ts",
-        "line": 15,
-        "className": "DefaultAiAgentSessionStore",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Default Ai Agent Session Store 实例。",

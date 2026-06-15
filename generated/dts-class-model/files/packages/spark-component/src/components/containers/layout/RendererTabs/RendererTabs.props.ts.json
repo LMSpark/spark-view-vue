@@ -99,16 +99,12 @@
       "name": "TabsClickEvent",
       "jsdoc": "Tabs Click Event 的事件载荷。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.ts",
-        "line": 10,
-        "className": "TabsClickEvent",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTabs",
-        "componentType": "r-tabs",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererTabs",
+        "type": "r-tabs",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前点击标签页的 paneName */\n    paneName?: string | number;\n    [key: string]: unknown;\n}",
@@ -128,16 +124,12 @@
       "name": "RTabsProps",
       "jsdoc": "RTabs Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.ts",
-        "line": 16,
-        "className": "RTabsProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererTabs",
-        "componentType": "r-tabs",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererTabs",
+        "type": "r-tabs",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 当前激活标签页 */\n    modelValue?: string | number;\n    /** 标签页切换回调（activeName 变更） */\n    onTabChange?: (name: string | number) => void;\n    /** 标签页点击回调 */\n    onTabClick?: (pane: TabsClickEvent, event: Event) => void;\n}",

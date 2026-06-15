@@ -40,16 +40,12 @@
       "name": "RSliderProps",
       "jsdoc": "RSlider Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldSlider.props.ts",
-        "line": 9,
-        "className": "RSliderProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldSlider",
-        "componentType": "r-slider",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldSlider",
+        "type": "r-slider",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkBoundedFieldProps<number> & {\n    /** 滑块步进值。 */\n    step?: number;\n    /** 是否显示数值输入框。 */\n    showInput?: boolean;\n}",

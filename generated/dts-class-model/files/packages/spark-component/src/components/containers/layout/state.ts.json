@@ -102,14 +102,10 @@
       "name": "UnifiedValueBridgeOptions",
       "jsdoc": "Unified Value Bridge Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/state.ts",
-        "line": 16,
-        "className": "UnifiedValueBridgeOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前值。 */\n    value: ValueRef<TValue | undefined>;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** debounce Ms 字段。 */\n    debounceMs?: number;\n    /** normalize 回调。 */\n    normalize?: (value: TValue | undefined) => TValue;\n    /** equals 回调。 */\n    equals?: (a: TValue, b: TValue) => boolean;\n    /** emit Value 回调。 */\n    emitValue?: (value: TValue) => void;\n}",
@@ -209,14 +205,10 @@
       "name": "CommitValueOptions",
       "jsdoc": "Commit Value Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/state.ts",
-        "line": 31,
-        "className": "CommitValueOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** emit 字段。 */\n    emit?: boolean;\n}",

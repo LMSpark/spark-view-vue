@@ -304,12 +304,6 @@
       "name": "AppLoggerApi",
       "jsdoc": "应用层 Logger API 接口\n与 spark-utils 的 LoggerApi 是不同的接口：\n- spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void\n- AppLoggerApi: 结构化参数，(message: string, meta?) => void",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/logger/index.ts",
-        "line": 19,
-        "className": "AppLoggerApi",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 输出调试级别日志，仅开发环境可见；用于流程跟踪和变量检查 */\n    debug(message: string, meta?: Record<string, unknown>): void;\n    /** 输出信息级别日志，标记正常业务流程关键节点（启动、切换、完成） */\n    info(message: string, meta?: Record<string, unknown>): void;\n    /** 输出警告级别日志，标记可恢复的异常或需要关注的退化情况 */\n    warn(message: string, meta?: Record<string, unknown>): void;\n    /** 输出错误级别日志，自动捕获调用栈；用于不可恢复异常和需要排查的失败 */\n    error(message: string, error?: Error | Record<string, unknown>): void;\n    /** 输出成功标记日志（实际按 info 级别输出，带成功图标），用于关键操作完成确认 */\n    success(message: string, meta?: Record<string, unknown>): void;\n}",
         "members": {
@@ -516,12 +510,6 @@
       "name": "AppLoggerConfig",
       "jsdoc": "日志配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/logger/index.ts",
-        "line": 34,
-        "className": "AppLoggerConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 最小日志级别 */\n    level?: LogLevel;\n    /** 是否启用颜色 */\n    enableColors?: boolean;\n    /** 是否显示时间戳 */\n    showTimestamp?: boolean;\n    /** 日志前缀 */\n    prefix?: string;\n    /** error 级别是否避免使用 console.error 输出，防止浏览器自动展开调用栈 */\n    suppressErrorConsoleTrace?: boolean;\n    /** 远程日志端点 */\n    remoteEndpoint?: string;\n    /** 远程上报的最小日志级别（默认 'debug'，即上报所有级别） */\n    minRemoteLevel?: LogLevel;\n    /** 批量上传：队列大小阈值（达到后立即 flush，默认 50） */\n    batchSize?: number;\n    /** 批量上传：定时 flush 间隔（毫秒，默认 5000） */\n    flushInterval?: number;\n}",
         "members": {
@@ -588,12 +576,6 @@
       "name": "LogTransport",
       "jsdoc": "日志传输器接口\n继承 spark-utils LogTransport（SSoT）并补充批量传输需要的 flush/destroy。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/logger/index.ts",
-        "line": 59,
-        "className": "LogTransport",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "BaseLogTransport & {\n    /** 立即刷新队列中的日志（批量传输器可选实现） */\n    flush?(): void;\n    /** 销毁传输器，释放定时器等资源 */\n    destroy?(): void;\n}",
         "declarationRelations": [
@@ -635,12 +617,6 @@
       "name": "BatchTransportOptions",
       "jsdoc": "Batch Transport Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/logger/index.ts",
-        "line": 78,
-        "className": "BatchTransportOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 远程端点 URL */\n    endpoint: string;\n    /** 上报的最小日志级别（默认 'debug'） */\n    minLevel?: LogLevel;\n    /** 队列大小阈值（默认 50） */\n    batchSize?: number;\n    /** 定时 flush 间隔 ms（默认 5000） */\n    flushInterval?: number;\n    /** 获取当前页面 ID（每条日志自动附带） */\n    getPageId?: () => string | undefined;\n    /** 会话 ID（整个浏览器生命周期不变，用于日志关联） */\n    sessionId?: string;\n}",
         "members": {
@@ -697,12 +673,6 @@
       "name": "AppLogger",
       "jsdoc": "应用层 Logger 实现",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-app/src/logger/index.ts",
-        "line": 123,
-        "className": "AppLogger",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 App Logger 实例。",

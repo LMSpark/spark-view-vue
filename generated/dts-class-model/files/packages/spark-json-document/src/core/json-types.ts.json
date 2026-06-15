@@ -88,12 +88,6 @@
       "name": "JsonPrimitive",
       "jsdoc": "JSON 原始值",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-types.ts",
-        "line": 9,
-        "className": "JsonPrimitive",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "string | number | boolean | null",
         "declarationRelations": [
@@ -121,12 +115,6 @@
       "name": "JsonValue",
       "jsdoc": "递归 JSON 值：原始值 | 对象 | 数组",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-types.ts",
-        "line": 11,
-        "className": "JsonValue",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "JsonPrimitive | JsonObject | JsonValue[]",
         "declarationRelations": [
@@ -152,12 +140,6 @@
       "name": "JsonObject",
       "jsdoc": "JSON 对象：key → JsonValue 映射",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-types.ts",
-        "line": 13,
-        "className": "JsonObject",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [key: string]: JsonValue;\n}",
         "members": {}
@@ -167,12 +149,6 @@
       "name": "JsonDocument",
       "jsdoc": "文档顶层：对象或数组",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-types.ts",
-        "line": 17,
-        "className": "JsonDocument",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "JsonObject | JsonValue[]",
         "declarationRelations": [
@@ -193,12 +169,6 @@
       "name": "JsonParams",
       "jsdoc": "函数/业务参数对象：运行时宽形态，key → JsonValue",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-types.ts",
-        "line": 19,
-        "className": "JsonParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<Record<string, JsonValue>>",
         "declarationRelations": [
@@ -215,12 +185,6 @@
       "name": "JsonParamShape",
       "jsdoc": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/core/json-types.ts",
-        "line": 26,
-        "className": "JsonParamShape",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<TShape>",
         "declarationRelations": [

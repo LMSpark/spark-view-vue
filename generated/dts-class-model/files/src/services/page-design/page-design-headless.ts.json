@@ -35,12 +35,6 @@
       "name": "PageDesignEditorResolveContext",
       "jsdoc": "Page Design Editor Resolve Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/page-design/page-design-headless.ts",
-        "line": 9,
-        "className": "PageDesignEditorResolveContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 需要解析的 headless 编辑器所对应的模块实例标识；用于从 headlessRegistry 中定位已创建的 ProjectWorkspace */\n    moduleInstanceId: string;\n}",
         "members": {

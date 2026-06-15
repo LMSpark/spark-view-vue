@@ -153,12 +153,6 @@
       "name": "PageDataEditorMode",
       "jsdoc": "Page Data Editor Mode 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 13,
-        "className": "PageDataEditorMode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'tree' | 'text' | 'table'",
         "declarationRelations": [
@@ -182,12 +176,6 @@
       "name": "DesignerColumnProjection",
       "jsdoc": "Designer Column Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 17,
-        "className": "DesignerColumnProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "DataColumn & {\n    /** 列在画布中的唯一标识（跨对账保持稳定）。 */\n    id: string;\n}",
         "declarationRelations": [
@@ -217,12 +205,6 @@
       "name": "DesignerTableProjection",
       "jsdoc": "Designer Table Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 22,
-        "className": "DesignerTableProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Omit<TableMetadata, 'columns'> & {\n    /** 表在画布中的唯一标识（跨对账保持稳定）。 */\n    id: string;\n    /** 画布 X 坐标（像素）。 */\n    x: number;\n    /** 画布 Y 坐标（像素）。 */\n    y: number;\n    /** 列定义集合（带画布 ID）。 */\n    columns: DesignerColumnProjection[];\n}",
         "declarationRelations": [
@@ -270,12 +252,6 @@
       "name": "DesignerRelationProjection",
       "jsdoc": "Designer Relation Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 33,
-        "className": "DesignerRelationProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "TableRelation & {\n    /** 关系类型：one-to-many（默认）/ one-to-one / many-to-many。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}",
         "declarationRelations": [
@@ -305,12 +281,6 @@
       "name": "DesignerTableUiState",
       "jsdoc": "Designer Table Ui State 的运行状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 38,
-        "className": "DesignerTableUiState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 表在画布中的唯一标识。 */\n    id: string;\n    /** 画布 X 坐标（像素）。 */\n    x: number;\n    /** 画布 Y 坐标（像素）。 */\n    y: number;\n    /** 列名到列 ID 的映射（跨对账保持列标识稳定）。 */\n    columnIds: Record<string, string>;\n}",
         "members": {
@@ -347,12 +317,6 @@
       "name": "LayoutForNewTable",
       "jsdoc": "Layout For New Table 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 49,
-        "className": "LayoutForNewTable",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(tableName: string, newIndex: number) => {\n    x: number;\n    y: number;\n}",
         "members": {}
@@ -362,12 +326,6 @@
       "name": "DesignerTableUiStateReconcileInput",
       "jsdoc": "Designer Table Ui State Reconcile Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-model-artifacts/page-data-designer.ts",
-        "line": 54,
-        "className": "DesignerTableUiStateReconcileInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 目标 DataSet 元数据，包含 tables / tableRelations / layout 等完整定义。 */\n    metadata: DataSetMetadata;\n    /** 当前画布中已有的表投影快照，用于保留已有 ID 和坐标。 */\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    /** 生成唯一 ID 的工厂函数（通常为 nanoid 或 uuid）。 */\n    createId: () => string;\n    /** 新增表的布局策略回调；缺省使用 3 列网格自动定位。 */\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
         "declarationRelations": [

@@ -46,12 +46,8 @@
       "name": "SessionChatBubbleProps",
       "jsdoc": "@module\n@spark-appworks /spark-component:ai/components/SessionChatBubble.props\n职责：维护\n@spark-appworks /spark-component 中 ai/components/SessionChatBubble.props 的模块能力，围绕 SessionChatBubbleProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionChatBubble.props 的声明、导出和使用边界时，从本模块开始。\nSession Chat Bubble Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/ai/components/SessionChatBubble.props.ts",
-        "line": 8,
-        "className": "SessionChatBubbleProps",
-        "declarationKind": "typeAlias",
-        "componentName": "SessionChatBubble"
+      "component": {
+        "name": "SessionChatBubble"
       },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 消息角色：user=用户输入，assistant=AI 回复，system=系统通知，error=错误展示。 */\n    role: 'user' | 'assistant' | 'system' | 'error';\n    /** 消息正文内容。 */\n    content: string;\n    /** 消息发送时间的 Unix 毫秒时间戳。 */\n    timestamp?: number;\n    /** 是否正在流式输出中（显示打字动画）。 */\n    isTyping?: boolean;\n}>",

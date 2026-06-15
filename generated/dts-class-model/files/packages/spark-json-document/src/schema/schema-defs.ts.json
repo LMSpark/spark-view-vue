@@ -34,12 +34,6 @@
       "name": "JsonSchemaLocalDefsExtraction",
       "jsdoc": "Json Schema Local Defs Extraction 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-defs.ts",
-        "line": 17,
-        "className": "JsonSchemaLocalDefsExtraction",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 移除 $defs 后的 schema 树（引用 #/$defs/* 的 $ref 仍保留原路径） */\n    schema: unknown;\n    /** 从 schema 树中抽出的所有本地 $defs 定义，按 key 字母序排列；供后续 attachJsonSchemaDefs 合并到文档根 */\n    defs: Readonly<Record<string, JsonSchema>>;\n}>",
         "declarationRelations": [

@@ -481,12 +481,6 @@
       "name": "TreeManagerOptions",
       "jsdoc": "Tree Manager Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/tree-manager.ts",
-        "line": 15,
-        "className": "TreeManagerOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 树结构配置：idField / parentIdField / textField / treeMode / lazy 等。 */\n    config: TreeConfig;\n    /** 树 HTTP 接口族配置（children / path / subtree / move / nested / nestedSearch）。 */\n    api?: TreeApi;\n    /** 初始扁平节点数组（直接写入缓存，跳过 HTTP 拉取）。 */\n    initialNodes?: FlatTreeNode[];\n    /** HTTP 客户端（优先使用外部注入实例共享拦截器/认证；否则懒初始化独立实例）。 */\n    httpClient?: HttpClientBase;\n    /** 端点上下文提供者（tenantId / projectId 等），用于 scoped URL 归一化。 */\n    endpointContextProvider?: () => Record<string, unknown>;\n}",
         "members": {
@@ -544,12 +538,6 @@
       "name": "FetchNestedInput",
       "jsdoc": "Fetch Nested Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/tree-manager.ts",
-        "line": 28,
-        "className": "FetchNestedInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 子树根节点 ID；缺省则从全局根节点开始拉取。 */\n    rootId?: string | number | null | undefined;\n    /** 返回节点数量上限；缺省使用端点默认值。 */\n    limit?: number | undefined;\n    /** 拉取深度上限；缺省使用端点或 TreeConfig 中的 depthLimit。 */\n    depthLimit?: number | undefined;\n    /** 树模式：flat=扁平 parentId 索引，nested=服务端嵌套 JSON；缺省使用 TreeConfig.treeMode。 */\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
         "declarationRelations": [
@@ -593,12 +581,6 @@
       "name": "TreeManager",
       "jsdoc": "树管理器类\n管理 DataView 中的树形数据视图",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/tree-manager.ts",
-        "line": 42,
-        "className": "TreeManager",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建树管理器实例\n@param config 树配置\n@param initialNodes 初始节点\n@param dataView 关联的数据视图",

@@ -116,12 +116,6 @@
       "name": "AggregateDelegateOptions",
       "jsdoc": "Aggregate Delegate Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/aggregate-delegate.ts",
-        "line": 17,
-        "className": "AggregateDelegateOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。 */\n    readonly getAggregates: () => Record<string, AggregateColumnConfig>;\n    /** 通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。 */\n    readonly emitSummaryChanged: () => void;\n    /** 通知订阅方仅选中行聚合已更新（selectionAggregateResult）。 */\n    readonly emitSelectionSummaryChanged: () => void;\n}",
         "members": {
@@ -172,12 +166,6 @@
       "name": "AggregateRecomputeOptions",
       "jsdoc": "Aggregate Recompute Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/aggregate-delegate.ts",
-        "line": 26,
-        "className": "AggregateRecomputeOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** emit 字段。 */\n    readonly emit?: boolean;\n}",
         "members": {
@@ -196,12 +184,6 @@
       "name": "AggregateDelegate",
       "jsdoc": "视图级聚合委托——持有并管理 aggregateResult / selectionAggregateResult 缓存状态。\n- `recompute(rows, selectedRows)` — 行数据变更时全量重算（含选中行），发射 summaryChanged\n- `recomputeSelection(selectedRows)` — 仅选中行变更时局部重算，发射 selectionSummaryChanged",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/aggregate-delegate.ts",
-        "line": 46,
-        "className": "AggregateDelegate",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Aggregate Delegate 实例。",

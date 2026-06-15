@@ -69,12 +69,6 @@
       "name": "UsePageDataSetOptions",
       "jsdoc": "DataSet 管理选项接口",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/renderer/usePageDataSet.ts",
-        "line": 11,
-        "className": "UsePageDataSetOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 是否 enable Data Set。 */\n    enableDataSet?: boolean;\n}",
         "members": {
@@ -93,12 +87,6 @@
       "name": "UsePageDataSetReturn",
       "jsdoc": "DataSet 管理返回值接口",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/renderer/usePageDataSet.ts",
-        "line": 16,
-        "className": "UsePageDataSetReturn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前 DataSet 实例（getter，无响应式，每次访问返回最新值） */\n    readonly dataSet: DataSet | null;\n    /** 设置 DataSet 实例（必须是已编译好的 DataSet） */\n    initDataSet: (ds: DataSet) => void;\n    /** clear Data Set 回调。 */\n    clearDataSet: () => void;\n}",
         "members": {

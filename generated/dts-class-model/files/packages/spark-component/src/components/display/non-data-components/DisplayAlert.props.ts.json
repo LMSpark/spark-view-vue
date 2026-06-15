@@ -66,16 +66,12 @@
       "name": "RAlertProps",
       "jsdoc": "RAlert Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.ts",
-        "line": 9,
-        "className": "RAlertProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayAlert",
-        "componentType": "r-alert",
-        "componentLevel": "display",
-        "componentLayer": "static-display",
-        "componentDirectory": "display/non-data-components"
+      "component": {
+        "name": "DisplayAlert",
+        "type": "r-alert",
+        "level": "display",
+        "layer": "static-display",
+        "directory": "display/non-data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 标题 */\n    title?: string;\n    /** 描述文本 */\n    description?: string;\n    /** 提示类型 */\n    alertType?: 'success' | 'warning' | 'info' | 'error';\n    /** 是否可关闭 */\n    closable?: boolean;\n    /** 关闭按钮文本 */\n    closeText?: string;\n    /** 是否居中 */\n    center?: boolean;\n    /** 是否显示图标 */\n    showIcon?: boolean;\n    /** 主题效果 */\n    effect?: 'light' | 'dark';\n}",

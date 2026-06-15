@@ -677,12 +677,6 @@
       "name": "ProjectModel",
       "jsdoc": "项目模型根。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-model.ts",
-        "line": 27,
-        "className": "ProjectModel",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建项目根模型实例。\n@param options 项目导航、页面四文件与会话初始化参数。",

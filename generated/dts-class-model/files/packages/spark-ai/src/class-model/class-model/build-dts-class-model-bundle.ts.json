@@ -125,18 +125,12 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-15T01:34:31.016Z",
+  "generatedAt": "2026-06-15T02:27:42.639Z",
   "models": {
     "BuildDtsClassModelBundleProgressPhase": {
       "name": "BuildDtsClassModelBundleProgressPhase",
       "jsdoc": "Build Dts Class Model Bundle Progress Phase 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
-        "line": 4,
-        "className": "BuildDtsClassModelBundleProgressPhase",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'read-files' | 'project-file' | 'write-semantic-gaps' | 'write-manifest' | 'done'",
         "declarationRelations": [
@@ -168,12 +162,6 @@
       "name": "BuildDtsClassModelBundleProgress",
       "jsdoc": "Build Dts Class Model Bundle Progress 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
-        "line": 6,
-        "className": "BuildDtsClassModelBundleProgress",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前 bundle 构建阶段。 */\n    phase: BuildDtsClassModelBundleProgressPhase;\n    /** 当前已处理文件序号（1-based）。 */\n    current?: number;\n    /** 待处理文件总数。 */\n    total?: number;\n    /** 当前正在投影的 emit 源路径。 */\n    sourcePath?: string;\n}>",
         "declarationRelations": [
@@ -217,12 +205,6 @@
       "name": "BuildDtsClassModelBundleOptions",
       "jsdoc": "Build Dts Class Model Bundle Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
-        "line": 17,
-        "className": "BuildDtsClassModelBundleOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 仓库根目录，用于规范化相对路径。 */\n    repoRoot: string;\n    /** 参与 bundle 闭包的 root .d.ts 绝对路径列表。 */\n    rootFiles: readonly string[];\n    /** bundle 输出目录（manifest、shard、semantic-gaps）。 */\n    outputDir: string;\n    /** 可选 TypeScript CompilerHost，供测试或自定义读文件。 */\n    compilerHost?: ts.CompilerHost;\n    /** true 时只投影 export 可见 symbol。 */\n    exportedOnly?: boolean;\n    /** 进度回调，按 phase 与文件序号推送事件。 */\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    /** 文件投影进度报告间隔（按文件数取模）；默认 50。 */\n    progressInterval?: number;\n    /** 仅投影并落盘这些 emit 源路径；rootFiles 仍可包含依赖闭包供 import 正则寻址。 */\n    projectOnlySourcePaths?: ReadonlySet<string>;\n    /** 未重投影 shard 的 className 索引，供 $ref 解析跨文件类型引用。 */\n    knownProjectedClassNamesBySourcePath?: ReadonlyMap<string, ReadonlySet<string>>;\n}>",
         "declarationRelations": [
@@ -310,12 +292,6 @@
       "name": "BuildDtsClassModelBundleResult",
       "jsdoc": "Build Dts Class Model Bundle Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
-        "line": 38,
-        "className": "BuildDtsClassModelBundleResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 生成的 manifest 对象（未落盘前的内存快照）。 */\n    manifest: DtsClassModelBundleManifest;\n    /** manifest.json 的绝对输出路径。 */\n    manifestPath: string;\n    /** semantic-gaps.json 的绝对输出路径。 */\n    semanticLogJsonPath: string;\n    /** 检测到的 JSDoc 语义缺口总数。 */\n    semanticGapCount: number;\n    /** 实际写入的 shard 文件数。 */\n    fileCount: number;\n    /** 投影出的 DtsTypeDeclarationModel 总数。 */\n    modelCount: number;\n}>",
         "declarationRelations": [

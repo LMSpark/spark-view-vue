@@ -40,16 +40,12 @@
       "name": "RTreeSelectProps",
       "jsdoc": "RTree Select Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.props.ts",
-        "line": 9,
-        "className": "RTreeSelectProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldTreeSelect",
-        "componentType": "r-tree-select",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldTreeSelect",
+        "type": "r-tree-select",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkHierarchicalOptionFieldProps<string | number | boolean | Array<string | number | boolean>> & {\n    /** 初次渲染时是否默认展开全部节点。 */\n    defaultExpandAll?: boolean;\n    /** 是否在节点展开后再渲染其子节点。 */\n    renderAfterExpand?: boolean;\n}",

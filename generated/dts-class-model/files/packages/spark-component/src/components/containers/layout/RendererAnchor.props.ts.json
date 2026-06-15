@@ -61,16 +61,12 @@
       "name": "RAnchorProps",
       "jsdoc": "RAnchor Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererAnchor.props.ts",
-        "line": 9,
-        "className": "RAnchorProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererAnchor",
-        "componentType": "r-anchor",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererAnchor",
+        "type": "r-anchor",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 滚动容器选择器 */\n    container?: string;\n    /** 偏移量 */\n    offset?: number;\n    /** 边界值 */\n    bound?: number;\n    /** 滚动动画时长 */\n    duration?: number;\n    /** 是否显示标记 */\n    marker?: boolean;\n    /** 排列方向 */\n    direction?: 'vertical' | 'horizontal';\n    /** 锚点类型（避免与 SparkNode.type 冲突） */\n    anchorType?: 'default' | 'underline';\n}",

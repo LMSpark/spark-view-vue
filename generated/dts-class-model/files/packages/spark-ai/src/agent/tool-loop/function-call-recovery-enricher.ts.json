@@ -65,12 +65,6 @@
       "name": "EnrichFunctionCallFailureCommand",
       "jsdoc": "Enrich Function Call Failure Command 的命令参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.ts",
-        "line": 14,
-        "className": "EnrichFunctionCallFailureCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** ClassModel 协议工具名（如 model_query / model_action_guide / model_script），用于匹配协议级恢复策略。 */\n    protocolToolName: string;\n    /** 本次工具调用发送的参数对象，供旧字段名检测和模板插值。 */\n    args: AiJsonParams;\n    /** 工具调用执行后返回的失败结果，包含 code / fix / checks。 */\n    callResult: AiAgentFunctionCallFailure;\n    /** 当前业务实例 ID；app 层 recovery hook 可用来插值实例级提示。 */\n    moduleInstanceId?: string;\n}>",
         "declarationRelations": [
@@ -114,12 +108,6 @@
       "name": "EnrichFunctionCallResultOptions",
       "jsdoc": "Enrich Function Call Result Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.ts",
-        "line": 25,
-        "className": "EnrichFunctionCallResultOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 业务方注入的自定义恢复提示回调；接收失败命令，返回追加到 checks 的提示文本数组。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
         "declarationRelations": [

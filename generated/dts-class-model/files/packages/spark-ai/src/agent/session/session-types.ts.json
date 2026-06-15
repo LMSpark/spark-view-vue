@@ -456,12 +456,6 @@
       "name": "AiAgentFunctionCallCheck",
       "jsdoc": "工具调用结果中的结构化检查项（error / warn / info）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 10,
-        "className": "AiAgentFunctionCallCheck",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 检查严重级别：error 表示失败，warn/info 仅提示。 */\n    level: 'error' | 'warn' | 'info';\n    /** 机器可读检查码，供 LLM 与诊断系统定位问题。 */\n    code: string;\n    /** 人可读检查说明，写入 tool result 或 session 历史。 */\n    message: string;\n    /** 可选修复提示，引导 LLM 修正参数或补执行工具。 */\n    hint?: string;\n}>",
         "declarationRelations": [
@@ -505,12 +499,6 @@
       "name": "AiAgentFunctionCallFailure",
       "jsdoc": "工具调用失败结果。\n字段：\nok     — 固定 false\ncode   — 机器可读失败码\nmsg    — 失败说明（回灌给 LLM）\nfix    — 修正建议（回灌给 LLM）\nchecks — 可选附加检查项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 30,
-        "className": "AiAgentFunctionCallFailure",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 固定 false，标识工具调用失败分支。 */\n    ok: false;\n    /** 机器可读失败码，对齐 AiAgentToolResult 错误 check 的 code。 */\n    code: string;\n    /** 失败说明，作为 tool role message 的 content 回灌给 LLM。 */\n    msg: string;\n    /** 修正建议，写入 tool result 的 fix 字段引导 LLM 重试。 */\n    fix: string;\n    /** 可选附加检查项，与主失败 check 一并回传给 LLM。 */\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
         "declarationRelations": [
@@ -560,12 +548,6 @@
       "name": "AiAgentFunctionCallResult",
       "jsdoc": "工具调用结果（联合类型）。\nok:true  → 成功，携带 data（可选）和 summary（可选）\nok:false → 失败，携带 code / msg / fix / checks（对齐工具结果的错误 check，完整回传给 LLM）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 47,
-        "className": "AiAgentFunctionCallResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    ok: true;\n    data?: TData;\n    summary?: string;\n}> | AiAgentFunctionCallFailure",
         "declarationRelations": [
@@ -587,12 +569,6 @@
       "name": "AiAgentSessionStatus",
       "jsdoc": "Ai Agent Session Status 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 53,
-        "className": "AiAgentSessionStatus",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'Started' | 'Stopped'",
         "declarationRelations": [
@@ -612,12 +588,6 @@
       "name": "AiAgentMessageRole",
       "jsdoc": "Ai Agent Message Role 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 55,
-        "className": "AiAgentMessageRole",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'system' | 'user' | 'assistant'",
         "declarationRelations": [
@@ -641,12 +611,6 @@
       "name": "AiAgentMessageSource",
       "jsdoc": "Ai Agent Message Source 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 57,
-        "className": "AiAgentMessageSource",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'system' | 'ui' | 'llm'",
         "declarationRelations": [
@@ -670,12 +634,6 @@
       "name": "AiAgentFunctionCallHistoryStatus",
       "jsdoc": "Ai Agent Function Call History Status 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 59,
-        "className": "AiAgentFunctionCallHistoryStatus",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'requested' | 'completed' | 'failed'",
         "declarationRelations": [
@@ -699,12 +657,6 @@
       "name": "AiAgentHistoryEntryBase",
       "jsdoc": "历史条目公共字段：会话定位、序号与时间戳。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 61,
-        "className": "AiAgentHistoryEntryBase",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 业务模块 ID，标识该历史条目所属的业务类型。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */\n    moduleInstanceId: string;\n    /** 会话实例 ID，startSession 时分配，贯穿单次 Agent 会话生命周期。 */\n    instanceId: string;\n    /** 运行时实例 ID，标识产生该条目的 tool-loop / chat turn 上下文。 */\n    runtimeInstanceId: string;\n    /** 历史条目唯一 ID，用于去重与增量同步。 */\n    id: string;\n    /** 会话内单调递增序号，保证历史条目时序可重建。 */\n    seq: number;\n    /** 条目创建时间戳（毫秒），用于排序与诊断。 */\n    timestamp: number;\n}>",
         "declarationRelations": [
@@ -766,12 +718,6 @@
       "name": "AiAgentMessageHistoryEntry",
       "jsdoc": "消息历史条目（用户消息 / 助手回复 / 系统消息）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 78,
-        "className": "AiAgentMessageHistoryEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    /** 固定 'message'，作为历史条目联合类型的判别字段。 */\n    kind: 'message';\n    /** OpenAI 对齐的消息角色：system / user / assistant。 */\n    role: AiAgentMessageRole;\n    /** 消息来源：system 内核注入、ui 用户界面、llm 模型输出。 */\n    source: AiAgentMessageSource;\n    /** 消息正文内容。 */\n    content: string;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [
@@ -826,12 +772,6 @@
       "name": "AiAgentFunctionCallHistoryEntry",
       "jsdoc": "工具调用历史条目（OpenAI function call 记录）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 91,
-        "className": "AiAgentFunctionCallHistoryEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    /** 固定 'functionCall'，作为历史条目联合类型的判别字段。 */\n    kind: 'functionCall';\n    /** 被调用的工具名称，来自 LLM tool_calls 中的 function.name。 */\n    toolName: string;\n    /** 工具调用参数，JSON 解析后的原始值。 */\n    args: unknown;\n    /** 工具调用状态：requested 已发起、completed 已成功、failed 已失败。 */\n    status: AiAgentFunctionCallHistoryStatus;\n    /** 工具调用完成时间戳（毫秒）；status 为 completed/failed 时写入。 */\n    completedAt?: number;\n    /** 工具调用成功返回值；status 为 completed 时写入。 */\n    result?: unknown;\n    /** 工具调用失败详情；status 为 failed 时写入，对齐 AiAgentFunctionCallFailure。 */\n    error?: AiAgentFunctionCallFailure;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [
@@ -904,12 +844,6 @@
       "name": "AiAgentHistoryEntry",
       "jsdoc": "历史条目联合类型",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 110,
-        "className": "AiAgentHistoryEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AiAgentMessageHistoryEntry | AiAgentFunctionCallHistoryEntry",
         "declarationRelations": [
@@ -931,12 +865,6 @@
       "name": "AiAgentSessionRecord",
       "jsdoc": "会话记录：包含生命周期状态和历史条目，是 Agent 诊断与再次接入会话的根数据",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 112,
-        "className": "AiAgentSessionRecord",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 业务模块 ID，标识该会话所属的业务类型。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识同一 moduleId 下的具体业务实例。 */\n    moduleInstanceId: string;\n    /** 会话实例 ID，startSession 时分配，作为会话主键。 */\n    instanceId: string;\n    /** 最近一次写入历史的运行时实例 ID，用于 turn 级追踪。 */\n    runtimeInstanceId: string;\n    /** 会话生命周期状态：Started 运行中、Stopped 已停止。 */\n    status: AiAgentSessionStatus;\n    /** 会话启动时间戳（毫秒）。 */\n    startedAt: number;\n    /** 会话最后更新时间戳（毫秒），每次 append 或 stop 时刷新。 */\n    updatedAt: number;\n    /** 会话停止时间戳（毫秒）；status 为 Stopped 时写入。 */\n    stoppedAt?: number;\n    /** 停止原因说明，stopSession 时可选传入。 */\n    reason?: string;\n    /** 按 seq 排序的完整历史条目列表（消息 + 工具调用）。 */\n    history: readonly AiAgentHistoryEntry[];\n}>",
         "declarationRelations": [
@@ -1016,12 +944,6 @@
       "name": "AiAgentStartSessionResult",
       "jsdoc": "会话启动结果：返回给业务方的初始状态",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 135,
-        "className": "AiAgentStartSessionResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 固定 'Started'，表示会话已成功创建。 */\n    status: 'Started';\n    /** 新分配的会话实例 ID，后续 chat / append 均以此定位会话。 */\n    instanceId: string;\n    /** 业务模块 ID，与 registration.moduleId 一致。 */\n    moduleId: string;\n    /** 业务模块实例 ID，标识具体业务实例。 */\n    moduleInstanceId: string;\n    /** 完整会话记录，含初始空 history 与 Started 状态。 */\n    session: AiAgentSessionRecord;\n    /** 当前 registration 暴露给 LLM 的工具规格列表。 */\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
         "declarationRelations": [
@@ -1077,12 +999,6 @@
       "name": "AiAgentAppendFunctionCallOptions",
       "jsdoc": "向 sessionStore 追加工具调用记录的参数",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 150,
-        "className": "AiAgentAppendFunctionCallOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** 产生该工具调用的运行时实例 ID，用于 turn 级历史隔离。 */\n    runtimeInstanceId: string;\n    /** 被调用的工具名称。 */\n    toolName: string;\n    /** 工具调用参数。 */\n    args: unknown;\n    /** 工具调用状态；省略时由 store 实现决定默认（通常为 requested）。 */\n    status?: AiAgentFunctionCallHistoryStatus;\n    /** 工具调用成功返回值；status 为 completed 时写入。 */\n    result?: unknown;\n    /** 工具调用失败详情；status 为 failed 时写入。 */\n    error?: AiAgentFunctionCallFailure;\n    /** 可选扩展元数据，供 UI 或诊断附加信息。 */\n    metadata?: Record<string, unknown>;\n}>",
         "declarationRelations": [
@@ -1149,12 +1065,6 @@
       "name": "AiAgentSessionStore",
       "jsdoc": "会话存储抽象类。\n定义了 Host 层所需的全部持久化操作。业务方可继承此类实现自定义存储\n（如 localStorage、IndexedDB、服务端持久化），也可直接使用默认的\nDefaultAiAgentSessionStore（纯内存实现）。\n历史会话只属于 spark-ai：它支撑 Agent 能力诊断、失败回看和后续再次接入\n同一业务会话；业务包和 smoke 只能读取它，不应复制或维护第二份历史。\n方法分类：\n生命周期 — startSession / stopSession / getSession / listSessions\n历史查询 — getSessionHistory\n追加记录 — appendMessage / appendFunctionCall",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-types.ts",
-        "line": 181,
-        "className": "AiAgentSessionStore",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "会话存储抽象类。\n定义了 Host 层所需的全部持久化操作。业务方可继承此类实现自定义存储\n（如 localStorage、IndexedDB、服务端持久化），也可直接使用默认的\nDefaultAiAgentSessionStore（纯内存实现）。\n历史会话只属于 spark-ai：它支撑 Agent 能力诊断、失败回看和后续再次接入\n同一业务会话；业务包和 smoke 只能读取它，不应复制或维护第二份历史。\n方法分类：\n生命周期 — startSession / stopSession / getSession / listSessions\n历史查询 — getSessionHistory\n追加记录 — appendMessage / appendFunctionCall",

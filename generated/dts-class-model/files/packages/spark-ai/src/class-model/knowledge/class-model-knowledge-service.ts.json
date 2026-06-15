@@ -31,6 +31,21 @@
         "keyword": {
           "type": "string"
         },
+        "componentName": {
+          "type": "string"
+        },
+        "componentType": {
+          "type": "string"
+        },
+        "componentLevel": {
+          "$ref": "../class-model/types.ts.json#/$defs/ComponentClassModelLevel"
+        },
+        "componentLayer": {
+          "$ref": "../class-model/types.ts.json#/$defs/ComponentClassModelLayer"
+        },
+        "componentDirectory": {
+          "type": "string"
+        },
         "includeMembers": {
           "type": "boolean"
         }
@@ -260,24 +275,18 @@
       }
     }
   },
-  "generatedAt": "2026-06-15T00:04:57.303Z",
+  "generatedAt": "2026-06-15T02:29:10.977Z",
   "models": {
     "ClassModelKnowledgeQueryInput": {
       "name": "ClassModelKnowledgeQueryInput",
       "jsdoc": "Class Model Knowledge Query Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 11,
-        "className": "ClassModelKnowledgeQueryInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 限定查询的 DtsTypeDeclarationModel kind；省略则查可达闭包。 */\n    kind?: string;\n    /** 关键词过滤，匹配名称、摘要与成员文本。 */\n    keyword?: string;\n    /** true 时在结果中包含 constructor/attributes/methods 摘要。 */\n    includeMembers: boolean;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 限定查询的 DtsTypeDeclarationModel kind；省略则查可达闭包。 */\n    kind?: string;\n    /** 关键词过滤，匹配名称、摘要与成员文本。 */\n    keyword?: string;\n    /** 限定 SPARK 组件名。 */\n    componentName?: string;\n    /** 限定 SPARK 组件 type，如 r-table / r-text。 */\n    componentType?: string;\n    /** 限定 SPARK 组件层级，如 table-level / row-level / field-level。 */\n    componentLevel?: ComponentClassModelLevel;\n    /** 限定 SPARK 组件架构分层，如 data-view-container / row-scope / data-field。 */\n    componentLayer?: ComponentClassModelLayer;\n    /** 限定 SPARK 组件目录，如 containers/data-views。 */\n    componentDirectory?: string;\n    /** true 时在结果中包含 constructor/attributes/methods 摘要。 */\n    includeMembers: boolean;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 限定查询的 DtsTypeDeclarationModel kind；省略则查可达闭包。 */\n    kind?: string;\n    /** 关键词过滤，匹配名称、摘要与成员文本。 */\n    keyword?: string;\n    /** true 时在结果中包含 constructor/attributes/methods 摘要。 */\n    includeMembers: boolean;\n}>",
+            "typeText": "Readonly<{\n    /** 限定查询的 DtsTypeDeclarationModel kind；省略则查可达闭包。 */\n    kind?: string;\n    /** 关键词过滤，匹配名称、摘要与成员文本。 */\n    keyword?: string;\n    /** 限定 SPARK 组件名。 */\n    componentName?: string;\n    /** 限定 SPARK 组件 type，如 r-table / r-text。 */\n    componentType?: string;\n    /** 限定 SPARK 组件层级，如 table-level / row-level / field-level。 */\n    componentLevel?: ComponentClassModelLevel;\n    /** 限定 SPARK 组件架构分层，如 data-view-container / row-scope / data-field。 */\n    componentLayer?: ComponentClassModelLayer;\n    /** 限定 SPARK 组件目录，如 containers/data-views。 */\n    componentDirectory?: string;\n    /** true 时在结果中包含 constructor/attributes/methods 摘要。 */\n    includeMembers: boolean;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -296,6 +305,36 @@
               "writable": false
             },
             {
+              "name": "componentName",
+              "jsdoc": "限定 SPARK 组件名。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentType",
+              "jsdoc": "限定 SPARK 组件 type，如 r-table / r-text。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLevel",
+              "jsdoc": "限定 SPARK 组件层级，如 table-level / row-level / field-level。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentLayer",
+              "jsdoc": "限定 SPARK 组件架构分层，如 data-view-container / row-scope / data-field。",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "componentDirectory",
+              "jsdoc": "限定 SPARK 组件目录，如 containers/data-views。",
+              "readable": true,
+              "writable": false
+            },
+            {
               "name": "includeMembers",
               "jsdoc": "true 时在结果中包含 constructor/attributes/methods 摘要。",
               "readable": true,
@@ -309,12 +348,6 @@
       "name": "ClassModelModelGuideInput",
       "jsdoc": "Class Model Model Guide Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 20,
-        "className": "ClassModelModelGuideInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 目标模型的 kind（className）。 */\n    kind: string;\n}>",
         "declarationRelations": [
@@ -340,12 +373,6 @@
       "name": "ClassModelAttributeGuideInput",
       "jsdoc": "Class Model Attribute Guide Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 25,
-        "className": "ClassModelAttributeGuideInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 属性所属模型的 kind。 */\n    kind: string;\n    /** 目标属性名。 */\n    attributeName: string;\n}>",
         "declarationRelations": [
@@ -377,12 +404,6 @@
       "name": "ClassModelMethodGuideInput",
       "jsdoc": "Class Model Method Guide Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 32,
-        "className": "ClassModelMethodGuideInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 方法所属模型的 kind。 */\n    kind: string;\n    /** 目标方法名（action 名）。 */\n    methodName: string;\n}>",
         "declarationRelations": [
@@ -414,12 +435,6 @@
       "name": "ClassModelKnowledgeProvider",
       "jsdoc": "Class Model Knowledge Provider 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 39,
-        "className": "ClassModelKnowledgeProvider",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 可选刷新钩子，重新加载 surface 或 bundle。 */\n    refresh?: (requestedClassName?: string) => Promise<void>;\n    /** 按 kind/keyword 查询可达模型知识。 */\n    query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>;\n    /** 返回单个模型的完整 guide 文本。 */\n    modelGuide(input: ClassModelModelGuideInput): string | Promise<string>;\n    /** 返回单个属性的 guide 文本。 */\n    attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>;\n    /** 返回单个方法的 guide 文本。 */\n    methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>;\n}>",
         "declarationRelations": [
@@ -599,12 +614,6 @@
       "name": "ClassModelKnowledgeServiceOptions",
       "jsdoc": "Class Model Knowledge Service Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 52,
-        "className": "ClassModelKnowledgeServiceOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 内存 ClassModelDocument 后端；与 surface 二选一。 */\n    document?: ClassModelDocument;\n    /** 预加载的 surface 文档后端；与 document 二选一。 */\n    surface?: DtsClassModelSurfaceDocument;\n    /** surface 模式的根 className，决定可达闭包起点。 */\n    rootClassName?: string;\n}>",
         "declarationRelations": [
@@ -642,12 +651,6 @@
       "name": "ClassModelKnowledgeService",
       "jsdoc": "Class Model Knowledge Service 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
-        "line": 61,
-        "className": "ClassModelKnowledgeService",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Class Model Knowledge Service 实例。",

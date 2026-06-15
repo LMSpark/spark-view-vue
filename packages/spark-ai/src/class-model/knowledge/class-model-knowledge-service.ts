@@ -12,7 +12,8 @@ import type {
   ClassModelDocument,
   ConstructorMeta,
   MethodMeta,
-  SourceProvenanceMeta,
+  ComponentClassModelLayer,
+  ComponentClassModelLevel,
 } from '../class-model/types'
 import type { DtsClassModelSurfaceDocument } from '../class-model/dts-surface-types'
 import type { DtsTypeMeta } from '../class-model/types'
@@ -40,6 +41,16 @@ export type ClassModelKnowledgeQueryInput = Readonly<{
   kind?: string
   /** 关键词过滤，匹配名称、摘要与成员文本。 */
   keyword?: string
+  /** 限定 SPARK 组件名。 */
+  componentName?: string
+  /** 限定 SPARK 组件 type，如 r-table / r-text。 */
+  componentType?: string
+  /** 限定 SPARK 组件层级，如 table-level / row-level / field-level。 */
+  componentLevel?: ComponentClassModelLevel
+  /** 限定 SPARK 组件架构分层，如 data-view-container / row-scope / data-field。 */
+  componentLayer?: ComponentClassModelLayer
+  /** 限定 SPARK 组件目录，如 containers/data-views。 */
+  componentDirectory?: string
   /** true 时在结果中包含 constructor/attributes/methods 摘要。 */
   includeMembers: boolean
 }>
@@ -108,16 +119,20 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
     const keyword = input.keyword?.toLowerCase()
     if (this.backend.mode === 'surface') {
       const { surface, rootClassName } = this.backend
-      const models = listReachableSurfaceClassNames(surface, rootClassName)
+      const candidateClassNames = hasComponentQuery(input)
+        ? Object.keys(surface.models)
+        : listReachableSurfaceClassNames(surface, rootClassName)
+      const models = candidateClassNames
         .filter(kind => input.kind === undefined || kind === input.kind)
         .map(kind => readSurfaceModel(surface, kind))
+        .filter(model => modelMatchesComponentQuery(model, input))
         .filter(model => keyword === undefined || modelMatchesKeyword(model, keyword))
         .map(model => ({
           kind: model.name,
           name: model.name,
           summary: summarizeJsDoc(model.jsdoc),
           ...declarationRelationsProperty(model),
-          ...componentProfileProperty(model.provenance),
+          ...componentProfileProperty(model),
           ...(input.includeMembers
             ? {
                 ...constructorQueryProperty(model),
@@ -144,12 +159,13 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
     const models = listAttributeReachableKinds(document)
       .filter(kind => input.kind === undefined || kind === input.kind)
       .map(kind => projectClassModelForGuide(document, kind))
+      .filter(model => modelMatchesComponentQuery(model, input))
       .filter(model => keyword === undefined || modelMatchesKeyword(model, keyword))
       .map(model => ({
         kind: model.name,
         name: model.name,
         summary: summarizeJsDoc(model.jsdoc),
-        ...componentProfileProperty(model.provenance),
+        ...componentProfileProperty(model),
         ...(input.includeMembers
           ? {
               ...constructorQueryProperty(model),
@@ -191,7 +207,7 @@ public attributeGuide(input: ClassModelAttributeGuideInput): string {
       const attribute = knowledgeAttributes(model).find(candidate => candidate.name === input.attributeName)
       if (attribute === undefined) throw new Error(`DtsTypeDeclarationModel attribute not found: ${input.kind}.${input.attributeName}`)
       return [
-        renderComponentProfile(model.provenance),
+        renderComponentProfile(model),
         model.jsdoc.trim(),
         `${modelDeclarationHeader(model)} {`,
         indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema ?? true)}`),
@@ -212,7 +228,7 @@ public methodGuide(input: ClassModelMethodGuideInput): string {
       const method = knowledgeMethods(model).find(candidate => candidate.name === input.methodName)
       if (method === undefined) throw new Error(`DtsTypeDeclarationModel method not found: ${input.kind}.${input.methodName}`)
       const chunks = [
-        renderComponentProfile(model.provenance),
+        renderComponentProfile(model),
         model.jsdoc.trim(),
         `${modelDeclarationHeader(model)} {`,
         indent(renderSurfaceMethod(method)),
@@ -340,7 +356,7 @@ function collectSchemaTypeRefs(
 function renderSurfaceClassModel(model: DtsTypeDeclarationModel): string {
   const constructorMeta = knowledgeConstructor(model)
   const parts = [
-    renderComponentProfile(model.provenance),
+    renderComponentProfile(model),
     renderDeclarationRelations(model),
     model.jsdoc.trim(),
     `${modelDeclarationHeader(model)} {`,
@@ -401,13 +417,17 @@ type ComponentProfile = Readonly<{
 }>
 
 function componentProfileProperty(
-  provenance: SourceProvenanceMeta | undefined,
+  model: Pick<DtsTypeDeclarationModel, 'component' | 'provenance'>,
 ): { component?: ComponentProfile } {
-  const component = componentProfile(provenance)
+  const component = componentProfile(model)
   return component === undefined ? {} : { component }
 }
 
-function componentProfile(provenance: SourceProvenanceMeta | undefined): ComponentProfile | undefined {
+function componentProfile(
+  model: Pick<DtsTypeDeclarationModel, 'component' | 'provenance'>,
+): ComponentProfile | undefined {
+  if (model.component !== undefined && Object.keys(model.component).length > 0) return model.component
+  const provenance = model.provenance
   if (provenance === undefined) return undefined
   const component: ComponentProfile = {
     ...(provenance.componentName === undefined ? {} : { name: provenance.componentName }),
@@ -419,8 +439,30 @@ function componentProfile(provenance: SourceProvenanceMeta | undefined): Compone
   return Object.keys(component).length === 0 ? undefined : component
 }
 
-function renderComponentProfile(provenance: SourceProvenanceMeta | undefined): string {
-  const component = componentProfile(provenance)
+function hasComponentQuery(input: ClassModelKnowledgeQueryInput): boolean {
+  return input.componentName !== undefined
+    || input.componentType !== undefined
+    || input.componentLevel !== undefined
+    || input.componentLayer !== undefined
+    || input.componentDirectory !== undefined
+}
+
+function modelMatchesComponentQuery(
+  model: Pick<DtsTypeDeclarationModel, 'component' | 'provenance'>,
+  input: ClassModelKnowledgeQueryInput,
+): boolean {
+  if (!hasComponentQuery(input)) return true
+  const component = componentProfile(model)
+  if (component === undefined) return false
+  return (input.componentName === undefined || component.name === input.componentName)
+    && (input.componentType === undefined || component.type === input.componentType)
+    && (input.componentLevel === undefined || component.level === input.componentLevel)
+    && (input.componentLayer === undefined || component.layer === input.componentLayer)
+    && (input.componentDirectory === undefined || component.directory === input.componentDirectory)
+}
+
+function renderComponentProfile(model: Pick<DtsTypeDeclarationModel, 'component' | 'provenance'>): string {
+  const component = componentProfile(model)
   if (component === undefined) return ''
   const parts = [
     component.type === undefined ? undefined : `type=${component.type}`,
@@ -464,15 +506,16 @@ type ProjectedModel = ReturnType<typeof projectClassModelForGuide>
 
 function modelMatchesKeyword(model: ProjectedModel, keyword: string): boolean {
   const constructorMeta = knowledgeConstructor(model)
+  const component = componentProfile(model)
   const haystacks = [
     model.name,
     model.name,
     summarizeJsDoc(model.jsdoc),
-    model.provenance?.componentName ?? '',
-    model.provenance?.componentType ?? '',
-    model.provenance?.componentLevel ?? '',
-    model.provenance?.componentLayer ?? '',
-    model.provenance?.componentDirectory ?? '',
+    component?.name ?? '',
+    component?.type ?? '',
+    component?.level ?? '',
+    component?.layer ?? '',
+    component?.directory ?? '',
     summarizeJsDoc(constructorMeta?.jsdoc ?? ''),
     constructorMeta === undefined ? '' : renderConstructorSignature(constructorMeta),
     ...knowledgeAttributes(model).flatMap(attribute => [attribute.name, summarizeJsDoc(attribute.jsdoc)]),

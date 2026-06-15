@@ -50,12 +50,6 @@
       "name": "JsonSchemaInfo",
       "jsdoc": "Schema 路径解析结果",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-resolution.ts",
-        "line": 17,
-        "className": "JsonSchemaInfo",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** description 字段。 */\n    description: string;\n    /** 是否必填。 */\n    required: boolean;\n    /** enum Values 字段。 */\n    enumValues: string[];\n}",
         "members": {

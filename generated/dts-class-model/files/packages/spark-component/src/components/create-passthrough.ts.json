@@ -33,12 +33,6 @@
       "name": "PassthroughOptions",
       "jsdoc": "透传组件配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/create-passthrough.ts",
-        "line": 19,
-        "className": "PassthroughOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 属性默认值，key 为透传给目标渲染节点的 prop 名。 */\n    propDefaults?: Record<string, unknown>;\n}",
         "members": {

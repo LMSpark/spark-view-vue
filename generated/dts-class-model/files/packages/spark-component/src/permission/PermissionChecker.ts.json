@@ -40,12 +40,6 @@
       "name": "FieldMaskInput",
       "jsdoc": "Field Mask Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/permission/PermissionChecker.ts",
-        "line": 31,
-        "className": "FieldMaskInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 待脱敏的字段名。 */\n    field: string;\n    /** 字段原始值；脱敏规则按字段名和值类型自动选择（手机号/身份证/邮箱/银行卡/通用）。 */\n    value: unknown;\n    /** 数据行（用于读取 _perm.hiddenFields / _perm.maskedFields 判断可见性）。 */\n    row: DataRow;\n    /** 权限模式：none=不控制，masked=可见+脱敏，invisible=后端控制导航可见性。 */\n    permissionMode?: NavPermissionMode | undefined;\n}>",
         "declarationRelations": [

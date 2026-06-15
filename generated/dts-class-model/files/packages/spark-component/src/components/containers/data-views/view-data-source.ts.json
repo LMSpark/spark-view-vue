@@ -198,14 +198,10 @@
       "name": "DataSourceLoggerLike",
       "jsdoc": "极简日志接口，仅供 useContainerDataSource 内部使用。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
-        "line": 6,
-        "className": "DataSourceLoggerLike",
-        "declarationKind": "typeAlias",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 输出诊断警告（如 dataViewKey 解析失败），不中断数据源解析流程 */\n    warn(message: string): void;\n    /** 输出不可恢复的错误（如 requestData() 网络失败），不中断数据源解析流程 */\n    error(message: string, error?: unknown): void;\n}",
@@ -263,14 +259,10 @@
       "name": "UseContainerDataSourceOptions",
       "jsdoc": "容器解析 DataView 或派生数据源时使用的统一输入。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
-        "line": 13,
-        "className": "UseContainerDataSourceOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 显式 DataView 定位键，格式为 table@viewId 或带作用域的 #scope@table@viewId。 */\n    dataViewKey: MaybeRefOrGetter<string | undefined>;\n    /** 从上级 DataView 上下文读取的成员名，例如 currentRow、rows 或 selectedRows。 */\n    contextDataMember?: MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>;\n    /** 在 contextDataMember 解析结果上继续读取的字段路径。 */\n    contextDataField?: MaybeRefOrGetter<string | undefined>;\n    /** capability 消费入口，用于读取 PAGE_DATASET。 */\n    sparkConsume: SparkCapabilityConsumer;\n    /** 将解析到的 DataView 映射成容器实际消费的数据源形态。 */\n    mapView: (view: DataView) => TSource;\n    /** 外部显式传入的数据源；优先级高于 dataViewKey。 */\n    externalDataSource?: MaybeRefOrGetter<TSource | undefined>;\n    /** 父级容器传入的数据源；显式来源和上下文都缺失时使用。 */\n    inheritedDataSource?: MaybeRefOrGetter<TSource | null | undefined>;\n    /** 将解析出的数据源提供给子级容器或字段。 */\n    provideDataSource?: (source: TSource) => void;\n    /** 容器数据源解析诊断日志。 */\n    logger?: DataSourceLoggerLike;\n    /** 日志前缀，用于区分不同容器实例。 */\n    logPrefix?: string;\n    /** 跳过 provide、autoLoad 和诊断副作用，仅保留解析结果。 */\n    skipEffects?: boolean;\n    /** 跳过向下提供数据源的副作用。 */\n    skipProvideEffect?: boolean;\n    /** 跳过 DataView 自动加载副作用。 */\n    skipAutoLoadEffect?: boolean;\n}",
@@ -388,14 +380,10 @@
       "name": "UseContainerDataSourceEffectsOptions",
       "jsdoc": "容器数据源解析后的副作用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
-        "line": 42,
-        "className": "UseContainerDataSourceEffectsOptions",
-        "declarationKind": "typeAlias",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 已解析的数据源 ref。 */\n    resolvedView: ComputedRef<TSource | null>;\n    /** dataViewKey 或 dataMember 解析诊断。 */\n    diagnostic?: ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>;\n    /** 向下游提供数据源的回调。 */\n    provideDataSource?: (source: TSource) => void;\n    /** 副作用阶段使用的诊断日志。 */\n    logger: DataSourceLoggerLike;\n    /** 副作用日志前缀。 */\n    logPrefix: string;\n    /** 是否跳过 provideDataSource 副作用。 */\n    skipProvideEffect?: boolean;\n    /** 是否跳过 DataView requestData 自动加载。 */\n    skipAutoLoadEffect?: boolean;\n}",
@@ -465,14 +453,10 @@
       "name": "ContainerDataSourceState",
       "jsdoc": "容器解析后的数据源和行上下文结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
-        "line": 59,
-        "className": "ContainerDataSourceState",
-        "declarationKind": "typeAlias",
-        "componentLevel": "table-level",
-        "componentLayer": "data-view-container",
-        "componentDirectory": "containers/data-views"
+      "component": {
+        "level": "table-level",
+        "layer": "data-view-container",
+        "directory": "containers/data-views"
       },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 容器最终解析到的数据源；解析失败时为空。 */\n    resolvedView: ComputedRef<TSource | null>;\n    /** 容器最终解析到的行上下文。 */\n    resolvedDataRow: ComputedRef<DataRow | null>;\n}",

@@ -1595,6 +1595,13 @@ function classifySparkComponentPath(componentPath: string): ComponentDirectoryCl
         layer: 'zone-container',
       }
     }
+    if (group === 'support' && isRowScopeComponentPath(componentPath)) {
+      return {
+        directory: 'containers/support',
+        level: 'row-level',
+        layer: 'row-scope',
+      }
+    }
     return undefined
   }
   if (domain === 'fields') {
@@ -1648,6 +1655,11 @@ function classifySparkComponentPath(componentPath: string): ComponentDirectoryCl
   return undefined
 }
 
+function isRowScopeComponentPath(componentPath: string): boolean {
+  return componentPath === 'containers/support/RendererFieldScope.vue'
+    || componentPath === 'containers/support/RendererHostScope.vue'
+}
+
 function inferComponentNameFromPath(componentPath: string): string | undefined {
   const segments = componentPath.split('/')
   const fileName = segments.at(-1)
@@ -1662,16 +1674,20 @@ function inferComponentNameFromPath(componentPath: string): string | undefined {
 }
 
 function inferComponentType(className: string, componentName: string | undefined): string | undefined {
+  if (componentName !== undefined) {
+    const explicit = SPECIAL_COMPONENT_TYPES[componentName]
+    if (explicit !== undefined) return explicit
+  }
   const propsMatch = /^R(.+)Props$/u.exec(className)
   if (propsMatch !== null) {
     const propsName = propsMatch[1]
     if (propsName === undefined) return undefined
+    const explicit = SPECIAL_COMPONENT_TYPES[propsName]
+    if (explicit !== undefined) return explicit
     if (propsName.startsWith('Display')) return `display-${toKebabCase(propsName.slice('Display'.length))}`
     return `r-${toKebabCase(propsName)}`
   }
   if (componentName === undefined) return undefined
-  const explicit = SPECIAL_COMPONENT_TYPES[componentName]
-  if (explicit !== undefined) return explicit
   if (componentName.startsWith('Renderer')) return `r-${toKebabCase(componentName.slice('Renderer'.length))}`
   if (componentName.startsWith('Field')) return `r-${toKebabCase(componentName.slice('Field'.length))}`
   if (componentName.startsWith('Display')) return `display-${toKebabCase(componentName.slice('Display'.length))}`
@@ -1691,6 +1707,7 @@ function toKebabCase(value: string): string {
 
 const SPECIAL_COMPONENT_TYPES: Readonly<Record<string, string>> = {
   DisplayText: 'r-text-display',
+  RendererFieldScope: 'r-field-scope',
   SparkCodeEditor: 'code-editor',
   SparkJsonEditor: 'json-editor',
   TreeNodeSummary: 'r-tree-node-summary',

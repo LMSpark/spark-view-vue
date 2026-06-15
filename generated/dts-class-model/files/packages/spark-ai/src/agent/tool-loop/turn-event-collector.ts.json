@@ -62,12 +62,6 @@
       "name": "TurnEventCollectorInput",
       "jsdoc": "收集器的构造输入",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/turn-event-collector.ts",
-        "line": 9,
-        "className": "TurnEventCollectorInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** SSE 流轮次输入：sessionId / turn / signal / onDelta / onReasoning / onStreamEvent 等流式回调。 */\n    input: AiAgentStreamTurnInput;\n    /** APP SSE 事件源：提供 on(event, handler) 订阅 llm-frame 事件。 */\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
         "declarationRelations": [
@@ -111,12 +105,6 @@
       "name": "TurnEventCollector",
       "jsdoc": "AI turn 事件收集器接口",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/turn-event-collector.ts",
-        "line": 20,
-        "className": "TurnEventCollector",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 轮次结果 Promise：resolve 得到 text / reasoning / toolCalls，reject 表示超时/错误/abort。 */\n    result: Promise<AiAgentStreamTurnResult>;\n    /** 主动关闭收集器：停止监听 SSE 事件，释放定时器和监听器。 */\n    close(): void;\n}>",
         "declarationRelations": [

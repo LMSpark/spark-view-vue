@@ -316,12 +316,6 @@
       "name": "DataTableAddColumnsResult",
       "jsdoc": "DataTable.addColumns 的执行结果摘要。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/data-table.ts",
-        "line": 13,
-        "className": "DataTableAddColumnsResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 实际追加成功的列名列表。 */\n    added: string[];\n    /** 因列名已存在而跳过的列名列表。 */\n    skipped: string[];\n}",
         "members": {
@@ -346,12 +340,6 @@
       "name": "DataTable",
       "jsdoc": "DataTable - 管理单表的结构定义与配置\n说明：管理表结构（columns）、资源语义（resourceType/resourceId/businessCategory）、\n视图集合（DataView）、CRUD 配置（api, crudConfig）；\n其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。\n数据操作由 DataView 负责。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/data-table.ts",
-        "line": 28,
-        "className": "DataTable",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 DataTable 实例，并自动创建 `default` DataView。\n@param tableName 表名，在所属 DataSet 内必须唯一。\n@param columns 初始列定义；后续列变更必须通过公开方法维护派生状态。",

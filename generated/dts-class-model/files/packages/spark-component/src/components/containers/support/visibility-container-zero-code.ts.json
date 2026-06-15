@@ -67,12 +67,6 @@
       "name": "VisibilityContainerZeroCodeOptions",
       "jsdoc": "Visibility Container Zero Code Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/visibility-container-zero-code.ts",
-        "line": 10,
-        "className": "VisibilityContainerZeroCodeOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** visible Value 字段。 */\n    visibleValue: ValueRef<boolean>;\n    /** commit Visible Value 回调。 */\n    commitVisibleValue: (value: boolean) => void;\n    /** on Open 事件回调。 */\n    onOpen: (() => void) | undefined;\n    /** on Close 事件回调。 */\n    onClose: (() => void) | undefined;\n    /** on Opened 事件回调。 */\n    onOpened: (() => void) | undefined;\n    /** on Closed 事件回调。 */\n    onClosed: (() => void) | undefined;\n}",
         "members": {

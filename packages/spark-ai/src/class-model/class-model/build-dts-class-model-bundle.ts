@@ -18,10 +18,12 @@ import {
   type DtsClassModelSemanticGapKind,
   type DtsClassModelSemanticGapReport,
   type DtsClassModelBundleManifest,
+  type DtsClassModelBundleComponentEntry,
+  type DtsClassModelBundleComponentIndex,
   type DtsFileProjectionBundleJson,
   type DtsFileProjectionDocument,
 } from './dts-bundle-types'
-import type { AttributeMeta, DtsTypeDeclarationModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
+import type { AttributeMeta, DtsTypeDeclarationModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta, ComponentProfileMeta } from './types'
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from './dts-type-meta-ops'
 import {
@@ -149,6 +151,7 @@ export function buildDtsClassModelBundle(
   reportProgress(options, { phase: 'read-files', total })
   const files: Record<string, DtsClassModelBundleManifest['files'][string]> = {}
   const classIndex: Record<string, DtsClassModelBundleManifest['classIndex'][string]> = {}
+  const componentIndex = createMutableComponentIndex()
   const duplicates: Array<{ className: string; keptFile: string; skippedFile: string }> = []
   const semanticGaps: DtsClassModelSemanticGap[] = []
   const projectedFiles: ProjectedBundleFile[] = []
@@ -208,6 +211,15 @@ export function buildDtsClassModelBundle(
         sourcePath,
         file: normalizedBundleFile,
       }
+      const model = projection.models[className]
+      if (model !== undefined) {
+        addComponentIndexEntry(componentIndex, {
+          className,
+          sourcePath,
+          file: normalizedBundleFile,
+          component: componentProfileFromModel(model),
+        })
+      }
     }
 
     const current = index + 1
@@ -260,6 +272,7 @@ export function buildDtsClassModelBundle(
     scannedFileCount: Object.keys(files).length,
     files: sortRecord(files),
     classIndex: sortRecord(classIndex),
+    ...componentIndexProperty(componentIndex),
     ...(duplicates.length === 0 ? {} : { duplicates: sortDuplicateRecords(duplicates) }),
   }
   const manifestPath = resolve(outputDir, 'manifest.json')
@@ -399,6 +412,88 @@ function reportProgress(
   options.onProgress?.(event)
 }
 
+type MutableComponentIndex = {
+  entries: Record<string, DtsClassModelBundleComponentEntry>
+  byName: Record<string, string[]>
+  byType: Record<string, string[]>
+  byLevel: Record<string, string[]>
+  byLayer: Record<string, string[]>
+  byDirectory: Record<string, string[]>
+}
+
+type ComponentIndexEntryCommand = Readonly<{
+  className: string
+  sourcePath: string
+  file: string
+  component: ComponentProfileMeta | undefined
+}>
+
+function createMutableComponentIndex(): MutableComponentIndex {
+  return {
+    entries: {},
+    byName: {},
+    byType: {},
+    byLevel: {},
+    byLayer: {},
+    byDirectory: {},
+  }
+}
+
+function addComponentIndexEntry(
+  index: MutableComponentIndex,
+  command: ComponentIndexEntryCommand,
+): void {
+  const component = command.component
+  if (component === undefined || Object.keys(component).length === 0) return
+  index.entries[command.className] = {
+    className: command.className,
+    sourcePath: command.sourcePath,
+    file: command.file,
+    component,
+  }
+  addComponentIndexValue(index.byName, component.name, command.className)
+  addComponentIndexValue(index.byType, component.type, command.className)
+  addComponentIndexValue(index.byLevel, component.level, command.className)
+  addComponentIndexValue(index.byLayer, component.layer, command.className)
+  addComponentIndexValue(index.byDirectory, component.directory, command.className)
+}
+
+function addComponentIndexValue(
+  bucket: Record<string, string[]>,
+  key: string | undefined,
+  className: string,
+): void {
+  if (key === undefined || key.length === 0) return
+  bucket[key] ??= []
+  bucket[key].push(className)
+}
+
+function componentIndexProperty(
+  index: MutableComponentIndex,
+): { componentIndex?: DtsClassModelBundleComponentIndex } {
+  if (Object.keys(index.entries).length === 0) return {}
+  return {
+    componentIndex: {
+      entries: sortRecord(index.entries),
+      byName: sortComponentIndexBuckets(index.byName),
+      byType: sortComponentIndexBuckets(index.byType),
+      byLevel: sortComponentIndexBuckets(index.byLevel),
+      byLayer: sortComponentIndexBuckets(index.byLayer),
+      byDirectory: sortComponentIndexBuckets(index.byDirectory),
+    },
+  }
+}
+
+function sortComponentIndexBuckets(
+  buckets: Record<string, string[]>,
+): Record<string, readonly string[]> {
+  const sorted: Record<string, readonly string[]> = {}
+  for (const [key, values] of Object.entries(sortRecord(buckets))) {
+    sorted[key] = [...new Set(values)].sort((left, right) => left.localeCompare(right))
+  }
+  return sorted
+}
+
 function compactDtsFileProjectionForBundle(
   projection: DtsFileProjectionDocument,
   refContext: BundleSchemaRefContext,
@@ -427,13 +522,29 @@ function compactDtsFileProjectionForBundle(
 }
 
 function compactPersistedClassModelForBundle(model: DtsTypeDeclarationModel): Record<string, unknown> {
+  const component = componentProfileFromModel(model)
   return {
     name: model.name,
     jsdoc: model.jsdoc,
     declarationKind: model.declarationKind,
-    ...(model.provenance === undefined ? {} : { provenance: model.provenance }),
+    ...(component === undefined ? {} : { component }),
     ...compactPersistedShapePayloadForBundle(model),
   }
+}
+
+function componentProfileFromModel(model: DtsTypeDeclarationModel): ComponentProfileMeta | undefined {
+  const explicit = model.component
+  if (explicit !== undefined && Object.keys(explicit).length > 0) return explicit
+  const provenance = model.provenance
+  if (provenance === undefined) return undefined
+  const component: ComponentProfileMeta = {
+    ...(provenance.componentName === undefined ? {} : { name: provenance.componentName }),
+    ...(provenance.componentType === undefined ? {} : { type: provenance.componentType }),
+    ...(provenance.componentLevel === undefined ? {} : { level: provenance.componentLevel }),
+    ...(provenance.componentLayer === undefined ? {} : { layer: provenance.componentLayer }),
+    ...(provenance.componentDirectory === undefined ? {} : { directory: provenance.componentDirectory }),
+  }
+  return Object.keys(component).length === 0 ? undefined : component
 }
 
 function compactPersistedShapePayloadForBundle(model: DtsTypeDeclarationModel): Record<string, unknown> {
@@ -507,7 +618,6 @@ function compactPersistedConstructorMetaForBundle(constructorMeta: ConstructorMe
       ? {}
       : { parameterStyle: constructorMeta.parameterStyle }),
     parameters: constructorMeta.parameters ?? [],
-    ...(constructorMeta.provenance === undefined ? {} : { provenance: constructorMeta.provenance }),
   }
 }
 
@@ -517,7 +627,6 @@ function compactPersistedAttributeMetaForBundle(attribute: AttributeMeta): Recor
     ...(attribute.jsdoc.length === 0 ? {} : { jsdoc: attribute.jsdoc }),
     readable: attribute.readable,
     writable: attribute.writable,
-    ...(attribute.provenance === undefined ? {} : { provenance: attribute.provenance }),
   }
 }
 
@@ -530,7 +639,6 @@ function compactPersistedMethodMetaForBundle(method: MethodMeta): Record<string,
     ...(method.type === undefined ? {} : { type: method.type }),
     ...(method.signatureText === undefined ? {} : { signatureText: method.signatureText }),
     ...(method.takesContext === undefined ? {} : { takesContext: method.takesContext }),
-    ...(method.provenance === undefined ? {} : { provenance: method.provenance }),
   }
 }
 

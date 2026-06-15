@@ -216,12 +216,6 @@
       "name": "UseContainerGridOptions",
       "jsdoc": "`useContainerGrid` 输入选项。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/runtime/container-layout.ts",
-        "line": 19,
-        "className": "UseContainerGridOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 子节点数组（响应式 getter 或 ref）。 */\n    children: MaybeRefOrGetter<SparkNode[]>;\n    /** 网格列数（默认 24）。 */\n    columns?: MaybeRefOrGetter<number>;\n    /** 网格间距（默认 0px，可为数字/CSS 字符串）。 */\n    gap?: MaybeRefOrGetter<number | string>;\n    /** 行高模板（默认 minmax(32px, auto)）。 */\n    autoRows?: MaybeRefOrGetter<string>;\n    /** auto-fit 最小宽度（如 '200px'），设置则启用 auto-fit 模式。 */\n    autoFitMinWidth?: MaybeRefOrGetter<string>;\n    /** 默认列跨度（子节点未指定时使用）。 */\n    defaultColSpan?: MaybeRefOrGetter<number>;\n    /** 最后一行不满时自动拉宽所有子元素以填满行宽。 */\n    autoFillLastRow?: boolean;\n}",
         "members": {
@@ -276,12 +270,6 @@
       "name": "ContainerGridState",
       "jsdoc": "`useContainerGrid` 返回状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/runtime/container-layout.ts",
-        "line": 36,
-        "className": "ContainerGridState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 网格容器的 CSS 样式对象（display: grid + gridTemplateColumns 等）。 */\n    gridStyle: ComputedRef<CSSProperties>;\n    /** 计算子元素的 CSS 样式（传入节点和索引）。 */\n    getChildGridStyle: (child: SparkNode, index?: number) => CSSProperties;\n    /** 过滤后的子节点数组（供模板 v-for 遍历）。 */\n    gridChildren: ComputedRef<SparkNode[]>;\n}",
         "members": {
@@ -336,12 +324,6 @@
       "name": "UseCompositeItemGridOptions",
       "jsdoc": "Use Composite Item Grid Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/runtime/container-layout.ts",
-        "line": 55,
-        "className": "UseCompositeItemGridOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 子节点集合。 */\n    children?: () => SparkNode['children'] | undefined;\n    /** 复合容器内容区 class；空值会被标准化为空字符串。 */\n    bodyClass?: () => string | null | undefined;\n    /** 复合容器内容区列数；字符串/数字都会被标准化为正整数。 */\n    gridColumns?: () => string | number | null | undefined;\n    /** 复合容器内容区自动行高；仅接受有效字符串。 */\n    gridAutoRows?: () => string | null | undefined;\n    /** 复合容器内容区间距；数字转 px，字符串按 CSS 原样透传。 */\n    gridGap?: () => string | number | null | undefined;\n}",
         "members": {
@@ -462,12 +444,6 @@
       "name": "CompositeItemGridState",
       "jsdoc": "`useCompositeItemGrid` 返回状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/runtime/container-layout.ts",
-        "line": 68,
-        "className": "CompositeItemGridState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** content Children 字段。 */\n    contentChildren: ComputedRef<SparkNode[]>;\n    /** content Body Class 字段。 */\n    contentBodyClass: ComputedRef<string>;\n    /** content Grid Style 字段。 */\n    contentGridStyle: ComputedRef<CSSProperties>;\n    /** get Content Child Grid Style 回调。 */\n    getContentChildGridStyle: (child: SparkNode, index?: number) => CSSProperties;\n}",
         "members": {

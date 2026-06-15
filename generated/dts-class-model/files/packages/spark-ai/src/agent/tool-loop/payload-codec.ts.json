@@ -58,12 +58,6 @@
       "name": "ToolArgsParseError",
       "jsdoc": "Tool Args Parse Error 的错误信息。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-loop/payload-codec.ts",
-        "line": 11,
-        "className": "ToolArgsParseError",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Tool Args Parse Error 实例。",

@@ -27,12 +27,6 @@
       "name": "CallFunc",
       "jsdoc": "沙箱函数调用签名",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/binding/bind-normalize.ts",
-        "line": 35,
-        "className": "CallFunc",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
         "members": {}

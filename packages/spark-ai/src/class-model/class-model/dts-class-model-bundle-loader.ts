@@ -5,9 +5,18 @@
  * AI用途：当需要判断 DtsTypeDeclarationModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonSchema } from '../../json'
-import type { AttributeMeta, DtsTypeDeclarationModel, ConstructorMeta, DtsTypeMeta, MethodMeta } from './types'
+import type {
+  AttributeMeta,
+  DtsTypeDeclarationModel,
+  ConstructorMeta,
+  DtsTypeMeta,
+  MethodMeta,
+  ComponentClassModelLayer,
+  ComponentClassModelLevel,
+} from './types'
 import { resolveMethodReturnType, visitDtsTypeMeta } from './dts-type-meta-ops'
 import type {
+  DtsClassModelBundleComponentEntry,
   DtsClassModelBundleManifest,
   DtsFileProjectionDocument,
 } from './dts-bundle-types'
@@ -27,6 +36,20 @@ export type DtsClassModelBundleLoaderOptions = Readonly<{
   manifestUrl: string
   /** 自定义 JSON 获取函数；默认使用 fetch + JSON.parse，Node 环境需注入 fs-based 实现。 */
   fetchJson?: (url: string) => Promise<unknown>
+}>
+
+/** Component index query；所有字段是 AND 条件，单字段命中走 manifest 倒排索引。 */
+export type DtsClassModelComponentQuery = Readonly<{
+  /** 精确匹配 component.name，如 RendererTable。 */
+  name?: string
+  /** 精确匹配 component.type，如 r-table。 */
+  type?: string
+  /** 精确匹配 component.level，如 table-level / row-level / field-level。 */
+  level?: ComponentClassModelLevel
+  /** 精确匹配 component.layer，如 data-view-container / row-scope / data-field。 */
+  layer?: ComponentClassModelLayer
+  /** 精确匹配 component.directory，如 containers/data-views。 */
+  directory?: string
 }>
 
 /** Dts Class Model Bundle Loader 的语义模型。 */
@@ -98,7 +121,7 @@ public async ensureSourcePath(sourcePath: string): Promise<DtsFileProjectionDocu
   }
 
     /** 执行 ensure Reachable Closure 操作。 */
-public async ensureReachableClosure(rootClassName: string): Promise<readonly string[]> {
+  public async ensureReachableClosure(rootClassName: string): Promise<readonly string[]> {
     await this.ensureClassName(rootClassName)
     const manifest = await this.loadManifest()
     const visited = new Set<string>()
@@ -115,6 +138,24 @@ public async ensureReachableClosure(rootClassName: string): Promise<readonly str
       }
     }
     return reachable
+  }
+
+    /** 按 manifest componentIndex 查询组件模型，不扫全量 shard。 */
+  public async listComponentIndexEntries(
+    query: DtsClassModelComponentQuery = {},
+  ): Promise<readonly DtsClassModelBundleComponentEntry[]> {
+    const manifest = await this.loadManifest()
+    return listManifestComponentEntries(manifest, query)
+  }
+
+    /** 按 componentIndex 命中结果加载对应 shard，并返回 className 列表。 */
+  public async ensureComponentQuery(
+    query: DtsClassModelComponentQuery,
+  ): Promise<readonly string[]> {
+    const entries = await this.listComponentIndexEntries(query)
+    const sourcePaths = new Set(entries.map(entry => entry.sourcePath))
+    for (const sourcePath of sourcePaths) await this.ensureSourcePath(sourcePath)
+    return entries.map(entry => entry.className)
   }
 
     /**
@@ -180,6 +221,53 @@ function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: DtsT
     }
   }
   return [...linked]
+}
+
+function listManifestComponentEntries(
+  manifest: DtsClassModelBundleManifest,
+  query: DtsClassModelComponentQuery,
+): readonly DtsClassModelBundleComponentEntry[] {
+  const componentIndex = manifest.componentIndex
+  if (componentIndex === undefined) return []
+  const classNames = candidateComponentClassNames(componentIndex, query)
+  return classNames
+    .map(className => componentIndex.entries[className])
+    .filter((entry): entry is DtsClassModelBundleComponentEntry =>
+      entry !== undefined && componentEntryMatchesQuery(entry, query)
+    )
+}
+
+function candidateComponentClassNames(
+  componentIndex: NonNullable<DtsClassModelBundleManifest['componentIndex']>,
+  query: DtsClassModelComponentQuery,
+): readonly string[] {
+  const buckets: Array<readonly string[]> = []
+  if (query.name !== undefined) buckets.push(componentIndex.byName[query.name] ?? [])
+  if (query.type !== undefined) buckets.push(componentIndex.byType[query.type] ?? [])
+  if (query.level !== undefined) buckets.push(componentIndex.byLevel[query.level] ?? [])
+  if (query.layer !== undefined) buckets.push(componentIndex.byLayer[query.layer] ?? [])
+  if (query.directory !== undefined) buckets.push(componentIndex.byDirectory[query.directory] ?? [])
+  if (buckets.length === 0) return Object.keys(componentIndex.entries)
+  return intersectClassNameBuckets(buckets)
+}
+
+function intersectClassNameBuckets(buckets: ReadonlyArray<readonly string[]>): readonly string[] {
+  const [first, ...rest] = [...buckets].sort((left, right) => left.length - right.length)
+  if (first === undefined) return []
+  const remaining = rest.map(bucket => new Set(bucket))
+  return first.filter(className => remaining.every(bucket => bucket.has(className)))
+}
+
+function componentEntryMatchesQuery(
+  entry: DtsClassModelBundleComponentEntry,
+  query: DtsClassModelComponentQuery,
+): boolean {
+  const component = entry.component
+  return (query.name === undefined || component.name === query.name)
+    && (query.type === undefined || component.type === query.type)
+    && (query.level === undefined || component.level === query.level)
+    && (query.layer === undefined || component.layer === query.layer)
+    && (query.directory === undefined || component.directory === query.directory)
 }
 
 function collectFromDtsType(

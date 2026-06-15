@@ -369,12 +369,6 @@
       "name": "HttpClientBase",
       "jsdoc": "Http Client Base 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/HttpClientBase.ts",
-        "line": 31,
-        "className": "HttpClientBase",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Http Client Base 实例。",

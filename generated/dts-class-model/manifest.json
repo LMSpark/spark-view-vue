@@ -795,6 +795,8 @@
           "DtsFileModuleSemanticMeta",
           "DtsClassModelBundleFileEntry",
           "DtsClassModelBundleClassEntry",
+          "DtsClassModelBundleComponentEntry",
+          "DtsClassModelBundleComponentIndex",
           "DtsClassModelBundleManifest",
           "DtsClassModelDuplicateRecord",
           "DtsClassModelSemanticGapKind",
@@ -829,6 +831,7 @@
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "DtsClassModelBundleLoaderOptions",
+          "DtsClassModelComponentQuery",
           "DtsClassModelBundleLoader"
         ]
       }
@@ -1019,7 +1022,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/read-dts-class-model-bundle-json",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json\n职责：结构化校验 DTS DtsTypeDeclarationModel manifest 和 shard JSON，读取 module、model、attribute、method、provenance 与 relation 字段。\n边界：只做 JSON 协议解析和 fail-fast 校验，不生成 bundle、不访问网络，也不修复缺失语义。\nAI用途：运行时或测试加载 generated/dts-class-model 失败时，用本模块确认是哪一层 JSON 字段不符合协议。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json\n职责：结构化校验 DTS DtsTypeDeclarationModel manifest 和 shard JSON，读取 module、model、component、attribute、method 与 relation 字段。\n边界：只做 JSON 协议解析和 fail-fast 校验，不生成 bundle、不访问网络，也不修复缺失语义。\nAI用途：运行时或测试加载 generated/dts-class-model 失败时，用本模块确认是哪一层 JSON 字段不符合协议。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
@@ -1065,6 +1068,7 @@
         "symbols": [
           "ClassModelDocument",
           "SourceProvenanceMeta",
+          "ComponentProfileMeta",
           "ComponentClassModelLevel",
           "ComponentClassModelLayer",
           "ClassModelDeclarationRelationKind",
@@ -4760,7 +4764,12 @@
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "RendererFieldScopeProps"
-        ]
+        ],
+        "componentName": "RendererFieldScope",
+        "componentType": "r-field-scope",
+        "componentLevel": "row-level",
+        "componentLayer": "row-scope",
+        "componentDirectory": "containers/support"
       }
     },
     "packages/spark-component/src/components/containers/support/RendererHostScope.vue": {
@@ -4773,7 +4782,12 @@
         "modulePath": "components/containers/support/RendererHostScope",
         "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/RendererHostScope\n职责：维护 @spark-appworks/spark-component 中 components/containers/support/RendererHostScope 的模块能力，围绕 模块入口、副作用注册或内部组合逻辑 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/containers/support/RendererHostScope 的声明、导出和使用边界时，从本模块开始。",
         "jsdocSource": "source-file-jsdoc",
-        "symbols": []
+        "symbols": [],
+        "componentName": "RendererHostScope",
+        "componentType": "r-host-scope",
+        "componentLevel": "row-level",
+        "componentLayer": "row-scope",
+        "componentDirectory": "containers/support"
       }
     },
     "packages/spark-component/src/components/containers/support/row-mirror-sync.ts": {
@@ -12636,6 +12650,10 @@
       "sourcePath": "packages/spark-data/src/types.ts",
       "file": "files/packages/spark-data/src/types.ts.json"
     },
+    "ComponentProfileMeta": {
+      "sourcePath": "packages/spark-ai/src/class-model/class-model/types.ts",
+      "file": "files/packages/spark-ai/src/class-model/class-model/types.ts.json"
+    },
     "ComponentRegistrationArgs": {
       "sourcePath": "packages/spark-component/src/core/types.ts",
       "file": "files/packages/spark-component/src/core/types.ts.json"
@@ -13308,6 +13326,14 @@
       "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
       "file": "files/packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts.json"
     },
+    "DtsClassModelBundleComponentEntry": {
+      "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
+      "file": "files/packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts.json"
+    },
+    "DtsClassModelBundleComponentIndex": {
+      "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
+      "file": "files/packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts.json"
+    },
     "DtsClassModelBundleFileEntry": {
       "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
       "file": "files/packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts.json"
@@ -13323,6 +13349,10 @@
     "DtsClassModelBundleManifest": {
       "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
       "file": "files/packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts.json"
+    },
+    "DtsClassModelComponentQuery": {
+      "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts",
+      "file": "files/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts.json"
     },
     "DtsClassModelDuplicateRecord": {
       "sourcePath": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
@@ -16287,6 +16317,3410 @@
     "WorkerClassModelKnowledgeProvider": {
       "sourcePath": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
       "file": "files/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts.json"
+    }
+  },
+  "componentIndex": {
+    "entries": {
+      "ActionButtonRuntime": {
+        "className": "ActionButtonRuntime",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/useActionButtonRuntime.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/useActionButtonRuntime.ts.json",
+        "component": {
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "ActionButtonRuntimeOptions": {
+        "className": "ActionButtonRuntimeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/useActionButtonRuntime.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/useActionButtonRuntime.ts.json",
+        "component": {
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "AggregateResultState": {
+        "className": "AggregateResultState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "AiSessionTracePanelProps": {
+        "className": "AiSessionTracePanelProps",
+        "sourcePath": "packages/spark-component/src/ai/components/AiSessionTracePanel.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/AiSessionTracePanel.props.ts.json",
+        "component": {
+          "name": "AiSessionTracePanel"
+        }
+      },
+      "AiToolApprovalCardEmits": {
+        "className": "AiToolApprovalCardEmits",
+        "sourcePath": "packages/spark-component/src/ai/components/AiToolApprovalCard.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/AiToolApprovalCard.props.ts.json",
+        "component": {
+          "name": "AiToolApprovalCard"
+        }
+      },
+      "AiToolApprovalCardProps": {
+        "className": "AiToolApprovalCardProps",
+        "sourcePath": "packages/spark-component/src/ai/components/AiToolApprovalCard.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/AiToolApprovalCard.props.ts.json",
+        "component": {
+          "name": "AiToolApprovalCard"
+        }
+      },
+      "AiToolApprovalPanelProps": {
+        "className": "AiToolApprovalPanelProps",
+        "sourcePath": "packages/spark-component/src/ai/components/AiToolApprovalPanel.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.ts.json",
+        "component": {
+          "name": "AiToolApprovalPanel"
+        }
+      },
+      "BasicFieldProps": {
+        "className": "BasicFieldProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "BeforeRenderContext": {
+        "className": "BeforeRenderContext",
+        "sourcePath": "packages/spark-component/src/components/support/beforeRender.ts",
+        "file": "files/packages/spark-component/src/components/support/beforeRender.ts.json",
+        "component": {
+          "level": "infrastructure",
+          "layer": "support",
+          "directory": "support"
+        }
+      },
+      "BeforeRenderState": {
+        "className": "BeforeRenderState",
+        "sourcePath": "packages/spark-component/src/components/support/beforeRender.ts",
+        "file": "files/packages/spark-component/src/components/support/beforeRender.ts.json",
+        "component": {
+          "level": "infrastructure",
+          "layer": "support",
+          "directory": "support"
+        }
+      },
+      "BoundBooleanColumn": {
+        "className": "BoundBooleanColumn",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "CascaderPath": {
+        "className": "CascaderPath",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCascader.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCascader.props.ts.json",
+        "component": {
+          "name": "FieldCascader",
+          "type": "r-cascader",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "CascaderValue": {
+        "className": "CascaderValue",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCascader.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCascader.props.ts.json",
+        "component": {
+          "name": "FieldCascader",
+          "type": "r-cascader",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "CheckboxGroupMultiValue": {
+        "className": "CheckboxGroupMultiValue",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.props.ts.json",
+        "component": {
+          "name": "FieldCheckboxGroup",
+          "type": "r-checkbox-group",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "CommitValueOptions": {
+        "className": "CommitValueOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/state.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/state.ts.json",
+        "component": {
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "ContainerDataSourceState": {
+        "className": "ContainerDataSourceState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "ContainerDataViewContextState": {
+        "className": "ContainerDataViewContextState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "ControlledFieldStateLike": {
+        "className": "ControlledFieldStateLike",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "CreateContainerCrudContextOptions": {
+        "className": "CreateContainerCrudContextOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/zero-code-shared.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/zero-code-shared.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataSourceLoggerLike": {
+        "className": "DataSourceLoggerLike",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewDisplayState": {
+        "className": "DataViewDisplayState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewIdentityState": {
+        "className": "DataViewIdentityState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewPermissionState": {
+        "className": "DataViewPermissionState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewRequestAndAggregateState": {
+        "className": "DataViewRequestAndAggregateState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewRowsState": {
+        "className": "DataViewRowsState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewRuntimeState": {
+        "className": "DataViewRuntimeState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DataViewState": {
+        "className": "DataViewState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "DatePickerType": {
+        "className": "DatePickerType",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldDate.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldDate.props.ts.json",
+        "component": {
+          "name": "FieldDate",
+          "type": "r-date",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "DropdownItem": {
+        "className": "DropdownItem",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererDropdown.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererDropdown.props.ts.json",
+        "component": {
+          "name": "RendererDropdown",
+          "type": "r-dropdown",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "ElTreeComponent": {
+        "className": "ElTreeComponent",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "ElTreeNode": {
+        "className": "ElTreeNode",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "FetchSuggestionsCallback": {
+        "className": "FetchSuggestionsCallback",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.ts.json",
+        "component": {
+          "name": "FieldAutocomplete",
+          "type": "r-autocomplete",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "FieldContextStateLike": {
+        "className": "FieldContextStateLike",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "FieldControlProps": {
+        "className": "FieldControlProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "FieldValueUpdateEmits": {
+        "className": "FieldValueUpdateEmits",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "FieldValueUpdateEmitter": {
+        "className": "FieldValueUpdateEmitter",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "FileBrowserFieldStateOptions": {
+        "className": "FileBrowserFieldStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "InlineAlign": {
+        "className": "InlineAlign",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts.json",
+        "component": {
+          "name": "RendererToolbar",
+          "type": "r-toolbar",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "InlineJustify": {
+        "className": "InlineJustify",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts.json",
+        "component": {
+          "name": "RendererToolbar",
+          "type": "r-toolbar",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "JsonTreeEditorProps": {
+        "className": "JsonTreeEditorProps",
+        "sourcePath": "packages/spark-component/src/components/editors/JsonTreeEditor.vue",
+        "file": "files/packages/spark-component/src/components/editors/JsonTreeEditor.vue.json",
+        "component": {
+          "name": "JsonTreeEditor",
+          "level": "infrastructure",
+          "layer": "editor",
+          "directory": "editors"
+        }
+      },
+      "MergeBeforeRenderOptions": {
+        "className": "MergeBeforeRenderOptions",
+        "sourcePath": "packages/spark-component/src/components/support/beforeRender.ts",
+        "file": "files/packages/spark-component/src/components/support/beforeRender.ts.json",
+        "component": {
+          "level": "infrastructure",
+          "layer": "support",
+          "directory": "support"
+        }
+      },
+      "MultiValue": {
+        "className": "MultiValue",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldMultiSelect.props.ts.json",
+        "component": {
+          "name": "FieldMultiSelect",
+          "type": "r-multi-select",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "NativeTableLike": {
+        "className": "NativeTableLike",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTable/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTable/zero-code.ts.json",
+        "component": {
+          "name": "RendererTable",
+          "type": "r-table",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "NativeTreeLike": {
+        "className": "NativeTreeLike",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "NativeTreeNodeLike": {
+        "className": "NativeTreeNodeLike",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "OptionFieldStateProps": {
+        "className": "OptionFieldStateProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "Props": {
+        "className": "Props",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.json",
+        "component": {
+          "name": "RendererCollapseItem",
+          "type": "r-collapse-item",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RAlertProps": {
+        "className": "RAlertProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.ts.json",
+        "component": {
+          "name": "DisplayAlert",
+          "type": "r-alert",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RAnchorLinkProps": {
+        "className": "RAnchorLinkProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.ts.json",
+        "component": {
+          "name": "RendererAnchorLink",
+          "type": "r-anchor-link",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RAnchorProps": {
+        "className": "RAnchorProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererAnchor.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererAnchor.props.ts.json",
+        "component": {
+          "name": "RendererAnchor",
+          "type": "r-anchor",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RAutocompleteProps": {
+        "className": "RAutocompleteProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.ts.json",
+        "component": {
+          "name": "FieldAutocomplete",
+          "type": "r-autocomplete",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RAvatarProps": {
+        "className": "RAvatarProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayAvatar.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.ts.json",
+        "component": {
+          "name": "DisplayAvatar",
+          "type": "r-avatar",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RBadgeProps": {
+        "className": "RBadgeProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayBadge.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayBadge.props.ts.json",
+        "component": {
+          "name": "DisplayBadge",
+          "type": "r-badge",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RBreadcrumbItemProps": {
+        "className": "RBreadcrumbItemProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumbItem.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumbItem.props.ts.json",
+        "component": {
+          "name": "DisplayBreadcrumbItem",
+          "type": "r-breadcrumb-item",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RBreadcrumbProps": {
+        "className": "RBreadcrumbProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.ts.json",
+        "component": {
+          "name": "DisplayBreadcrumb",
+          "type": "r-breadcrumb",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RButtonProps": {
+        "className": "RButtonProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererButton.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+        "component": {
+          "name": "RendererButton",
+          "type": "r-button",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RCardProps": {
+        "className": "RCardProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererCard.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererCard.props.ts.json",
+        "component": {
+          "name": "RendererCard",
+          "type": "r-card",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RCascaderProps": {
+        "className": "RCascaderProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCascader.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCascader.props.ts.json",
+        "component": {
+          "name": "FieldCascader",
+          "type": "r-cascader",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RCheckboxGroupProps": {
+        "className": "RCheckboxGroupProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.props.ts.json",
+        "component": {
+          "name": "FieldCheckboxGroup",
+          "type": "r-checkbox-group",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RCheckboxProps": {
+        "className": "RCheckboxProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.ts.json",
+        "component": {
+          "name": "FieldCheckbox",
+          "type": "r-checkbox",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RCheckTagProps": {
+        "className": "RCheckTagProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldCheckTag.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldCheckTag.props.ts.json",
+        "component": {
+          "name": "FieldCheckTag",
+          "type": "r-check-tag",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RCollapseProps": {
+        "className": "RCollapseProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.ts.json",
+        "component": {
+          "name": "RendererCollapse",
+          "type": "r-collapse",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RColorProps": {
+        "className": "RColorProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldColor.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldColor.props.ts.json",
+        "component": {
+          "name": "FieldColor",
+          "type": "r-color",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RDateProps": {
+        "className": "RDateProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldDate.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldDate.props.ts.json",
+        "component": {
+          "name": "FieldDate",
+          "type": "r-date",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RDescriptionsItemProps": {
+        "className": "RDescriptionsItemProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptionsItem.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayDescriptionsItem.props.ts.json",
+        "component": {
+          "name": "DisplayDescriptionsItem",
+          "type": "r-descriptions-item",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RDescriptionsProps": {
+        "className": "RDescriptionsProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptions.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayDescriptions.props.ts.json",
+        "component": {
+          "name": "DisplayDescriptions",
+          "type": "r-descriptions",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RDetailProps": {
+        "className": "RDetailProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json",
+        "component": {
+          "name": "RendererDetail",
+          "type": "r-detail",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RDialogProps": {
+        "className": "RDialogProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererDialog/RendererDialog.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererDialog/RendererDialog.props.ts.json",
+        "component": {
+          "name": "RendererDialog",
+          "type": "r-dialog",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RDisplayCalendarProps": {
+        "className": "RDisplayCalendarProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayCalendar.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayCalendar.props.ts.json",
+        "component": {
+          "name": "DisplayCalendar",
+          "type": "display-calendar",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RDisplayCountdownProps": {
+        "className": "RDisplayCountdownProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.ts.json",
+        "component": {
+          "name": "DisplayCountdown",
+          "type": "display-countdown",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RDisplayIconProps": {
+        "className": "RDisplayIconProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.ts.json",
+        "component": {
+          "name": "DisplayIcon",
+          "type": "display-icon",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RDisplayImageProps": {
+        "className": "RDisplayImageProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayImage.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayImage.props.ts.json",
+        "component": {
+          "name": "DisplayImage",
+          "type": "display-image",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RDividerProps": {
+        "className": "RDividerProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererDivider.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererDivider.props.ts.json",
+        "component": {
+          "name": "RendererDivider",
+          "type": "r-divider",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RDrawerProps": {
+        "className": "RDrawerProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.ts.json",
+        "component": {
+          "name": "RendererDrawer",
+          "type": "r-drawer",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RDropdownProps": {
+        "className": "RDropdownProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererDropdown.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererDropdown.props.ts.json",
+        "component": {
+          "name": "RendererDropdown",
+          "type": "r-dropdown",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "REditorProps": {
+        "className": "REditorProps",
+        "sourcePath": "packages/spark-component/src/components/containers/zones/RendererEditor.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/zones/RendererEditor.types.ts.json",
+        "component": {
+          "name": "RendererEditor",
+          "type": "r-editor",
+          "level": "container",
+          "layer": "zone-container",
+          "directory": "containers/zones"
+        }
+      },
+      "REmptyProps": {
+        "className": "REmptyProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayEmpty.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayEmpty.props.ts.json",
+        "component": {
+          "name": "DisplayEmpty",
+          "type": "r-empty",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RendererCollapseApi": {
+        "className": "RendererCollapseApi",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererCollapse/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererCollapse/types.ts.json",
+        "component": {
+          "name": "RendererCollapse",
+          "type": "r-collapse",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererCollapseZeroCodeOptions": {
+        "className": "RendererCollapseZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererCollapse/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererCollapse/zero-code.ts.json",
+        "component": {
+          "name": "RendererCollapse",
+          "type": "r-collapse",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererDetailApi": {
+        "className": "RendererDetailApi",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererDetail/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererDetail/types.ts.json",
+        "component": {
+          "name": "RendererDetail",
+          "type": "r-detail",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererDetailZeroCodeOptions": {
+        "className": "RendererDetailZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererDetail/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererDetail/zero-code.ts.json",
+        "component": {
+          "name": "RendererDetail",
+          "type": "r-detail",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererFieldScopeProps": {
+        "className": "RendererFieldScopeProps",
+        "sourcePath": "packages/spark-component/src/components/containers/support/RendererFieldScope.vue",
+        "file": "files/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.json",
+        "component": {
+          "name": "RendererFieldScope",
+          "type": "r-field-scope",
+          "level": "row-level",
+          "layer": "row-scope",
+          "directory": "containers/support"
+        }
+      },
+      "RendererFormApi": {
+        "className": "RendererFormApi",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererForm/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererForm/types.ts.json",
+        "component": {
+          "name": "RendererForm",
+          "type": "r-form",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererFormZeroCodeOptions": {
+        "className": "RendererFormZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.ts.json",
+        "component": {
+          "name": "RendererForm",
+          "type": "r-form",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererListApi": {
+        "className": "RendererListApi",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererList/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererList/types.ts.json",
+        "component": {
+          "name": "RendererList",
+          "type": "r-list",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererListZeroCodeOptions": {
+        "className": "RendererListZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererList/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererList/zero-code.ts.json",
+        "component": {
+          "name": "RendererList",
+          "type": "r-list",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererSectionApi": {
+        "className": "RendererSectionApi",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSection/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSection/types.ts.json",
+        "component": {
+          "name": "RendererSection",
+          "type": "r-section",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererSectionZeroCodeOptions": {
+        "className": "RendererSectionZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSection/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSection/zero-code.ts.json",
+        "component": {
+          "name": "RendererSection",
+          "type": "r-section",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererStepsApi": {
+        "className": "RendererStepsApi",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSteps/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSteps/types.ts.json",
+        "component": {
+          "name": "RendererSteps",
+          "type": "r-steps",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererStepsZeroCodeOptions": {
+        "className": "RendererStepsZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.ts.json",
+        "component": {
+          "name": "RendererSteps",
+          "type": "r-steps",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererTableApi": {
+        "className": "RendererTableApi",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTable/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTable/types.ts.json",
+        "component": {
+          "name": "RendererTable",
+          "type": "r-table",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTableZeroCodeOptions": {
+        "className": "RendererTableZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTable/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTable/zero-code.ts.json",
+        "component": {
+          "name": "RendererTable",
+          "type": "r-table",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTabsApi": {
+        "className": "RendererTabsApi",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTabs/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTabs/types.ts.json",
+        "component": {
+          "name": "RendererTabs",
+          "type": "r-tabs",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererTabsZeroCodeOptions": {
+        "className": "RendererTabsZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTabs/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTabs/zero-code.ts.json",
+        "component": {
+          "name": "RendererTabs",
+          "type": "r-tabs",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RendererTreeApi": {
+        "className": "RendererTreeApi",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/types.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreeBehaviorProps": {
+        "className": "RendererTreeBehaviorProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-enderer-tree-behavior",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreeInputOptions": {
+        "className": "RendererTreeInputOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/input.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/input.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreeInputProps": {
+        "className": "RendererTreeInputProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/input.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/input.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-enderer-tree-input",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreePath": {
+        "className": "RendererTreePath",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTable/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTable/types.ts.json",
+        "component": {
+          "name": "RendererTable",
+          "type": "r-table",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreeViewState": {
+        "className": "RendererTreeViewState",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-tree-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-tree-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreeViewStateOptions": {
+        "className": "RendererTreeViewStateOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-tree-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-tree-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererTreeZeroCodeOptions": {
+        "className": "RendererTreeZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererVirtualCardApi": {
+        "className": "RendererVirtualCardApi",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/types.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/types.ts.json",
+        "component": {
+          "name": "RendererVirtualCard",
+          "type": "r-virtual-card",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RendererVirtualCardZeroCodeOptions": {
+        "className": "RendererVirtualCardZeroCodeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.ts.json",
+        "component": {
+          "name": "RendererVirtualCard",
+          "type": "r-virtual-card",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "REntityPickerProps": {
+        "className": "REntityPickerProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldEntityPicker.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldEntityPicker.props.ts.json",
+        "component": {
+          "name": "FieldEntityPicker",
+          "type": "r-entity-picker",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "ResolvedViewRef": {
+        "className": "ResolvedViewRef",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-runtime-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RFileBrowserProps": {
+        "className": "RFileBrowserProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldFileBrowser.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldFileBrowser.props.ts.json",
+        "component": {
+          "name": "FieldFileBrowser",
+          "type": "r-file-browser",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RFilePathProps": {
+        "className": "RFilePathProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldFilePath.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldFilePath.props.ts.json",
+        "component": {
+          "name": "FieldFilePath",
+          "type": "r-file-path",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RFilterProps": {
+        "className": "RFilterProps",
+        "sourcePath": "packages/spark-component/src/components/containers/zones/RendererFilter.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/zones/RendererFilter.types.ts.json",
+        "component": {
+          "name": "RendererFilter",
+          "type": "r-filter",
+          "level": "container",
+          "layer": "zone-container",
+          "directory": "containers/zones"
+        }
+      },
+      "RFooterProps": {
+        "className": "RFooterProps",
+        "sourcePath": "packages/spark-component/src/components/containers/zones/RendererFooter.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/zones/RendererFooter.types.ts.json",
+        "component": {
+          "name": "RendererFooter",
+          "type": "r-footer",
+          "level": "container",
+          "layer": "zone-container",
+          "directory": "containers/zones"
+        }
+      },
+      "RFormProps": {
+        "className": "RFormProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json",
+        "component": {
+          "name": "RendererForm",
+          "type": "r-form",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RHeaderProps": {
+        "className": "RHeaderProps",
+        "sourcePath": "packages/spark-component/src/components/containers/zones/RendererHeader.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/zones/RendererHeader.types.ts.json",
+        "component": {
+          "name": "RendererHeader",
+          "type": "r-header",
+          "level": "container",
+          "layer": "zone-container",
+          "directory": "containers/zones"
+        }
+      },
+      "RHtmlEditorProps": {
+        "className": "RHtmlEditorProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldHtmlEditor.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldHtmlEditor.props.ts.json",
+        "component": {
+          "name": "FieldHtmlEditor",
+          "type": "r-html-editor",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RIconProps": {
+        "className": "RIconProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldIcon.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldIcon.props.ts.json",
+        "component": {
+          "name": "FieldIcon",
+          "type": "r-icon",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RImageProps": {
+        "className": "RImageProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldImage.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldImage.props.ts.json",
+        "component": {
+          "name": "FieldImage",
+          "type": "r-image",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RLinkProps": {
+        "className": "RLinkProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererLink.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererLink.props.ts.json",
+        "component": {
+          "name": "RendererLink",
+          "type": "r-link",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RListProps": {
+        "className": "RListProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json",
+        "component": {
+          "name": "RendererList",
+          "type": "r-list",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RMentionOption": {
+        "className": "RMentionOption",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldMention.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldMention.props.ts.json",
+        "component": {
+          "name": "FieldMention",
+          "type": "r-mention",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RMentionProps": {
+        "className": "RMentionProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldMention.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldMention.props.ts.json",
+        "component": {
+          "name": "FieldMention",
+          "type": "r-mention",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RMultiSelectProps": {
+        "className": "RMultiSelectProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldMultiSelect.props.ts.json",
+        "component": {
+          "name": "FieldMultiSelect",
+          "type": "r-multi-select",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RNumberProps": {
+        "className": "RNumberProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldNumber.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldNumber.props.ts.json",
+        "component": {
+          "name": "FieldNumber",
+          "type": "r-number",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RPageHeaderProps": {
+        "className": "RPageHeaderProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererPageHeader.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererPageHeader.props.ts.json",
+        "component": {
+          "name": "RendererPageHeader",
+          "type": "r-page-header",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RPaginationProps": {
+        "className": "RPaginationProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayPagination.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayPagination.props.ts.json",
+        "component": {
+          "name": "DisplayPagination",
+          "type": "r-pagination",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RPopconfirmProps": {
+        "className": "RPopconfirmProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererPopconfirm.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererPopconfirm.props.ts.json",
+        "component": {
+          "name": "RendererPopconfirm",
+          "type": "r-popconfirm",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RPopoverProps": {
+        "className": "RPopoverProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererPopover.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererPopover.props.ts.json",
+        "component": {
+          "name": "RendererPopover",
+          "type": "r-popover",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RProgressProps": {
+        "className": "RProgressProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayProgress.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayProgress.props.ts.json",
+        "component": {
+          "name": "DisplayProgress",
+          "type": "r-progress",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RRadioProps": {
+        "className": "RRadioProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldRadio.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldRadio.props.ts.json",
+        "component": {
+          "name": "FieldRadio",
+          "type": "r-radio",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RRateProps": {
+        "className": "RRateProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldRate.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldRate.props.ts.json",
+        "component": {
+          "name": "FieldRate",
+          "type": "r-rate",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RResultProps": {
+        "className": "RResultProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayResult.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayResult.props.ts.json",
+        "component": {
+          "name": "DisplayResult",
+          "type": "r-result",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RSectionProps": {
+        "className": "RSectionProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.ts.json",
+        "component": {
+          "name": "RendererSection",
+          "type": "r-section",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RSegmentedProps": {
+        "className": "RSegmentedProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldSegmented.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldSegmented.props.ts.json",
+        "component": {
+          "name": "FieldSegmented",
+          "type": "r-segmented",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RSelectProps": {
+        "className": "RSelectProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldSelect.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldSelect.props.ts.json",
+        "component": {
+          "name": "FieldSelect",
+          "type": "r-select",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RSkeletonProps": {
+        "className": "RSkeletonProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplaySkeleton.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplaySkeleton.props.ts.json",
+        "component": {
+          "name": "DisplaySkeleton",
+          "type": "r-skeleton",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RSliderProps": {
+        "className": "RSliderProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldSlider.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldSlider.props.ts.json",
+        "component": {
+          "name": "FieldSlider",
+          "type": "r-slider",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RSpaceProps": {
+        "className": "RSpaceProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSpace.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSpace.props.ts.json",
+        "component": {
+          "name": "RendererSpace",
+          "type": "r-space",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RStatisticProps": {
+        "className": "RStatisticProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayStatistic.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.ts.json",
+        "component": {
+          "name": "DisplayStatistic",
+          "type": "r-statistic",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RStepsProps": {
+        "className": "RStepsProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.ts.json",
+        "component": {
+          "name": "RendererSteps",
+          "type": "r-steps",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RSwitchProps": {
+        "className": "RSwitchProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldSwitch.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldSwitch.props.ts.json",
+        "component": {
+          "name": "FieldSwitch",
+          "type": "r-switch",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RTableProps": {
+        "className": "RTableProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+        "component": {
+          "name": "RendererTable",
+          "type": "r-table",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RTabsProps": {
+        "className": "RTabsProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.ts.json",
+        "component": {
+          "name": "RendererTabs",
+          "type": "r-tabs",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RTagProps": {
+        "className": "RTagProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayTag.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayTag.props.ts.json",
+        "component": {
+          "name": "DisplayTag",
+          "type": "r-tag",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RTailProps": {
+        "className": "RTailProps",
+        "sourcePath": "packages/spark-component/src/components/containers/zones/RendererTail.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/zones/RendererTail.types.ts.json",
+        "component": {
+          "name": "RendererTail",
+          "type": "r-tail",
+          "level": "container",
+          "layer": "zone-container",
+          "directory": "containers/zones"
+        }
+      },
+      "RTextareaProps": {
+        "className": "RTextareaProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldTextarea.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldTextarea.props.ts.json",
+        "component": {
+          "name": "FieldTextarea",
+          "type": "r-textarea",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RTextDisplayProps": {
+        "className": "RTextDisplayProps",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayText.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayText.props.ts.json",
+        "component": {
+          "name": "DisplayText",
+          "type": "r-text-display",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "RTextProps": {
+        "className": "RTextProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldText.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldText.props.ts.json",
+        "component": {
+          "name": "FieldText",
+          "type": "r-text",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RTimelineItemProps": {
+        "className": "RTimelineItemProps",
+        "sourcePath": "packages/spark-component/src/components/display/non-data-components/DisplayTimelineItem.props.ts",
+        "file": "files/packages/spark-component/src/components/display/non-data-components/DisplayTimelineItem.props.ts.json",
+        "component": {
+          "name": "DisplayTimelineItem",
+          "type": "r-timeline-item",
+          "level": "display",
+          "layer": "static-display",
+          "directory": "display/non-data-components"
+        }
+      },
+      "RTimePickerProps": {
+        "className": "RTimePickerProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldTimePicker.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldTimePicker.props.ts.json",
+        "component": {
+          "name": "FieldTimePicker",
+          "type": "r-time-picker",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RTimeSelectProps": {
+        "className": "RTimeSelectProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldTimeSelect.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldTimeSelect.props.ts.json",
+        "component": {
+          "name": "FieldTimeSelect",
+          "type": "r-time-select",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RToolbarProps": {
+        "className": "RToolbarProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererToolbar.types.ts.json",
+        "component": {
+          "name": "RendererToolbar",
+          "type": "r-toolbar",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RTooltipProps": {
+        "className": "RTooltipProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTooltip.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTooltip.props.ts.json",
+        "component": {
+          "name": "RendererTooltip",
+          "type": "r-tooltip",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RTourProps": {
+        "className": "RTourProps",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTour.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTour.props.ts.json",
+        "component": {
+          "name": "RendererTour",
+          "type": "r-tour",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "RTransferProps": {
+        "className": "RTransferProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts.json",
+        "component": {
+          "name": "FieldTransfer",
+          "type": "r-transfer",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RTreeNodeSummaryProps": {
+        "className": "RTreeNodeSummaryProps",
+        "sourcePath": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.ts.json",
+        "component": {
+          "name": "TreeNodeSummary",
+          "type": "r-tree-node-summary",
+          "level": "field-level",
+          "layer": "field-support",
+          "directory": "fields/non-data-components"
+        }
+      },
+      "RTreeProps": {
+        "className": "RTreeProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "RTreeSelectProps": {
+        "className": "RTreeSelectProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldTreeSelect.props.ts.json",
+        "component": {
+          "name": "FieldTreeSelect",
+          "type": "r-tree-select",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RUploadProps": {
+        "className": "RUploadProps",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldUpload.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldUpload.props.ts.json",
+        "component": {
+          "name": "FieldUpload",
+          "type": "r-upload",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "RVirtualCardProps": {
+        "className": "RVirtualCardProps",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/RendererVirtualCard.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/RendererVirtualCard.props.ts.json",
+        "component": {
+          "name": "RendererVirtualCard",
+          "type": "r-virtual-card",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "SessionChatBubbleProps": {
+        "className": "SessionChatBubbleProps",
+        "sourcePath": "packages/spark-component/src/ai/components/SessionChatBubble.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/SessionChatBubble.props.ts.json",
+        "component": {
+          "name": "SessionChatBubble"
+        }
+      },
+      "SessionDiagnosticsPanelProps": {
+        "className": "SessionDiagnosticsPanelProps",
+        "sourcePath": "packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.ts.json",
+        "component": {
+          "name": "SessionDiagnosticsPanel"
+        }
+      },
+      "SessionReasoningBlockProps": {
+        "className": "SessionReasoningBlockProps",
+        "sourcePath": "packages/spark-component/src/ai/components/SessionReasoningBlock.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/SessionReasoningBlock.props.ts.json",
+        "component": {
+          "name": "SessionReasoningBlock"
+        }
+      },
+      "SessionStreamViewProps": {
+        "className": "SessionStreamViewProps",
+        "sourcePath": "packages/spark-component/src/ai/components/SessionStreamView.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/SessionStreamView.props.ts.json",
+        "component": {
+          "name": "SessionStreamView"
+        }
+      },
+      "SessionToolCallCardProps": {
+        "className": "SessionToolCallCardProps",
+        "sourcePath": "packages/spark-component/src/ai/components/SessionToolCallCard.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/SessionToolCallCard.props.ts.json",
+        "component": {
+          "name": "SessionToolCallCard"
+        }
+      },
+      "SparkAgentPanelProps": {
+        "className": "SparkAgentPanelProps",
+        "sourcePath": "packages/spark-component/src/ai/components/SparkAgentPanel.props.ts",
+        "file": "files/packages/spark-component/src/ai/components/SparkAgentPanel.props.ts.json",
+        "component": {
+          "name": "SparkAgentPanel"
+        }
+      },
+      "SparkJsonEditorMode": {
+        "className": "SparkJsonEditorMode",
+        "sourcePath": "packages/spark-component/src/components/editors/SparkJsonEditor.vue",
+        "file": "files/packages/spark-component/src/components/editors/SparkJsonEditor.vue.json",
+        "component": {
+          "name": "SparkJsonEditor",
+          "type": "json-editor",
+          "level": "infrastructure",
+          "layer": "editor",
+          "directory": "editors"
+        }
+      },
+      "StepsEmit": {
+        "className": "StepsEmit",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.ts.json",
+        "component": {
+          "name": "RendererSteps",
+          "type": "r-steps",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "SuggestionItem": {
+        "className": "SuggestionItem",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue.json",
+        "component": {
+          "name": "FieldAutocomplete",
+          "type": "r-autocomplete",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "TabsClickEvent": {
+        "className": "TabsClickEvent",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.ts.json",
+        "component": {
+          "name": "RendererTabs",
+          "type": "r-tabs",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "TabsEmit": {
+        "className": "TabsEmit",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTabs/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTabs/zero-code.ts.json",
+        "component": {
+          "name": "RendererTabs",
+          "type": "r-tabs",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "TagType": {
+        "className": "TagType",
+        "sourcePath": "packages/spark-component/src/components/display/data-components/DisplayTag.props.ts",
+        "file": "files/packages/spark-component/src/components/display/data-components/DisplayTag.props.ts.json",
+        "component": {
+          "name": "DisplayTag",
+          "type": "display-tag",
+          "level": "display",
+          "layer": "data-display",
+          "directory": "display/data-components"
+        }
+      },
+      "TourStep": {
+        "className": "TourStep",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/RendererTour.props.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/RendererTour.props.ts.json",
+        "component": {
+          "name": "RendererTour",
+          "type": "r-tour",
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "TransferValue": {
+        "className": "TransferValue",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts.json",
+        "component": {
+          "name": "FieldTransfer",
+          "type": "r-transfer",
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "TreeEventControl": {
+        "className": "TreeEventControl",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "TreeEventHandler": {
+        "className": "TreeEventHandler",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "TreeNode": {
+        "className": "TreeNode",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts.json",
+        "component": {
+          "name": "RendererTree",
+          "type": "r-tree",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "TreeTableRowsInput": {
+        "className": "TreeTableRowsInput",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-tree-state.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-tree-state.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "UnifiedValueBridgeOptions": {
+        "className": "UnifiedValueBridgeOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/layout/state.ts",
+        "file": "files/packages/spark-component/src/components/containers/layout/state.ts.json",
+        "component": {
+          "level": "container",
+          "layer": "layout-container",
+          "directory": "containers/layout"
+        }
+      },
+      "UploadBrowseFieldStateOptions": {
+        "className": "UploadBrowseFieldStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseBasicFieldStateOptions": {
+        "className": "UseBasicFieldStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseChoiceFieldStateOptions": {
+        "className": "UseChoiceFieldStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseContainerDataSourceEffectsOptions": {
+        "className": "UseContainerDataSourceEffectsOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "UseContainerDataSourceOptions": {
+        "className": "UseContainerDataSourceOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+        "component": {
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "UseControlledFieldChangeOptions": {
+        "className": "UseControlledFieldChangeOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseEntityPickerStateOptions": {
+        "className": "UseEntityPickerStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseFieldControlStateOptions": {
+        "className": "UseFieldControlStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseHtmlEditorStateOptions": {
+        "className": "UseHtmlEditorStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseOptionFieldStateOptions": {
+        "className": "UseOptionFieldStateOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "UseSwitchNullValueOptions": {
+        "className": "UseSwitchNullValueOptions",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "VirtualCardPagingOptions": {
+        "className": "VirtualCardPagingOptions",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts.json",
+        "component": {
+          "name": "RendererVirtualCard",
+          "type": "r-virtual-card",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "VirtualCardViewportExpose": {
+        "className": "VirtualCardViewportExpose",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts.json",
+        "component": {
+          "name": "RendererVirtualCard",
+          "type": "r-virtual-card",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      },
+      "WheelPageEvent": {
+        "className": "WheelPageEvent",
+        "sourcePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts",
+        "file": "files/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts.json",
+        "component": {
+          "name": "RendererVirtualCard",
+          "type": "r-virtual-card",
+          "level": "table-level",
+          "layer": "data-view-container",
+          "directory": "containers/data-views"
+        }
+      }
+    },
+    "byName": {
+      "AiSessionTracePanel": [
+        "AiSessionTracePanelProps"
+      ],
+      "AiToolApprovalCard": [
+        "AiToolApprovalCardEmits",
+        "AiToolApprovalCardProps"
+      ],
+      "AiToolApprovalPanel": [
+        "AiToolApprovalPanelProps"
+      ],
+      "DisplayAlert": [
+        "RAlertProps"
+      ],
+      "DisplayAvatar": [
+        "RAvatarProps"
+      ],
+      "DisplayBadge": [
+        "RBadgeProps"
+      ],
+      "DisplayBreadcrumb": [
+        "RBreadcrumbProps"
+      ],
+      "DisplayBreadcrumbItem": [
+        "RBreadcrumbItemProps"
+      ],
+      "DisplayCalendar": [
+        "RDisplayCalendarProps"
+      ],
+      "DisplayCountdown": [
+        "RDisplayCountdownProps"
+      ],
+      "DisplayDescriptions": [
+        "RDescriptionsProps"
+      ],
+      "DisplayDescriptionsItem": [
+        "RDescriptionsItemProps"
+      ],
+      "DisplayEmpty": [
+        "REmptyProps"
+      ],
+      "DisplayIcon": [
+        "RDisplayIconProps"
+      ],
+      "DisplayImage": [
+        "RDisplayImageProps"
+      ],
+      "DisplayPagination": [
+        "RPaginationProps"
+      ],
+      "DisplayProgress": [
+        "RProgressProps"
+      ],
+      "DisplayResult": [
+        "RResultProps"
+      ],
+      "DisplaySkeleton": [
+        "RSkeletonProps"
+      ],
+      "DisplayStatistic": [
+        "RStatisticProps"
+      ],
+      "DisplayTag": [
+        "RTagProps",
+        "TagType"
+      ],
+      "DisplayText": [
+        "RTextDisplayProps"
+      ],
+      "DisplayTimelineItem": [
+        "RTimelineItemProps"
+      ],
+      "FieldAutocomplete": [
+        "FetchSuggestionsCallback",
+        "RAutocompleteProps",
+        "SuggestionItem"
+      ],
+      "FieldCascader": [
+        "CascaderPath",
+        "CascaderValue",
+        "RCascaderProps"
+      ],
+      "FieldCheckbox": [
+        "RCheckboxProps"
+      ],
+      "FieldCheckboxGroup": [
+        "CheckboxGroupMultiValue",
+        "RCheckboxGroupProps"
+      ],
+      "FieldCheckTag": [
+        "RCheckTagProps"
+      ],
+      "FieldColor": [
+        "RColorProps"
+      ],
+      "FieldDate": [
+        "DatePickerType",
+        "RDateProps"
+      ],
+      "FieldEntityPicker": [
+        "REntityPickerProps"
+      ],
+      "FieldFileBrowser": [
+        "RFileBrowserProps"
+      ],
+      "FieldFilePath": [
+        "RFilePathProps"
+      ],
+      "FieldHtmlEditor": [
+        "RHtmlEditorProps"
+      ],
+      "FieldIcon": [
+        "RIconProps"
+      ],
+      "FieldImage": [
+        "RImageProps"
+      ],
+      "FieldMention": [
+        "RMentionOption",
+        "RMentionProps"
+      ],
+      "FieldMultiSelect": [
+        "MultiValue",
+        "RMultiSelectProps"
+      ],
+      "FieldNumber": [
+        "RNumberProps"
+      ],
+      "FieldRadio": [
+        "RRadioProps"
+      ],
+      "FieldRate": [
+        "RRateProps"
+      ],
+      "FieldSegmented": [
+        "RSegmentedProps"
+      ],
+      "FieldSelect": [
+        "RSelectProps"
+      ],
+      "FieldSlider": [
+        "RSliderProps"
+      ],
+      "FieldSwitch": [
+        "RSwitchProps"
+      ],
+      "FieldText": [
+        "RTextProps"
+      ],
+      "FieldTextarea": [
+        "RTextareaProps"
+      ],
+      "FieldTimePicker": [
+        "RTimePickerProps"
+      ],
+      "FieldTimeSelect": [
+        "RTimeSelectProps"
+      ],
+      "FieldTransfer": [
+        "RTransferProps",
+        "TransferValue"
+      ],
+      "FieldTreeSelect": [
+        "RTreeSelectProps"
+      ],
+      "FieldUpload": [
+        "RUploadProps"
+      ],
+      "JsonTreeEditor": [
+        "JsonTreeEditorProps"
+      ],
+      "RendererAnchor": [
+        "RAnchorProps"
+      ],
+      "RendererAnchorLink": [
+        "RAnchorLinkProps"
+      ],
+      "RendererButton": [
+        "RButtonProps"
+      ],
+      "RendererCard": [
+        "RCardProps"
+      ],
+      "RendererCollapse": [
+        "RCollapseProps",
+        "RendererCollapseApi",
+        "RendererCollapseZeroCodeOptions"
+      ],
+      "RendererCollapseItem": [
+        "Props"
+      ],
+      "RendererDetail": [
+        "RDetailProps",
+        "RendererDetailApi",
+        "RendererDetailZeroCodeOptions"
+      ],
+      "RendererDialog": [
+        "RDialogProps"
+      ],
+      "RendererDivider": [
+        "RDividerProps"
+      ],
+      "RendererDrawer": [
+        "RDrawerProps"
+      ],
+      "RendererDropdown": [
+        "DropdownItem",
+        "RDropdownProps"
+      ],
+      "RendererEditor": [
+        "REditorProps"
+      ],
+      "RendererFieldScope": [
+        "RendererFieldScopeProps"
+      ],
+      "RendererFilter": [
+        "RFilterProps"
+      ],
+      "RendererFooter": [
+        "RFooterProps"
+      ],
+      "RendererForm": [
+        "RendererFormApi",
+        "RendererFormZeroCodeOptions",
+        "RFormProps"
+      ],
+      "RendererHeader": [
+        "RHeaderProps"
+      ],
+      "RendererLink": [
+        "RLinkProps"
+      ],
+      "RendererList": [
+        "RendererListApi",
+        "RendererListZeroCodeOptions",
+        "RListProps"
+      ],
+      "RendererPageHeader": [
+        "RPageHeaderProps"
+      ],
+      "RendererPopconfirm": [
+        "RPopconfirmProps"
+      ],
+      "RendererPopover": [
+        "RPopoverProps"
+      ],
+      "RendererSection": [
+        "RendererSectionApi",
+        "RendererSectionZeroCodeOptions",
+        "RSectionProps"
+      ],
+      "RendererSpace": [
+        "RSpaceProps"
+      ],
+      "RendererSteps": [
+        "RendererStepsApi",
+        "RendererStepsZeroCodeOptions",
+        "RStepsProps",
+        "StepsEmit"
+      ],
+      "RendererTable": [
+        "NativeTableLike",
+        "RendererTableApi",
+        "RendererTableZeroCodeOptions",
+        "RendererTreePath",
+        "RTableProps"
+      ],
+      "RendererTabs": [
+        "RendererTabsApi",
+        "RendererTabsZeroCodeOptions",
+        "RTabsProps",
+        "TabsClickEvent",
+        "TabsEmit"
+      ],
+      "RendererTail": [
+        "RTailProps"
+      ],
+      "RendererToolbar": [
+        "InlineAlign",
+        "InlineJustify",
+        "RToolbarProps"
+      ],
+      "RendererTooltip": [
+        "RTooltipProps"
+      ],
+      "RendererTour": [
+        "RTourProps",
+        "TourStep"
+      ],
+      "RendererTree": [
+        "ElTreeComponent",
+        "ElTreeNode",
+        "NativeTreeLike",
+        "NativeTreeNodeLike",
+        "RendererTreeApi",
+        "RendererTreeBehaviorProps",
+        "RendererTreeInputOptions",
+        "RendererTreeInputProps",
+        "RendererTreeZeroCodeOptions",
+        "RTreeProps",
+        "TreeEventControl",
+        "TreeEventHandler",
+        "TreeNode"
+      ],
+      "RendererVirtualCard": [
+        "RendererVirtualCardApi",
+        "RendererVirtualCardZeroCodeOptions",
+        "RVirtualCardProps",
+        "VirtualCardPagingOptions",
+        "VirtualCardViewportExpose",
+        "WheelPageEvent"
+      ],
+      "SessionChatBubble": [
+        "SessionChatBubbleProps"
+      ],
+      "SessionDiagnosticsPanel": [
+        "SessionDiagnosticsPanelProps"
+      ],
+      "SessionReasoningBlock": [
+        "SessionReasoningBlockProps"
+      ],
+      "SessionStreamView": [
+        "SessionStreamViewProps"
+      ],
+      "SessionToolCallCard": [
+        "SessionToolCallCardProps"
+      ],
+      "SparkAgentPanel": [
+        "SparkAgentPanelProps"
+      ],
+      "SparkJsonEditor": [
+        "SparkJsonEditorMode"
+      ],
+      "TreeNodeSummary": [
+        "RTreeNodeSummaryProps"
+      ]
+    },
+    "byType": {
+      "display-calendar": [
+        "RDisplayCalendarProps"
+      ],
+      "display-countdown": [
+        "RDisplayCountdownProps"
+      ],
+      "display-icon": [
+        "RDisplayIconProps"
+      ],
+      "display-image": [
+        "RDisplayImageProps"
+      ],
+      "display-tag": [
+        "TagType"
+      ],
+      "json-editor": [
+        "SparkJsonEditorMode"
+      ],
+      "r-alert": [
+        "RAlertProps"
+      ],
+      "r-anchor": [
+        "RAnchorProps"
+      ],
+      "r-anchor-link": [
+        "RAnchorLinkProps"
+      ],
+      "r-autocomplete": [
+        "FetchSuggestionsCallback",
+        "RAutocompleteProps",
+        "SuggestionItem"
+      ],
+      "r-avatar": [
+        "RAvatarProps"
+      ],
+      "r-badge": [
+        "RBadgeProps"
+      ],
+      "r-breadcrumb": [
+        "RBreadcrumbProps"
+      ],
+      "r-breadcrumb-item": [
+        "RBreadcrumbItemProps"
+      ],
+      "r-button": [
+        "RButtonProps"
+      ],
+      "r-card": [
+        "RCardProps"
+      ],
+      "r-cascader": [
+        "CascaderPath",
+        "CascaderValue",
+        "RCascaderProps"
+      ],
+      "r-check-tag": [
+        "RCheckTagProps"
+      ],
+      "r-checkbox": [
+        "RCheckboxProps"
+      ],
+      "r-checkbox-group": [
+        "CheckboxGroupMultiValue",
+        "RCheckboxGroupProps"
+      ],
+      "r-collapse": [
+        "RCollapseProps",
+        "RendererCollapseApi",
+        "RendererCollapseZeroCodeOptions"
+      ],
+      "r-collapse-item": [
+        "Props"
+      ],
+      "r-color": [
+        "RColorProps"
+      ],
+      "r-date": [
+        "DatePickerType",
+        "RDateProps"
+      ],
+      "r-descriptions": [
+        "RDescriptionsProps"
+      ],
+      "r-descriptions-item": [
+        "RDescriptionsItemProps"
+      ],
+      "r-detail": [
+        "RDetailProps",
+        "RendererDetailApi",
+        "RendererDetailZeroCodeOptions"
+      ],
+      "r-dialog": [
+        "RDialogProps"
+      ],
+      "r-divider": [
+        "RDividerProps"
+      ],
+      "r-drawer": [
+        "RDrawerProps"
+      ],
+      "r-dropdown": [
+        "DropdownItem",
+        "RDropdownProps"
+      ],
+      "r-editor": [
+        "REditorProps"
+      ],
+      "r-empty": [
+        "REmptyProps"
+      ],
+      "r-enderer-tree-behavior": [
+        "RendererTreeBehaviorProps"
+      ],
+      "r-enderer-tree-input": [
+        "RendererTreeInputProps"
+      ],
+      "r-entity-picker": [
+        "REntityPickerProps"
+      ],
+      "r-field-scope": [
+        "RendererFieldScopeProps"
+      ],
+      "r-file-browser": [
+        "RFileBrowserProps"
+      ],
+      "r-file-path": [
+        "RFilePathProps"
+      ],
+      "r-filter": [
+        "RFilterProps"
+      ],
+      "r-footer": [
+        "RFooterProps"
+      ],
+      "r-form": [
+        "RendererFormApi",
+        "RendererFormZeroCodeOptions",
+        "RFormProps"
+      ],
+      "r-header": [
+        "RHeaderProps"
+      ],
+      "r-html-editor": [
+        "RHtmlEditorProps"
+      ],
+      "r-icon": [
+        "RIconProps"
+      ],
+      "r-image": [
+        "RImageProps"
+      ],
+      "r-link": [
+        "RLinkProps"
+      ],
+      "r-list": [
+        "RendererListApi",
+        "RendererListZeroCodeOptions",
+        "RListProps"
+      ],
+      "r-mention": [
+        "RMentionOption",
+        "RMentionProps"
+      ],
+      "r-multi-select": [
+        "MultiValue",
+        "RMultiSelectProps"
+      ],
+      "r-number": [
+        "RNumberProps"
+      ],
+      "r-page-header": [
+        "RPageHeaderProps"
+      ],
+      "r-pagination": [
+        "RPaginationProps"
+      ],
+      "r-popconfirm": [
+        "RPopconfirmProps"
+      ],
+      "r-popover": [
+        "RPopoverProps"
+      ],
+      "r-progress": [
+        "RProgressProps"
+      ],
+      "r-radio": [
+        "RRadioProps"
+      ],
+      "r-rate": [
+        "RRateProps"
+      ],
+      "r-result": [
+        "RResultProps"
+      ],
+      "r-section": [
+        "RendererSectionApi",
+        "RendererSectionZeroCodeOptions",
+        "RSectionProps"
+      ],
+      "r-segmented": [
+        "RSegmentedProps"
+      ],
+      "r-select": [
+        "RSelectProps"
+      ],
+      "r-skeleton": [
+        "RSkeletonProps"
+      ],
+      "r-slider": [
+        "RSliderProps"
+      ],
+      "r-space": [
+        "RSpaceProps"
+      ],
+      "r-statistic": [
+        "RStatisticProps"
+      ],
+      "r-steps": [
+        "RendererStepsApi",
+        "RendererStepsZeroCodeOptions",
+        "RStepsProps",
+        "StepsEmit"
+      ],
+      "r-switch": [
+        "RSwitchProps"
+      ],
+      "r-table": [
+        "NativeTableLike",
+        "RendererTableApi",
+        "RendererTableZeroCodeOptions",
+        "RendererTreePath",
+        "RTableProps"
+      ],
+      "r-tabs": [
+        "RendererTabsApi",
+        "RendererTabsZeroCodeOptions",
+        "RTabsProps",
+        "TabsClickEvent",
+        "TabsEmit"
+      ],
+      "r-tag": [
+        "RTagProps"
+      ],
+      "r-tail": [
+        "RTailProps"
+      ],
+      "r-text": [
+        "RTextProps"
+      ],
+      "r-text-display": [
+        "RTextDisplayProps"
+      ],
+      "r-textarea": [
+        "RTextareaProps"
+      ],
+      "r-time-picker": [
+        "RTimePickerProps"
+      ],
+      "r-time-select": [
+        "RTimeSelectProps"
+      ],
+      "r-timeline-item": [
+        "RTimelineItemProps"
+      ],
+      "r-toolbar": [
+        "InlineAlign",
+        "InlineJustify",
+        "RToolbarProps"
+      ],
+      "r-tooltip": [
+        "RTooltipProps"
+      ],
+      "r-tour": [
+        "RTourProps",
+        "TourStep"
+      ],
+      "r-transfer": [
+        "RTransferProps",
+        "TransferValue"
+      ],
+      "r-tree": [
+        "ElTreeComponent",
+        "ElTreeNode",
+        "NativeTreeLike",
+        "NativeTreeNodeLike",
+        "RendererTreeApi",
+        "RendererTreeInputOptions",
+        "RendererTreeZeroCodeOptions",
+        "RTreeProps",
+        "TreeEventControl",
+        "TreeEventHandler",
+        "TreeNode"
+      ],
+      "r-tree-node-summary": [
+        "RTreeNodeSummaryProps"
+      ],
+      "r-tree-select": [
+        "RTreeSelectProps"
+      ],
+      "r-upload": [
+        "RUploadProps"
+      ],
+      "r-virtual-card": [
+        "RendererVirtualCardApi",
+        "RendererVirtualCardZeroCodeOptions",
+        "RVirtualCardProps",
+        "VirtualCardPagingOptions",
+        "VirtualCardViewportExpose",
+        "WheelPageEvent"
+      ]
+    },
+    "byLevel": {
+      "container": [
+        "ActionButtonRuntime",
+        "ActionButtonRuntimeOptions",
+        "CommitValueOptions",
+        "DropdownItem",
+        "InlineAlign",
+        "InlineJustify",
+        "Props",
+        "RAnchorLinkProps",
+        "RAnchorProps",
+        "RButtonProps",
+        "RCardProps",
+        "RCollapseProps",
+        "RDialogProps",
+        "RDividerProps",
+        "RDrawerProps",
+        "RDropdownProps",
+        "REditorProps",
+        "RendererCollapseApi",
+        "RendererCollapseZeroCodeOptions",
+        "RendererSectionApi",
+        "RendererSectionZeroCodeOptions",
+        "RendererStepsApi",
+        "RendererStepsZeroCodeOptions",
+        "RendererTabsApi",
+        "RendererTabsZeroCodeOptions",
+        "RFilterProps",
+        "RFooterProps",
+        "RHeaderProps",
+        "RLinkProps",
+        "RPageHeaderProps",
+        "RPopconfirmProps",
+        "RPopoverProps",
+        "RSectionProps",
+        "RSpaceProps",
+        "RStepsProps",
+        "RTabsProps",
+        "RTailProps",
+        "RToolbarProps",
+        "RTooltipProps",
+        "RTourProps",
+        "StepsEmit",
+        "TabsClickEvent",
+        "TabsEmit",
+        "TourStep",
+        "UnifiedValueBridgeOptions"
+      ],
+      "display": [
+        "RAlertProps",
+        "RAvatarProps",
+        "RBadgeProps",
+        "RBreadcrumbItemProps",
+        "RBreadcrumbProps",
+        "RDescriptionsItemProps",
+        "RDescriptionsProps",
+        "RDisplayCalendarProps",
+        "RDisplayCountdownProps",
+        "RDisplayIconProps",
+        "RDisplayImageProps",
+        "REmptyProps",
+        "RPaginationProps",
+        "RProgressProps",
+        "RResultProps",
+        "RSkeletonProps",
+        "RStatisticProps",
+        "RTagProps",
+        "RTextDisplayProps",
+        "RTimelineItemProps",
+        "TagType"
+      ],
+      "field-level": [
+        "BasicFieldProps",
+        "BoundBooleanColumn",
+        "CascaderPath",
+        "CascaderValue",
+        "CheckboxGroupMultiValue",
+        "ControlledFieldStateLike",
+        "DatePickerType",
+        "FetchSuggestionsCallback",
+        "FieldContextStateLike",
+        "FieldControlProps",
+        "FieldValueUpdateEmits",
+        "FieldValueUpdateEmitter",
+        "FileBrowserFieldStateOptions",
+        "MultiValue",
+        "OptionFieldStateProps",
+        "RAutocompleteProps",
+        "RCascaderProps",
+        "RCheckboxGroupProps",
+        "RCheckboxProps",
+        "RCheckTagProps",
+        "RColorProps",
+        "RDateProps",
+        "REntityPickerProps",
+        "RFileBrowserProps",
+        "RFilePathProps",
+        "RHtmlEditorProps",
+        "RIconProps",
+        "RImageProps",
+        "RMentionOption",
+        "RMentionProps",
+        "RMultiSelectProps",
+        "RNumberProps",
+        "RRadioProps",
+        "RRateProps",
+        "RSegmentedProps",
+        "RSelectProps",
+        "RSliderProps",
+        "RSwitchProps",
+        "RTextareaProps",
+        "RTextProps",
+        "RTimePickerProps",
+        "RTimeSelectProps",
+        "RTransferProps",
+        "RTreeNodeSummaryProps",
+        "RTreeSelectProps",
+        "RUploadProps",
+        "SuggestionItem",
+        "TransferValue",
+        "UploadBrowseFieldStateOptions",
+        "UseBasicFieldStateOptions",
+        "UseChoiceFieldStateOptions",
+        "UseControlledFieldChangeOptions",
+        "UseEntityPickerStateOptions",
+        "UseFieldControlStateOptions",
+        "UseHtmlEditorStateOptions",
+        "UseOptionFieldStateOptions",
+        "UseSwitchNullValueOptions"
+      ],
+      "infrastructure": [
+        "BeforeRenderContext",
+        "BeforeRenderState",
+        "JsonTreeEditorProps",
+        "MergeBeforeRenderOptions",
+        "SparkJsonEditorMode"
+      ],
+      "row-level": [
+        "RendererFieldScopeProps"
+      ],
+      "table-level": [
+        "AggregateResultState",
+        "ContainerDataSourceState",
+        "ContainerDataViewContextState",
+        "CreateContainerCrudContextOptions",
+        "DataSourceLoggerLike",
+        "DataViewDisplayState",
+        "DataViewIdentityState",
+        "DataViewPermissionState",
+        "DataViewRequestAndAggregateState",
+        "DataViewRowsState",
+        "DataViewRuntimeState",
+        "DataViewState",
+        "ElTreeComponent",
+        "ElTreeNode",
+        "NativeTableLike",
+        "NativeTreeLike",
+        "NativeTreeNodeLike",
+        "RDetailProps",
+        "RendererDetailApi",
+        "RendererDetailZeroCodeOptions",
+        "RendererFormApi",
+        "RendererFormZeroCodeOptions",
+        "RendererListApi",
+        "RendererListZeroCodeOptions",
+        "RendererTableApi",
+        "RendererTableZeroCodeOptions",
+        "RendererTreeApi",
+        "RendererTreeBehaviorProps",
+        "RendererTreeInputOptions",
+        "RendererTreeInputProps",
+        "RendererTreePath",
+        "RendererTreeViewState",
+        "RendererTreeViewStateOptions",
+        "RendererTreeZeroCodeOptions",
+        "RendererVirtualCardApi",
+        "RendererVirtualCardZeroCodeOptions",
+        "ResolvedViewRef",
+        "RFormProps",
+        "RListProps",
+        "RTableProps",
+        "RTreeProps",
+        "RVirtualCardProps",
+        "TreeEventControl",
+        "TreeEventHandler",
+        "TreeNode",
+        "TreeTableRowsInput",
+        "UseContainerDataSourceEffectsOptions",
+        "UseContainerDataSourceOptions",
+        "VirtualCardPagingOptions",
+        "VirtualCardViewportExpose",
+        "WheelPageEvent"
+      ]
+    },
+    "byLayer": {
+      "data-display": [
+        "RAvatarProps",
+        "RBadgeProps",
+        "RDisplayImageProps",
+        "RPaginationProps",
+        "RProgressProps",
+        "RStatisticProps",
+        "RTagProps",
+        "RTextDisplayProps",
+        "TagType"
+      ],
+      "data-field": [
+        "BasicFieldProps",
+        "BoundBooleanColumn",
+        "CascaderPath",
+        "CascaderValue",
+        "CheckboxGroupMultiValue",
+        "ControlledFieldStateLike",
+        "DatePickerType",
+        "FetchSuggestionsCallback",
+        "FieldContextStateLike",
+        "FieldControlProps",
+        "FieldValueUpdateEmits",
+        "FieldValueUpdateEmitter",
+        "FileBrowserFieldStateOptions",
+        "MultiValue",
+        "OptionFieldStateProps",
+        "RAutocompleteProps",
+        "RCascaderProps",
+        "RCheckboxGroupProps",
+        "RCheckboxProps",
+        "RCheckTagProps",
+        "RColorProps",
+        "RDateProps",
+        "REntityPickerProps",
+        "RFileBrowserProps",
+        "RFilePathProps",
+        "RHtmlEditorProps",
+        "RIconProps",
+        "RImageProps",
+        "RMentionOption",
+        "RMentionProps",
+        "RMultiSelectProps",
+        "RNumberProps",
+        "RRadioProps",
+        "RRateProps",
+        "RSegmentedProps",
+        "RSelectProps",
+        "RSliderProps",
+        "RSwitchProps",
+        "RTextareaProps",
+        "RTextProps",
+        "RTimePickerProps",
+        "RTimeSelectProps",
+        "RTransferProps",
+        "RTreeSelectProps",
+        "RUploadProps",
+        "SuggestionItem",
+        "TransferValue",
+        "UploadBrowseFieldStateOptions",
+        "UseBasicFieldStateOptions",
+        "UseChoiceFieldStateOptions",
+        "UseControlledFieldChangeOptions",
+        "UseEntityPickerStateOptions",
+        "UseFieldControlStateOptions",
+        "UseHtmlEditorStateOptions",
+        "UseOptionFieldStateOptions",
+        "UseSwitchNullValueOptions"
+      ],
+      "data-view-container": [
+        "AggregateResultState",
+        "ContainerDataSourceState",
+        "ContainerDataViewContextState",
+        "CreateContainerCrudContextOptions",
+        "DataSourceLoggerLike",
+        "DataViewDisplayState",
+        "DataViewIdentityState",
+        "DataViewPermissionState",
+        "DataViewRequestAndAggregateState",
+        "DataViewRowsState",
+        "DataViewRuntimeState",
+        "DataViewState",
+        "ElTreeComponent",
+        "ElTreeNode",
+        "NativeTableLike",
+        "NativeTreeLike",
+        "NativeTreeNodeLike",
+        "RDetailProps",
+        "RendererDetailApi",
+        "RendererDetailZeroCodeOptions",
+        "RendererFormApi",
+        "RendererFormZeroCodeOptions",
+        "RendererListApi",
+        "RendererListZeroCodeOptions",
+        "RendererTableApi",
+        "RendererTableZeroCodeOptions",
+        "RendererTreeApi",
+        "RendererTreeBehaviorProps",
+        "RendererTreeInputOptions",
+        "RendererTreeInputProps",
+        "RendererTreePath",
+        "RendererTreeViewState",
+        "RendererTreeViewStateOptions",
+        "RendererTreeZeroCodeOptions",
+        "RendererVirtualCardApi",
+        "RendererVirtualCardZeroCodeOptions",
+        "ResolvedViewRef",
+        "RFormProps",
+        "RListProps",
+        "RTableProps",
+        "RTreeProps",
+        "RVirtualCardProps",
+        "TreeEventControl",
+        "TreeEventHandler",
+        "TreeNode",
+        "TreeTableRowsInput",
+        "UseContainerDataSourceEffectsOptions",
+        "UseContainerDataSourceOptions",
+        "VirtualCardPagingOptions",
+        "VirtualCardViewportExpose",
+        "WheelPageEvent"
+      ],
+      "editor": [
+        "JsonTreeEditorProps",
+        "SparkJsonEditorMode"
+      ],
+      "field-support": [
+        "RTreeNodeSummaryProps"
+      ],
+      "layout-container": [
+        "ActionButtonRuntime",
+        "ActionButtonRuntimeOptions",
+        "CommitValueOptions",
+        "DropdownItem",
+        "InlineAlign",
+        "InlineJustify",
+        "Props",
+        "RAnchorLinkProps",
+        "RAnchorProps",
+        "RButtonProps",
+        "RCardProps",
+        "RCollapseProps",
+        "RDialogProps",
+        "RDividerProps",
+        "RDrawerProps",
+        "RDropdownProps",
+        "RendererCollapseApi",
+        "RendererCollapseZeroCodeOptions",
+        "RendererSectionApi",
+        "RendererSectionZeroCodeOptions",
+        "RendererStepsApi",
+        "RendererStepsZeroCodeOptions",
+        "RendererTabsApi",
+        "RendererTabsZeroCodeOptions",
+        "RLinkProps",
+        "RPageHeaderProps",
+        "RPopconfirmProps",
+        "RPopoverProps",
+        "RSectionProps",
+        "RSpaceProps",
+        "RStepsProps",
+        "RTabsProps",
+        "RToolbarProps",
+        "RTooltipProps",
+        "RTourProps",
+        "StepsEmit",
+        "TabsClickEvent",
+        "TabsEmit",
+        "TourStep",
+        "UnifiedValueBridgeOptions"
+      ],
+      "row-scope": [
+        "RendererFieldScopeProps"
+      ],
+      "static-display": [
+        "RAlertProps",
+        "RBreadcrumbItemProps",
+        "RBreadcrumbProps",
+        "RDescriptionsItemProps",
+        "RDescriptionsProps",
+        "RDisplayCalendarProps",
+        "RDisplayCountdownProps",
+        "RDisplayIconProps",
+        "REmptyProps",
+        "RResultProps",
+        "RSkeletonProps",
+        "RTimelineItemProps"
+      ],
+      "support": [
+        "BeforeRenderContext",
+        "BeforeRenderState",
+        "MergeBeforeRenderOptions"
+      ],
+      "zone-container": [
+        "REditorProps",
+        "RFilterProps",
+        "RFooterProps",
+        "RHeaderProps",
+        "RTailProps"
+      ]
+    },
+    "byDirectory": {
+      "containers/data-views": [
+        "AggregateResultState",
+        "ContainerDataSourceState",
+        "ContainerDataViewContextState",
+        "CreateContainerCrudContextOptions",
+        "DataSourceLoggerLike",
+        "DataViewDisplayState",
+        "DataViewIdentityState",
+        "DataViewPermissionState",
+        "DataViewRequestAndAggregateState",
+        "DataViewRowsState",
+        "DataViewRuntimeState",
+        "DataViewState",
+        "ElTreeComponent",
+        "ElTreeNode",
+        "NativeTableLike",
+        "NativeTreeLike",
+        "NativeTreeNodeLike",
+        "RDetailProps",
+        "RendererDetailApi",
+        "RendererDetailZeroCodeOptions",
+        "RendererFormApi",
+        "RendererFormZeroCodeOptions",
+        "RendererListApi",
+        "RendererListZeroCodeOptions",
+        "RendererTableApi",
+        "RendererTableZeroCodeOptions",
+        "RendererTreeApi",
+        "RendererTreeBehaviorProps",
+        "RendererTreeInputOptions",
+        "RendererTreeInputProps",
+        "RendererTreePath",
+        "RendererTreeViewState",
+        "RendererTreeViewStateOptions",
+        "RendererTreeZeroCodeOptions",
+        "RendererVirtualCardApi",
+        "RendererVirtualCardZeroCodeOptions",
+        "ResolvedViewRef",
+        "RFormProps",
+        "RListProps",
+        "RTableProps",
+        "RTreeProps",
+        "RVirtualCardProps",
+        "TreeEventControl",
+        "TreeEventHandler",
+        "TreeNode",
+        "TreeTableRowsInput",
+        "UseContainerDataSourceEffectsOptions",
+        "UseContainerDataSourceOptions",
+        "VirtualCardPagingOptions",
+        "VirtualCardViewportExpose",
+        "WheelPageEvent"
+      ],
+      "containers/layout": [
+        "ActionButtonRuntime",
+        "ActionButtonRuntimeOptions",
+        "CommitValueOptions",
+        "DropdownItem",
+        "InlineAlign",
+        "InlineJustify",
+        "Props",
+        "RAnchorLinkProps",
+        "RAnchorProps",
+        "RButtonProps",
+        "RCardProps",
+        "RCollapseProps",
+        "RDialogProps",
+        "RDividerProps",
+        "RDrawerProps",
+        "RDropdownProps",
+        "RendererCollapseApi",
+        "RendererCollapseZeroCodeOptions",
+        "RendererSectionApi",
+        "RendererSectionZeroCodeOptions",
+        "RendererStepsApi",
+        "RendererStepsZeroCodeOptions",
+        "RendererTabsApi",
+        "RendererTabsZeroCodeOptions",
+        "RLinkProps",
+        "RPageHeaderProps",
+        "RPopconfirmProps",
+        "RPopoverProps",
+        "RSectionProps",
+        "RSpaceProps",
+        "RStepsProps",
+        "RTabsProps",
+        "RToolbarProps",
+        "RTooltipProps",
+        "RTourProps",
+        "StepsEmit",
+        "TabsClickEvent",
+        "TabsEmit",
+        "TourStep",
+        "UnifiedValueBridgeOptions"
+      ],
+      "containers/support": [
+        "RendererFieldScopeProps"
+      ],
+      "containers/zones": [
+        "REditorProps",
+        "RFilterProps",
+        "RFooterProps",
+        "RHeaderProps",
+        "RTailProps"
+      ],
+      "display/data-components": [
+        "RAvatarProps",
+        "RBadgeProps",
+        "RDisplayImageProps",
+        "RPaginationProps",
+        "RProgressProps",
+        "RStatisticProps",
+        "RTagProps",
+        "RTextDisplayProps",
+        "TagType"
+      ],
+      "display/non-data-components": [
+        "RAlertProps",
+        "RBreadcrumbItemProps",
+        "RBreadcrumbProps",
+        "RDescriptionsItemProps",
+        "RDescriptionsProps",
+        "RDisplayCalendarProps",
+        "RDisplayCountdownProps",
+        "RDisplayIconProps",
+        "REmptyProps",
+        "RResultProps",
+        "RSkeletonProps",
+        "RTimelineItemProps"
+      ],
+      "editors": [
+        "JsonTreeEditorProps",
+        "SparkJsonEditorMode"
+      ],
+      "fields/data-components": [
+        "BasicFieldProps",
+        "BoundBooleanColumn",
+        "CascaderPath",
+        "CascaderValue",
+        "CheckboxGroupMultiValue",
+        "ControlledFieldStateLike",
+        "DatePickerType",
+        "FetchSuggestionsCallback",
+        "FieldContextStateLike",
+        "FieldControlProps",
+        "FieldValueUpdateEmits",
+        "FieldValueUpdateEmitter",
+        "FileBrowserFieldStateOptions",
+        "MultiValue",
+        "OptionFieldStateProps",
+        "RAutocompleteProps",
+        "RCascaderProps",
+        "RCheckboxGroupProps",
+        "RCheckboxProps",
+        "RCheckTagProps",
+        "RColorProps",
+        "RDateProps",
+        "REntityPickerProps",
+        "RFileBrowserProps",
+        "RFilePathProps",
+        "RHtmlEditorProps",
+        "RIconProps",
+        "RImageProps",
+        "RMentionOption",
+        "RMentionProps",
+        "RMultiSelectProps",
+        "RNumberProps",
+        "RRadioProps",
+        "RRateProps",
+        "RSegmentedProps",
+        "RSelectProps",
+        "RSliderProps",
+        "RSwitchProps",
+        "RTextareaProps",
+        "RTextProps",
+        "RTimePickerProps",
+        "RTimeSelectProps",
+        "RTransferProps",
+        "RTreeSelectProps",
+        "RUploadProps",
+        "SuggestionItem",
+        "TransferValue",
+        "UploadBrowseFieldStateOptions",
+        "UseBasicFieldStateOptions",
+        "UseChoiceFieldStateOptions",
+        "UseControlledFieldChangeOptions",
+        "UseEntityPickerStateOptions",
+        "UseFieldControlStateOptions",
+        "UseHtmlEditorStateOptions",
+        "UseOptionFieldStateOptions",
+        "UseSwitchNullValueOptions"
+      ],
+      "fields/non-data-components": [
+        "RTreeNodeSummaryProps"
+      ],
+      "support": [
+        "BeforeRenderContext",
+        "BeforeRenderState",
+        "MergeBeforeRenderOptions"
+      ]
     }
   },
   "duplicates": [

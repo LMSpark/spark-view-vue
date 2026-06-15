@@ -40,16 +40,12 @@
       "name": "REntityPickerProps",
       "jsdoc": "REntity Picker Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldEntityPicker.props.ts",
-        "line": 10,
-        "className": "REntityPickerProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldEntityPicker",
-        "componentType": "r-entity-picker",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldEntityPicker",
+        "type": "r-entity-picker",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string> & SparkPrimaryActionTextProps & SparkReadonlyActionTextProps & {\n    /** 是否允许对实体候选项执行搜索。 */\n    searchable?: boolean;\n    /** 实体类型名称，用于驱动选择器语义或远端查询。 */\n    entityName?: string;\n}",

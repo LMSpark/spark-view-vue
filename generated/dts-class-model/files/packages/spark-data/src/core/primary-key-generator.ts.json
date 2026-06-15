@@ -144,12 +144,6 @@
       "name": "PrimaryKeyStrategy",
       "jsdoc": "主键生成策略类型",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/primary-key-generator.ts",
-        "line": 20,
-        "className": "PrimaryKeyStrategy",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'auto-increment' | 'uuid' | 'timestamp' | 'custom'",
         "declarationRelations": [
@@ -177,12 +171,6 @@
       "name": "PrimaryKeyGeneratorConfig",
       "jsdoc": "主键生成器配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/core/primary-key-generator.ts",
-        "line": 24,
-        "className": "PrimaryKeyGeneratorConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 生成策略 */\n    strategy: PrimaryKeyStrategy;\n    /** 主键字段名 */\n    fields: string;\n    /** 自定义生成函数（strategy='custom' 时必需） */\n    generator?: (row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>;\n    /** 自增起始值（strategy='auto-increment' 时，默认 1） */\n    startValue?: number;\n}",
         "members": {
@@ -282,12 +270,6 @@
       "name": "PrimaryKeyGenerator",
       "jsdoc": "主键生成器\n支持多种生成策略，可为新记录自动生成主键值。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-data/src/core/primary-key-generator.ts",
-        "line": 39,
-        "className": "PrimaryKeyGenerator",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Primary Key Generator 实例。",

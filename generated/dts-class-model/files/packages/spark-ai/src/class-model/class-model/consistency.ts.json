@@ -38,12 +38,6 @@
       "name": "ClassModelBuildConsistencyIssue",
       "jsdoc": "Class Model Build Consistency Issue 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/class-model/consistency.ts",
-        "line": 9,
-        "className": "ClassModelBuildConsistencyIssue",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 问题编码，当前固定为 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH'，预留未来区分不同不一致类型。 */\n    code: string;\n    /** 不一致字段的点分路径，如 'module.kinds'、'{kind}.attributes.{name}.jsdoc'，用于定位差异位置。 */\n    path: string;\n    /** 人类可读的差异描述，格式：'源码反射与构建入口不一致: source=... buildEntry=...'。 */\n    message: string;\n}>",
         "declarationRelations": [

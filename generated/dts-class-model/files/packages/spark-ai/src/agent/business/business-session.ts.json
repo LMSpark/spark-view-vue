@@ -139,12 +139,6 @@
       "name": "AiAgentRunCommand",
       "jsdoc": "Ai Agent Run Command 的命令参数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/business-session.ts",
-        "line": 15,
-        "className": "AiAgentRunCommand",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** Host 配置（含 registry、turnCallbacks、maxToolRounds），用于创建 session 和 tool-loop。 */\n    options: AiAgentOptions<TInput>;\n    /** 业务注册 kindID，runAiAgent 据此从 registry 查找 AiAgentRegistration。 */\n    kindID: string;\n    /** 业务输入，经 inputContract.normalize 归一化后生成 task。 */\n    input: TInput;\n    /** 可选的额外对话选项（如额外 systemPrompt），与 task.toChatRequest 合并后传入 send。 */\n    chat?: AiAgentTaskChatOptions;\n}>",
         "declarationRelations": [
@@ -188,12 +182,6 @@
       "name": "AiAgentRunResult",
       "jsdoc": "Ai Agent Run Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/business-session.ts",
-        "line": 26,
-        "className": "AiAgentRunResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 已构造的 task，含归一化输入、scope、编排计划和 toChatRequest 方法。 */\n    task: AiAgentTask<TInput>;\n    /** 已启动并完成首轮 send 的业务会话，可用于后续 send/stop/getSessionRecord。 */\n    session: AiAgentSession;\n}>",
         "declarationRelations": [
@@ -225,12 +213,6 @@
       "name": "AiAgentSession",
       "jsdoc": "业务会话。\n业务层推荐通过 AiAgent.run[alias](input) 进入；本类承载 Host 内部 session 状态。\n属性：\ntarget     — 业务定位\nscope      — 业务作用域\nsessionId  — 后端会话 ID（kind + 顶层实例 ID）",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/business/business-session.ts",
-        "line": 42,
-        "className": "AiAgentSession",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Session 实例。",

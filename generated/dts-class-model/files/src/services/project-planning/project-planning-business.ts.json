@@ -236,12 +236,6 @@
       "name": "ProjectPlanningRunInput",
       "jsdoc": "Project Planning Run Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 17,
-        "className": "ProjectPlanningRunInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 项目唯一标识。 */\n    projectId: string;\n    /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n    /** 各导航节点策划输入（含模块/页面）。 */\n    navigationNodes: readonly NavigationPlanningRunInput[];\n}>",
         "declarationRelations": [
@@ -291,12 +285,6 @@
       "name": "ProjectPlanningAgentInput",
       "jsdoc": "Host inputContract 用可变数组，满足 AiJsonParams。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 30,
-        "className": "ProjectPlanningAgentInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** Agent 输入的身份键（通常等于 projectId）。 */\n    projectScopeKey: string;\n    /** 项目唯一标识。 */\n    projectId: string;\n    /** 项目级策划短需求文本。 */\n    requirement: string;\n    /** 项目级策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 项目级附件解析正文。 */\n    planningAttachmentText?: string;\n    /** 各导航节点的策划输入列表。 */\n    navigationNodes: NavigationPlanningAgentInput[];\n}>",
         "declarationRelations": [
@@ -352,12 +340,6 @@
       "name": "NavigationPlanningAgentInput",
       "jsdoc": "Navigation Planning Agent Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 45,
-        "className": "NavigationPlanningAgentInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 导航节点 id。 */\n    nodeId: string;\n    /** 节点显示标题。 */\n    title: string;\n    /** 节点类型（module/page 等）。 */\n    nodeKind: string;\n    /** 节点短需求（navigation description）。 */\n    requirement: string;\n    /** 节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文。 */\n    planningAttachmentText?: string;\n}>",
         "declarationRelations": [
@@ -413,12 +395,6 @@
       "name": "NavigationPlanningRunInput",
       "jsdoc": "Navigation Planning Run Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 60,
-        "className": "NavigationPlanningRunInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 导航节点 id。 */\n    nodeId: string;\n    /** 节点显示标题。 */\n    title: string;\n    /** 节点类型（module/page 等）。 */\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    /** 节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */\n    planningAttachmentText?: string;\n}>",
         "declarationRelations": [
@@ -474,12 +450,6 @@
       "name": "ResolveProjectPlanningRunInputOptions",
       "jsdoc": "Resolve Project Planning Run Input Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 75,
-        "className": "ResolveProjectPlanningRunInputOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** Host Run 可注入一次性需求，不写回 ProjectModel。 */\n    requirementOverride?: string;\n    /** 项目级附件正文。 */\n    planningAttachmentText?: string;\n    /** 按 nodeId 提供节点附件正文。 */\n    navigationAttachmentTextByNodeId?: Readonly<Record<string, string>>;\n}>",
         "declarationRelations": [
@@ -517,12 +487,6 @@
       "name": "FilterNavigationPlanningNodesOptions",
       "jsdoc": "Filter Navigation Planning Nodes Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 84,
-        "className": "FilterNavigationPlanningNodesOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 仅包含这些 nodeId；未传则按 includeEmptyRequirement 规则过滤。 */\n    scopeNodeIds?: readonly string[];\n    /** 默认 false：跳过 requirement 与 planningAttachmentRef 均为空的节点。 */\n    includeEmptyRequirement?: boolean;\n}>",
         "declarationRelations": [
@@ -554,12 +518,6 @@
       "name": "ResolveScopedProjectPlanningRunInputOptions",
       "jsdoc": "Resolve Scoped Project Planning Run Input Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 91,
-        "className": "ResolveScopedProjectPlanningRunInputOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ResolveProjectPlanningRunInputOptions & FilterNavigationPlanningNodesOptions",
         "declarationRelations": [
@@ -581,12 +539,6 @@
       "name": "EnsureProjectPlanningBusinessOptions",
       "jsdoc": "Ensure Project Planning Business Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 93,
-        "className": "EnsureProjectPlanningBusinessOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** AI Agent Host 实例。 */\n    host: AiAgentHost;\n    /** 按 moduleInstanceId 获取 ProjectWorkspace 编辑器。 */\n    getProjectPlanningEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
         "declarationRelations": [
@@ -631,12 +583,6 @@
       "name": "ProjectPlanningGateValidationResult",
       "jsdoc": "Project Planning Gate Validation Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/project-planning/project-planning-business.ts",
-        "line": 111,
-        "className": "ProjectPlanningGateValidationResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 是否通过 tool gate 校验。 */\n    ok: boolean;\n    /** 拒绝原因（ok 为 false 时）。 */\n    reason?: string;\n    /** 给 LLM 的修正建议（ok 为 false 时）。 */\n    fix?: string;\n}>",
         "declarationRelations": [

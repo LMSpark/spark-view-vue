@@ -63,12 +63,6 @@
       "name": "Request",
       "jsdoc": "Request 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-utils/src/http/Request.ts",
-        "line": 16,
-        "className": "Request",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Request 实例。",

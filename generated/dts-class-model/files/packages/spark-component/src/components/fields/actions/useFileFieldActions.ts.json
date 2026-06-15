@@ -44,12 +44,6 @@
       "name": "UseFileFieldActionsOptions",
       "jsdoc": "Use File Field Actions Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/actions/useFileFieldActions.ts",
-        "line": 4,
-        "className": "UseFileFieldActionsOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Service 字段。 */\n    pageService: PageServiceCapability | null;\n    /** 是否 is Editable。 */\n    isEditable: ComputedRef<boolean>;\n}",
         "members": {

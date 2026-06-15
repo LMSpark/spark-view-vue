@@ -5,7 +5,7 @@ import { buildDebugBreak } from './build-debug.mjs'
 /**
  * Fail-fast：manifest 存在但 shard 缺失时抛错（generate 中断或拷贝前校验）。
  * 只校验 guide manifest（manifest.json + files/**）；不校验 runtime/manifest.json（已冻结，见 spark-ai-platform.md §3.4）。
- * 每个声明的 JSON Schema 必须集中在 shard.$defs，raw member 上不得保留重复 schema。
+ * 每个声明的 JSON Schema 必须集中在 shard.$defs，raw member 上不得保留重复 schema 或编译期 provenance。
  */
 export function assertClassModelBundleComplete(bundleRoot, options = {}) {
   const root = resolve(bundleRoot)
@@ -43,7 +43,7 @@ export function assertClassModelBundleComplete(bundleRoot, options = {}) {
   }
 }
 
-/** guide shard 的 schema 必须集中到 shard.$defs，供 verify:class-model 在 generate 后调用。 */
+/** guide shard 的可执行 schema 必须集中到 shard.$defs，且 raw 元数据不得持久化 provenance。 */
 export function assertClassModelGuideExecutableSchemas(bundleRoot) {
   const root = resolve(bundleRoot)
   const manifestPath = join(root, 'manifest.json')
@@ -120,6 +120,9 @@ function assertGuideShardExecutableSchemas(bundleRoot, manifest) {
       if (Object.hasOwn(model, 'jsonSchema')) {
         violations.push(`${sourcePath}#${typeName}.jsonSchema: duplicate of top-level $defs`)
       }
+      if (Object.hasOwn(model, 'provenance')) {
+        violations.push(`${sourcePath}#${typeName}.provenance: compile-time source metadata must not be persisted; keep only consumed component profile`)
+      }
       const jsonSchema = shardDefs[typeName]
       if (jsonSchema === null || typeof jsonSchema !== 'object' || Array.isArray(jsonSchema)) {
         if (isJsonSchemaOptionalOpaqueTypeAlias(model)) continue
@@ -134,9 +137,14 @@ function assertGuideShardExecutableSchemas(bundleRoot, manifest) {
         : {}
       const declarationMembers = declarationMembersForModel(model)
       for (const attribute of declarationMembers.attributes) {
-        if (attribute !== null && typeof attribute === 'object' && Object.hasOwn(attribute, 'schema')) {
+        if (attribute !== null && typeof attribute === 'object') {
           const attributeName = typeof attribute.name === 'string' ? attribute.name : '<anonymous>'
-          violations.push(`${sourcePath}#${typeName}.${attributeName}.schema: duplicate of jsonSchema.properties`)
+          if (Object.hasOwn(attribute, 'schema')) {
+            violations.push(`${sourcePath}#${typeName}.${attributeName}.schema: duplicate of jsonSchema.properties`)
+          }
+          if (Object.hasOwn(attribute, 'provenance')) {
+            violations.push(`${sourcePath}#${typeName}.${attributeName}.provenance: compile-time source metadata must not be persisted`)
+          }
         }
       }
 
@@ -147,6 +155,9 @@ function assertGuideShardExecutableSchemas(bundleRoot, manifest) {
         } else {
           if (Object.hasOwn(constructorMeta, 'paramsSchema')) {
             violations.push(`${sourcePath}#${typeName}.constructor.paramsSchema: duplicate of jsonSchema.$defs`)
+          }
+          if (Object.hasOwn(constructorMeta, 'provenance')) {
+            violations.push(`${sourcePath}#${typeName}.constructor.provenance: compile-time source metadata must not be persisted`)
           }
           if (!isExecutableParamsSchema(defs['constructor.params'])) {
             violations.push(`${sourcePath}#${typeName}.constructor: missing jsonSchema.$defs["constructor.params"]`)
@@ -162,6 +173,9 @@ function assertGuideShardExecutableSchemas(bundleRoot, manifest) {
         }
         if (Object.hasOwn(method, 'returnSchema')) {
           violations.push(`${sourcePath}#${typeName}.${methodName}.returnSchema: duplicate of jsonSchema.$defs`)
+        }
+        if (Object.hasOwn(method, 'provenance')) {
+          violations.push(`${sourcePath}#${typeName}.${methodName}.provenance: compile-time source metadata must not be persisted`)
         }
         if (!isExecutableParamsSchema(defs[`method.${methodName}.params`])) {
           violations.push(`${sourcePath}#${typeName}.${methodName}: missing jsonSchema.$defs["method.${methodName}.params"]`)

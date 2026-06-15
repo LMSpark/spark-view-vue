@@ -57,12 +57,6 @@
       "name": "EventDefaultDeclaration",
       "jsdoc": "事件默认行为声明",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/useEventDefaults.ts",
-        "line": 55,
-        "className": "EventDefaultDeclaration",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /**\n     * 系统默认处理方法 (A)\n     *\n     * 有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）\n     * 无值时：dispatch 仅执行 B 并返回 cancel 控制器\n     */\n    systemDefault?: (...args: TArgs) => void | Promise<void>;\n}",
         "members": {
@@ -111,12 +105,6 @@
       "name": "EventArgsMap",
       "jsdoc": "dispatch 调用签名",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/useEventDefaults.ts",
-        "line": 65,
-        "className": "EventArgsMap",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    [eventName: string]: readonly unknown[];\n}",
         "members": {}
@@ -126,12 +114,6 @@
       "name": "EventDefaultDeclarations",
       "jsdoc": "Event Default Declarations 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/useEventDefaults.ts",
-        "line": 69,
-        "className": "EventDefaultDeclarations",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>;\n}>",
         "declarationRelations": [
@@ -148,12 +130,6 @@
       "name": "EventDispatcher",
       "jsdoc": "Event Dispatcher 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/support/useEventDefaults.ts",
-        "line": 73,
-        "className": "EventDispatcher",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]): Promise<InteractionControl>;\n}",
         "members": {}

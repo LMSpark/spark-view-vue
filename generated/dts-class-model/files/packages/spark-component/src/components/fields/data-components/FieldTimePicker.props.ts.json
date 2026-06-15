@@ -40,16 +40,12 @@
       "name": "RTimePickerProps",
       "jsdoc": "RTime Picker Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldTimePicker.props.ts",
-        "line": 9,
-        "className": "RTimePickerProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldTimePicker",
-        "componentType": "r-time-picker",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldTimePicker",
+        "type": "r-time-picker",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkTemporalPickerProps<string | Date> & {\n    /** 是否启用时间范围选择。 */\n    isRange?: boolean;\n    /** 是否使用箭头调整时间。 */\n    arrowControl?: boolean;\n}",

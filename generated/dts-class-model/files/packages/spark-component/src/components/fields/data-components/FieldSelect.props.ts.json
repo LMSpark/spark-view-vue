@@ -40,16 +40,12 @@
       "name": "RSelectProps",
       "jsdoc": "RSelect Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldSelect.props.ts",
-        "line": 9,
-        "className": "RSelectProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldSelect",
-        "componentType": "r-select",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldSelect",
+        "type": "r-select",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<string | number>",

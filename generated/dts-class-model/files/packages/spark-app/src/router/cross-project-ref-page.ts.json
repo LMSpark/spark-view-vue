@@ -48,12 +48,6 @@
       "name": "CrossProjectRefPageRouteProps",
       "jsdoc": "Cross Project Ref Page Route Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/router/cross-project-ref-page.ts",
-        "line": 4,
-        "className": "CrossProjectRefPageRouteProps",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Content Loader 字段。 */\n    pageContentLoader: PageContentLoader;\n    /** tenant Id 标识。 */\n    tenantId?: string | undefined;\n    /** host Project Id 标识。 */\n    hostProjectId?: string | undefined;\n    /** route Path 路径。 */\n    routePath?: string | undefined;\n    /** route Meta 字段。 */\n    routeMeta?: Record<string, unknown> | undefined;\n}",
         "members": {

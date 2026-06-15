@@ -39,12 +39,6 @@
       "name": "ActionExecutionOptions",
       "jsdoc": "Action Execution Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/page/actions/action-executor.ts",
-        "line": 28,
-        "className": "ActionExecutionOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 原始事件参数（如行数据、CancellableControl 等） */\n    eventArgs?: unknown[];\n    /** 流程控制信号（cancelDefault 时置 cancel=true） */\n    control?: ActionExecutionControl;\n    /** 执行作用域（行内动作注入的当前行 + formApi 等） */\n    scope?: ActionExecutionScope;\n}",
         "members": {

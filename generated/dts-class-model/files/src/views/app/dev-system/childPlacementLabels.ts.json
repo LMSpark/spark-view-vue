@@ -34,12 +34,6 @@
       "name": "ChildPlacementValue",
       "jsdoc": "Child Placement Value 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/views/app/dev-system/childPlacementLabels.ts",
-        "line": 9,
-        "className": "ChildPlacementValue",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'' | ChildPlacement",
         "declarationRelations": [

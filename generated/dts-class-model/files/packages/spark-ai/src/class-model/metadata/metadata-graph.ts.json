@@ -84,12 +84,6 @@
       "name": "AiApiMetadataGraphEdge",
       "jsdoc": "从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/metadata-graph.ts",
-        "line": 15,
-        "className": "AiApiMetadataGraphEdge",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 父 API 对象的 kind 标识。 */\n    parentKind: string;\n    /** 到达子 API 的边类型：属性引用或 action 返回值。 */\n    via: 'attribute' | 'action';\n    /** 边上的属性名或 action 名。 */\n    viaName: string;\n    /** 边指向的子 API 对象元数据。 */\n    child: AiApiObjectMetadata;\n}>",
         "declarationRelations": [
@@ -133,12 +127,6 @@
       "name": "AiApiMetadataGraphNode",
       "jsdoc": "metadata 图中的一个节点（含出边）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/metadata-graph.ts",
-        "line": 26,
-        "className": "AiApiMetadataGraphNode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前节点对应的 API 对象元数据。 */\n    api: AiApiObjectMetadata;\n    /** 父节点 kind；根节点为 undefined。 */\n    parentKind?: string;\n    /** 从当前节点出发的所有 metadata 边。 */\n    edges: readonly AiApiMetadataGraphEdge[];\n}>",
         "declarationRelations": [
@@ -176,12 +164,6 @@
       "name": "AiApiNestedApiRecord",
       "jsdoc": "扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/metadata-graph.ts",
-        "line": 35,
-        "className": "AiApiNestedApiRecord",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 嵌套 API 对象元数据。 */\n    api: AiApiObjectMetadata;\n    /** 首次发现该嵌套 API 时的父 kind。 */\n    parentKind: string;\n    /** 首次发现时的边类型（属性或 action）。 */\n    via: AiApiMetadataGraphEdge['via'];\n    /** 首次发现时的属性名或 action 名。 */\n    viaName: string;\n}>",
         "declarationRelations": [

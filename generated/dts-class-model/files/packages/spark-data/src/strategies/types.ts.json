@@ -93,12 +93,6 @@
       "name": "CrudOperation",
       "jsdoc": "CRUD 操作类型",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/types.ts",
-        "line": 9,
-        "className": "CrudOperation",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'retrieve' | 'create' | 'update' | 'delete' | 'batchCreate' | 'batchUpdate' | 'batchDelete' | 'import'",
         "declarationRelations": [
@@ -142,12 +136,6 @@
       "name": "CrudLifecycleEvent",
       "jsdoc": "CRUD 生命周期事件\n- `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）\n- `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/types.ts",
-        "line": 16,
-        "className": "CrudLifecycleEvent",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** CRUD 操作类型。 */\n    readonly operation: CrudOperation;\n    /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */\n    readonly phase: 'before' | 'after';\n    /** 提交的数据（before 阶段为原始入参，after 阶段同前） */\n    readonly data: unknown;\n    /** 操作结果（仅 after 阶段） */\n    result?: CrudResult | undefined;\n    /** 是否已取消（仅 before 阶段有效） */\n    cancelled: boolean;\n    /** 取消操作（仅 before 阶段调用） */\n    cancel(): void;\n}",
         "members": {
@@ -201,12 +189,6 @@
       "name": "CrudLifecycleEventInput",
       "jsdoc": "Crud Lifecycle Event Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-data/src/strategies/types.ts",
-        "line": 31,
-        "className": "CrudLifecycleEventInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** CRUD 操作类型：retrieve / create / update / delete / batchCreate / batchUpdate / batchDelete / import。 */\n    operation: CrudOperation;\n    /** 生命周期阶段：before=可取消，after=可读取结果执行联动。 */\n    phase: 'before' | 'after';\n    /** 提交的数据载荷（before 阶段为原始入参，after 阶段同前）。 */\n    data: unknown;\n    /** 操作结果（仅 after 阶段有效）。 */\n    result?: CrudResult | undefined;\n}>",
         "declarationRelations": [

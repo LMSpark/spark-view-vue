@@ -62,12 +62,8 @@
       "name": "SparkAgentPanelProps",
       "jsdoc": "SparkAgentPanel 的组合输入，复用既有 trace UI，并可选展示 AG-UI timeline 摘要。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/ai/components/SparkAgentPanel.props.ts",
-        "line": 9,
-        "className": "SparkAgentPanelProps",
-        "declarationKind": "typeAlias",
-        "componentName": "SparkAgentPanel"
+      "component": {
+        "name": "SparkAgentPanel"
       },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 流式展示条目列表（由外部 AI runtime 传入）。 */\n    entries: readonly StreamDisplayEntry[];\n    /** 是否正在接收流式文本增量。 */\n    isStreaming: boolean;\n    /** 是否正在接收推理文本。 */\n    isReasoning: boolean;\n    /** 会话诊断数据投影（永远有值，含空摘要）。 */\n    diagnostics: SessionDiagnosticsData;\n    /** AG-UI timeline 事件列表（可选）。 */\n    timelineEvents?: readonly SparkAgentTimelineEvent[];\n    /** 是否展示 AG-UI timeline 摘要面板。 */\n    showTimeline?: boolean;\n    /** 面板高度 CSS 值。 */\n    height?: string;\n    /** 无 live entries 且诊断为空时的占位文本。 */\n    emptyText?: string;\n    /** timeline 面板无事件时的占位文本。 */\n    timelineEmptyText?: string;\n}>",

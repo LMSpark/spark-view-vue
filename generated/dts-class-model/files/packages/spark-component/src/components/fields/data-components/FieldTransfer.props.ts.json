@@ -71,16 +71,12 @@
       "name": "TransferValue",
       "jsdoc": "Transfer 已选值数组；每一项对应穿梭框选项的 value。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts",
-        "line": 9,
-        "className": "TransferValue",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldTransfer",
-        "componentType": "r-transfer",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldTransfer",
+        "type": "r-transfer",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "Array<string | number>",
@@ -98,16 +94,12 @@
       "name": "RTransferProps",
       "jsdoc": "RTransfer Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts",
-        "line": 11,
-        "className": "RTransferProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldTransfer",
-        "componentType": "r-transfer",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldTransfer",
+        "type": "r-transfer",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<TransferValue> & {\n    /** 左右面板标题。 */\n    titles?: [string, string];\n    /** 候选项过滤输入框占位文案。 */\n    filterPlaceholder?: string;\n    /** 目标面板排序策略。 */\n    targetOrder?: 'original' | 'push' | 'unshift';\n}",

@@ -392,12 +392,6 @@
       "name": "AiAgentRunTraceToolCall",
       "jsdoc": "工具调用轨迹条目：单次 function tool 调用的 headless 投影",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 15,
-        "className": "AiAgentRunTraceToolCall",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 调用参数的截断预览文本 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒） */\n    durationMs: number;\n}>",
         "declarationRelations": [
@@ -465,12 +459,6 @@
       "name": "AiAgentRunTraceReasoning",
       "jsdoc": "推理过程轨迹条目：模型 reasoning 输出的 headless 投影",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 34,
-        "className": "AiAgentRunTraceReasoning",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 推理文本内容 */\n    text: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** UI 是否默认折叠；轮次结束后自动折叠 */\n    collapsed: boolean;\n}>",
         "declarationRelations": [
@@ -508,12 +496,6 @@
       "name": "AiAgentRunTraceEntry",
       "jsdoc": "Ai Agent Run Trace Entry 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 43,
-        "className": "AiAgentRunTraceEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}> | Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}> | Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
         "declarationRelations": [
@@ -560,12 +542,6 @@
       "name": "AiAgentRunTraceSnapshot",
       "jsdoc": "run trace 快照：headless 消费者订阅获得的完整只读投影",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 71,
-        "className": "AiAgentRunTraceSnapshot",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前正在流式输出的文本（尚未完成一个完整 assistant 消息） */\n    streamText: string;\n    /** 当前正在流式输出的推理文本 */\n    reasoningText: string;\n    /** 是否正在流式输出 assistant 文本 */\n    isStreaming: boolean;\n    /** 是否正在流式输出推理文本 */\n    isReasoning: boolean;\n    /** 有序的展示条目列表（含 user-message / assistant-delta / reasoning / tool-call / error / system-message） */\n    entries: readonly AiAgentRunTraceEntry[];\n    /** 已完成的所有工具调用记录列表 */\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
         "declarationRelations": [
@@ -621,12 +597,6 @@
       "name": "AiAgentRunTraceOptions",
       "jsdoc": "run trace 创建配置",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 86,
-        "className": "AiAgentRunTraceOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 自定义时间戳函数，默认 Date.now；测试中可注入确定性时钟 */\n    now?: () => number;\n    /** 工具调用参数预览截断长度，默认 200 字符 */\n    argsPreviewLimit?: number;\n    /** 工具调用结果预览截断长度，默认 300 字符 */\n    resultPreviewLimit?: number;\n}>",
         "declarationRelations": [
@@ -669,12 +639,6 @@
       "name": "AiAgentRunTraceListener",
       "jsdoc": "Ai Agent Run Trace Listener 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 95,
-        "className": "AiAgentRunTraceListener",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(snapshot: AiAgentRunTraceSnapshot) => void",
         "members": {}
@@ -684,12 +648,6 @@
       "name": "AiAgentRunTrace",
       "jsdoc": "headless run trace 接口：UI 无关的活跃 run 状态投影，不持有持久化历史",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-run-trace.ts",
-        "line": 97,
-        "className": "AiAgentRunTrace",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 获取当前只读快照 */\n    snapshot(): AiAgentRunTraceSnapshot;\n    /** 订阅快照变化；返回取消订阅函数 */\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    /** 追加用户消息条目 */\n    appendUserMessage(content: string): void;\n    /** 追加模型文本增量（流式输出 token） */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量（流式输出 reasoning token） */\n    appendReasoning(text: string): void;\n    /** 从原始 SSE 事件派发内部状态变更（自动路由 delta/reasoning/result/error） */\n    appendEvent(event: AiAgentStreamEvent): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    /** 追加错误条目并清除流式状态 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断，追加系统消息并结束当前 turn */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn（如有），将 assistant-delta 转为 assistant-complete */\n    finish(): void;\n    /** 重置全部状态到空快照 */\n    reset(): void;\n}>",
         "declarationRelations": [

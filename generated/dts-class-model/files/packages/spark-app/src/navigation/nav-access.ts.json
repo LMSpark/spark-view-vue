@@ -64,12 +64,6 @@
       "name": "DynamicRouterAccess",
       "jsdoc": "DynamicRouter 公共 API 子集（仅导航相关）",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/nav-access.ts",
-        "line": 19,
-        "className": "DynamicRouterAccess",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 清除路由缓存并重新注册，返回刷新后的导航树；DynamicRouter 未注入时由调用方处理 */\n    refreshRoutes(): Promise<ProjectModelData | null>;\n    /** 同步读取当前已加载的导航树（不发 HTTP），未加载或未注入时返回 null */\n    getNavTree(): ProjectModelData | null;\n}",
         "members": {
@@ -124,12 +118,6 @@
       "name": "NavAccessOptions",
       "jsdoc": "初始化选项",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-app/src/navigation/nav-access.ts",
-        "line": 26,
-        "className": "NavAccessOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 导航树未加载时的回退首页路径（默认 '/dashboard'） */\n    defaultHomePath?: string;\n}",
         "members": {

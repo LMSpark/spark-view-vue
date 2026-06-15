@@ -40,16 +40,12 @@
       "name": "RTextProps",
       "jsdoc": "RText Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldText.props.ts",
-        "line": 9,
-        "className": "RTextProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldText",
-        "componentType": "r-text",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldText",
+        "type": "r-text",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkFieldSemanticProps<string>",

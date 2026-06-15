@@ -326,12 +326,6 @@
       "name": "AiApiActionFailureMode",
       "jsdoc": "Ai Api Action Failure Mode 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 9,
-        "className": "AiApiActionFailureMode",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 错误码（LLM 可见，用于识别失败类型）。 */\n    code: string;\n    /** 发生条件（自然语言描述何时触发此错误）。 */\n    when: string;\n    /** 修复建议（LLM 在失败后可参考的恢复步骤）。 */\n    fix: string;\n}>",
         "declarationRelations": [
@@ -369,12 +363,6 @@
       "name": "AiApiActionExample",
       "jsdoc": "Ai Api Action Example 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 18,
-        "className": "AiApiActionExample",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 用户输入示例，可用于判断触发条件。 */\n    user?: string;\n    /** 示例意图说明。 */\n    intent?: string;\n    /** 业务 action 参数示例。 */\n    args?: AiJsonValue;\n    /** 完整调用示例，通常展示 model_script 对象链或 tool arguments。 */\n    call?: AiJsonValue;\n}>",
         "declarationRelations": [
@@ -418,12 +406,6 @@
       "name": "AiApiActionAntiExample",
       "jsdoc": "Ai Api Action Anti Example 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 29,
-        "className": "AiApiActionAntiExample",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 用户输入或场景示例。 */\n    user?: string;\n    /** 不应调用该 action 的原因。 */\n    reason: string;\n    /** 容易误传的参数示例。 */\n    args?: AiJsonValue;\n}>",
         "declarationRelations": [
@@ -461,12 +443,6 @@
       "name": "AiApiJsDocMetadata",
       "jsdoc": "从源码 JSDoc 原样拷贝的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 38,
-        "className": "AiApiJsDocMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "string",
         "members": {}
@@ -476,12 +452,6 @@
       "name": "AiApiSourceProvenanceMetadata",
       "jsdoc": "反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 40,
-        "className": "AiApiSourceProvenanceMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 源码文件路径（相对 repoRoot 或 emit 路径）。 */\n    file: string;\n    /** 声明所在源码行号（1-based）。 */\n    line: number;\n    /** 声明所属 class/interface/type 名。 */\n    className: string;\n    /** 成员级溯源时的属性/方法名；类型级溯源时为 undefined。 */\n    memberName?: string;\n    /** 可能的 .d.ts 类型入口路径，与 file 可能不同。 */\n    typeEntryFile?: string;\n}>",
         "declarationRelations": [
@@ -531,12 +501,6 @@
       "name": "AiApiObjectMetadata",
       "jsdoc": "API 对象元数据（根对象或 action 返回的嵌套对象）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 53,
-        "className": "AiApiObjectMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** API kind 标识，脚本与 registry 中的唯一键。 */\n    kind: string;\n    /** 对外展示名，通常与 kind 一致。 */\n    name: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 可选构造函数元数据。 */\n    constructorSignature?: AiApiConstructorMetadata;\n    /** 该 API 对象可调用的 action 列表。 */\n    actions: readonly AiApiActionMetadata[];\n    /** 可读/可写属性元数据列表。 */\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
         "declarationRelations": [
@@ -604,12 +568,6 @@
       "name": "AiApiConstructorMetadata",
       "jsdoc": "API 对象构造函数元数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 72,
-        "className": "AiApiConstructorMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 构造函数面向 LLM 的说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 构造参数 JSON Schema（object 形态）。 */\n    paramsSchema: AiJsonSchemaObject;\n}>",
         "declarationRelations": [
@@ -653,12 +611,6 @@
       "name": "AiApiAttributeMetadata",
       "jsdoc": "API 属性元数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 83,
-        "className": "AiApiAttributeMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 属性名，脚本 object 链上的键。 */\n    name: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 属性值 JSON Schema。 */\n    schema: AiJsonSchema;\n    /** LLM/脚本是否可读该属性。 */\n    readable: boolean;\n    /** LLM/脚本是否可写该属性。 */\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
         "declarationRelations": [
@@ -726,12 +678,6 @@
       "name": "AiApiActionMetadata",
       "jsdoc": "API action 元数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 102,
-        "className": "AiApiActionMetadata",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** action 对外名称，script 上下文中的 callable 键。 */\n    name: string;\n    /** 业务 class 上实际调用的 methodName。 */\n    methodName: string;\n    /** 可选完整方法签名文本，供 guide 投影。 */\n    signatureText?: string;\n    /** 面向 LLM 的简短说明。 */\n    description: string;\n    /** 从源码 JSDoc 原样拷贝的语义块。 */\n    jsdoc?: AiApiJsDocMetadata;\n    /** 反射溯源，指向源码声明位置。 */\n    provenance?: AiApiSourceProvenanceMetadata;\n    /** 调用参数 JSON Schema（object 形态）。 */\n    paramsSchema: AiJsonSchemaObject;\n    /** 是否将 AiNativePathContext 作为首参注入 method。 */\n    takesContext?: boolean;\n    /** 返回值 JSON Schema。 */\n    resultSchema?: AiJsonSchema;\n    /** action 返回值中嵌套 API 对象的引用列表。 */\n    resultApis?: readonly AiApiResultApiRef[];\n    /** 调用前须遵守的使用规则（自然语言）。 */\n    usageRules?: readonly string[];\n    /** 调用前必须先完成的 action 名列表。 */\n    requiredBeforeCall?: readonly string[];\n    /** 已知失败模式与修复建议。 */\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    /** 多组调用示例。 */\n    examples?: readonly AiApiActionExample[];\n    /** 不应调用的反例与原因。 */\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
         "declarationRelations": [
@@ -847,12 +793,6 @@
       "name": "AiApiResultApiRef",
       "jsdoc": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 137,
-        "className": "AiApiResultApiRef",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    /** 嵌套 API 对象元数据；紧凑 runtime JSON 中可由 $ref 替代。 */\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
         "declarationRelations": [
@@ -890,12 +830,6 @@
       "name": "AiRuntimeApiMetadataJson",
       "jsdoc": "运行时 API 元数据：由 DTS DtsTypeDeclarationModel 或显式注册入口投影出脚本可执行的 API surface。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
-        "line": 146,
-        "className": "AiRuntimeApiMetadataJson",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** runtime metadata 格式版本：1 内联嵌套，2 使用 apiRegistry 去重。 */\n    schemaVersion: 1 | 2;\n    /** 脚本入口 root API 对象元数据。 */\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
         "declarationRelations": [

@@ -123,12 +123,6 @@
       "name": "AiAgentSessionSummary",
       "jsdoc": "Ai Agent Session Summary 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-diagnostics.ts",
-        "line": 9,
-        "className": "AiAgentSessionSummary",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 会话状态，如 'running' / 'stopped' / 'completed'；sessionRecord 为空时为 null。 */\n    status: string | null;\n    /** 历史 entry 总数（消息 + 工具调用 + 未知条目）。 */\n    historyCount: number;\n    /** 消息类 entry 数量（仅 kind='message'）。 */\n    messageCount: number;\n    /** 工具调用 entry 数量（仅 kind='functionCall'）。 */\n    toolCallCount: number;\n    /** 失败的工具调用数量（status='failed'），用于判断 Agent 工具能力是否闭环。 */\n    failedToolCallCount: number;\n    /** 所有工具调用使用过的函数名去重列表，用于快速了解本会话涉及哪些能力。 */\n    functionNames: readonly string[];\n    /** 最后一条 assistant 消息的文本内容；无 assistant 消息时为空串。 */\n    lastAssistantText: string;\n}>",
         "declarationRelations": [
@@ -190,12 +184,6 @@
       "name": "AiAgentSessionTranscriptEntry",
       "jsdoc": "Ai Agent Session Transcript Entry 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-diagnostics.ts",
-        "line": 26,
-        "className": "AiAgentSessionTranscriptEntry",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 历史条目的序号，与 session history 中的 seq 对应；解析失败时为 null。 */\n    seq: number | null;\n    /** 历史条目的唯一 ID；解析失败时为空串。 */\n    id: string;\n    /** ISO 时间戳字符串；原始 timestamp 为非数字时为 null。 */\n    timestamp: string | null;\n    /** 条目种类：message = 消息，functionCall = 工具调用，unknown = 无法识别。 */\n    kind: 'message' | 'functionCall' | 'unknown';\n    /** 方向标识，如 'USER => AGENT' / 'LLM => AGENT' / 'AGENT TOOL => LLM'。 */\n    direction: string;\n    /** 消息角色（仅 kind='message' 时有值）：user / assistant / system / developer。 */\n    role?: string;\n    /** 消息来源（仅 kind='message' 时可能有值）。 */\n    source?: string;\n    /** 工具名称（仅 kind='functionCall' 时有值）。 */\n    toolName?: string;\n    /** 工具调用状态（仅 kind='functionCall' 时可能有值），如 'completed' / 'failed'。 */\n    status?: string;\n    /** 消息内容或未知条目的序列化文本，按 contentLimit 裁剪。 */\n    content?: string;\n    /** 工具调用参数的序列化文本，按 contentLimit 裁剪。 */\n    args?: string;\n    /** 工具调用结果的序列化文本（优先取 result，fallback 取 error），按 contentLimit 裁剪。 */\n    result?: string;\n}>",
         "declarationRelations": [
@@ -287,12 +275,6 @@
       "name": "AiAgentSessionTranscriptOptions",
       "jsdoc": "Ai Agent Session Transcript Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/session/session-diagnostics.ts",
-        "line": 53,
-        "className": "AiAgentSessionTranscriptOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 单个字段最大字符数，超出部分截断并追加 truncation 标记；默认 12000。 */\n    contentLimit?: number;\n}>",
         "declarationRelations": [

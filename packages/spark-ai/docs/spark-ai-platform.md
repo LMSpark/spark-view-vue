@@ -200,13 +200,13 @@ flowchart TB
 pnpm run generate:class-model-surface
   → emitDeclarationsToMemory(tsconfig.class-model-emit.json → packages/*/src)
   → buildDtsClassModelBundle(AST 投影)
-  → generated/dts-class-model/manifest.json + files/**/*.d.ts.json
+  → generated/dts-class-model/manifest.json + files/**/*.json
 ```
 
 | 步骤 | 说明 |
 | ---- | ---- |
 | **内存 emit** | `compiler-api` 或 `vue-tsc`；`.d.ts` 仅在内存 Map；虚拟键前缀 `class-model-emit/` |
-| **落盘索引** | manifest / shard 键为源码 repo 相对路径（如 `packages/.../foo.ts` → `files/packages/.../foo.ts.json`） |
+| **落盘索引** | manifest / shard 键为源码 repo 相对路径（如 `packages/.../foo.ts` → `files/packages/.../foo.ts.json`，`foo.vue` → `foo.vue.json`） |
 | **JSDoc 真源** | 模块级 `@module`（职责/边界/AI用途）、成员 JSDoc、`@param`/`@returns` |
 | **AST 投影** | `build-dts-class-model-bundle.ts`：class/interface/enum、attributes、methods、TypeDoc 式 type 树 |
 | **Bundle 落盘** | 每逻辑 DTS → 一个 JSON shard；`classIndex[className]` → shard 路径 |
@@ -234,7 +234,7 @@ pnpm run generate:class-model-surface
 
 ```text
 Compiler API（一次投影）
-  → manifest.json + files/**/*.d.ts.json   ← 唯一生产读模型
+  → manifest.json + files/**/*.json   ← 唯一生产读模型
        ├─ model_*_guide   → DtsClassModelBundleLoader + ClassModelKnowledgeService
        └─ model_script    → DtsClassModelBundleLoader.buildRuntimeApiMetadata()
                               → createRuntimeApiMetadataFromSurface()（薄映射，不二次编译）
@@ -631,7 +631,7 @@ new Function('__ctx', source)(contextWithSelf)
 
 | 工具 | 参数（必填标 ★） | 运行时白名单 |
 | ---- | ----------------- | ------------ |
-| `model_query` | `kind?`, `keyword?`, `includeMembers?` | `['kind', 'keyword', 'includeMembers']` |
+| `model_query` | `kind?`, `keyword?`, `componentName?`, `componentType?`, `componentLevel?`, `componentLayer?`, `componentDirectory?`, `includeMembers?` | `['kind', 'keyword', 'componentName', 'componentType', 'componentLevel', 'componentLayer', 'componentDirectory', 'includeMembers']` |
 | `model_class_guide` | `kind★` | `['kind']` |
 | `model_attribute_guide` | `kind★`, `attributeName★` | `['kind', 'attributeName']` |
 | `model_action_guide` | `kind★`, `actionName★` | `['kind', 'actionName']` |
@@ -960,6 +960,7 @@ pnpm run test
 | 主题 | 路径 |
 | ---- | ---- |
 | **本文（全仓 AI SSOT）** | `packages/spark-ai/docs/spark-ai-platform.md` |
+| ClassModel 知识体系 | `packages/spark-ai/docs/class-model-knowledge-system-zh-cn.md` |
 | 接入 checklist 附录 | `packages/spark-ai/docs/business-capability-onboarding.md` |
 | 端到端方案稿 + Phase 细节 | `packages/spark-ai/docs/end-to-end-platform.md` |
 | native-runtime 速查 | `packages/spark-ai/docs/native-runtime-and-agent-flow-zh-cn.md` |

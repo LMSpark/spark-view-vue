@@ -38,12 +38,6 @@
       "name": "Draft2020AuditIssue",
       "jsdoc": "Draft2020 Audit Issue 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-json-document/src/schema/schema-draft2020-audit.ts",
-        "line": 2,
-        "className": "Draft2020AuditIssue",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 审计问题在 JSON Schema 中的路径，格式为 $.properties.fieldName 等。 */\n    path: string;\n    /** 违反的审计规则标识，如 INVALID_TYPE、REF_TARGET、REDUNDANT_CONST_TYPE 等。 */\n    rule: string;\n    /** 规则违反的详细说明，包含具体的违规内容（如非法类型名、多余字段列表等）。 */\n    detail: string;\n}>",
         "declarationRelations": [

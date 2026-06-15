@@ -53,9 +53,24 @@ export type SourceProvenanceMeta = Readonly<{
   declarationKind?: 'class' | 'interface' | 'typeAlias' | 'enum' | 'function' | 'const' | 'component'
 }>
 
+/** Component Profile Meta 是持久化 JSON 中保留的组件检索画像，只包含 guide/query 实际消费的字段。 */
+export type ComponentProfileMeta = Readonly<{
+  /** SPARK 组件名；用于 query keyword、guide 组件上下文和组件检索结果。 */
+  name?: string
+  /** 组件类型标签（如 container、field、r-table）；来自组件目录或 Props 名推断。 */
+  type?: string
+  /** 组件在 UI 层级中的级别（table-level、field-level 等）。 */
+  level?: ComponentClassModelLevel
+  /** 组件在架构分层中的归属（layout-container、data-field 等）。 */
+  layer?: ComponentClassModelLayer
+  /** 组件源码目录；用于 guide 中表达组件上下文。 */
+  directory?: string
+}>
+
 /** Component Class Model Level 的语义模型。 */
 export type ComponentClassModelLevel =
   | 'table-level'
+  | 'row-level'
   | 'container'
   | 'field-level'
   | 'display'
@@ -64,6 +79,7 @@ export type ComponentClassModelLevel =
 /** Component Class Model Layer 的语义模型。 */
 export type ComponentClassModelLayer =
   | 'data-view-container'
+  | 'row-scope'
   | 'layout-container'
   | 'zone-container'
   | 'data-field'
@@ -108,6 +124,8 @@ export type DtsTypeDeclarationBase<TDeclarationKind extends DtsTypeDeclarationKi
   declarationKind: TDeclarationKind
   /** bundle shard 持久化的 Draft 2020-12 独立校验文档。 */
   jsonSchema?: AiJsonSchemaObject
+  /** guide/query 实际消费的组件画像；替代持久化 provenance 中的 component* 冗余字段。 */
+  component?: ComponentProfileMeta
   /** 声明在 emit `.d.ts` 和源文件中的溯源信息；gap 报告和 fixHint 定位依赖此字段。 */
   provenance?: SourceProvenanceMeta
 }>

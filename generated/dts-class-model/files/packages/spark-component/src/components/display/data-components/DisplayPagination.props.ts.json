@@ -64,16 +64,12 @@
       "name": "RPaginationProps",
       "jsdoc": "RPagination Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/display/data-components/DisplayPagination.props.ts",
-        "line": 9,
-        "className": "RPaginationProps",
-        "declarationKind": "typeAlias",
-        "componentName": "DisplayPagination",
-        "componentType": "r-pagination",
-        "componentLevel": "display",
-        "componentLayer": "data-display",
-        "componentDirectory": "display/data-components"
+      "component": {
+        "name": "DisplayPagination",
+        "type": "r-pagination",
+        "level": "display",
+        "layer": "data-display",
+        "directory": "display/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 总条数 */\n    total?: number;\n    /** 每页条数 */\n    pageSize?: number;\n    /** 当前页 */\n    currentPage?: number;\n    /** 每页条数选项 */\n    pageSizes?: number[];\n    /** 页码按钮数量 */\n    pagerCount?: number;\n    /** 布局模板 */\n    layout?: string;\n    /** 是否显示背景 */\n    background?: boolean;\n    /** 是否小尺寸 */\n    small?: boolean;\n    /** 单页时是否隐藏 */\n    hideOnSinglePage?: boolean;\n}",

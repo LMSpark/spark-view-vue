@@ -108,12 +108,6 @@
       "name": "PageTextFile",
       "jsdoc": "Page Text File 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/content/text-file.ts",
-        "line": 2,
-        "className": "PageTextFile",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page Text File 实例。",

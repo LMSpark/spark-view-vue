@@ -45,12 +45,6 @@
       "name": "Props",
       "jsdoc": "图标选择器属性，描述当前图标值和输入外观。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/components/IconPicker.vue",
-        "line": 2,
-        "className": "Props",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前选中的图标名称。 */\n    modelValue?: string;\n    /** 未选择图标时的占位提示。 */\n    placeholder?: string;\n    /** 图标选择器输入框宽度。 */\n    width?: number | string;\n}",
         "members": {

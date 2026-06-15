@@ -163,12 +163,6 @@
       "name": "AuthUser",
       "jsdoc": "@module app:services/auth\n职责：提供主应用 auth 能力，围绕 AuthUser、PlatformAdminUserLike、LoginParams 等 5 个公开契约 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/auth。\n认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/auth.ts",
-        "line": 15,
-        "className": "AuthUser",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName: string;\n    /** email 字段。 */\n    email: string;\n    /** avatar 字段。 */\n    avatar: string;\n    /** roles 字段。 */\n    roles: string[];\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** default Project Id 标识。 */\n    defaultProjectId: string;\n}",
         "members": {
@@ -229,12 +223,6 @@
       "name": "PlatformAdminUserLike",
       "jsdoc": "Platform Admin User Like 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/auth.ts",
-        "line": 34,
-        "className": "PlatformAdminUserLike",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** roles 字段。 */\n    roles?: readonly string[];\n}",
         "members": {
@@ -259,12 +247,6 @@
       "name": "LoginParams",
       "jsdoc": "Login Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/auth.ts",
-        "line": 53,
-        "className": "LoginParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
         "members": {
@@ -295,12 +277,6 @@
       "name": "RegisterParams",
       "jsdoc": "Register Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/auth.ts",
-        "line": 63,
-        "className": "RegisterParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n}",
         "members": {
@@ -343,12 +319,6 @@
       "name": "RegisterTenantParams",
       "jsdoc": "Register Tenant Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/auth.ts",
-        "line": 77,
-        "className": "RegisterTenantParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
         "members": {

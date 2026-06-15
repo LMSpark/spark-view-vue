@@ -680,12 +680,6 @@
       "name": "ProjectPageLoadOptions",
       "jsdoc": "Project Page Load Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 20,
-        "className": "ProjectPageLoadOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** force Reload 字段。 */\n    forceReload?: boolean;\n}",
         "members": {
@@ -704,12 +698,6 @@
       "name": "CreatePageForSelectedNodeParams",
       "jsdoc": "Create Page For Selected Node Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 25,
-        "className": "CreatePageForSelectedNodeParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** 显示标题。 */\n    title?: string;\n    /** icon 字段。 */\n    icon?: string;\n}",
         "members": {
@@ -740,12 +728,6 @@
       "name": "CreateMountedPageParams",
       "jsdoc": "Create Mounted Page Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 34,
-        "className": "CreateMountedPageParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** 显示标题。 */\n    title?: string;\n    /** icon 字段。 */\n    icon?: string;\n    /** node 字段。 */\n    node?: ProjectNodeData;\n    /** parent Id 标识。 */\n    parentId?: string | null;\n    /** index 字段。 */\n    index?: number;\n    /** rollback Page On Navigation Failure 字段。 */\n    rollbackPageOnNavigationFailure?: boolean;\n}",
         "members": {
@@ -800,12 +782,6 @@
       "name": "CreatePageFilesParams",
       "jsdoc": "Create Page Files Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 51,
-        "className": "CreatePageFilesParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "PageFileCreateOptions & {\n    /** page Id 标识。 */\n    pageId: string;\n}",
         "declarationRelations": [
@@ -835,12 +811,6 @@
       "name": "PageNodeCreateMountedResult",
       "jsdoc": "Page Node Create Mounted Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 56,
-        "className": "PageNodeCreateMountedResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 当前页码。 */\n    page: Record<string, unknown>;\n    /** node 字段。 */\n    node: ProjectNodeData;\n}",
         "members": {
@@ -865,12 +835,6 @@
       "name": "PageNodeRemoveMountedResult",
       "jsdoc": "Page Node Remove Mounted Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 63,
-        "className": "PageNodeRemoveMountedResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** deleted Node 字段。 */\n    deletedNode: ProjectNodeData | null;\n    /** deleted Files 字段。 */\n    deletedFiles: boolean;\n}",
         "members": {
@@ -895,12 +859,6 @@
       "name": "RemoveMountedPageParams",
       "jsdoc": "Remove Mounted Page Params 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 70,
-        "className": "RemoveMountedPageParams",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** node Id 标识。 */\n    nodeId?: string;\n    /** delete Files 字段。 */\n    deleteFiles?: boolean;\n}",
         "members": {
@@ -931,12 +889,6 @@
       "name": "ProjectWorkspaceOptions",
       "jsdoc": "Project Workspace Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 79,
-        "className": "ProjectWorkspaceOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** project Id 标识。 */\n    projectId: string;\n    /** http 字段。 */\n    http: HttpClientBase;\n    /** get Page Files Api 回调。 */\n    getPageFilesApi: () => string;\n    /** get Navigation Api 回调。 */\n    getNavigationApi: () => string;\n    /** get Projects Api 回调。 */\n    getProjectsApi?: () => string;\n    /** get Project Navigation Api 回调。 */\n    getProjectNavigationApi?: (projectId: string) => string;\n    /** get Headers 回调。 */\n    getHeaders?: () => Record<string, string>;\n    /** file Storage 字段。 */\n    fileStorage?: NonNullable<PageContentLoaderOptions['fileStorage']>;\n}",
         "members": {
@@ -1032,12 +984,6 @@
       "name": "ProjectWorkspace",
       "jsdoc": "项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-workspace.ts",
-        "line": 100,
-        "className": "ProjectWorkspace",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Project Workspace 实例。",

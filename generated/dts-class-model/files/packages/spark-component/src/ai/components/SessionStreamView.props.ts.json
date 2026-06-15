@@ -44,12 +44,8 @@
       "name": "SessionStreamViewProps",
       "jsdoc": "Session Stream View Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/ai/components/SessionStreamView.props.ts",
-        "line": 9,
-        "className": "SessionStreamViewProps",
-        "declarationKind": "typeAlias",
-        "componentName": "SessionStreamView"
+      "component": {
+        "name": "SessionStreamView"
       },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 流式显示条目数组：每条包含文本增量、推理过程或工具调用结果。 */\n    entries: readonly StreamDisplayEntry[];\n    /** AI 是否正在流式输出文本增量。 */\n    isStreaming: boolean;\n    /** AI 是否正在输出推理过程（如 chain-of-thought）。 */\n    isReasoning: boolean;\n    /** 无条目时的占位提示文本。 */\n    emptyText?: string;\n}>",

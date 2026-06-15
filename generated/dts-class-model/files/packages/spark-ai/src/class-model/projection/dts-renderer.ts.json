@@ -131,12 +131,6 @@
       "name": "ModelGuideRenderInput",
       "jsdoc": "Model Guide Render Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
-        "line": 9,
-        "className": "ModelGuideRenderInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 完整 ClassModelDocument，供类型解析与签名渲染。 */\n    document: ClassModelDocument;\n    /** 目标模型的 kind（className）。 */\n    kind: string;\n}>",
         "declarationRelations": [
@@ -168,12 +162,6 @@
       "name": "ModelGuide",
       "jsdoc": "Model Guide 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
-        "line": 16,
-        "className": "ModelGuide",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 模型 kind 标识。 */\n    kind: string;\n    /** 模型声明头行（class/interface/type 前缀）。 */\n    declaration: string;\n    /** 含 JSDoc 与成员的完整 guide 文本。 */\n    text: string;\n}>",
         "declarationRelations": [
@@ -211,12 +199,6 @@
       "name": "AttributeGuideRenderInput",
       "jsdoc": "Attribute Guide Render Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
-        "line": 25,
-        "className": "AttributeGuideRenderInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 完整 ClassModelDocument，供类型解析与签名渲染。 */\n    document: ClassModelDocument;\n    /** 属性所属模型的 kind。 */\n    kind: string;\n    /** 目标属性名。 */\n    attributeName: string;\n}>",
         "declarationRelations": [
@@ -254,12 +236,6 @@
       "name": "AttributeGuide",
       "jsdoc": "Attribute Guide 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
-        "line": 34,
-        "className": "AttributeGuide",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 属性所属模型的 kind。 */\n    kind: string;\n    /** 目标属性名。 */\n    attributeName: string;\n    /** 属性单行声明（含 readonly 与类型）。 */\n    declaration: string;\n    /** 含模型 JSDoc 与属性声明的 guide 文本。 */\n    text: string;\n}>",
         "declarationRelations": [
@@ -303,12 +279,6 @@
       "name": "MethodGuideRenderInput",
       "jsdoc": "Method Guide Render Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
-        "line": 45,
-        "className": "MethodGuideRenderInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 完整 ClassModelDocument，供类型解析与签名渲染。 */\n    document: ClassModelDocument;\n    /** 方法所属模型的 kind。 */\n    kind: string;\n    /** 目标方法名。 */\n    methodName: string;\n}>",
         "declarationRelations": [
@@ -346,12 +316,6 @@
       "name": "MethodGuide",
       "jsdoc": "Method Guide 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
-        "line": 54,
-        "className": "MethodGuide",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 方法所属模型的 kind。 */\n    kind: string;\n    /** 目标方法名。 */\n    methodName: string;\n    /** 方法单行签名声明。 */\n    declaration: string;\n    /** 含模型 JSDoc 与方法声明的 guide 文本。 */\n    text: string;\n}>",
         "declarationRelations": [

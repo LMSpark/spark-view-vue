@@ -78,12 +78,6 @@
       "name": "SnapshotHistory",
       "jsdoc": "@module\n@spark-appworks /spark-utils:snapshot-history\n职责：提供框架无关基础设施 snapshot-history 能力，围绕 SnapshotHistory 支撑 capability、HTTP、日志、脚本类型或历史快照。\n边界：保持底层工具包纯净，不依赖 Vue、spark-data 或应用壳层，也不承载业务配置。\nAI用途：需要跨包复用基础能力或确认底层协议时，用本模块理解 snapshot-history。\n通用快照历史管理器 — push / undo / redo / cursor。\n设计目标：\n1. 纯 TypeScript，零框架依赖。\n2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-utils/src/snapshot-history.ts",
-        "line": 15,
-        "className": "SnapshotHistory",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Snapshot History 实例。",

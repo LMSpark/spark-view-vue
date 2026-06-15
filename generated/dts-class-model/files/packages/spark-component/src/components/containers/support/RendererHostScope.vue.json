@@ -9,7 +9,12 @@
     "modulePath": "components/containers/support/RendererHostScope",
     "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/RendererHostScope\n职责：维护 @spark-appworks/spark-component 中 components/containers/support/RendererHostScope 的模块能力，围绕 模块入口、副作用注册或内部组合逻辑 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/containers/support/RendererHostScope 的声明、导出和使用边界时，从本模块开始。",
     "jsdocSource": "source-file-jsdoc",
-    "symbols": []
+    "symbols": [],
+    "componentName": "RendererHostScope",
+    "componentType": "r-host-scope",
+    "componentLevel": "row-level",
+    "componentLayer": "row-scope",
+    "componentDirectory": "containers/support"
   },
   "$defs": {},
   "generatedAt": "2026-06-11T12:38:13.468Z",

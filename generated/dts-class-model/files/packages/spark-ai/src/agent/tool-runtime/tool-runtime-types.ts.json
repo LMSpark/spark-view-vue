@@ -437,12 +437,6 @@
       "name": "AiAgentToolCheckLevel",
       "jsdoc": "Ai Agent Tool Check Level 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 9,
-        "className": "AiAgentToolCheckLevel",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'error' | 'warn' | 'info'",
         "declarationRelations": [
@@ -466,12 +460,6 @@
       "name": "AiAgentToolCheck",
       "jsdoc": "Ai Agent Tool Check 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 11,
-        "className": "AiAgentToolCheck",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Tool Check 实例。",
@@ -655,12 +643,6 @@
       "name": "AiAgentToolResultOptions",
       "jsdoc": "Ai Agent Tool Result Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 38,
-        "className": "AiAgentToolResultOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 工具是否执行成功。 */\n    ok: boolean;\n    /** 成功时的业务数据载荷。 */\n    data?: TData;\n    /** 结构化检查项（error/warn/info）。 */\n    checks?: readonly AiAgentToolCheck[];\n    /** 可选运行状态快照。 */\n    state?: Record<string, unknown>;\n}>",
         "declarationRelations": [
@@ -704,12 +686,6 @@
       "name": "AiAgentToolResult",
       "jsdoc": "Ai Agent Tool Result 的返回结果。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 49,
-        "className": "AiAgentToolResult",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Tool Result 实例。",
@@ -943,12 +919,6 @@
       "name": "AiAgentToolSpec",
       "jsdoc": "Ai Agent Tool Spec 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 70,
-        "className": "AiAgentToolSpec",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** OpenAI function tool 类型标识，固定为 'function'。 */\n    type: 'function';\n    /** function 工具的名称、描述与 JSON Schema 参数。 */\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
         "declarationRelations": [
@@ -980,12 +950,6 @@
       "name": "AiAgentRuntimeHostContext",
       "jsdoc": "Ai Agent Runtime Host Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 82,
-        "className": "AiAgentRuntimeHostContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 业务模块 ID。 */\n    moduleId: string;\n    /** 模块实例 ID，区分同模块多实例。 */\n    moduleInstanceId: string;\n    /** 全局实例 ID，跨模块唯一。 */\n    instanceId: string;\n}>",
         "declarationRelations": [
@@ -1023,12 +987,6 @@
       "name": "AiAgentToolRuntimeKnowledgeProjection",
       "jsdoc": "Ai Agent Tool Runtime Knowledge Projection 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 91,
-        "className": "AiAgentToolRuntimeKnowledgeProjection",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 注入 LLM system prompt 的知识快照文本。 */\n    promptSnapshot: string;\n}>",
         "declarationRelations": [
@@ -1054,12 +1012,6 @@
       "name": "AiAgentToolRuntimeInspectFinding",
       "jsdoc": "Ai Agent Tool Runtime Inspect Finding 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 96,
-        "className": "AiAgentToolRuntimeInspectFinding",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 发现项等级：error / warn / info。 */\n    level: 'error' | 'warn' | 'info';\n    /** 稳定发现码。 */\n    code: string;\n    /** 面向用户或日志的说明。 */\n    message: string;\n    /** 可选修复建议。 */\n    fix?: string;\n}>",
         "declarationRelations": [
@@ -1103,12 +1055,6 @@
       "name": "AiAgentToolRuntimeInspectReport",
       "jsdoc": "Ai Agent Tool Runtime Inspect Report 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 107,
-        "className": "AiAgentToolRuntimeInspectReport",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 自检总体状态：ok / warning / error。 */\n    status: 'ok' | 'warning' | 'error';\n    /** 已注册 root API kind 列表。 */\n    rootKinds: readonly string[];\n    /** 已加载业务模块数量。 */\n    moduleCount: number;\n    /** 结构化发现项列表。 */\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
         "declarationRelations": [
@@ -1152,12 +1098,6 @@
       "name": "AiAgentToolRuntime",
       "jsdoc": "Ai Agent Tool Runtime 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
-        "line": 118,
-        "className": "AiAgentToolRuntime",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 返回当前可用的 OpenAI function tool 规格列表。 */\n    getTools(): readonly AiAgentToolSpec[];\n    /** 按名称执行工具，传入参数与 Host 上下文。 */\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    /** 投影当前知识快照，供 LLM prompt 注入。 */\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    /** 自检工具运行时配置与注册完整性。 */\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
         "declarationRelations": [

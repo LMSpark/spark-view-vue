@@ -37,16 +37,12 @@
       "name": "RRateProps",
       "jsdoc": "RRate Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/data-components/FieldRate.props.ts",
-        "line": 9,
-        "className": "RRateProps",
-        "declarationKind": "typeAlias",
-        "componentName": "FieldRate",
-        "componentType": "r-rate",
-        "componentLevel": "field-level",
-        "componentLayer": "data-field",
-        "componentDirectory": "fields/data-components"
+      "component": {
+        "name": "FieldRate",
+        "type": "r-rate",
+        "level": "field-level",
+        "layer": "data-field",
+        "directory": "fields/data-components"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & SparkMaxNumericFieldProps<number> & {\n    /** 是否允许选择半星。 */\n    allowHalf?: boolean;\n}",

@@ -294,12 +294,6 @@
       "name": "ProjectDesignNodeEditResult",
       "jsdoc": "Project Design Node Edit Result 的返回结果。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-design.ts",
-        "line": 16,
-        "className": "ProjectDesignNodeEditResult",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** node 字段。 */\n    node: TNode;\n    /** 操作结果。 */\n    result: NavigationNodeDraftApplyResult;\n}",
         "members": {
@@ -324,12 +318,6 @@
       "name": "ProjectDesign",
       "jsdoc": "项目设计根：项目元数据、导航节点树与配置页缓存。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-design.ts",
-        "line": 25,
-        "className": "ProjectDesign",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Project Design 实例。",

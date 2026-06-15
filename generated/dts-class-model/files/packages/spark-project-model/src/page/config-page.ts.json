@@ -347,12 +347,6 @@
       "name": "PageNodeRenderConfig",
       "jsdoc": "Page Node Render Config 的配置结构。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/config-page.ts",
-        "line": 16,
-        "className": "PageNodeRenderConfig",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** navigation 字段。 */\n    navigation: ProjectNodeData | null;\n    /** rule 字段。 */\n    rule: SparkNode[];\n    /** 业务数据载荷。 */\n    data: DataSet;\n    /** script 字段。 */\n    script: string | undefined;\n    /** css 字段。 */\n    css: string | undefined;\n}",
         "members": {
@@ -401,12 +395,6 @@
       "name": "PageNodeLike",
       "jsdoc": "Page Node Like 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/config-page.ts",
-        "line": 31,
-        "className": "PageNodeLike",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 页面唯一标识，与配置页存储目录名一致 */\n    readonly pageId: string;\n    /** 页面四文件（rule/pagedata/script/style）是否已从远端加载到内存 */\n    readonly isLoaded: boolean;\n    /** 从远端加载页面四文件到内存；重复加载会覆盖内存中未保存的变更 */\n    load(options?: PageNodeLoadOptions): Promise<void>;\n    /** 将已加载的页面内容组装为渲染配置；未加载时调用会抛异常 */\n    toRenderConfig(): PageNodeRenderConfig;\n}",
         "members": {
@@ -470,12 +458,6 @@
       "name": "ProjectConfigPageNodeModelOptions",
       "jsdoc": "Project Config Page Node Model Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/config-page.ts",
-        "line": 42,
-        "className": "ProjectConfigPageNodeModelOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "ProjectNodeModelOptions & {\n    /** 配置页唯一 pageId；省略时从导航节点解析。 */\n    pageId?: string;\n}",
         "declarationRelations": [
@@ -505,12 +487,6 @@
       "name": "ConfigPageNode",
       "jsdoc": "配置页面节点。\n持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。\n四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/page/config-page.ts",
-        "line": 53,
-        "className": "ConfigPageNode",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建配置页节点实例，并初始化 rule/pagedata/script/style 四文件内存模型。\n@param options 配置页导航节点、pageId 与基础 ProjectNode 初始化参数。",

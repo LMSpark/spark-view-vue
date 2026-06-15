@@ -94,6 +94,68 @@ describe('class-model-bundle-assert', () => {
     }
   })
 
+  it('throws when guide shard persists provenance metadata', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    const provenance = { file: 'packages/demo/src/foo.ts', line: 1, className: 'Demo' }
+    try {
+      mkdirSync(join(root, 'files'), { recursive: true })
+      writeFileSync(join(root, 'files/foo.json'), JSON.stringify({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        $defs: {
+          Demo: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+            },
+            $defs: {
+              'constructor.params': { type: 'object', properties: {} },
+              'method.run.params': { type: 'object', properties: {} },
+            },
+          },
+        },
+        models: {
+          Demo: {
+            name: 'Demo',
+            jsdoc: 'Demo model.',
+            declarationKind: 'class',
+            provenance,
+            classDecl: {
+              constructorMeta: {
+                signatureText: 'constructor()',
+                parameters: [],
+                provenance,
+              },
+              members: {
+                attributes: [{
+                  name: 'label',
+                  readable: true,
+                  writable: false,
+                  provenance,
+                }],
+                methods: [{
+                  name: 'run',
+                  parameters: [],
+                  type: { type: 'intrinsic', name: 'void' },
+                  provenance,
+                }],
+              },
+            },
+          },
+        },
+      }))
+      writeFileSync(join(root, 'manifest.json'), JSON.stringify({
+        files: {
+          'packages/demo/src/foo.ts': { file: 'files/foo.json' },
+        },
+      }))
+
+      expect(() => assertClassModelGuideExecutableSchemas(root)).toThrow(/provenance/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it('passes jsonSchema-only gate on checked-in guide bundle when present', () => {
     const bundleRoot = resolve(repoRoot, 'generated/dts-class-model')
     if (!existsSync(join(bundleRoot, 'manifest.json'))) return

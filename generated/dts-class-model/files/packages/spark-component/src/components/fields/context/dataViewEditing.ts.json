@@ -194,12 +194,6 @@
       "name": "DataViewEditingEventName",
       "jsdoc": "Data View Editing Event Name 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/dataViewEditing.ts",
-        "line": 9,
-        "className": "DataViewEditingEventName",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'editingFieldChanged' | 'editingChanged' | 'rowsChanged' | 'currentRowChanged' | 'selectedRowsChanged' | 'cleared'",
         "declarationRelations": [
@@ -235,12 +229,6 @@
       "name": "DataViewEditingEvents",
       "jsdoc": "Data View Editing Events 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/dataViewEditing.ts",
-        "line": 11,
-        "className": "DataViewEditingEvents",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 订阅 DataView 编辑态事件。 */\n    on(eventName: DataViewEditingEventName, handler: () => void): void;\n    /** 取消订阅 DataView 编辑态事件。 */\n    off(eventName: DataViewEditingEventName, handler: () => void): void;\n}",
         "members": {
@@ -323,12 +311,6 @@
       "name": "DataViewEditingSource",
       "jsdoc": "Data View Editing Source 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/dataViewEditing.ts",
-        "line": 18,
-        "className": "DataViewEditingSource",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 从行数据中提取主键值。 */\n    getPkKey(row: DataRow): string | number | undefined;\n    /** 检查指定行（或任意行）是否存在未保存的编辑变更。 */\n    hasEditingChanges(id?: string | number): boolean;\n    /** 获取指定 id 的编辑中行副本。 */\n    getEditingRow(id: string | number): DataRow | null;\n    /** 更新指定行字段的编辑值并返回更新后的行副本。 */\n    updateEditingValue(id: string | number, field: string, value: unknown): DataRow;\n    /** 编辑态事件总线（可选）。 */\n    events?: DataViewEditingEvents;\n}",
         "members": {
@@ -483,12 +465,6 @@
       "name": "DataViewEditingWriteInput",
       "jsdoc": "Data View Editing Write Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/fields/context/dataViewEditing.ts",
-        "line": 33,
-        "className": "DataViewEditingWriteInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** DataView 编辑源对象。 */\n    source: unknown;\n    /** 目标行数据。 */\n    row: DataRow | null;\n    /** 要写入的字段名。 */\n    field: string;\n    /** 要写入的字段值。 */\n    value: unknown;\n}>",
         "declarationRelations": [

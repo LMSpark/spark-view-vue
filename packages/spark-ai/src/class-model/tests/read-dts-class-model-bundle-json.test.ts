@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, resolve } from 'node:path'
+import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
@@ -339,6 +339,18 @@ describe('readDtsClassModelBundleJson', () => {
           componentDirectory: 'fields/data-components',
         },
       },
+      {
+        sourcePath: 'class-model-emit/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts',
+        declaration: 'export type RendererFieldScopeProps = { row?: unknown }',
+        className: 'RendererFieldScopeProps',
+        expected: {
+          componentName: 'RendererFieldScope',
+          componentType: 'r-field-scope',
+          componentLevel: 'row-level',
+          componentLayer: 'row-scope',
+          componentDirectory: 'containers/support',
+        },
+      },
     ]
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-${String(process.pid)}-${String(Date.now())}`)
     try {
@@ -351,6 +363,115 @@ describe('readDtsClassModelBundleJson', () => {
         expect(projection.module).toMatchObject(item.expected)
         expect(projection.module.jsdoc).toContain(String(item.expected.componentLayer))
       }
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('persists component profile without provenance while keeping query consumption', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-component-profile-${String(process.pid)}-${String(Date.now())}`)
+    const sourcePath = 'class-model-emit/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts'
+    const absolutePath = resolve(tempRoot, sourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    const expectedComponent = {
+      name: 'FieldText',
+      type: 'r-text',
+      level: 'field-level',
+      layer: 'data-field',
+      directory: 'fields/data-components',
+    }
+    try {
+      mkdirSync(dirname(absolutePath), { recursive: true })
+      writeFileSync(absolutePath, [
+        '/** FieldText component props. */',
+        'export type RTextProps = {',
+        '  /** Bound field name. */',
+        '  field?: string',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [absolutePath],
+        outputDir,
+      })
+      const entry = result.manifest.files[bundleSourcePath(sourcePath)]
+      if (entry === undefined) throw new Error(`Missing component shard entry: ${sourcePath}`)
+      expect(result.manifest.componentIndex?.entries['RTextProps']).toEqual({
+        className: 'RTextProps',
+        sourcePath: bundleSourcePath(sourcePath),
+        file: entry.file,
+        component: expectedComponent,
+      })
+      expect(result.manifest.componentIndex?.byLevel['field-level']).toEqual(['RTextProps'])
+      expect(result.manifest.componentIndex?.byLayer['data-field']).toEqual(['RTextProps'])
+      expect(result.manifest.componentIndex?.byType['r-text']).toEqual(['RTextProps'])
+      const raw: unknown = JSON.parse(readFileSync(resolve(outputDir, entry.file), 'utf8'))
+      const rawRecord = raw as {
+        models?: Record<string, {
+          component?: unknown
+          typeAlias?: {
+            members?: {
+              attributes?: Array<Record<string, unknown>>
+            }
+          }
+        }>
+      }
+      const rawModel = rawRecord.models?.['RTextProps']
+      expect(JSON.stringify(raw)).not.toContain('"provenance"')
+      expect(rawModel?.component).toEqual(expectedComponent)
+      expect(rawModel).not.toHaveProperty('provenance')
+      expect(rawModel?.typeAlias?.members?.attributes?.[0]).not.toHaveProperty('provenance')
+
+      const projection = readDtsFileProjectionDocument(raw)
+      expect(projection.models['RTextProps']?.component).toEqual(expectedComponent)
+      expect(projection.models['RTextProps']).not.toHaveProperty('provenance')
+
+      const fetchedFiles: string[] = []
+      const loader = new DtsClassModelBundleLoader({
+        manifestUrl: pathToFileURL(result.manifestPath).href,
+        fetchJson: async (url) => {
+          const filePath = fileURLToPath(url)
+          fetchedFiles.push(relative(outputDir, filePath).replace(/\\/gu, '/'))
+          return JSON.parse(readFileSync(filePath, 'utf8')) as unknown
+        },
+      })
+      const componentEntries = await loader.listComponentIndexEntries({ level: 'field-level' })
+      expect(componentEntries.map(componentEntry => componentEntry.className)).toEqual(['RTextProps'])
+      expect(fetchedFiles).toEqual([
+        relative(outputDir, result.manifestPath).replace(/\\/gu, '/'),
+      ])
+      await expect(loader.ensureComponentQuery({ type: 'r-text' })).resolves.toEqual(['RTextProps'])
+      expect(fetchedFiles).toEqual([
+        relative(outputDir, result.manifestPath).replace(/\\/gu, '/'),
+        entry.file,
+      ])
+
+      const provider = createDtsBundleClassModelKnowledgeProvider({
+        dtsClassModelManifestUrl: pathToFileURL(result.manifestPath).href,
+        rootClassName: 'RTextProps',
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      await provider.init()
+      const query = await provider.query({ keyword: 'r-text', includeMembers: false })
+      const payload = query as {
+        models?: Array<{
+          kind?: string
+          component?: unknown
+        }>
+      }
+      const queryModel = payload.models?.find(item => item.kind === 'RTextProps')
+      expect(queryModel?.component).toEqual(expectedComponent)
+      const indexedQuery = await provider.query({ componentLevel: 'field-level', includeMembers: false })
+      const indexedPayload = indexedQuery as {
+        models?: Array<{
+          kind?: string
+          component?: unknown
+        }>
+      }
+      const indexedModel = indexedPayload.models?.find(item => item.kind === 'RTextProps')
+      expect(indexedModel?.component).toEqual(expectedComponent)
+      await expect(provider.modelGuide({ kind: 'RTextProps' })).resolves.toContain('SPARK component type=r-text')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -567,9 +688,14 @@ describe('readDtsClassModelBundleJson', () => {
       })
       expect(registerMethod?.returnSchema).toBe(true)
 
+      const fetchedFiles: string[] = []
       const loader = new DtsClassModelBundleLoader({
         manifestUrl: pathToFileURL(result.manifestPath).href,
-        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+        fetchJson: async (url) => {
+          const filePath = fileURLToPath(url)
+          fetchedFiles.push(relative(outputDir, filePath).replace(/\\/gu, '/'))
+          return JSON.parse(readFileSync(filePath, 'utf8')) as unknown
+        },
       })
       const reachable = await loader.ensureReachableClosure('AiAgentRegistry')
       const surface = loader.buildLoadedSurface()
@@ -580,6 +706,11 @@ describe('readDtsClassModelBundleJson', () => {
         'AiAgentRegistry',
         'AiAgentRegistration',
       ]))
+      expect(fetchedFiles).toEqual([
+        relative(outputDir, result.manifestPath).replace(/\\/gu, '/'),
+        registryEntry.file,
+        result.manifest.files[bundleSourcePath(registrationSourcePath)]?.file,
+      ])
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -954,17 +1085,44 @@ describe('readDtsClassModelBundleJson', () => {
         $ref: 'tree-node.ts.json#/$defs/TreeNode',
       })
 
+      const fetchedFiles: string[] = []
       const loader = new DtsClassModelBundleLoader({
         manifestUrl: pathToFileURL(result.manifestPath).href,
-        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+        fetchJson: async (url) => {
+          const filePath = fileURLToPath(url)
+          fetchedFiles.push(relative(outputDir, filePath).replace(/\\/gu, '/'))
+          return JSON.parse(readFileSync(filePath, 'utf8')) as unknown
+        },
       })
       const reachable = await loader.ensureReachableClosure('TreeNode')
 
       expect(reachable).toEqual(['TreeNode', 'TreeEdge'])
+      expect(fetchedFiles).toEqual([
+        relative(outputDir, result.manifestPath).replace(/\\/gu, '/'),
+        nodeEntry.file,
+        edgeEntry.file,
+      ])
       expect(loader.buildLoadedSurface().models).toMatchObject({
         TreeNode: { name: 'TreeNode' },
         TreeEdge: { name: 'TreeEdge' },
       })
+
+      const provider = createDtsBundleClassModelKnowledgeProvider({
+        dtsClassModelManifestUrl: pathToFileURL(result.manifestPath).href,
+        rootClassName: 'TreeNode',
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      await provider.init()
+      const query = await provider.query({ kind: 'TreeNode', includeMembers: true })
+      const payload = query as {
+        models?: Array<{
+          kind?: string
+          attributes?: Array<{ name?: string; typeText?: string }>
+        }>
+      }
+      const queryNode = payload.models?.find(model => model.kind === 'TreeNode')
+      expect(queryNode?.attributes?.find(attribute => attribute.name === 'edges')?.typeText).toBe('TreeEdge[]')
+      await expect(provider.attributeGuide({ kind: 'TreeNode', attributeName: 'edges' })).resolves.toContain('edges: TreeEdge[]')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }

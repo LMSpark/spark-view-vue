@@ -180,12 +180,6 @@
       "name": "PageContentLoaderOptions",
       "jsdoc": "Page Content Loader Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/page-content-loader.ts",
-        "line": 11,
-        "className": "PageContentLoaderOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** api Base Url 地址。 */\n    apiBaseUrl?: string;\n    /** http Client 字段。 */\n    httpClient?: HttpClientBase;\n    /** pages Config Base Url 地址。 */\n    pagesConfigBaseUrl?: string | (() => string);\n    /** file Storage 字段。 */\n    fileStorage?: 'localStorage' | 'sessionStorage' | 'memory';\n    /** 超时时间。 */\n    timeout?: number;\n    /** get Headers 回调。 */\n    getHeaders?: () => Record<string, string>;\n}",
         "members": {
@@ -249,12 +243,6 @@
       "name": "PageContentLoader",
       "jsdoc": "Page Content Loader 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/io/page-content-loader.ts",
-        "line": 26,
-        "className": "PageContentLoader",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page Content Loader 实例。",

@@ -215,12 +215,6 @@
       "name": "ProjectSessionState",
       "jsdoc": "Project Session State 的运行状态。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-session.ts",
-        "line": 12,
-        "className": "ProjectSessionState",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** selected Node Id 标识。 */\n    selectedNodeId: string | null;\n    /** active Page Id 标识。 */\n    activePageId: string | null;\n    /** navigation Dirty 字段。 */\n    navigationDirty: boolean;\n    /** navigation Dirty Scope 字段。 */\n    navigationDirtyScope: ProjectNavigationDirtyScope | null;\n}",
         "members": {
@@ -257,12 +251,6 @@
       "name": "ProjectSessionOwner",
       "jsdoc": "Project Session Owner 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-session.ts",
-        "line": 23,
-        "className": "ProjectSessionOwner",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 按 nodeId 在导航树中查找项目节点；未找到返回 null */\n    findNodeById(nodeId: string): ProjectNode | null;\n    /** 按 pageId 查找已加载的配置页节点；仅返回已 hydrate 的 ConfigPageNode，未找到返回 null */\n    findConfigPageByPageId(pageId: string): ConfigPageNode | null;\n}",
         "members": {
@@ -329,12 +317,6 @@
       "name": "ProjectSession",
       "jsdoc": "ProjectModel 持有的设计过程态：选中、活动页、dirty 与导航草稿（不落盘）。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-project-model/src/project/project-session.ts",
-        "line": 32,
-        "className": "ProjectSession",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Project Session 实例。",

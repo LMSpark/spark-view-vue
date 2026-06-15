@@ -63,12 +63,6 @@
       "name": "PageDesignDeliveryContext",
       "jsdoc": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/page-design/page-design-host-run-provider.ts",
-        "line": 12,
-        "className": "PageDesignDeliveryContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 页面设计工作区编辑器。 */\n    editor: ProjectWorkspace;\n    /** 当前页面节点 id。 */\n    pageId: string;\n}>",
         "declarationRelations": [
@@ -100,12 +94,6 @@
       "name": "CreatePageDesignDeliveryPortOptions",
       "jsdoc": "Create Page Design Delivery Port Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "src/services/page-design/page-design-host-run-provider.ts",
-        "line": 19,
-        "className": "CreatePageDesignDeliveryPortOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 交付模式（manual 或 auto）。 */\n    mode: AiDeliveryMode;\n    /** 是否执行实际落盘保存。 */\n    shouldSave: boolean;\n    /** 回滚时的交付状态标记。 */\n    rollbackStatus: 'skipped' | 'rolledBack';\n    /** 限定保存的文件名列表（省略则保存全部 dirty 文件）。 */\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
         "declarationRelations": [

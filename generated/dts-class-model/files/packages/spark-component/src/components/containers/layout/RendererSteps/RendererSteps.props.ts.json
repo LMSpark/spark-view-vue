@@ -73,16 +73,12 @@
       "name": "RStepsProps",
       "jsdoc": "RSteps Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.ts",
-        "line": 11,
-        "className": "RStepsProps",
-        "declarationKind": "typeAlias",
-        "componentName": "RendererSteps",
-        "componentType": "r-steps",
-        "componentLevel": "container",
-        "componentLayer": "layout-container",
-        "componentDirectory": "containers/layout"
+      "component": {
+        "name": "RendererSteps",
+        "type": "r-steps",
+        "level": "container",
+        "layer": "layout-container",
+        "directory": "containers/layout"
       },
       "typeAlias": {
         "declarationTypeText": "SparkNodeProps & {\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 当前步骤 */\n    modelValue?: string | number;\n    /** 步骤切换回调（value 为当前 step 的 value） */\n    onStepChange?: (value: string | number, step: SparkNode, index: number) => void;\n}",

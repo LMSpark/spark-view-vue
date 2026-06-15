@@ -32,12 +32,8 @@
       "name": "SessionToolCallCardProps",
       "jsdoc": "Session Tool Call Card Props 的属性契约。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/ai/components/SessionToolCallCard.props.ts",
-        "line": 9,
-        "className": "SessionToolCallCardProps",
-        "declarationKind": "typeAlias",
-        "componentName": "SessionToolCallCard"
+      "component": {
+        "name": "SessionToolCallCard"
       },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 当前要展示的工具调用条目，包含工具名、参数预览、调用状态、耗时等渲染所需的投影数据 */\n    toolCall: ToolCallDisplayItem;\n}>",

@@ -190,18 +190,12 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T22:53:58.792Z",
+  "generatedAt": "2026-06-15T02:29:20.546Z",
   "models": {
     "DtsBundleClassModelKnowledgeRefreshInput": {
       "name": "DtsBundleClassModelKnowledgeRefreshInput",
       "jsdoc": "Dts Bundle Class Model Knowledge Service Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
-        "line": 11,
-        "className": "DtsBundleClassModelKnowledgeRefreshInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** 知识闭包的根 className，决定可达模型范围。 */\n    rootClassName: string;\n    /** 触发刷新的目标 className；按需增量编译时使用。 */\n    requestedClassName?: string;\n}>",
         "declarationRelations": [
@@ -233,12 +227,6 @@
       "name": "DtsBundleClassModelKnowledgeRefreshPolicy",
       "jsdoc": "Dts Bundle Class Model Knowledge Refresh Policy 的刷新策略。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
-        "line": 18,
-        "className": "DtsBundleClassModelKnowledgeRefreshPolicy",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "'never' | 'before-first-load' | 'always'",
         "declarationRelations": [
@@ -262,12 +250,6 @@
       "name": "DtsBundleClassModelKnowledgeRefreshFunction",
       "jsdoc": "Dts Bundle Class Model Knowledge Refresh Function 的刷新函数。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
-        "line": 20,
-        "className": "DtsBundleClassModelKnowledgeRefreshFunction",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "(input: DtsBundleClassModelKnowledgeRefreshInput) => Promise<void>",
         "members": {}
@@ -277,12 +259,6 @@
       "name": "DtsBundleClassModelKnowledgeServiceOptions",
       "jsdoc": "Dts Bundle Class Model Knowledge Service Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
-        "line": 22,
-        "className": "DtsBundleClassModelKnowledgeServiceOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** bundle shard 加载器，负责 manifest 与按需拉取。 */\n    loader: DtsClassModelBundleLoader;\n    /** 知识闭包的根 className。 */\n    rootClassName: string;\n    /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** bundle 刷新策略：never / before-first-load / always。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
         "declarationRelations": [
@@ -326,12 +302,6 @@
       "name": "CreateDtsBundleClassModelKnowledgeProviderOptions",
       "jsdoc": "Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
-        "line": 33,
-        "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "Readonly<{\n    /** manifest.json 的 URL，loader 入口。 */\n    dtsClassModelManifestUrl: string;\n    /** 知识闭包的根 className。 */\n    rootClassName: string;\n    /** 自定义 JSON fetch；默认使用 fetch。 */\n    fetchJson?: (url: string) => Promise<unknown>;\n    /** 外部 bundle 刷新钩子，在 reload 前触发重新编译。 */\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    /** bundle 刷新策略：never / before-first-load / always。 */\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
         "declarationRelations": [
@@ -400,12 +370,6 @@
       "name": "DtsBundleClassModelKnowledgeService",
       "jsdoc": "Dts Bundle Class Model Knowledge Service 的语义模型。",
       "declarationKind": "class",
-      "provenance": {
-        "file": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
-        "line": 47,
-        "className": "DtsBundleClassModelKnowledgeService",
-        "declarationKind": "class"
-      },
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Dts Bundle Class Model Knowledge Service 实例。",

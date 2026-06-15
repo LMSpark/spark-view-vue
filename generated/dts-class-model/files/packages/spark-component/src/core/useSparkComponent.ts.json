@@ -222,12 +222,6 @@
       "name": "CapabilityKey",
       "jsdoc": "Capability Key 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 4,
-        "className": "CapabilityKey",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "SparkUtils.CapabilityKey<T>",
         "declarationRelations": [
@@ -244,12 +238,6 @@
       "name": "CapabilityContext",
       "jsdoc": "Capability Context 的运行上下文。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 6,
-        "className": "CapabilityContext",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "SparkUtils.CapabilityContext",
         "declarationRelations": [
@@ -266,12 +254,6 @@
       "name": "LoggerApi",
       "jsdoc": "Logger Api 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 8,
-        "className": "LoggerApi",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "SparkUtils.LoggerApi",
         "declarationRelations": [
@@ -288,12 +270,6 @@
       "name": "SparkCapabilityConsumer",
       "jsdoc": "Spark Capability Consumer 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 10,
-        "className": "SparkCapabilityConsumer",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "SparkUtils.SparkCapabilityConsumer",
         "declarationRelations": [
@@ -310,12 +286,6 @@
       "name": "UseSparkComponentReturn",
       "jsdoc": "组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。\n`provider` — provider 查询接口：\n- `nearestCapabilityProvider(key)` — 按能力键查最近 provider context\n- `nearestCapabilityProviderByKeys(keys)` — 按能力键集合查最近 provider context\n容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。\n子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 21,
-        "className": "UseSparkComponentReturn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** provider 字段。 */\n    provider: {\n        nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null;\n        nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null;\n    };\n    /** 是否 is Visible。 */\n    isVisible: {\n        readonly value: boolean;\n    };\n    /** 是否 is Disabled。 */\n    isDisabled: {\n        readonly value: boolean;\n    };\n    /** resolved Props 字段。 */\n    resolvedProps: {\n        readonly value: Record<string, unknown>;\n    };\n    /** spark Provide 字段。 */\n    sparkProvide: {\n        <T>(name: CapabilityKey<T>, implementation: T): void;\n    };\n    /** spark Remove 回调。 */\n    sparkRemove: <T>(name: CapabilityKey<T>) => void;\n    /** spark Consume 字段。 */\n    sparkConsume: SparkCapabilityConsumer;\n    /** 诊断日志接口。 */\n    logger: LoggerApi;\n}",
         "members": {
@@ -397,12 +367,6 @@
       "name": "UseSparkPageComponentReturn",
       "jsdoc": "Use Spark Page Component Return 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 51,
-        "className": "UseSparkPageComponentReturn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "UseSparkComponentReturn & {\n    /** register Api 回调。 */\n    registerApi: (api: unknown) => void;\n}",
         "declarationRelations": [
@@ -443,12 +407,6 @@
       "name": "UseSparkCapabilityReaderReturn",
       "jsdoc": "轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。\n由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 59,
-        "className": "UseSparkCapabilityReaderReturn",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** provider 字段。 */\n    provider: {\n        nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null;\n        nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null;\n    };\n    /** spark Consume 字段。 */\n    sparkConsume: SparkCapabilityConsumer;\n}",
         "members": {
@@ -473,12 +431,6 @@
       "name": "UseSparkComponentOptions",
       "jsdoc": "Use Spark Component Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 69,
-        "className": "UseSparkComponentOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** parent Context 字段。 */\n    parentContext?: CapabilityContext;\n}",
         "members": {
@@ -497,12 +449,6 @@
       "name": "HostTypeResolverOptions",
       "jsdoc": "Host Type Resolver Options 的调用配置。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 74,
-        "className": "HostTypeResolverOptions",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** host Types 字段。 */\n    hostTypes?: readonly string[];\n}",
         "members": {
@@ -521,12 +467,6 @@
       "name": "ResolvedHostType",
       "jsdoc": "Resolved Host Type 的语义模型。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 79,
-        "className": "ResolvedHostType",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** host Type 字段。 */\n    hostType: string | null;\n    /** parent Context 字段。 */\n    parentContext: CapabilityContext | null;\n}",
         "members": {
@@ -551,12 +491,6 @@
       "name": "SparkNodeInput",
       "jsdoc": "Spark Node Input 的输入数据。",
       "declarationKind": "typeAlias",
-      "provenance": {
-        "file": "packages/spark-component/src/core/useSparkComponent.ts",
-        "line": 86,
-        "className": "SparkNodeInput",
-        "declarationKind": "typeAlias"
-      },
       "typeAlias": {
         "declarationTypeText": "{\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown> | undefined;\n    /** 子节点集合。 */\n    children?: SparkNode['children'] | undefined;\n    /** 唯一标识。 */\n    id?: string | undefined;\n}",
         "members": {
