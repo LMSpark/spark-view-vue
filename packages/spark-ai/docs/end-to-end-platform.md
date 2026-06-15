@@ -217,7 +217,8 @@ pnpm run generate:class-model-surface
 
 | 步骤            | 说明                                                                                                                          |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **内存 emit**   | `compiler-api` / `vue-tsc`；`.d.ts` 仅在内存 Map；bundle 键前缀 `class-model-emit/` |
+| **内存 emit**   | `compiler-api` / `vue-tsc`；`.d.ts` 仅在内存 Map；虚拟键前缀 `class-model-emit/` |
+| **落盘索引**    | manifest / shard 键为源码 repo 相对路径（如 `packages/.../foo.ts` → `files/packages/.../foo.ts.json`） |
 | **JSDoc 真源**  | 模块级 `@module`（职责/边界/AI用途）、成员 JSDoc、`@param`/`@returns`                                                                      |
 | **AST 投影**    | `build-dts-class-model-bundle.ts`：class/interface/enum、attributes、methods、TypeDoc 式 type 树                                      |
 | **Bundle 落盘** | 每逻辑 DTS → 一个 JSON shard；`classIndex[className]` → shard 路径                                                                 |

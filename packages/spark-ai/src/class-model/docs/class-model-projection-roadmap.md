@@ -12,7 +12,7 @@
 ```text
 .ts / .vue (SSOT)
   → 内存 emit → class-model-emit/.../*.d.ts
-  → project-from-declarations → class-model-emit/.../*.d.ts.json
+  → project-from-declarations → files/packages|src/.../*.ts.json
   → manifest / classIndex / semantic-gaps
 ```
 
@@ -22,7 +22,7 @@
 
 | 字段 | 职责 |
 |------|------|
-| `module` | 文件级 JSDoc、`sourceFile`（.ts）、`sourcePath`（emit 虚拟键） |
+| `module` | 文件级 JSDoc、`sourceFile`（.ts）、`sourcePath`（源码 repo 相对路径，与 manifest 键一致） |
 | `models` | 类型级 members + `declarationRelations` |
 | `$defs` | 写盘 JSON Schema（compact bundle） |
 
@@ -86,7 +86,7 @@ flowchart LR
 
 - 单测：intersection typeAlias → schema 含 `allOf`。
 - 回归：`read-dts-class-model-bundle-json.test.ts` 递归 `$ref` 用例。
-- 可选：`pnpm run generate:class-model-surface -- --source class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts`，检查 `AiAgentAppendMessageOptions.$defs.allOf`。
+- 可选：`pnpm run generate:class-model-surface -- --source packages/spark-ai/src/agent/business/scope-types.ts`，检查 `AiAgentAppendMessageOptions.$defs.allOf`。
 
 **不触碰**：manifest 键、generate 脚本主流程、全量 shard。
 
@@ -179,4 +179,4 @@ flowchart LR
 | 生成脚本 | `scripts/generate-dts-class-model.mjs` |
 | 增量 | `scripts/lib/class-model-incremental-build.mjs` |
 | emit 路径约定 | `packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts` |
-| 示例 shard | `generated/dts-class-model/files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json` |
+| 示例 shard | `generated/dts-class-model/files/packages/spark-ai/src/agent/business/scope-types.ts.json` |
