@@ -239,12 +239,12 @@
     "packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts.json",
-      "sourceModifiedAt": "2026-06-14T13:01:40.884Z"
+      "sourceModifiedAt": "2026-06-15T02:47:31.121Z"
     },
     "packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts.json",
-      "sourceModifiedAt": "2026-06-15T02:33:33.610Z"
+      "sourceModifiedAt": "2026-06-15T02:45:56.191Z"
     },
     "packages/spark-ai/src/class-model/class-model/dts-enum-schema.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-enum-schema.ts",
