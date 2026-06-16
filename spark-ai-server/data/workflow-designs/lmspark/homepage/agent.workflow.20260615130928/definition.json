@@ -1,0 +1,142 @@
+{
+  "kind": "agent.workflow",
+  "version": 1,
+  "workflowId": "agent.workflow.20260615130928",
+  "source": {
+    "designKind": "agent.workflow.design",
+    "designId": "agent.workflow.20260615130928",
+    "designVersion": 1
+  },
+  "factory": {
+    "identity": {
+      "phaseId": "F0",
+      "phase": "identity",
+      "sectionPath": "factory.identity",
+      "publishPath": "workflow.factory.identity",
+      "nodeId": "phase.F0",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "alias": "projectPlanning",
+        "moduleId": "projectPlanning",
+        "rootClassName": "ProjectModel"
+      }
+    },
+    "materials": {
+      "phaseId": "F1",
+      "phase": "materials",
+      "sectionPath": "factory.materials",
+      "publishPath": "workflow.factory.materials",
+      "nodeId": "phase.F1",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "moduleClass": "ProjectModel",
+        "editorResolver": "getProjectPlanningEditor"
+      }
+    },
+    "knowledge": {
+      "phaseId": "F2",
+      "phase": "knowledge",
+      "sectionPath": "factory.knowledge",
+      "publishPath": "workflow.factory.knowledge",
+      "nodeId": "phase.F2",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "rootClassName": "ProjectModel",
+        "provider": "dtsClassModelWorker"
+      }
+    },
+    "contract": {
+      "phaseId": "F3",
+      "phase": "contract",
+      "sectionPath": "factory.contract",
+      "publishPath": "workflow.factory.contract",
+      "nodeId": "phase.F3",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "identityField": "projectScopeKey",
+        "messageField": "requirement"
+      }
+    },
+    "runtime": {
+      "phaseId": "F4",
+      "phase": "runtime",
+      "sectionPath": "factory.runtime",
+      "publishPath": "workflow.factory.runtime",
+      "nodeId": "phase.F4",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "adapter": "ClassModelAgentAdapter",
+        "executionToolNames": [
+          "model_script"
+        ],
+        "agentCompleteMethodName": "completeProjectPlanning"
+      }
+    },
+    "governance": {
+      "phaseId": "F5",
+      "phase": "governance",
+      "sectionPath": "factory.governance",
+      "publishPath": "workflow.factory.governance",
+      "nodeId": "phase.F5",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "beforeFunctionCall": "projectPlanningToolGate",
+        "toolLoopNudge": "projectPlanning"
+      }
+    },
+    "acceptance": {
+      "phaseId": "F6",
+      "phase": "acceptance",
+      "sectionPath": "factory.acceptance",
+      "publishPath": "workflow.factory.acceptance",
+      "nodeId": "phase.F6",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "dryRun": true,
+        "inspectFactory": true
+      }
+    },
+    "activation": {
+      "phaseId": "F7",
+      "phase": "activation",
+      "sectionPath": "factory.activation",
+      "publishPath": "workflow.factory.activation",
+      "nodeId": "phase.F7",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "registrationBindingKey": "projectPlanning.registration"
+      }
+    },
+    "workOrder": {
+      "phaseId": "F8",
+      "phase": "workOrder",
+      "sectionPath": "factory.workOrder",
+      "publishPath": "workflow.factory.workOrder",
+      "nodeId": "phase.F8",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "hostRunAlias": "projectPlanning"
+      }
+    },
+    "delivery": {
+      "phaseId": "F9",
+      "phase": "delivery",
+      "sectionPath": "factory.delivery",
+      "publishPath": "workflow.factory.delivery",
+      "nodeId": "phase.F9",
+      "scopePath": "workflow.graph.loop.business-factory.loop.subGraph",
+      "value": {
+        "mode": "appDeliveryPort",
+        "owner": "projectPlanningHostRunProvider"
+      }
+    }
+  },
+  "x_spark": {
+    "schema": "spark.agent.workflow.definition.v1",
+    "publishedAt": "1970-01-01T00:00:00.000Z",
+    "validation": {
+      "status": "valid",
+      "issues": []
+    }
+  }
+}
