@@ -9,7 +9,10 @@ const mocks = vi.hoisted(() => ({
   readWorkflowDesign: vi.fn(),
   saveWorkflowDesign: vi.fn(),
   createAgentWorkflowDefinitionFromDesign: vi.fn(),
+  parseAgentWorkflowDefinitionJson: vi.fn(),
   publishWorkflowDefinition: vi.fn(),
+  readWorkflowDefinition: vi.fn(),
+  saveWorkflowDefinition: vi.fn(),
   createWorkflowDesign: vi.fn(),
   deleteWorkflowDesign: vi.fn(),
   message: {
@@ -36,7 +39,10 @@ vi.mock('@/services/workflow-designs', async (importOriginal) => {
     readWorkflowDesign: mocks.readWorkflowDesign,
     saveWorkflowDesign: mocks.saveWorkflowDesign,
     createAgentWorkflowDefinitionFromDesign: mocks.createAgentWorkflowDefinitionFromDesign,
+    parseAgentWorkflowDefinitionJson: mocks.parseAgentWorkflowDefinitionJson,
     publishWorkflowDefinition: mocks.publishWorkflowDefinition,
+    readWorkflowDefinition: mocks.readWorkflowDefinition,
+    saveWorkflowDefinition: mocks.saveWorkflowDefinition,
     createWorkflowDesign: mocks.createWorkflowDesign,
     deleteWorkflowDesign: mocks.deleteWorkflowDesign,
   }
@@ -467,11 +473,44 @@ describe('WorkflowDesigns visual editor', () => {
         },
       },
     })
+    mocks.parseAgentWorkflowDefinitionJson.mockReturnValue({
+      kind: 'agent.workflow',
+      version: 1,
+      workflowId: 'agent.workflow.demo',
+      x_spark: {
+        validation: {
+          status: 'valid',
+          issues: [],
+        },
+      },
+    })
     mocks.publishWorkflowDefinition.mockResolvedValue({
       ok: true,
       workflowId: 'agent.workflow.demo',
       filename: 'definition.json',
       timestamp: '3',
+    })
+    mocks.readWorkflowDefinition.mockResolvedValue({
+      workflowId: 'agent.workflow.demo',
+      filename: 'definition.json',
+      timestamp: '3',
+      definition: {
+        kind: 'agent.workflow',
+        version: 1,
+        workflowId: 'agent.workflow.demo',
+        x_spark: {
+          validation: {
+            status: 'valid',
+            issues: [],
+          },
+        },
+      },
+    })
+    mocks.saveWorkflowDefinition.mockResolvedValue({
+      ok: true,
+      workflowId: 'agent.workflow.demo',
+      filename: 'definition.json',
+      timestamp: '4',
     })
   })
 
@@ -754,6 +793,51 @@ describe('WorkflowDesigns visual editor', () => {
       }),
     )
     expect(mocks.message.success).toHaveBeenCalledWith('definition.json 已发布')
+  })
+
+  it('opens, edits, and saves definition.json', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, 'Definition').trigger('click')
+    await flushPromises()
+
+    expect(mocks.readWorkflowDefinition).toHaveBeenCalledWith('agent.workflow.demo', '')
+    const definitionEditor = wrapper.find('textarea.definition-json-input')
+    expect(definitionEditor.exists()).toBe(true)
+    expect((definitionEditor.element as HTMLTextAreaElement).value).toContain('"kind": "agent.workflow"')
+
+    await definitionEditor.setValue('{"kind":"agent.workflow"}')
+    await findButton(wrapper, '保存 Definition').trigger('click')
+    await flushPromises()
+
+    expect(mocks.parseAgentWorkflowDefinitionJson).toHaveBeenCalledWith('{"kind":"agent.workflow"}')
+    expect(mocks.saveWorkflowDefinition).toHaveBeenCalledWith(
+      'agent.workflow.demo',
+      expect.objectContaining({
+        kind: 'agent.workflow',
+        workflowId: 'agent.workflow.demo',
+      }),
+    )
+    expect(mocks.message.success).toHaveBeenCalledWith('definition.json 已保存')
+  })
+
+  it('creates a local definition draft when the backend definition endpoint is missing', async () => {
+    mocks.readWorkflowDefinition.mockRejectedValueOnce(new Error(
+      'No static resource api/tenants/lmspark/projects/homepage/workflow-designs/agent.workflow.20260615095755/definition.json.',
+    ))
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, 'Definition').trigger('click')
+    await flushPromises()
+
+    expect(mocks.createAgentWorkflowDefinitionFromDesign).toHaveBeenCalled()
+    const definitionEditor = wrapper.find('textarea.definition-json-input')
+    expect(definitionEditor.exists()).toBe(true)
+    expect((definitionEditor.element as HTMLTextAreaElement).value).toContain('"kind": "agent.workflow"')
+    expect(mocks.message.info).toHaveBeenCalledWith('definition.json 不存在，已从当前设计稿生成本地草稿')
+    expect(mocks.message.error).not.toHaveBeenCalled()
   })
 })
 

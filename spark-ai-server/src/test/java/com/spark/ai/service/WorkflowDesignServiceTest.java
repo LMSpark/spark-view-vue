@@ -41,16 +41,19 @@ class WorkflowDesignServiceTest {
         assertEquals("spark.workflow.demo", document.path("id").asText());
         assertEquals("spark.workflow.demo", document.path("workflow").path("id").asText());
         assertEquals("Demo Workflow", document.path("app").path("name").asText());
-        assertEquals(3, document.path("workflow").path("graph").path("nodes").size());
-        JsonNode loopNode = document.path("workflow").path("graph").path("nodes").get(1);
-        assertEquals("loop", loopNode.path("data").path("type").asText());
-        JsonNode phaseNodes = loopNode.path("data").path("loop").path("subGraph").path("nodes");
-        assertEquals(11, phaseNodes.size());
-        assertEquals("tool", phaseNodes.get(0).path("data").path("type").asText());
-        assertEquals("single_model_edit", phaseNodes.get(0).path("data").path("tool_name").asText());
-        assertEquals("factory.identity", phaseNodes.get(0).path("data").path("x_spark").path("sectionPath").asText());
-        assertEquals("factory.identity", phaseNodes.get(0).path("data").path("model").path("sectionPath").asText());
-        assertEquals("node.data.model", phaseNodes.get(0).path("data").path("tool_config").path("target").asText());
+        JsonNode nodes = document.path("workflow").path("graph").path("nodes");
+        assertEquals(9, nodes.size());
+        assertEquals("start", nodes.get(0).path("data").path("type").asText());
+        assertEquals("end", nodes.get(8).path("data").path("type").asText());
+        assertEquals(8, document.path("workflow").path("graph").path("edges").size());
+        assertEquals("process.PD1.scope-inventory",
+                document.path("workflow").path("graph").path("edges").get(0).path("target").asText());
+        JsonNode processNode = nodes.get(1);
+        assertEquals("process-step", processNode.path("data").path("type").asText());
+        assertEquals("process-stage", processNode.path("data").path("x_spark").path("nodeRole").asText());
+        assertEquals("PD1.scope-inventory", processNode.path("data").path("x_spark").path("stageId").asText());
+        assertEquals(7, document.path("x_spark").path("process").path("stages").size());
+        assertEquals("F0-F9-considerations", document.path("x_spark").path("phaseModel").asText());
     }
 
     @Test
@@ -118,6 +121,44 @@ class WorkflowDesignServiceTest {
         assertEquals("spark.workflow.demo", saved.path("workflowId").asText());
         assertEquals("workflow.factory.activation",
                 saved.path("factory").path("activation").path("publishPath").asText());
+    }
+
+    @Test
+    void readDefinition_returnsDefinitionAndSupportsNotModified() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+        service.publishDefinition("t1", "p1", "spark.workflow.demo",
+                createDefinition("spark.workflow.demo", "valid"));
+
+        Map<String, Object> first = service.readDefinition("t1", "p1", "spark.workflow.demo", null);
+
+        assertEquals("spark.workflow.demo", first.get("workflowId"));
+        assertEquals("definition.json", first.get("filename"));
+        assertInstanceOf(JsonNode.class, first.get("definition"));
+        String timestamp = (String) first.get("timestamp");
+        assertNotNull(timestamp);
+
+        Map<String, Object> second = service.readDefinition("t1", "p1", "spark.workflow.demo", timestamp);
+
+        assertEquals(true, second.get("notModified"));
+        assertEquals(timestamp, second.get("timestamp"));
+        assertFalse(second.containsKey("definition"));
+    }
+
+    @Test
+    void writeDefinition_savesUpdatedDefinitionJson() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+        ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
+        ObjectNode identityValue = (ObjectNode) definition.path("factory").path("identity").path("value");
+        identityValue.put("alias", "updated-definition");
+
+        Map<String, Object> result = service.writeDefinition("t1", "p1", "spark.workflow.demo", definition);
+
+        assertEquals(true, result.get("ok"));
+        assertEquals("definition.json", result.get("filename"));
+        JsonNode saved = objectMapper.readTree(tempDir.resolve("t1/p1/spark.workflow.demo/definition.json").toFile());
+        assertEquals("updated-definition", saved.at("/factory/identity/value/alias").asText());
     }
 
     @Test

@@ -93,6 +93,40 @@ public class WorkflowDesignController {
         }
     }
 
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}/definition.json")
+    public ResponseEntity<?> getDefinition(@PathVariable String tenantId,
+                                           @PathVariable String projectId,
+                                           @PathVariable String workflowId,
+                                           @RequestParam(required = false) String timestamp) {
+        try {
+            return ResponseEntity.ok(workflowDesignService.readDefinition(
+                    tenantId, projectId, workflowId, timestamp));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}/definition.json")
+    public ResponseEntity<?> putDefinition(@PathVariable String tenantId,
+                                           @PathVariable String projectId,
+                                           @PathVariable String workflowId,
+                                           @RequestBody JsonNode definition) {
+        try {
+            return ResponseEntity.ok(workflowDesignService.writeDefinition(
+                    tenantId, projectId, workflowId, definition));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}/__publish")
     public ResponseEntity<?> publishDefinition(@PathVariable String tenantId,
                                                @PathVariable String projectId,
@@ -155,6 +189,24 @@ public class WorkflowDesignController {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
         return putDesign(ctx[0], ctx[1], workflowId, document);
+    }
+
+    @GetMapping("/workflow-designs/{workflowId}/definition.json")
+    public ResponseEntity<?> getDefinitionFlat(HttpServletRequest request,
+                                               @PathVariable String workflowId,
+                                               @RequestParam(required = false) String timestamp) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getDefinition(ctx[0], ctx[1], workflowId, timestamp);
+    }
+
+    @PutMapping("/workflow-designs/{workflowId}/definition.json")
+    public ResponseEntity<?> putDefinitionFlat(HttpServletRequest request,
+                                               @PathVariable String workflowId,
+                                               @RequestBody JsonNode definition) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return putDefinition(ctx[0], ctx[1], workflowId, definition);
     }
 
     @PostMapping("/workflow-designs/{workflowId}/__publish")

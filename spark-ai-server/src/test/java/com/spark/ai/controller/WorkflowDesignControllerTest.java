@@ -155,6 +155,51 @@ class WorkflowDesignControllerTest {
     }
 
     @Test
+    void getDefinition_returnsDefinitionDocument() throws Exception {
+        JsonNode definition = objectMapper.readTree("""
+                {
+                  "kind": "agent.workflow",
+                  "version": 1,
+                  "workflowId": "spark.workflow.demo"
+                }
+                """);
+        when(workflowDesignService.readDefinition("t1", "p1", "spark.workflow.demo", null))
+                .thenReturn(Map.of(
+                        "workflowId", "spark.workflow.demo",
+                        "filename", "definition.json",
+                        "timestamp", "123",
+                        "definition", definition));
+
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/workflow-designs/spark.workflow.demo/definition.json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.definition.kind").value("agent.workflow"))
+                .andExpect(jsonPath("$.data.definition.workflowId").value("spark.workflow.demo"));
+    }
+
+    @Test
+    void putDefinition_savesDefinitionDocument() throws Exception {
+        when(workflowDesignService.writeDefinition(eq("t1"), eq("p1"), eq("spark.workflow.demo"), any(JsonNode.class)))
+                .thenReturn(Map.of(
+                        "ok", true,
+                        "workflowId", "spark.workflow.demo",
+                        "filename", "definition.json",
+                        "timestamp", "123"));
+
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/workflow-designs/spark.workflow.demo/definition.json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "kind": "agent.workflow",
+                                  "version": 1,
+                                  "workflowId": "spark.workflow.demo"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.ok").value(true))
+                .andExpect(jsonPath("$.data.filename").value("definition.json"));
+    }
+
+    @Test
     void publishDefinition_writesDefinitionJson() throws Exception {
         when(workflowDesignService.publishDefinition(eq("t1"), eq("p1"), eq("spark.workflow.demo"), any(JsonNode.class)))
                 .thenReturn(Map.of(
@@ -203,6 +248,29 @@ class WorkflowDesignControllerTest {
                         .header("X-Project-Id", "p1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    void flatDefinitionRoute_usesTenantAndProjectHeaders() throws Exception {
+        JsonNode definition = objectMapper.readTree("""
+                {
+                  "kind": "agent.workflow",
+                  "version": 1,
+                  "workflowId": "spark.workflow.demo"
+                }
+                """);
+        when(workflowDesignService.readDefinition("t1", "p1", "spark.workflow.demo", null))
+                .thenReturn(Map.of(
+                        "workflowId", "spark.workflow.demo",
+                        "filename", "definition.json",
+                        "timestamp", "123",
+                        "definition", definition));
+
+        mockMvc.perform(get("/api/workflow-designs/spark.workflow.demo/definition.json")
+                        .header("X-Tenant-Id", "t1")
+                        .header("X-Project-Id", "p1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.filename").value("definition.json"));
     }
 
     @Test

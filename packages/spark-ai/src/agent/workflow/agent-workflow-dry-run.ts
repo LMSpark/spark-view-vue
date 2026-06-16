@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-dry-run
- * 职责：把可序列化 AgentWorkflowDefinition 与运行时 bindings 连接起来，执行 Host 激活和 dryRun 验收链。
- * 边界：只调用 Host.ensure/dryRun，不启动 LLM turn，不执行工具，不处理 APP delivery。
- * AI用途：需要验证业务工厂 definition 是否能定位 registration provider 并通过 Host dryRun 时，用本模块确认链路。
+ * 职责：作为运行时适配器消费 AgentWorkflowDefinition 中的绑定引用，执行 Host 激活和 dryRun 验收链。
+ * 边界：不改变 definition 的工艺说明书定位；只调用 Host.ensure/dryRun，不启动 LLM turn，不执行工具，不处理 APP delivery。
+ * AI用途：需要验证运行时是否能消费 workflow 工艺说明书中的 registration binding 时，用本模块确认链路。
  */
 
 import type { AiJsonParams } from '../../json'

@@ -98,18 +98,19 @@ class WorkflowDesignApiIntegrationTest {
         MvcResult readResult = mockMvc.perform(get("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/design.json", workflowId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.document.kind").value("agent.workflow.design"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("loop"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.loop.subGraph.nodes[0].data.tool_name")
-                        .value("single_model_edit"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[0].data.type").value("start"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("process-step"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.x_spark.nodeRole")
+                        .value("process-stage"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[8].data.type").value("end"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.edges.length()").value(8))
                 .andReturn();
 
         ObjectNode document = readDocumentFromEnvelope(readResult);
         ((ObjectNode) document.get("app")).put("name", "API Workflow Saved");
-        JsonNode phaseNodes = document.at("/workflow/graph/nodes/1/data/loop/subGraph/nodes");
-        ObjectNode firstModel = (ObjectNode) phaseNodes.get(0).get("data").get("model");
-        ObjectNode value = objectMapper.createObjectNode();
-        value.put("name", "updated-from-api");
-        firstModel.set("value", value);
+        JsonNode processNodes = document.at("/workflow/graph/nodes");
+        ObjectNode firstProcessData = (ObjectNode) processNodes.get(1).get("data");
+        firstProcessData.put("title", "updated-from-api");
 
         mockMvc.perform(put("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/design.json", workflowId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,7 +120,7 @@ class WorkflowDesignApiIntegrationTest {
 
         JsonNode saved = objectMapper.readTree(designFile.toFile());
         assertEquals("API Workflow Saved", saved.path("app").path("name").asText());
-        assertEquals("updated-from-api", saved.at("/workflow/graph/nodes/1/data/loop/subGraph/nodes/0/data/model/value/name").asText());
+        assertEquals("updated-from-api", saved.at("/workflow/graph/nodes/1/data/title").asText());
 
         mockMvc.perform(post("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/__publish", workflowId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,6 +132,26 @@ class WorkflowDesignApiIntegrationTest {
         JsonNode definition = objectMapper.readTree(definitionFile.toFile());
         assertEquals("agent.workflow", definition.path("kind").asText());
         assertEquals(workflowId, definition.path("workflowId").asText());
+
+        MvcResult definitionResult = mockMvc.perform(get(
+                        "/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/definition.json", workflowId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.definition.kind").value("agent.workflow"))
+                .andExpect(jsonPath("$.data.definition.workflowId").value(workflowId))
+                .andReturn();
+
+        ObjectNode definitionDocument = readDefinitionFromEnvelope(definitionResult);
+        ObjectNode identityValue = (ObjectNode) definitionDocument.path("factory").path("identity").path("value");
+        identityValue.put("alias", "edited-definition");
+
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/definition.json", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(definitionDocument)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.ok").value(true));
+
+        JsonNode editedDefinition = objectMapper.readTree(definitionFile.toFile());
+        assertEquals("edited-definition", editedDefinition.at("/factory/identity/value/alias").asText());
 
         mockMvc.perform(get("/api/tenants/t1/projects/p1/workflow-designs/__list"))
                 .andExpect(status().isOk())
@@ -146,6 +167,11 @@ class WorkflowDesignApiIntegrationTest {
     private ObjectNode readDocumentFromEnvelope(MvcResult result) throws IOException {
         JsonNode envelope = objectMapper.readTree(result.getResponse().getContentAsString());
         return (ObjectNode) envelope.at("/data/document").deepCopy();
+    }
+
+    private ObjectNode readDefinitionFromEnvelope(MvcResult result) throws IOException {
+        JsonNode envelope = objectMapper.readTree(result.getResponse().getContentAsString());
+        return (ObjectNode) envelope.at("/data/definition").deepCopy();
     }
 
     private ObjectNode createDefinition(String workflowId) {

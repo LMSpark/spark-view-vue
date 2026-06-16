@@ -14,6 +14,9 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
         <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
         <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
+        <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
+          Definition
+        </el-button>
         <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
           保存
         </el-button>
@@ -83,6 +86,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
           </div>
           <div class="document-stats">
             <span>节点 {{ allNodes.length }}</span>
+            <span>工艺 {{ processStageNodes.length }}</span>
             <span>工具 {{ singleModelNodes.length }}</span>
             <span v-if="currentTimestamp">ts {{ currentTimestamp }}</span>
           </div>
@@ -222,6 +226,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                           <div class="workflow-node" :class="{
                             'is-selected': selected || selectedNodeKey === data.viewKey,
                             'is-tool': data.isSingleModelEditTool,
+                            'is-process': data.isProcessStageNode,
                             'is-loop': data.nodeType === 'loop',
                             'is-exit': data.nodeType === 'exit-loop',
                           }">
@@ -237,9 +242,10 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                               :position="Position.Right"
                               :title="`从 ${data.title} 连线`"
                             />
-                            <span class="node-kind">{{ data.phaseId || data.nodeType }}</span>
+                            <span class="node-kind">{{ data.stageId || data.phaseId || data.nodeType }}</span>
                             <strong>{{ data.title }}</strong>
-                            <small>{{ data.sectionPath || id }}</small>
+                            <small>{{ data.sectionPath || data.stageId || id }}</small>
+                            <span v-if="data.isProcessStageNode" class="tool-name">process-stage</span>
                             <span v-if="data.isSingleModelEditTool" class="tool-name">single_model_edit</span>
                           </div>
                         </template>
@@ -294,7 +300,11 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         <div class="panel-heading">
           <span>属性</span>
           <el-tag v-if="selectedEdge" size="small" type="warning">连线</el-tag>
-          <el-tag v-else-if="selectedNode" size="small" :type="selectedNode.isSingleModelEditTool ? 'success' : 'info'">
+          <el-tag
+            v-else-if="selectedNode"
+            size="small"
+            :type="selectedNode.isSingleModelEditTool ? 'success' : selectedNode.isProcessStageNode ? 'warning' : 'info'"
+          >
             {{ selectedNode.nodeType }}
           </el-tag>
         </div>
@@ -369,12 +379,13 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
           <details class="editor-section collapsible-section" open>
             <summary>节点信息</summary>
             <div class="collapsible-body">
-              <el-descriptions :column="1" size="small" border>
-                <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
-                <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
-                <el-descriptions-item v-if="selectedNode.phaseId" label="Phase">{{ selectedNode.phaseId }}</el-descriptions-item>
-                <el-descriptions-item v-if="selectedNode.sectionPath" label="Section">{{ selectedNode.sectionPath }}</el-descriptions-item>
-                <el-descriptions-item v-if="selectedNode.publishPath" label="Publish">{{ selectedNode.publishPath }}</el-descriptions-item>
+                <el-descriptions :column="1" size="small" border>
+                  <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
+                  <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
+                  <el-descriptions-item v-if="selectedNode.stageId" label="Stage">{{ selectedNode.stageId }}</el-descriptions-item>
+                  <el-descriptions-item v-if="selectedNode.phaseId" label="Phase">{{ selectedNode.phaseId }}</el-descriptions-item>
+                  <el-descriptions-item v-if="selectedNode.sectionPath" label="Section">{{ selectedNode.sectionPath }}</el-descriptions-item>
+                  <el-descriptions-item v-if="selectedNode.publishPath" label="Publish">{{ selectedNode.publishPath }}</el-descriptions-item>
               </el-descriptions>
             </div>
           </details>
@@ -542,12 +553,49 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         <el-button type="primary" :icon="DocumentAdd" @click="createNodeInSelectedGraph">创建节点</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-if="definitionDialogVisible"
+      v-model="definitionDialogVisible"
+      title="Agent Workflow Definition"
+      width="760px"
+    >
+      <div class="definition-editor">
+        <div class="definition-editor-meta">
+          <span>{{ currentWorkflowId }}</span>
+          <el-tag size="small">{{ definitionTimestamp ? `ts ${definitionTimestamp}` : 'local' }}</el-tag>
+          <el-tag size="small" :type="definitionDirty ? 'warning' : 'success'">
+            {{ definitionDirty ? '未保存' : '已保存' }}
+          </el-tag>
+        </div>
+        <el-input
+          v-model="definitionJsonText"
+          class="definition-json-input"
+          type="textarea"
+          :rows="22"
+          @input="markDefinitionDirty"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="definitionDialogVisible = false">关闭</el-button>
+        <el-button
+          type="primary"
+          :icon="Upload"
+          :loading="savingDefinition"
+          :disabled="!canSaveDefinition"
+          @click="saveCurrentDefinition"
+        >
+          保存 Definition
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
  * @description 工作流设计稿可视化编辑页。将 Dify-like graph 中的 single_model_edit tool node 映射成节点编辑器，并通过后端文件 API 保存 design.json。
+ * 同时支持页面设计工厂 process-stage 工艺流程图节点。
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -599,13 +647,17 @@ import {
   deleteWorkflowDesign,
   formatJson,
   getSingleModelEditValue,
+  isWorkflowDefinitionNotFoundError,
   listWorkflowDesigns,
   markWorkflowDesignDirty,
   markWorkflowDesignSaved,
+  parseAgentWorkflowDefinitionJson,
   publishWorkflowDefinition,
+  readWorkflowDefinition,
   readWorkflowDesign,
   removeWorkflowDesignEdge,
   removeWorkflowDesignNode,
+  saveWorkflowDefinition,
   saveWorkflowDesign,
   setSingleModelEditValue,
   updateWorkflowDesignEdge,
@@ -644,9 +696,11 @@ type WorkflowFlowNodeData = {
   title: string
   nodeType: string
   scopePath: string
+  stageId?: string
   phaseId?: string
   sectionPath?: string
   isSingleModelEditTool: boolean
+  isProcessStageNode: boolean
 }
 
 type WorkflowFlowEdgeData = {
@@ -694,10 +748,16 @@ const loadingList = ref(false)
 const opening = ref(false)
 const saving = ref(false)
 const publishing = ref(false)
+const openingDefinition = ref(false)
+const savingDefinition = ref(false)
 const creating = ref(false)
 const createDialogVisible = ref(false)
 const nodeCreateDialogVisible = ref(false)
+const definitionDialogVisible = ref(false)
 const editorDirty = ref(false)
+const definitionTimestamp = ref('')
+const definitionJsonText = ref('{}')
+const definitionDirty = ref(false)
 
 const nodeTypeText = ref('')
 const nodeTitleText = ref('')
@@ -741,6 +801,8 @@ const allNodes = computed(() => currentDocument.value === null ? [] : collectWor
 const graphViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignGraphs(currentDocument.value))
 const edgeViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignEdges(currentDocument.value))
 const singleModelNodes = computed(() => allNodes.value.filter(node => node.isSingleModelEditTool))
+const processStageNodes = computed(() => allNodes.value.filter(node => node.isProcessStageNode))
+const definitionBackedNodes = computed(() => singleModelNodes.value.length + processStageNodes.value.length)
 const selectedNode = computed(() => allNodes.value.find(node => node.key === selectedNodeKey.value) ?? null)
 const selectedEdge = computed(() => edgeViews.value.find(edge => edge.key === selectedEdgeKey.value) ?? null)
 const selectedEdgeGraphNodes = computed(() => {
@@ -812,6 +874,12 @@ const flowDefaultEdgeOptions: DefaultEdgeOptions = {
 }
 const canSave = computed(() => currentDocument.value !== null && currentWorkflowId.value.length > 0 && !opening.value)
 const canPublish = computed(() => canSave.value && !saving.value && !publishing.value)
+const canOpenDefinition = computed(() => canSave.value && !openingDefinition.value)
+const canSaveDefinition = computed(() => (
+  currentWorkflowId.value.length > 0
+  && definitionJsonText.value.trim().length > 0
+  && !savingDefinition.value
+))
 const hasUnsavedChanges = computed(() => {
   const status = currentDocument.value?.x_spark.draft?.['status']
   return (typeof status === 'string' ? status : 'draft') === 'dirty' || editorDirty.value
@@ -869,7 +937,10 @@ async function loadDesigns(): Promise<void> {
 async function openDesign(workflowId: string): Promise<void> {
   const normalizedWorkflowId = workflowId.trim()
   if (normalizedWorkflowId.length === 0) return
-  if (normalizedWorkflowId !== currentWorkflowId.value && !await confirmDiscardEditorDraft()) return
+  if (normalizedWorkflowId !== currentWorkflowId.value) {
+    if (!await confirmDiscardEditorDraft()) return
+    if (!await confirmDiscardDefinitionDraft()) return
+  }
 
   opening.value = true
   try {
@@ -881,12 +952,14 @@ async function openDesign(workflowId: string): Promise<void> {
     currentWorkflowId.value = normalizedWorkflowId
     currentTimestamp.value = result.timestamp
     currentDocument.value = result.document
+    resetDefinitionEditor()
     selectedEdgeKey.value = ''
     currentMainGraphKey.value = 'workflow.graph'
     currentChildGraphKey.value = ''
     loadGraphSplitState(normalizedWorkflowId)
     const nodes = collectWorkflowDesignNodes(result.document)
-    selectedNodeKey.value = nodes.find(node => node.isSingleModelEditTool)?.key
+    selectedNodeKey.value = nodes.find(node => node.isProcessStageNode)?.key
+      ?? nodes.find(node => node.isSingleModelEditTool)?.key
       ?? nodes[0]?.key
       ?? ''
   } catch (error: unknown) {
@@ -942,6 +1015,7 @@ async function deleteDesign(workflowId: string): Promise<void> {
       currentDocument.value = null
       selectedNodeKey.value = ''
       selectedEdgeKey.value = ''
+      resetDefinitionEditor()
     }
     await loadDesigns()
     ElMessage.success('设计稿已删除')
@@ -1021,8 +1095,8 @@ async function deleteSelectedNode(): Promise<void> {
   const view = selectedNode.value
   const document = currentDocument.value
   if (view === null || document === null) return
-  if (view.isSingleModelEditTool && singleModelNodes.value.length <= 1) {
-    ElMessage.warning('至少保留一个 single_model_edit 工具节点')
+  if ((view.isSingleModelEditTool || view.isProcessStageNode) && definitionBackedNodes.value <= 1) {
+    ElMessage.warning('至少保留一个工艺阶段或 single_model_edit 工具节点')
     return
   }
 
@@ -1266,6 +1340,8 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
         nodeType: view.nodeType,
         scopePath: view.scopePath,
         isSingleModelEditTool: view.isSingleModelEditTool,
+        isProcessStageNode: view.isProcessStageNode,
+        ...(view.stageId !== undefined ? { stageId: view.stageId } : {}),
         ...(view.phaseId !== undefined ? { phaseId: view.phaseId } : {}),
         ...(view.sectionPath !== undefined ? { sectionPath: view.sectionPath } : {}),
       },
@@ -1645,6 +1721,90 @@ async function saveCurrentDesign(): Promise<boolean> {
   }
 }
 
+async function openDefinitionEditor(): Promise<void> {
+  const workflowId = currentWorkflowId.value
+  if (workflowId.length === 0) return
+  if (!applySelectedDraft({ silent: true })) return
+
+  openingDefinition.value = true
+  try {
+    const result = await readWorkflowDefinition(workflowId, definitionTimestamp.value)
+    if (result.definition !== undefined) {
+      definitionTimestamp.value = result.timestamp
+      definitionJsonText.value = formatJson(result.definition)
+      definitionDirty.value = false
+    } else {
+      ElMessage.info('definition.json 未变化')
+    }
+    definitionDialogVisible.value = true
+  } catch (error: unknown) {
+    if (!isWorkflowDefinitionNotFoundError(error) || currentDocument.value === null) {
+      ElMessage.error(`打开 Definition 失败: ${errorMessage(error)}`)
+      return
+    }
+    const sourceDocument = await readFreshDesignForDefinitionDraft(workflowId)
+    const definition = createAgentWorkflowDefinitionFromDesign(sourceDocument)
+    definitionTimestamp.value = ''
+    definitionJsonText.value = formatJson(definition)
+    definitionDirty.value = true
+    definitionDialogVisible.value = true
+    ElMessage.info('definition.json 不存在，已从当前设计稿生成本地草稿')
+  } finally {
+    openingDefinition.value = false
+  }
+}
+
+function markDefinitionDirty(): void {
+  definitionDirty.value = true
+}
+
+async function readFreshDesignForDefinitionDraft(workflowId: string): Promise<WorkflowDesignDocument> {
+  const openedDocument = currentDocument.value
+  if (openedDocument === null) {
+    throw new Error('当前设计稿未打开')
+  }
+  if (hasUnsavedChanges.value) {
+    return openedDocument
+  }
+  try {
+    const result = await readWorkflowDesign(workflowId)
+    if (result.document !== undefined) {
+      currentTimestamp.value = result.timestamp
+      currentDocument.value = result.document
+      return result.document
+    }
+  } catch {
+    // Best-effort refresh only; keep the already-open design if the API is unavailable.
+  }
+  return currentDocument.value ?? openedDocument
+}
+
+async function saveCurrentDefinition(): Promise<void> {
+  const workflowId = currentWorkflowId.value
+  if (workflowId.length === 0) return
+
+  let definition
+  try {
+    definition = parseAgentWorkflowDefinitionJson(definitionJsonText.value)
+  } catch (error: unknown) {
+    ElMessage.error(`Definition JSON 无效: ${errorMessage(error)}`)
+    return
+  }
+
+  savingDefinition.value = true
+  try {
+    const result = await saveWorkflowDefinition(workflowId, definition)
+    definitionTimestamp.value = result.timestamp
+    definitionJsonText.value = formatJson(definition)
+    definitionDirty.value = false
+    ElMessage.success('definition.json 已保存')
+  } catch (error: unknown) {
+    ElMessage.error(`保存 Definition 失败: ${errorMessage(error)}`)
+  } finally {
+    savingDefinition.value = false
+  }
+}
+
 async function publishCurrentDefinition(): Promise<void> {
   const document = currentDocument.value
   const workflowId = currentWorkflowId.value
@@ -1661,13 +1821,24 @@ async function publishCurrentDefinition(): Promise<void> {
 
   publishing.value = true
   try {
-    await publishWorkflowDefinition(workflowId, definition)
+    const result = await publishWorkflowDefinition(workflowId, definition)
+    definitionTimestamp.value = result.timestamp
+    definitionJsonText.value = formatJson(definition)
+    definitionDirty.value = false
+    definitionDialogVisible.value = true
     ElMessage.success('definition.json 已发布')
   } catch (error: unknown) {
     ElMessage.error(`发布失败: ${errorMessage(error)}`)
   } finally {
     publishing.value = false
   }
+}
+
+function resetDefinitionEditor(): void {
+  definitionDialogVisible.value = false
+  definitionTimestamp.value = ''
+  definitionJsonText.value = '{}'
+  definitionDirty.value = false
 }
 
 async function copyJson(): Promise<void> {
@@ -1689,6 +1860,21 @@ async function confirmDiscardEditorDraft(): Promise<boolean> {
       cancelButtonText: '取消',
     })
     editorDirty.value = false
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function confirmDiscardDefinitionDraft(): Promise<boolean> {
+  if (!definitionDialogVisible.value || !definitionDirty.value) return true
+  try {
+    await ElMessageBox.confirm('当前 definition.json 有未保存内容，继续会丢弃这些内容。', '切换设计稿', {
+      type: 'warning',
+      confirmButtonText: '继续',
+      cancelButtonText: '取消',
+    })
+    definitionDirty.value = false
     return true
   } catch {
     return false
@@ -2043,6 +2229,11 @@ function errorMessage(error: unknown): string {
   background: #f4fbf9;
 }
 
+.workflow-node.is-process {
+  border-color: #99d7cf;
+  background: #f4fbf9;
+}
+
 .workflow-node.is-loop {
   background: #fff7ed;
 }
@@ -2128,6 +2319,26 @@ function errorMessage(error: unknown): string {
 }
 
 .model-json-input :deep(textarea) {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.definition-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.definition-editor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+}
+
+.definition-json-input :deep(textarea) {
   font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   line-height: 1.55;

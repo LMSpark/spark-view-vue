@@ -84,3 +84,36 @@
 - APP DeliveryPort 进入 `spark-ai` 内核
 - workflow design 前端编辑器的 UI 行为
 - 旧 `Host.run()` 和已有注册 API 的兼容行为
+
+## 2026-06-16 页面设计工厂方向修正
+
+用户确认：F0-F9 的业务工厂思想必须保留，但 workflow/design/definition 的职责是“工艺说明书”，不是运行时执行器。页面设计工厂应把恢复的 `docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md` 作为 pageDesign 业务内部工艺输入。
+
+新的边界：
+
+- `AgentWorkflowDefinition` 描述能力出厂工艺、工序、验收标准、交付约束和运行时绑定引用。
+- `AgentWorkflowDefinition` 不直接执行 Host 激活、ToolLoop、`model_script` 或 DeliveryPort save/rollback。
+- F0-F9 继续作为业务工厂检查维度：能力定义、原料绑定、知识绑定、工单契约、工位/工具规格、治理纪律、验收标准、注册交接、工单生产工艺、交付规则；但不作为流程图节点。
+- 页面设计 100 步不是替代 F0-F9，而是 pageDesign workflow 的真实工艺流程来源；流程图应按 100 步归并后的 7 大步骤表达。
+- 当前 `agent.workflow.20260615130850` 的 `design.json` / `definition.json` 只有简化注册值，需要升级为“页面设计工厂”：明确数据规划优先、四文件内存编辑、DataSet/DataTable/DataView、tableRelations、viewDependencies、rule/script/style 交叉校验等工艺。
+- 运行时推进不是旧 loop 容器的职责；旧的 `start -> loop.business-factory -> end` 包装应删除。删除后根图本身就是工艺流程图，必须保留 `start -> 接单与盘点 -> 数据规划与最小表模型 -> 表关系建模 -> 页面规划与数据消费 -> 按需视图与依赖 -> 结构行为样式落地 -> 交叉校验与收尾 -> end` 的完整工艺关系。F0-F9 按需挂入每个 stage 的 `considerations.metrics`，用 `metricId/operator/target/unit` 数字化验收，而不是口号式全量套用。
+
+本轮落地的最小闭环应避免重写运行时：
+
+1. 恢复并保留 100 步文档，作为 pageDesign 工艺来源。
+2. 扩展 `AgentWorkflowDefinition` 的可选 process/craft 类型，让 definition 能保存业务内部工艺阶段。
+3. 更新 `createPageDesignAgentWorkflowDefinition()`，把页面设计 100 步归并为 7 个 process stages，保持 F0-F9 为按需量化检查维度。
+4. 更新页面设计 workflow design/definition 数据，使 `/workflow-designs` 打开后看到的是 pageDesign 工艺流程图，而不是旧的“F0-F9 即执行步骤”。
+5. 只运行类型检查和相关 workflow/pageDesign 测试，不触碰无关脏文件。
+
+## 2026-06-16 流程图定型优先
+
+用户进一步明确：先不考虑运行时，要通过多轮迭代把流程图定型，以免流程图一接运行时就大改。当前阶段的 definition/design 数据只承担静态工艺说明书职责。
+
+落实边界：
+
+- 根图是页面设计工艺编排，不是运行时编排。
+- 节点是 100 步归并后的 7 大工艺阶段；F0-F9 是每个节点内的思考/检查维度。
+- 编写流程图时必须同时读取 100 步文档和 `generated/dts-class-model/` 知识库：前者确定工艺步骤，后者确定模型能力、参数来源和可验证约束。
+- 每个节点要能回答：前置条件有哪些、选什么模型、参数从哪里来、LLM 做什么、如何验证、什么条件结束。
+- 当前 `F4 runtime`、`F7 activation`、`F9 delivery` 只保留流程图定型占位，不携带 Host 激活、ToolLoop 推进或保存/回滚策略。

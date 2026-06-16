@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow
- * 职责：汇总 Agent Workflow definition、校验和 dryRun 激活链公共 API。
+ * 职责：汇总 Agent Workflow 工艺说明书、校验和运行时适配器公共 API。
  * 边界：只导出 workflow 子域稳定契约，不导入 APP 层或具体业务实现。
- * AI用途：应用层需要引用 workflow definition 或激活 helper 时，从本模块确认公共出口。
+ * AI用途：应用层需要引用 workflow definition、工艺 process 或运行时消费 helper 时，从本模块确认公共出口。
  */
 
 export {
@@ -39,6 +39,18 @@ export type {
   AgentWorkflowFactorySection,
   AgentWorkflowFactorySections,
   AgentWorkflowJsonRecord,
+  AgentWorkflowProcess,
+  AgentWorkflowProcessStageCompletion,
+  AgentWorkflowProcessStageMetric,
+  AgentWorkflowProcessStageMetricOperator,
+  AgentWorkflowProcessStage,
+  AgentWorkflowProcessStageConsideration,
+  AgentWorkflowProcessStageLlmTask,
+  AgentWorkflowProcessStageModelSelection,
+  AgentWorkflowProcessStageParameterSource,
+  AgentWorkflowProcessStagePrerequisite,
+  AgentWorkflowProcessStep,
+  AgentWorkflowProcessStageVerification,
 } from './agent-workflow-definition'
 
 export type {

@@ -46,6 +46,36 @@ public class WorkflowDesignService {
             new FactoryPhase("F7", "activation", "factory.activation", "workflow.factory.activation"),
             new FactoryPhase("F8", "workOrder", "factory.workOrder", "workflow.factory.workOrder"),
             new FactoryPhase("F9", "delivery", "factory.delivery", "workflow.factory.delivery"));
+    private static final List<ProcessStage> PROCESS_STAGES = List.of(
+            new ProcessStage("PD1.scope-inventory", "Scope and inventory", "1-20", 0, 0, List.of(
+                    new StageConsideration("F0", "Identity boundary", "pageIdResolvedCount", "Resolved pageId count", "gte", 1, "page"),
+                    new StageConsideration("F1", "Material inventory", "fileBindingCount", "File binding count", "gte", 4, "file"),
+                    new StageConsideration("F6", "Entry acceptance", "bootstrapMissingCapabilityCount", "Missing capability count", "eq", 0, "capability"))),
+            new ProcessStage("PD2.data-model", "Data planning and table model", "21-40", 300, 0, List.of(
+                    new StageConsideration("F1", "Data material", "businessObjectCount", "Business object count", "gte", 1, "object"),
+                    new StageConsideration("F2", "Data knowledge", "uiStateColumnCount", "UI state column count", "eq", 0, "column"),
+                    new StageConsideration("F6", "Model acceptance", "dataSetRoundTripErrorCount", "DataSet round-trip error count", "eq", 0, "error"))),
+            new ProcessStage("PD3.table-relations", "Table relations", "41-50", 600, 0, List.of(
+                    new StageConsideration("F3", "Relation contract", "relationFieldMissingCount", "Missing relation field count", "eq", 0, "field"),
+                    new StageConsideration("F5", "Relation governance", "relationWithoutConsumerCount", "Relation without consumer count", "eq", 0, "relation"),
+                    new StageConsideration("F6", "Relation acceptance", "missingChildFieldCount", "Missing child field count", "eq", 0, "field"))),
+            new ProcessStage("PD4.page-data-use", "Page planning and data use", "51-70", 900, 0, List.of(
+                    new StageConsideration("F3", "Consumption contract", "regionMappingCoveragePercent", "Region mapping coverage", "gte", 100, "percent"),
+                    new StageConsideration("F5", "Consumption governance", "decorativeDataViewCount", "Decorative DataView count", "eq", 0, "view"),
+                    new StageConsideration("F8", "Work order traceability", "consumerTraceabilityPercent", "Consumer traceability", "gte", 100, "percent"))),
+            new ProcessStage("PD5.views-dependencies", "Views and dependencies", "71-88", 900, 240, List.of(
+                    new StageConsideration("F4", "View workstation", "stateIsolationDecisionCoveragePercent", "State isolation decision coverage", "gte", 100, "percent"),
+                    new StageConsideration("F5", "View governance", "viewWithoutConsumerCount", "View without consumer count", "eq", 0, "view"),
+                    new StageConsideration("F6", "Dependency acceptance", "circularDependencyCount", "Circular dependency count", "eq", 0, "cycle"))),
+            new ProcessStage("PD6.structure-behavior-style", "Structure behavior style", "89-96", 600, 240, List.of(
+                    new StageConsideration("F2", "Component knowledge", "componentGuideCoveragePercent", "Component guide coverage", "gte", 100, "percent"),
+                    new StageConsideration("F4", "Structure workstation", "nodeTreeMutationCount", "NodeTree mutation count", "gte", 1, "mutation"),
+                    new StageConsideration("F6", "Four-file acceptance", "missingHandlerCount", "Missing handler count", "eq", 0, "handler"),
+                    new StageConsideration("F9", "Delivery boundary", "outOfArtifactWriteCount", "Out-of-artifact write count", "eq", 0, "write"))),
+            new ProcessStage("PD7.verify-deliver", "Verify and deliver", "97-100", 300, 240, List.of(
+                    new StageConsideration("F6", "Final acceptance", "previewErrorCount", "Preview error count", "eq", 0, "error"),
+                    new StageConsideration("F7", "Design handoff", "executionImplementationStepCount", "Execution implementation step count", "eq", 0, "step"),
+                    new StageConsideration("F9", "Delivery closure", "deliveryArtifactCount", "Delivery artifact count", "gte", 4, "file"))));
 
     private final ObjectMapper objectMapper;
     private final Path root;
@@ -154,6 +184,51 @@ public class WorkflowDesignService {
         return resultWithTimestamp(workflowId, file);
     }
 
+    public Map<String, Object> readDefinition(String tenantId, String projectId,
+                                              String workflowId, String clientTimestamp) throws IOException {
+        guardProject(tenantId, projectId);
+        validateScopeId("workflowId", workflowId);
+        Path file = definitionFile(tenantId, projectId, workflowId);
+        if (!Files.isRegularFile(file)) {
+            throw new NoSuchFileException(workflowId + "/" + DEFINITION_FILENAME);
+        }
+
+        String timestamp = String.valueOf(Files.getLastModifiedTime(file).toMillis());
+        if (clientTimestamp != null && clientTimestamp.equals(timestamp)) {
+            Map<String, Object> notModified = new LinkedHashMap<>();
+            notModified.put("notModified", true);
+            notModified.put("workflowId", workflowId);
+            notModified.put("filename", DEFINITION_FILENAME);
+            notModified.put("timestamp", timestamp);
+            return notModified;
+        }
+
+        JsonNode definition = objectMapper.readTree(file.toFile());
+        validateDefinitionDocument(workflowId, definition);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("workflowId", workflowId);
+        result.put("filename", DEFINITION_FILENAME);
+        result.put("timestamp", timestamp);
+        result.put("definition", definition);
+        return result;
+    }
+
+    public Map<String, Object> writeDefinition(String tenantId, String projectId,
+                                               String workflowId, JsonNode definition) throws IOException {
+        guardProject(tenantId, projectId);
+        validateScopeId("workflowId", workflowId);
+        Path design = designFile(tenantId, projectId, workflowId);
+        if (!Files.isRegularFile(design)) {
+            throw new NoSuchFileException(workflowId + "/" + DESIGN_FILENAME);
+        }
+        validateDefinitionDocument(workflowId, definition);
+
+        Path file = definitionFile(tenantId, projectId, workflowId);
+        writeDocument(file, definition);
+        return resultWithTimestamp(workflowId, file);
+    }
+
     public Map<String, Object> publishDefinition(String tenantId, String projectId,
                                                  String workflowId, JsonNode definition) throws IOException {
         guardProject(tenantId, projectId);
@@ -214,12 +289,14 @@ public class WorkflowDesignService {
         ObjectNode workflow = document.putObject("workflow");
         workflow.put("id", workflowId);
         workflow.put("version", 1);
-        workflow.set("graph", createDefaultWorkflowGraph(workflowId, resolvedTitle));
+        workflow.set("graph", createDefaultWorkflowGraph(workflowId));
 
         ObjectNode spark = document.putObject("x_spark");
         spark.put("schema", "spark.agent.workflow.design.v1");
         spark.put("businessFactory", true);
-        spark.put("phaseModel", "F0-F9");
+        spark.put("phaseModel", "F0-F9-considerations");
+        spark.set("factory", createDefaultFactorySections());
+        spark.set("process", createDefaultWorkflowProcess());
 
         ObjectNode draft = spark.putObject("draft");
         draft.put("status", "draft");
@@ -234,16 +311,74 @@ public class WorkflowDesignService {
         return document;
     }
 
-    private ObjectNode createDefaultWorkflowGraph(String workflowId, String title) {
+    private ObjectNode createDefaultFactorySections() {
+        ObjectNode factory = objectMapper.createObjectNode();
+        for (FactoryPhase phase : FACTORY_PHASES) {
+            ObjectNode section = factory.putObject(phase.phase());
+            section.put("phaseId", phase.phaseId());
+            section.put("phase", phase.phase());
+            section.put("sectionPath", phase.sectionPath());
+            section.put("publishPath", phase.publishPath());
+            section.putObject("value");
+        }
+        return factory;
+    }
+
+    private ObjectNode createDefaultWorkflowProcess() {
+        ObjectNode process = objectMapper.createObjectNode();
+        process.put("processId", "pageDesign.data-first-100-step-process");
+        process.put("title", "Page design seven-stage data-first process");
+        process.put("sourceRef", "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10");
+        process.put("principle", "The graph contains craft steps; F0-F9 are stage considerations with numeric metrics.");
+        ArrayNode stages = process.putArray("stages");
+        for (ProcessStage stage : PROCESS_STAGES) {
+            ObjectNode stageNode = stages.addObject();
+            stageNode.put("stageId", stage.stageId());
+            stageNode.put("title", stage.title());
+            stageNode.put("sourceSteps", stage.sourceSteps());
+            stageNode.put("goal", "Complete source steps " + stage.sourceSteps() + " in the page design craft.");
+            ArrayNode steps = stageNode.putArray("steps");
+            ObjectNode step = steps.addObject();
+            step.put("stepId", stage.stageId() + ".1");
+            step.put("title", stage.title());
+            step.put("sourceSteps", stage.sourceSteps());
+            step.putArray("actions").add("Follow the source step range.");
+            step.putArray("outputs").add("Stage result");
+            step.putArray("checks").add("Stage result is closed before moving on.");
+            ArrayNode considerations = stageNode.putArray("considerations");
+            for (StageConsideration stageConsideration : stage.considerations()) {
+                ObjectNode consideration = considerations.addObject();
+                consideration.put("phaseId", stageConsideration.phaseId());
+                consideration.put("title", stageConsideration.title());
+                consideration.putArray("checks").add(stageConsideration.metricTitle());
+                ArrayNode metrics = consideration.putArray("metrics");
+                ObjectNode metric = metrics.addObject();
+                metric.put("metricId", stageConsideration.metricId());
+                metric.put("title", stageConsideration.metricTitle());
+                metric.put("operator", stageConsideration.operator());
+                metric.put("target", stageConsideration.target());
+                metric.put("unit", stageConsideration.unit());
+            }
+        }
+        return process;
+    }
+
+    private ObjectNode createDefaultWorkflowGraph(String workflowId) {
         ObjectNode graph = objectMapper.createObjectNode();
+        graph.put("id", workflowId + ".factory-process");
         ArrayNode nodes = objectMapper.createArrayNode();
         addStartNode(nodes);
-        addBusinessFactoryLoopNode(nodes, workflowId, title);
+        addProcessStageNodes(nodes);
         addEndNode(nodes);
-
         ArrayNode edges = objectMapper.createArrayNode();
-        addGraphEdge(edges, "edge.start.loop", "start", "loop.business-factory", "source", "target");
-        addGraphEdge(edges, "edge.loop.end", "loop.business-factory", "end", "source", "target");
+        addGraphEdge(edges, "edge.start.PD1", "start", "process.PD1.scope-inventory", "source", "target");
+        addGraphEdge(edges, "edge.PD1.PD2", "process.PD1.scope-inventory", "process.PD2.data-model", "source", "target");
+        addGraphEdge(edges, "edge.PD2.PD3", "process.PD2.data-model", "process.PD3.table-relations", "source", "target");
+        addGraphEdge(edges, "edge.PD3.PD4", "process.PD3.table-relations", "process.PD4.page-data-use", "source", "target");
+        addGraphEdge(edges, "edge.PD4.PD5", "process.PD4.page-data-use", "process.PD5.views-dependencies", "source", "target");
+        addGraphEdge(edges, "edge.PD5.PD6", "process.PD5.views-dependencies", "process.PD6.structure-behavior-style", "source", "target");
+        addGraphEdge(edges, "edge.PD6.PD7", "process.PD6.structure-behavior-style", "process.PD7.verify-deliver", "source", "target");
+        addGraphEdge(edges, "edge.PD7.end", "process.PD7.verify-deliver", "end", "source", "target");
 
         graph.set("nodes", nodes);
         graph.set("edges", edges);
@@ -259,44 +394,36 @@ public class WorkflowDesignService {
         node.put("id", "start");
         node.put("type", GRAPH_NODE_TYPE);
         ObjectNode position = node.putObject("position");
-        position.put("x", 0);
-        position.put("y", 160);
+        position.put("x", -260);
+        position.put("y", 0);
         ObjectNode data = node.putObject("data");
         data.put("type", "start");
         data.put("title", "Start");
-        data.put("desc", "Workflow design entry");
+        data.put("desc", "Factory process entry");
         data.putArray("variables");
     }
 
-    private void addBusinessFactoryLoopNode(ArrayNode nodes, String workflowId, String title) {
-        ObjectNode node = nodes.addObject();
-        node.put("id", "loop.business-factory");
-        node.put("type", GRAPH_NODE_TYPE);
-        ObjectNode position = node.putObject("position");
-        position.put("x", 280);
-        position.put("y", 40);
-        ObjectNode data = node.putObject("data");
-        data.put("type", "loop");
-        data.put("title", title + " phase loop");
-        data.put("desc", "Edit F0-F9 business factory phases as a loop sub-graph");
-
-        ObjectNode loop = data.putObject("loop");
-        loop.put("mode", "progressive");
-        loop.put("maxLoopCount", 10);
-        loop.put("exitNodeId", "loop.exit");
-
-        ArrayNode variables = loop.putArray("variables");
-        addLoopVariable(variables, "phaseIndex", "number", 0);
-        addLoopVariable(variables, "phaseId", "string", "F0");
-        addLoopVariable(variables, "completedPhaseIds", "array", null);
-
-        ArrayNode conditions = loop.putArray("terminationConditions");
-        ObjectNode condition = conditions.addObject();
-        condition.put("id", "all-phases-complete");
-        condition.put("type", "expression");
-        condition.put("expression", "phaseIndex >= 10");
-
-        loop.set("subGraph", createBusinessFactoryPhaseSubGraph(workflowId));
+    private void addProcessStageNodes(ArrayNode nodes) {
+        for (ProcessStage stage : PROCESS_STAGES) {
+            ObjectNode node = nodes.addObject();
+            node.put("id", "process." + stage.stageId());
+            node.put("type", GRAPH_NODE_TYPE);
+            ObjectNode position = node.putObject("position");
+            position.put("x", stage.x());
+            position.put("y", stage.y());
+            ObjectNode data = node.putObject("data");
+            data.put("type", "process-step");
+            data.put("title", stage.title());
+            data.put("desc", "Source steps " + stage.sourceSteps());
+            ObjectNode spark = data.putObject("x_spark");
+            spark.put("nodeRole", "process-stage");
+            spark.put("stageId", stage.stageId());
+            spark.put("sourceSteps", stage.sourceSteps());
+            ArrayNode considerations = spark.putArray("factoryConsiderations");
+            for (StageConsideration stageConsideration : stage.considerations()) {
+                considerations.add(stageConsideration.phaseId());
+            }
+        }
     }
 
     private void addEndNode(ArrayNode nodes) {
@@ -304,59 +431,13 @@ public class WorkflowDesignService {
         node.put("id", "end");
         node.put("type", GRAPH_NODE_TYPE);
         ObjectNode position = node.putObject("position");
-        position.put("x", 740);
-        position.put("y", 160);
+        position.put("x", -260);
+        position.put("y", 240);
         ObjectNode data = node.putObject("data");
         data.put("type", "end");
         data.put("title", "End");
-        data.put("desc", "Workflow design saved as JSON");
+        data.put("desc", "Factory process completion");
         data.putArray("outputs");
-    }
-
-    private void addLoopVariable(ArrayNode variables, String name, String valueType, Object initialValue) {
-        ObjectNode variable = variables.addObject();
-        variable.put("name", name);
-        variable.put("valueType", valueType);
-        if (initialValue instanceof Integer number) {
-            variable.put("initialValue", number);
-        } else if (initialValue instanceof String text) {
-            variable.put("initialValue", text);
-        } else {
-            variable.set("initialValue", objectMapper.createArrayNode());
-        }
-    }
-
-    private ObjectNode createBusinessFactoryPhaseSubGraph(String workflowId) {
-        ObjectNode graph = objectMapper.createObjectNode();
-        ArrayNode nodes = objectMapper.createArrayNode();
-        addSingleModelEditToolNode(nodes, "phase.F0", "F0", "factory.identity", "Edit identity", 0, 0);
-        addSingleModelEditToolNode(nodes, "phase.F1", "F1", "factory.materials", "Edit materials", 260, 0);
-        addSingleModelEditToolNode(nodes, "phase.F2", "F2", "factory.knowledge", "Edit knowledge", 520, 0);
-        addSingleModelEditToolNode(nodes, "phase.F3", "F3", "factory.contract", "Edit contract", 780, 0);
-        addSingleModelEditToolNode(nodes, "phase.F4", "F4", "factory.runtime", "Edit runtime", 1040, 0);
-        addSingleModelEditToolNode(nodes, "phase.F5", "F5", "factory.governance", "Edit governance", 1040, 240);
-        addSingleModelEditToolNode(nodes, "phase.F6", "F6", "factory.acceptance", "Edit acceptance", 780, 240);
-        addSingleModelEditToolNode(nodes, "phase.F7", "F7", "factory.activation", "Edit activation", 520, 240);
-        addSingleModelEditToolNode(nodes, "phase.F8", "F8", "factory.workOrder", "Edit work order", 260, 240);
-        addSingleModelEditToolNode(nodes, "phase.F9", "F9", "factory.delivery", "Edit delivery", 0, 240);
-        addExitLoopNode(nodes);
-
-        ArrayNode edges = objectMapper.createArrayNode();
-        addGraphEdge(edges, "edge.F0.F1", "phase.F0", "phase.F1", "source", "target");
-        addGraphEdge(edges, "edge.F1.F2", "phase.F1", "phase.F2", "source", "target");
-        addGraphEdge(edges, "edge.F2.F3", "phase.F2", "phase.F3", "source", "target");
-        addGraphEdge(edges, "edge.F3.F4", "phase.F3", "phase.F4", "source", "target");
-        addGraphEdge(edges, "edge.F4.F5", "phase.F4", "phase.F5", "source", "target");
-        addGraphEdge(edges, "edge.F5.F6", "phase.F5", "phase.F6", "source", "target");
-        addGraphEdge(edges, "edge.F6.F7", "phase.F6", "phase.F7", "source", "target");
-        addGraphEdge(edges, "edge.F7.F8", "phase.F7", "phase.F8", "source", "target");
-        addGraphEdge(edges, "edge.F8.F9", "phase.F8", "phase.F9", "source", "target");
-        addGraphEdge(edges, "edge.F9.exit", "phase.F9", "loop.exit", "source", "target");
-
-        graph.put("id", workflowId + ".factory-phases");
-        graph.set("nodes", nodes);
-        graph.set("edges", edges);
-        return graph;
     }
 
     private void addSingleModelEditToolNode(ArrayNode nodes, String id, String phaseId, String sectionPath,
@@ -409,19 +490,6 @@ public class WorkflowDesignService {
         return model;
     }
 
-    private void addExitLoopNode(ArrayNode nodes) {
-        ObjectNode node = nodes.addObject();
-        node.put("id", "loop.exit");
-        node.put("type", GRAPH_NODE_TYPE);
-        ObjectNode position = node.putObject("position");
-        position.put("x", 260);
-        position.put("y", 480);
-        ObjectNode data = node.putObject("data");
-        data.put("type", "exit-loop");
-        data.put("title", "Exit Loop");
-        data.put("desc", "Leave the business factory phase loop");
-    }
-
     private void addGraphEdge(ArrayNode edges, String id, String source, String target,
                               String sourceHandle, String targetHandle) {
         ObjectNode edge = edges.addObject();
@@ -433,6 +501,7 @@ public class WorkflowDesignService {
         edge.put("type", GRAPH_NODE_TYPE);
         ObjectNode data = edge.putObject("data");
         data.put("relation", "sequence");
+        data.put("meaning", "craft-order");
     }
 
     private void validateDesignDocument(String workflowId, JsonNode document) {
@@ -461,8 +530,8 @@ public class WorkflowDesignService {
         requireArray(graph, "edges");
         requiredObject(graph, "viewport");
 
-        if (!containsSingleModelEditTool(graph)) {
-            throw new IllegalArgumentException("workflow graph must contain single_model_edit tool nodes");
+        if (!containsSingleModelEditTool(graph) && !containsProcessStageNode(graph)) {
+            throw new IllegalArgumentException("workflow graph must contain process-stage or single_model_edit nodes");
         }
 
         JsonNode spark = requiredObject(document, "x_spark");
@@ -527,6 +596,20 @@ public class WorkflowDesignService {
                 }
                 JsonNode iterationSubGraph = data.path("iteration").path("subGraph");
                 if (iterationSubGraph.isObject() && containsSingleModelEditTool(iterationSubGraph)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean containsProcessStageNode(JsonNode graph) {
+        JsonNode nodes = graph.path("nodes");
+        if (nodes.isArray()) {
+            for (JsonNode node : nodes) {
+                JsonNode data = node.path("data");
+                if ("process-step".equals(data.path("type").asText())
+                        && "process-stage".equals(data.path("x_spark").path("nodeRole").asText())) {
                     return true;
                 }
             }
@@ -644,5 +727,13 @@ public class WorkflowDesignService {
     }
 
     private record FactoryPhase(String phaseId, String phase, String sectionPath, String publishPath) {
+    }
+
+    private record ProcessStage(String stageId, String title, String sourceSteps, int x, int y,
+                                List<StageConsideration> considerations) {
+    }
+
+    private record StageConsideration(String phaseId, String title, String metricId, String metricTitle,
+                                      String operator, int target, String unit) {
     }
 }

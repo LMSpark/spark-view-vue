@@ -96,6 +96,18 @@ export type {
   AgentWorkflowFactorySection,
   AgentWorkflowFactorySections,
   AgentWorkflowJsonRecord,
+  AgentWorkflowProcess,
+  AgentWorkflowProcessStageCompletion,
+  AgentWorkflowProcessStage,
+  AgentWorkflowProcessStageConsideration,
+  AgentWorkflowProcessStageLlmTask,
+  AgentWorkflowProcessStageMetric,
+  AgentWorkflowProcessStageMetricOperator,
+  AgentWorkflowProcessStageModelSelection,
+  AgentWorkflowProcessStageParameterSource,
+  AgentWorkflowProcessStagePrerequisite,
+  AgentWorkflowProcessStageVerification,
+  AgentWorkflowProcessStep,
   AgentWorkflowRegistrationBinding,
 } from './workflow'
 

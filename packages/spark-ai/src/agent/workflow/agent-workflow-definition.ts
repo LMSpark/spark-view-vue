@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-definition
- * 职责：定义可序列化 Agent Workflow Definition 契约，把业务工厂 F0-F9 阶段沉淀为稳定 JSON 结构。
+ * 职责：定义可序列化 Agent Workflow Definition 契约，把业务工厂 F0-F9 和业务内部工艺沉淀为稳定 JSON 结构。
  * 边界：只描述 workflow 定义，不持有函数、class、实例、APP delivery port 或 UI 状态。
- * AI用途：需要判断业务工厂 workflow definition 字段、阶段映射或发布产物格式时，用本模块确认契约。
+ * AI用途：需要判断业务工厂 workflow definition 字段、阶段映射、工艺 process 或发布产物格式时，用本模块确认契约。
  */
 
 import type {
@@ -41,6 +41,97 @@ export type AgentWorkflowDefinitionSource = Readonly<{
   designKind: 'agent.workflow.design'
   designId: string
   designVersion: number
+}>
+
+export type AgentWorkflowProcessStep = Readonly<{
+  stepId: string
+  title: string
+  sourceSteps?: string
+  actions: readonly string[]
+  outputs: readonly string[]
+  checks: readonly string[]
+}>
+
+export type AgentWorkflowProcessStageMetricOperator = 'eq' | 'lte' | 'gte'
+
+export type AgentWorkflowProcessStageMetric = Readonly<{
+  metricId: string
+  title: string
+  operator: AgentWorkflowProcessStageMetricOperator
+  target: number
+  unit: string
+}>
+
+export type AgentWorkflowProcessStageConsideration = Readonly<{
+  phaseId: BusinessFactoryWorkflowPhaseId
+  title: string
+  checks: readonly string[]
+  metrics?: readonly AgentWorkflowProcessStageMetric[]
+}>
+
+export type AgentWorkflowProcessStagePrerequisite = Readonly<{
+  prerequisiteId: string
+  title: string
+  source: string
+  metrics: readonly AgentWorkflowProcessStageMetric[]
+}>
+
+export type AgentWorkflowProcessStageModelSelection = Readonly<{
+  modelRole: string
+  modelRef: string
+  selectionReason: string
+  fallbackModelRefs?: readonly string[]
+}>
+
+export type AgentWorkflowProcessStageParameterSource = Readonly<{
+  parameterId: string
+  title: string
+  source: string
+  path: string
+  required: boolean
+}>
+
+export type AgentWorkflowProcessStageLlmTask = Readonly<{
+  objective: string
+  instructions: readonly string[]
+  expectedOutput: readonly string[]
+  forbidden?: readonly string[]
+}>
+
+export type AgentWorkflowProcessStageVerification = Readonly<{
+  verificationId: string
+  title: string
+  method: string
+  metrics: readonly AgentWorkflowProcessStageMetric[]
+}>
+
+export type AgentWorkflowProcessStageCompletion = Readonly<{
+  criteria: readonly string[]
+  nextWhen: string
+  stopWhen: string
+}>
+
+export type AgentWorkflowProcessStage = Readonly<{
+  stageId: string
+  title: string
+  sourceSteps: string
+  goal: string
+  steps: readonly AgentWorkflowProcessStep[]
+  considerations?: readonly AgentWorkflowProcessStageConsideration[]
+  prerequisites?: readonly AgentWorkflowProcessStagePrerequisite[]
+  model?: AgentWorkflowProcessStageModelSelection
+  parameterSources?: readonly AgentWorkflowProcessStageParameterSource[]
+  llmTask?: AgentWorkflowProcessStageLlmTask
+  verification?: readonly AgentWorkflowProcessStageVerification[]
+  completion?: AgentWorkflowProcessStageCompletion
+}>
+
+export type AgentWorkflowProcess = Readonly<{
+  processId: string
+  title: string
+  sourceRef: string
+  principle: string
+  stages: readonly AgentWorkflowProcessStage[]
 }>
 
 export type AgentWorkflowFactoryPhaseDescriptor = Readonly<{
@@ -87,6 +178,7 @@ export type AgentWorkflowDefinition = Readonly<{
   version: AgentWorkflowDefinitionVersion
   workflowId: string
   source: AgentWorkflowDefinitionSource
+  process?: AgentWorkflowProcess
   factory: AgentWorkflowFactorySections
   x_spark: AgentWorkflowDefinitionSparkMeta
 }>

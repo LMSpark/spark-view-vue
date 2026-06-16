@@ -29,9 +29,12 @@ import {
   createWorkflowDesignNode,
   getSingleModelEditValue,
   markWorkflowDesignDirty,
+  parseAgentWorkflowDefinitionJson,
   publishWorkflowDefinition,
+  readWorkflowDefinition,
   removeWorkflowDesignEdge,
   removeWorkflowDesignNode,
+  saveWorkflowDefinition,
   setSingleModelEditValue,
   updateWorkflowDesignEdge,
   type WorkflowDesignDocument,
@@ -278,17 +281,60 @@ describe('workflow design helpers', () => {
         },
       },
     })
+    expect(definition.process?.processId).toBe('test.page-design-process')
+    expect(definition.process?.sourceRef).toBe('docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10')
+    expect(definition.process?.stages).toHaveLength(7)
+    expect(definition.process?.stages[0]).toMatchObject({
+      stageId: 'PD1.scope-inventory',
+      sourceSteps: '1-20',
+      considerations: expect.arrayContaining([
+        expect.objectContaining({
+          phaseId: 'F0',
+          metrics: expect.arrayContaining([
+            expect.objectContaining({
+              metricId: 'PD1.scope-inventory.F0.metric',
+              operator: 'gte',
+              target: 1,
+            }),
+          ]),
+        }),
+        expect.objectContaining({ phaseId: 'F9' }),
+      ]),
+    })
     expect(definition.factory.identity.value).toEqual({
       alias: 'pageDesign',
       moduleId: 'pageDesign',
       rootClassName: 'ProjectModel',
     })
     expect(definition.factory.activation.value).toEqual({
-      registrationBindingKey: 'pageDesign.registration',
+      status: 'deferred',
+      reason: 'process-flow-shaping-only',
     })
     expect(definition.factory.delivery.value).toEqual({
-      mode: 'appDeliveryPort',
+      status: 'deferred',
+      reason: 'process-flow-shaping-only',
     })
+    expect(design.workflow.graph.nodes.map(node => node.id)).toEqual([
+      'start',
+      'process.PD1.scope-inventory',
+      'process.PD2.data-model',
+      'process.PD3.table-relations',
+      'process.PD4.page-data-use',
+      'process.PD5.views-dependencies',
+      'process.PD6.structure-behavior-style',
+      'process.PD7.verify-deliver',
+      'end',
+    ])
+    expect(design.workflow.graph.edges.map(edge => edge.id)).toEqual([
+      'edge.start.PD1',
+      'edge.PD1.PD2',
+      'edge.PD2.PD3',
+      'edge.PD3.PD4',
+      'edge.PD4.PD5',
+      'edge.PD5.PD6',
+      'edge.PD6.PD7',
+      'edge.PD7.end',
+    ])
   })
 
   it('keeps an invalid publishable definition when required phases are missing', () => {
@@ -308,8 +354,9 @@ describe('workflow design helpers', () => {
   })
 
   it('marks duplicate publishPath as invalid', () => {
-    const design = createCompleteBusinessFactoryDesign()
-    const loopGraph = readBusinessFactoryLoopGraph(design)
+    const design = createDesign()
+    const loopGraph = design.workflow.graph.nodes[1]?.data?.loop?.subGraph
+    if (loopGraph === undefined) throw new Error('missing loop graph')
     createWorkflowDesignNode(loopGraph, {
       nodeKind: 'tool',
       id: 'phase.F0.duplicate',
@@ -347,50 +394,276 @@ describe('workflow design helpers', () => {
       definition,
     )
   })
+
+  it('reads and saves definition.json through the document endpoint', async () => {
+    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+    httpMock.get.mockResolvedValue({
+      workflowId: 'agent.workflow.test',
+      filename: 'definition.json',
+      timestamp: '2',
+      definition,
+    })
+    httpMock.put.mockResolvedValue({
+      ok: true,
+      workflowId: 'agent.workflow.test',
+      filename: 'definition.json',
+      timestamp: '3',
+    })
+
+    const readResult = await readWorkflowDefinition('agent.workflow.test', '1')
+    const saveResult = await saveWorkflowDefinition('agent.workflow.test', definition)
+
+    expect(readResult.definition).toBe(definition)
+    expect(saveResult.timestamp).toBe('3')
+    expect(httpMock.get).toHaveBeenCalledWith(
+      '/api/tenants/tenant-a/projects/project-a/workflow-designs/agent.workflow.test/definition.json',
+      { timestamp: '1' },
+    )
+    expect(httpMock.put).toHaveBeenCalledWith(
+      '/api/tenants/tenant-a/projects/project-a/workflow-designs/agent.workflow.test/definition.json',
+      definition,
+    )
+  })
+
+  it('falls back to publish when the definition document endpoint is missing', async () => {
+    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+    httpMock.put.mockRejectedValue(new Error(
+      'No static resource api/tenants/tenant-a/projects/project-a/workflow-designs/agent.workflow.test/definition.json.',
+    ))
+    httpMock.post.mockResolvedValue({
+      ok: true,
+      workflowId: 'agent.workflow.test',
+      filename: 'definition.json',
+      timestamp: '4',
+    })
+
+    const result = await saveWorkflowDefinition('agent.workflow.test', definition)
+
+    expect(result.timestamp).toBe('4')
+    expect(httpMock.post).toHaveBeenCalledWith(
+      '/api/tenants/tenant-a/projects/project-a/workflow-designs/agent.workflow.test/__publish',
+      definition,
+    )
+  })
+
+  it('parses definition JSON with AgentWorkflowDefinition validation', () => {
+    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+
+    expect(parseAgentWorkflowDefinitionJson(JSON.stringify(definition))).toEqual(definition)
+    expect(() => parseAgentWorkflowDefinitionJson('{"kind":"agent.workflow"}')).toThrow()
+  })
 })
 
 function createCompleteBusinessFactoryDesign(): WorkflowDesignDocument {
   const design = createDesign()
-  const loopGraph = readBusinessFactoryLoopGraph(design)
-  const first = collectWorkflowDesignNodes(design).find(node => node.id === 'phase.F0')
-  if (first === undefined) throw new Error('missing F0 node')
-  setSingleModelEditValue(first.node, {
-    alias: 'pageDesign',
-    moduleId: 'pageDesign',
-    rootClassName: 'ProjectModel',
-  })
-
-  const phaseValues: ReadonlyArray<Readonly<{
-    phaseId: string
-    sectionPath: string
-    value: Readonly<Record<string, unknown>>
-  }>> = [
-    { phaseId: 'F1', sectionPath: 'factory.materials', value: { moduleClass: 'ProjectModel' } },
-    { phaseId: 'F2', sectionPath: 'factory.knowledge', value: { rootClassName: 'ProjectModel' } },
-    { phaseId: 'F3', sectionPath: 'factory.contract', value: { identityField: 'pageId' } },
-    { phaseId: 'F4', sectionPath: 'factory.runtime', value: { runtime: 'classModel' } },
-    { phaseId: 'F5', sectionPath: 'factory.governance', value: { mutationGate: 'pageDesign' } },
-    { phaseId: 'F6', sectionPath: 'factory.acceptance', value: { dryRun: true } },
-    { phaseId: 'F7', sectionPath: 'factory.activation', value: { registrationBindingKey: 'pageDesign.registration' } },
-    { phaseId: 'F8', sectionPath: 'factory.workOrder', value: { sampleInput: 'pageDesign' } },
-    { phaseId: 'F9', sectionPath: 'factory.delivery', value: { mode: 'appDeliveryPort' } },
-  ]
-
-  for (const phase of phaseValues) {
-    const node = createWorkflowDesignNode(loopGraph, {
-      nodeKind: 'tool',
-      id: `phase.${phase.phaseId}`,
-      title: `Edit ${phase.phaseId}`,
-      phaseId: phase.phaseId,
-      sectionPath: phase.sectionPath,
-    })
-    setSingleModelEditValue(node, phase.value)
+  design.x_spark['process'] = createTestProcess()
+  design.x_spark['factory'] = createTestFactory()
+  design.workflow.graph = {
+    id: 'agent.workflow.test.page-design-process',
+    nodes: [
+      createFactoryProcessStartNode(),
+      ...createTestProcessStageNodes(),
+      createFactoryProcessEndNode(),
+    ],
+    edges: [],
+    viewport: { x: 0, y: 0, zoom: 1 },
   }
+  design.workflow.graph.edges = createFactoryProcessEdges()
   return design
 }
 
-function readBusinessFactoryLoopGraph(design: WorkflowDesignDocument) {
-  const loopGraph = design.workflow.graph.nodes[1]?.data?.loop?.subGraph
-  if (loopGraph === undefined) throw new Error('missing loop graph')
-  return loopGraph
+function createFactoryProcessStartNode() {
+  return {
+    id: 'start',
+    type: 'custom',
+    position: { x: -260, y: 0 },
+    data: {
+      type: 'start',
+      title: 'Start',
+      desc: 'Factory process entry',
+    },
+  }
+}
+
+function createFactoryProcessEndNode() {
+  return {
+    id: 'end',
+    type: 'custom',
+    position: { x: -260, y: 240 },
+    data: {
+      type: 'end',
+      title: 'End',
+      desc: 'Factory process completion',
+    },
+  }
+}
+
+function createTestProcessStageNodes() {
+  return createTestProcess().stages.map((stage, index) => ({
+    id: `process.${stage.stageId}`,
+    type: 'custom',
+    position: index < 4
+      ? { x: index * 300, y: 0 }
+      : { x: (7 - index) * 300, y: 240 },
+    data: {
+      type: 'process-step',
+      title: stage.title,
+      desc: stage.goal,
+      x_spark: {
+        nodeRole: 'process-stage',
+        stageId: stage.stageId,
+        sourceSteps: stage.sourceSteps,
+        factoryConsiderations: stage.considerations.map(item => item.phaseId),
+      },
+    },
+  }))
+}
+
+function createFactoryProcessEdges() {
+  const sequence = [
+    ['edge.start.PD1', 'start', 'process.PD1.scope-inventory'],
+    ['edge.PD1.PD2', 'process.PD1.scope-inventory', 'process.PD2.data-model'],
+    ['edge.PD2.PD3', 'process.PD2.data-model', 'process.PD3.table-relations'],
+    ['edge.PD3.PD4', 'process.PD3.table-relations', 'process.PD4.page-data-use'],
+    ['edge.PD4.PD5', 'process.PD4.page-data-use', 'process.PD5.views-dependencies'],
+    ['edge.PD5.PD6', 'process.PD5.views-dependencies', 'process.PD6.structure-behavior-style'],
+    ['edge.PD6.PD7', 'process.PD6.structure-behavior-style', 'process.PD7.verify-deliver'],
+    ['edge.PD7.end', 'process.PD7.verify-deliver', 'end'],
+  ] as const
+
+  return sequence.map(([id, source, target]) => ({
+    id,
+    source,
+    target,
+    sourceHandle: 'source',
+    targetHandle: 'target',
+    type: 'custom',
+    data: {
+      relation: 'sequence',
+      meaning: 'craft-order',
+    },
+  }))
+}
+
+function createTestFactory() {
+  return {
+    identity: createTestFactorySection('F0', 'identity', 'factory.identity', 'workflow.factory.identity', {
+      alias: 'pageDesign',
+      moduleId: 'pageDesign',
+      rootClassName: 'ProjectModel',
+    }),
+    materials: createTestFactorySection('F1', 'materials', 'factory.materials', 'workflow.factory.materials', {
+      moduleClass: 'ProjectModel',
+    }),
+    knowledge: createTestFactorySection('F2', 'knowledge', 'factory.knowledge', 'workflow.factory.knowledge', {
+      rootClassName: 'ProjectModel',
+    }),
+    contract: createTestFactorySection('F3', 'contract', 'factory.contract', 'workflow.factory.contract', {
+      identityField: 'pageId',
+    }),
+    runtime: createTestFactorySection('F4', 'runtime', 'factory.runtime', 'workflow.factory.runtime', {
+      status: 'deferred',
+      reason: 'process-flow-shaping-only',
+    }),
+    governance: createTestFactorySection('F5', 'governance', 'factory.governance', 'workflow.factory.governance', {
+      mutationGate: 'pageDesign',
+    }),
+    acceptance: createTestFactorySection('F6', 'acceptance', 'factory.acceptance', 'workflow.factory.acceptance', {
+      dryRun: true,
+    }),
+    activation: createTestFactorySection('F7', 'activation', 'factory.activation', 'workflow.factory.activation', {
+      status: 'deferred',
+      reason: 'process-flow-shaping-only',
+    }),
+    workOrder: createTestFactorySection('F8', 'workOrder', 'factory.workOrder', 'workflow.factory.workOrder', {
+      sampleInput: 'pageDesign',
+    }),
+    delivery: createTestFactorySection('F9', 'delivery', 'factory.delivery', 'workflow.factory.delivery', {
+      status: 'deferred',
+      reason: 'process-flow-shaping-only',
+    }),
+  }
+}
+
+function createTestFactorySection(
+  phaseId: string,
+  phase: string,
+  sectionPath: string,
+  publishPath: string,
+  value: Readonly<Record<string, unknown>>,
+) {
+  return {
+    phaseId,
+    phase,
+    sectionPath,
+    publishPath,
+    value,
+  }
+}
+
+function createTestProcess() {
+  return {
+    processId: 'test.page-design-process',
+    title: '页面设计测试工艺',
+    sourceRef: 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10',
+    principle: 'workflow graph contains craft steps; F0-F9 are stage considerations.',
+    stages: [
+      createTestProcessStage('PD1.scope-inventory', '接单与盘点', '1-20'),
+      createTestProcessStage('PD2.data-model', '数据规划与最小表模型', '21-40'),
+      createTestProcessStage('PD3.table-relations', '表关系建模', '41-50'),
+      createTestProcessStage('PD4.page-data-use', '页面规划与数据消费', '51-70'),
+      createTestProcessStage('PD5.views-dependencies', '按需视图与依赖', '71-88'),
+      createTestProcessStage('PD6.structure-behavior-style', '结构行为样式落地', '89-96'),
+      createTestProcessStage('PD7.verify-deliver', '交叉校验与收尾', '97-100'),
+    ],
+  }
+}
+
+function createTestProcessStage(stageId: string, title: string, sourceSteps: string) {
+  return {
+    stageId,
+    title,
+    sourceSteps,
+    goal: `Run source steps ${sourceSteps}.`,
+    considerations: [
+      {
+        phaseId: 'F0',
+        title: '身份边界',
+        checks: ['scope'],
+        metrics: [
+          {
+            metricId: `${stageId}.F0.metric`,
+            title: 'F0 metric',
+            operator: 'gte',
+            target: 1,
+            unit: 'item',
+          },
+        ],
+      },
+      {
+        phaseId: 'F9',
+        title: '交付',
+        checks: ['delivery'],
+        metrics: [
+          {
+            metricId: `${stageId}.F9.metric`,
+            title: 'F9 metric',
+            operator: 'eq',
+            target: 0,
+            unit: 'issue',
+          },
+        ],
+      },
+    ],
+    steps: [
+      {
+        stepId: `${stageId}.1`,
+        title,
+        sourceSteps,
+        actions: ['run stage'],
+        outputs: ['stage result'],
+        checks: ['stage closed'],
+      },
+    ],
+  }
 }

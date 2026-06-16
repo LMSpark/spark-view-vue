@@ -8,6 +8,7 @@ import type { ClassModelKnowledgeProvider } from '@spark-appworks/spark-ai/class
 import {
   createPageDesignAgentWorkflowDefinition,
   ensurePageDesignBusiness,
+  PAGE_DESIGN_AGENT_WORKFLOW_PROCESS,
   PAGE_DESIGN_MODULE_ID,
 } from '@/services/page-design/page-design-business'
 import {
@@ -36,6 +37,18 @@ describe('app agent workflow business activation', () => {
 
     expect(definition.factory.activation.value).toEqual({
       registrationBindingKey: 'pageDesign.registration',
+      handoff: {
+        target: 'runtime-binding',
+        workflowDoesNotActivateHost: true,
+        bindingRef: 'pageDesign.registration',
+      },
+    })
+    expect(definition.process).toEqual(PAGE_DESIGN_AGENT_WORKFLOW_PROCESS)
+    expect(definition.factory.workOrder.value).toMatchObject({
+      productionProcess: {
+        processId: 'pageDesign.data-first-100-step-process',
+        mode: 'progressive-data-first-craft',
+      },
     })
     expect(host.has(PAGE_DESIGN_MODULE_ID)).toBe(true)
     expect(result.ok).toBe(true)

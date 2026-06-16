@@ -253,3 +253,28 @@ pnpm exec vitest run packages/spark-ai/src/tests/ai-agent-host-business-factory.
 - 不执行完整 Agent workflow runtime、LLM tool loop 或 F9 落盘交付。
 - 不重构 workflow design 编辑器布局和非发布相关 UI。
 - 不批量格式化或顺手清理无关文件。
+
+## 9. 2026-06-16 方向修正：workflow 负责工艺
+
+用户确认：F0-F9 思想保留，但 workflow/design/definition 的职责是工艺说明书，不负责运行时。运行时可以消费 definition 中的 binding/ref 和工艺约束，但 Host 激活、ToolLoop、`model_script`、DeliveryPort save/rollback 都不是 workflow definition 自身职责。
+
+页面设计工厂的落地方式：
+
+1. F0-F9 继续作为业务工厂骨架。
+2. 恢复 `docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md`，作为 pageDesign 的业务内部工艺来源。
+3. 在 `AgentWorkflowDefinition` 中增加可选 `process`，表达业务内部工艺阶段、工序、动作、产物和校验点。
+4. `pageDesign` 的 F0-F9 `value` 从简单注册字段升级为工艺说明书：能力边界、原料、知识闭包、工单契约、工位规格、治理纪律、验收闭环、注册交接、工单生产工艺、交付规则。
+5. 保留 `alias/moduleId/rootClassName/registrationBindingKey` 等顶层兼容字段，当前 runtime helper 仍可消费，但语义上是运行时适配器读取工艺说明书中的 binding 引用。
+6. 删除 workflow design 的旧外层包装：不再生成 `start -> loop.business-factory -> end`，也不把 F0-F9 画成流程节点。
+7. 根图本身就是工艺流程图，节点必须来自页面设计 100 步归并后的 7 大工艺步骤：`start -> 接单与盘点 -> 数据规划与最小表模型 -> 表关系建模 -> 页面规划与数据消费 -> 按需视图与依赖 -> 结构行为样式落地 -> 交叉校验与收尾 -> end`。
+8. F0-F9 保留为每个工艺步骤的按需检查维度，并尽可能数字化为 `metricId/operator/target/unit`，例如 `missingHandlerCount eq 0`、`businessObjectCount gte 1`、`previewErrorCount eq 0`；不能作为口号式节点或每步强行全量套用。
+
+## 10. 2026-06-16 流程图定型边界
+
+本轮先不考虑运行时推进。目标是通过多轮迭代把页面设计工厂的工艺流程图定型，避免后续一接运行时就大改流程结构。
+
+- 流程图只表达工艺编排：`start -> 7 个页面设计工艺阶段 -> end`。
+- 每个工艺阶段必须带静态设计信息：前置条件、模型选择、参数来源、LLM 任务、验证指标、完成/停止条件。
+- F0-F9 只作为每个阶段的按需量化检查维度，不作为流程节点，也不要求每步全量套用。
+- F4/F7/F9 在当前 definition 中只保留 `process-flow-shaping-only` 占位，执行实现、自动推进、保存/回滚留到流程图定型后再设计。
+- 流程图知识体系固定为两类输入：`docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md` 负责工艺步骤主线，`generated/dts-class-model/` 负责模型、参数、API 能力和校验依据。

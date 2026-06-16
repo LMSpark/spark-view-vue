@@ -6,12 +6,24 @@
  */
 import {
   AGENT_WORKFLOW_FACTORY_PHASES,
+  assertAgentWorkflowDefinition,
   createAgentWorkflowDefinitionValidation,
   type AgentWorkflowDefinition,
   type AgentWorkflowDefinitionValidationIssue,
   type AgentWorkflowFactoryPhaseDescriptor,
   type AgentWorkflowFactorySection,
   type AgentWorkflowFactorySections,
+  type AgentWorkflowProcess,
+  type AgentWorkflowProcessStageCompletion,
+  type AgentWorkflowProcessStageLlmTask,
+  type AgentWorkflowProcessStage,
+  type AgentWorkflowProcessStageConsideration,
+  type AgentWorkflowProcessStageMetric,
+  type AgentWorkflowProcessStageModelSelection,
+  type AgentWorkflowProcessStageParameterSource,
+  type AgentWorkflowProcessStagePrerequisite,
+  type AgentWorkflowProcessStageVerification,
+  type AgentWorkflowProcessStep,
 } from '@spark-appworks/spark-ai/agent'
 import { http } from './http'
 import { getWorkflowDesignApi } from './api-paths'
@@ -40,6 +52,14 @@ export type WorkflowDesignReadResult = {
   filename: string
   timestamp: string
   document?: WorkflowDesignDocument
+  notModified?: boolean
+}
+
+export type WorkflowDefinitionReadResult = {
+  workflowId: string
+  filename: string
+  timestamp: string
+  definition?: AgentWorkflowDefinition
   notModified?: boolean
 }
 
@@ -144,6 +164,7 @@ export type WorkflowDesignNestedGraphCarrier = {
 
 export type WorkflowDesignSparkNodeMeta = {
   nodeRole?: string
+  stageId?: string
   phaseId?: string
   sectionPath?: string
   modelPath?: string
@@ -162,6 +183,8 @@ export type WorkflowDesignNodeView = {
   node: WorkflowDesignGraphNode
   graph: WorkflowDesignGraph
   isSingleModelEditTool: boolean
+  isProcessStageNode: boolean
+  stageId?: string
   phaseId?: string
   sectionPath?: string
   publishPath?: string
@@ -263,6 +286,28 @@ export async function saveWorkflowDesign(
   return http.put<WorkflowDesignWriteResult>(designDocumentUrl(workflowId), document)
 }
 
+export async function readWorkflowDefinition(
+  workflowId: string,
+  timestamp?: string,
+): Promise<WorkflowDefinitionReadResult> {
+  return http.get<WorkflowDefinitionReadResult>(
+    workflowDefinitionDocumentUrl(workflowId),
+    timestamp !== undefined && timestamp.length > 0 ? { timestamp } : undefined,
+  )
+}
+
+export async function saveWorkflowDefinition(
+  workflowId: string,
+  definition: AgentWorkflowDefinition,
+): Promise<WorkflowDesignWriteResult> {
+  try {
+    return await http.put<WorkflowDesignWriteResult>(workflowDefinitionDocumentUrl(workflowId), definition)
+  } catch (error: unknown) {
+    if (!isWorkflowDefinitionNotFoundError(error)) throw error
+    return publishWorkflowDefinition(workflowId, definition)
+  }
+}
+
 export async function publishWorkflowDefinition(
   workflowId: string,
   definition: AgentWorkflowDefinition,
@@ -284,6 +329,8 @@ export function createAgentWorkflowDefinitionFromDesign(
   const descriptorByPublishPath = new Map(
     AGENT_WORKFLOW_FACTORY_PHASES.map(descriptor => [descriptor.publishPath, descriptor] as const),
   )
+
+  seedFactorySectionsFromSpark(document.x_spark['factory'], sectionByPhase)
 
   for (const node of collectWorkflowDesignNodes(document)) {
     if (!node.isSingleModelEditTool) continue
@@ -376,6 +423,7 @@ export function createAgentWorkflowDefinitionFromDesign(
   }
 
   const validation = createAgentWorkflowDefinitionValidation(issues)
+  const process = readAgentWorkflowProcess(document.x_spark['process'])
   return {
     kind: 'agent.workflow',
     version: 1,
@@ -385,6 +433,7 @@ export function createAgentWorkflowDefinitionFromDesign(
       designId: document.id,
       designVersion: document.version,
     },
+    ...(process === undefined ? {} : { process }),
     factory: createAgentWorkflowFactorySections(sectionByPhase),
     x_spark: {
       schema: 'spark.agent.workflow.definition.v1',
@@ -392,6 +441,22 @@ export function createAgentWorkflowDefinitionFromDesign(
       validation,
     },
   }
+}
+
+export function parseAgentWorkflowDefinitionJson(text: string): AgentWorkflowDefinition {
+  const parsed: unknown = JSON.parse(text)
+  assertAgentWorkflowDefinition(parsed)
+  return parsed
+}
+
+export function isWorkflowDefinitionNotFoundError(error: unknown): boolean {
+  const status = readErrorStatus(error)
+  if (status === 404) return true
+
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes('No static resource')
+    && message.includes('workflow-designs')
+    && message.includes('definition.json')
 }
 
 export function collectWorkflowDesignNodes(document: WorkflowDesignDocument): WorkflowDesignNodeView[] {
@@ -425,6 +490,11 @@ export function collectWorkflowDesignEdges(document: WorkflowDesignDocument): Wo
 export function isSingleModelEditToolNode(node: WorkflowDesignGraphNode): boolean {
   const data = node.data
   return data?.type === 'tool' && data.tool_name === SINGLE_MODEL_EDIT_TOOL_NAME
+}
+
+export function isProcessStageNode(node: WorkflowDesignGraphNode): boolean {
+  const data = node.data
+  return data?.type === 'process-step' || data?.x_spark?.nodeRole === 'process-stage'
 }
 
 export function getSingleModelEditValue(node: WorkflowDesignGraphNode): unknown {
@@ -546,6 +616,345 @@ function workflowDefinitionPublishUrl(workflowId: string): string {
   return `${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}/__publish`
 }
 
+function workflowDefinitionDocumentUrl(workflowId: string): string {
+  return `${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}/definition.json`
+}
+
+function readErrorStatus(error: unknown): number | null {
+  if (!isJsonRecord(error)) return null
+  const status = error['status']
+  if (typeof status === 'number') return status
+  const response = error['response']
+  if (!isJsonRecord(response)) return null
+  const responseStatus = response['status']
+  return typeof responseStatus === 'number' ? responseStatus : null
+}
+
+function readAgentWorkflowProcess(value: unknown): AgentWorkflowProcess | undefined {
+  if (!isRecordValue(value)) return undefined
+  const processId = readProcessText(value, 'processId')
+  const title = readProcessText(value, 'title')
+  const sourceRef = readProcessText(value, 'sourceRef')
+  const principle = readProcessText(value, 'principle')
+  const stagesValue = value['stages']
+  if (
+    processId === undefined
+    || title === undefined
+    || sourceRef === undefined
+    || principle === undefined
+    || !Array.isArray(stagesValue)
+  ) {
+    return undefined
+  }
+  const stages = stagesValue
+    .map(readAgentWorkflowProcessStage)
+    .filter((stage): stage is AgentWorkflowProcessStage => stage !== undefined)
+  if (stages.length !== stagesValue.length) return undefined
+  return {
+    processId,
+    title,
+    sourceRef,
+    principle,
+    stages,
+  }
+}
+
+function readAgentWorkflowProcessStage(value: unknown): AgentWorkflowProcessStage | undefined {
+  if (!isRecordValue(value)) return undefined
+  const stageId = readProcessText(value, 'stageId')
+  const title = readProcessText(value, 'title')
+  const sourceSteps = readProcessText(value, 'sourceSteps')
+  const goal = readProcessText(value, 'goal')
+  const stepsValue = value['steps']
+  if (
+    stageId === undefined
+    || title === undefined
+    || sourceSteps === undefined
+    || goal === undefined
+    || !Array.isArray(stepsValue)
+  ) {
+    return undefined
+  }
+  const steps = stepsValue
+    .map(readAgentWorkflowProcessStep)
+    .filter((step): step is AgentWorkflowProcessStep => step !== undefined)
+  if (steps.length !== stepsValue.length) return undefined
+  const considerations = readAgentWorkflowProcessStageConsiderations(value['considerations'])
+  const prerequisites = readAgentWorkflowProcessStagePrerequisites(value['prerequisites'])
+  const model = readAgentWorkflowProcessStageModel(value['model'])
+  const parameterSources = readAgentWorkflowProcessStageParameterSources(value['parameterSources'])
+  const llmTask = readAgentWorkflowProcessStageLlmTask(value['llmTask'])
+  const verification = readAgentWorkflowProcessStageVerificationList(value['verification'])
+  const completion = readAgentWorkflowProcessStageCompletion(value['completion'])
+  return {
+    stageId,
+    title,
+    sourceSteps,
+    goal,
+    steps,
+    ...(considerations === undefined ? {} : { considerations }),
+    ...(prerequisites === undefined ? {} : { prerequisites }),
+    ...(model === undefined ? {} : { model }),
+    ...(parameterSources === undefined ? {} : { parameterSources }),
+    ...(llmTask === undefined ? {} : { llmTask }),
+    ...(verification === undefined ? {} : { verification }),
+    ...(completion === undefined ? {} : { completion }),
+  }
+}
+
+function readAgentWorkflowProcessStagePrerequisites(
+  value: unknown,
+): readonly AgentWorkflowProcessStagePrerequisite[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return undefined
+  const prerequisites = value
+    .map(readAgentWorkflowProcessStagePrerequisite)
+    .filter((item): item is AgentWorkflowProcessStagePrerequisite => item !== undefined)
+  return prerequisites.length === value.length ? prerequisites : undefined
+}
+
+function readAgentWorkflowProcessStagePrerequisite(
+  value: unknown,
+): AgentWorkflowProcessStagePrerequisite | undefined {
+  if (!isRecordValue(value)) return undefined
+  const prerequisiteId = readProcessText(value, 'prerequisiteId')
+  const title = readProcessText(value, 'title')
+  const source = readProcessText(value, 'source')
+  const metrics = readAgentWorkflowProcessStageMetrics(value['metrics'])
+  if (
+    prerequisiteId === undefined
+    || title === undefined
+    || source === undefined
+    || metrics === undefined
+  ) {
+    return undefined
+  }
+  return { prerequisiteId, title, source, metrics }
+}
+
+function readAgentWorkflowProcessStageModel(value: unknown): AgentWorkflowProcessStageModelSelection | undefined {
+  if (value === undefined) return undefined
+  if (!isRecordValue(value)) return undefined
+  const modelRole = readProcessText(value, 'modelRole')
+  const modelRef = readProcessText(value, 'modelRef')
+  const selectionReason = readProcessText(value, 'selectionReason')
+  const fallbackModelRefs = readOptionalTextList(value['fallbackModelRefs'])
+  if (modelRole === undefined || modelRef === undefined || selectionReason === undefined) return undefined
+  return {
+    modelRole,
+    modelRef,
+    selectionReason,
+    ...(fallbackModelRefs === undefined ? {} : { fallbackModelRefs }),
+  }
+}
+
+function readAgentWorkflowProcessStageParameterSources(
+  value: unknown,
+): readonly AgentWorkflowProcessStageParameterSource[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return undefined
+  const parameterSources = value
+    .map(readAgentWorkflowProcessStageParameterSource)
+    .filter((item): item is AgentWorkflowProcessStageParameterSource => item !== undefined)
+  return parameterSources.length === value.length ? parameterSources : undefined
+}
+
+function readAgentWorkflowProcessStageParameterSource(
+  value: unknown,
+): AgentWorkflowProcessStageParameterSource | undefined {
+  if (!isRecordValue(value)) return undefined
+  const parameterId = readProcessText(value, 'parameterId')
+  const title = readProcessText(value, 'title')
+  const source = readProcessText(value, 'source')
+  const path = readProcessText(value, 'path')
+  const required = value['required']
+  if (
+    parameterId === undefined
+    || title === undefined
+    || source === undefined
+    || path === undefined
+    || typeof required !== 'boolean'
+  ) {
+    return undefined
+  }
+  return { parameterId, title, source, path, required }
+}
+
+function readAgentWorkflowProcessStageLlmTask(value: unknown): AgentWorkflowProcessStageLlmTask | undefined {
+  if (value === undefined) return undefined
+  if (!isRecordValue(value)) return undefined
+  const objective = readProcessText(value, 'objective')
+  const instructions = readTextList(value['instructions'])
+  const expectedOutput = readTextList(value['expectedOutput'])
+  const forbidden = readOptionalTextList(value['forbidden'])
+  if (objective === undefined || instructions === undefined || expectedOutput === undefined) return undefined
+  return {
+    objective,
+    instructions,
+    expectedOutput,
+    ...(forbidden === undefined ? {} : { forbidden }),
+  }
+}
+
+function readAgentWorkflowProcessStageVerificationList(
+  value: unknown,
+): readonly AgentWorkflowProcessStageVerification[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return undefined
+  const verification = value
+    .map(readAgentWorkflowProcessStageVerification)
+    .filter((item): item is AgentWorkflowProcessStageVerification => item !== undefined)
+  return verification.length === value.length ? verification : undefined
+}
+
+function readAgentWorkflowProcessStageVerification(
+  value: unknown,
+): AgentWorkflowProcessStageVerification | undefined {
+  if (!isRecordValue(value)) return undefined
+  const verificationId = readProcessText(value, 'verificationId')
+  const title = readProcessText(value, 'title')
+  const method = readProcessText(value, 'method')
+  const metrics = readAgentWorkflowProcessStageMetrics(value['metrics'])
+  if (
+    verificationId === undefined
+    || title === undefined
+    || method === undefined
+    || metrics === undefined
+  ) {
+    return undefined
+  }
+  return { verificationId, title, method, metrics }
+}
+
+function readAgentWorkflowProcessStageCompletion(value: unknown): AgentWorkflowProcessStageCompletion | undefined {
+  if (value === undefined) return undefined
+  if (!isRecordValue(value)) return undefined
+  const criteria = readTextList(value['criteria'])
+  const nextWhen = readProcessText(value, 'nextWhen')
+  const stopWhen = readProcessText(value, 'stopWhen')
+  if (criteria === undefined || nextWhen === undefined || stopWhen === undefined) return undefined
+  return { criteria, nextWhen, stopWhen }
+}
+
+function readAgentWorkflowProcessStageConsiderations(
+  value: unknown,
+): readonly AgentWorkflowProcessStageConsideration[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return undefined
+  const considerations = value
+    .map(readAgentWorkflowProcessStageConsideration)
+    .filter((consideration): consideration is AgentWorkflowProcessStageConsideration => consideration !== undefined)
+  return considerations.length === value.length ? considerations : undefined
+}
+
+function readAgentWorkflowProcessStageConsideration(
+  value: unknown,
+): AgentWorkflowProcessStageConsideration | undefined {
+  if (!isRecordValue(value)) return undefined
+  const phaseId = readProcessText(value, 'phaseId')
+  const title = readProcessText(value, 'title')
+  const checks = readTextList(value['checks'])
+  const metrics = readAgentWorkflowProcessStageMetrics(value['metrics'])
+  if (
+    phaseId === undefined
+    || !AGENT_WORKFLOW_FACTORY_PHASES.some(descriptor => descriptor.phaseId === phaseId)
+    || title === undefined
+    || checks === undefined
+  ) {
+    return undefined
+  }
+  return {
+    phaseId: phaseId as AgentWorkflowProcessStageConsideration['phaseId'],
+    title,
+    checks,
+    ...(metrics === undefined ? {} : { metrics }),
+  }
+}
+
+function readAgentWorkflowProcessStageMetrics(value: unknown): readonly AgentWorkflowProcessStageMetric[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return undefined
+  const metrics = value
+    .map(readAgentWorkflowProcessStageMetric)
+    .filter((metric): metric is AgentWorkflowProcessStageMetric => metric !== undefined)
+  return metrics.length === value.length ? metrics : undefined
+}
+
+function readAgentWorkflowProcessStageMetric(value: unknown): AgentWorkflowProcessStageMetric | undefined {
+  if (!isRecordValue(value)) return undefined
+  const metricId = readProcessText(value, 'metricId')
+  const title = readProcessText(value, 'title')
+  const operator = readProcessText(value, 'operator')
+  const target = value['target']
+  const unit = readProcessText(value, 'unit')
+  if (
+    metricId === undefined
+    || title === undefined
+    || (operator !== 'eq' && operator !== 'lte' && operator !== 'gte')
+    || typeof target !== 'number'
+    || !Number.isFinite(target)
+    || unit === undefined
+  ) {
+    return undefined
+  }
+  return {
+    metricId,
+    title,
+    operator,
+    target,
+    unit,
+  }
+}
+
+function readAgentWorkflowProcessStep(value: unknown): AgentWorkflowProcessStep | undefined {
+  if (!isRecordValue(value)) return undefined
+  const stepId = readProcessText(value, 'stepId')
+  const title = readProcessText(value, 'title')
+  const actions = readTextList(value['actions'])
+  const outputs = readTextList(value['outputs'])
+  const checks = readTextList(value['checks'])
+  if (
+    stepId === undefined
+    || title === undefined
+    || actions === undefined
+    || outputs === undefined
+    || checks === undefined
+  ) {
+    return undefined
+  }
+  const sourceSteps = readProcessText(value, 'sourceSteps')
+  return {
+    stepId,
+    title,
+    ...(sourceSteps === undefined ? {} : { sourceSteps }),
+    actions,
+    outputs,
+    checks,
+  }
+}
+
+function readTextList(value: unknown): readonly string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const normalized = value.map((item) => {
+    if (typeof item !== 'string') return ''
+    return item.trim()
+  })
+  if (normalized.some(item => item.length === 0)) return undefined
+  return normalized
+}
+
+function readOptionalTextList(value: unknown): readonly string[] | undefined {
+  if (value === undefined) return undefined
+  return readTextList(value)
+}
+
+function readProcessText(record: JsonRecord, key: string): string | undefined {
+  const value = record[key]
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
 function readSingleModelEditObjectValue(
   node: WorkflowDesignNodeView,
   descriptor: AgentWorkflowFactoryPhaseDescriptor,
@@ -574,6 +983,41 @@ function createEmptyAgentWorkflowSection(
     sectionPath: descriptor.sectionPath,
     publishPath: descriptor.publishPath,
     value: {},
+  }
+}
+
+function seedFactorySectionsFromSpark(
+  value: unknown,
+  sectionByPhase: Map<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>,
+): void {
+  if (!isRecordValue(value)) return
+  for (const descriptor of AGENT_WORKFLOW_FACTORY_PHASES) {
+    const section = readSparkFactorySection(value[descriptor.phase], descriptor)
+    if (section === undefined) continue
+    sectionByPhase.set(descriptor.phase, section)
+  }
+}
+
+function readSparkFactorySection(
+  value: unknown,
+  descriptor: AgentWorkflowFactoryPhaseDescriptor,
+): AgentWorkflowFactorySection | undefined {
+  if (!isRecordValue(value)) return undefined
+  if (
+    value['phaseId'] !== descriptor.phaseId
+    || value['phase'] !== descriptor.phase
+    || value['sectionPath'] !== descriptor.sectionPath
+    || value['publishPath'] !== descriptor.publishPath
+    || !isRecordValue(value['value'])
+  ) {
+    return undefined
+  }
+  return {
+    phaseId: descriptor.phaseId,
+    phase: descriptor.phase,
+    sectionPath: descriptor.sectionPath,
+    publishPath: descriptor.publishPath,
+    value: value['value'],
   }
 }
 
@@ -714,6 +1158,8 @@ function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowD
       node,
       graph,
       isSingleModelEditTool: isSingleModelEditToolNode(node),
+      isProcessStageNode: isProcessStageNode(node),
+      ...(typeof spark?.stageId === 'string' ? { stageId: spark.stageId } : {}),
       ...(typeof spark?.phaseId === 'string' ? { phaseId: spark.phaseId } : {}),
       ...(typeof spark?.sectionPath === 'string' ? { sectionPath: spark.sectionPath } : {}),
       ...(typeof spark?.publishPath === 'string' ? { publishPath: spark.publishPath } : {}),

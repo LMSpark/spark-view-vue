@@ -1,670 +1,3485 @@
 {
-  "kind" : "agent.workflow.design",
-  "version" : 1,
-  "id" : "agent.workflow.20260615130850",
-  "app" : {
-    "id" : "agent.workflow.20260615130850",
-    "name" : "页面设计",
-    "mode" : "workflow",
-    "description" : "",
-    "icon" : "spark",
-    "icon_background" : "#0f766e"
+  "kind": "agent.workflow.design",
+  "version": 1,
+  "id": "agent.workflow.20260615130850",
+  "app": {
+    "id": "agent.workflow.20260615130850",
+    "name": "页面设计",
+    "mode": "workflow",
+    "description": "页面设计七段式数据优先工艺流程图",
+    "icon": "spark",
+    "icon_background": "#0f766e"
   },
-  "workflow" : {
-    "id" : "agent.workflow.20260615130850",
-    "version" : 1,
-    "graph" : {
-      "nodes" : [ {
-        "id" : "start",
-        "type" : "custom",
-        "position" : {
-          "x" : 0,
-          "y" : 160
+  "workflow": {
+    "id": "agent.workflow.20260615130850",
+    "version": 1,
+    "graph": {
+      "id": "agent.workflow.20260615130850.page-design-process",
+      "nodes": [
+        {
+          "id": "start",
+          "type": "custom",
+          "position": {
+            "x": -260,
+            "y": 0
+          },
+          "data": {
+            "type": "start",
+            "title": "Start",
+            "desc": "页面设计工艺入口",
+            "variables": []
+          }
         },
-        "data" : {
-          "type" : "start",
-          "title" : "Start",
-          "desc" : "Workflow design entry",
-          "variables" : [ ]
-        }
-      }, {
-        "id" : "loop.business-factory",
-        "type" : "custom",
-        "position" : {
-          "x" : 280,
-          "y" : 40
-        },
-        "data" : {
-          "type" : "loop",
-          "title" : "页面设计 phase loop",
-          "desc" : "Edit F0-F9 business factory phases as a loop sub-graph",
-          "loop" : {
-            "mode" : "progressive",
-            "maxLoopCount" : 10,
-            "exitNodeId" : "loop.exit",
-            "variables" : [ {
-              "name" : "phaseIndex",
-              "valueType" : "number",
-              "initialValue" : 0
-            }, {
-              "name" : "phaseId",
-              "valueType" : "string",
-              "initialValue" : "F0"
-            }, {
-              "name" : "completedPhaseIds",
-              "valueType" : "array",
-              "initialValue" : [ ]
-            } ],
-            "terminationConditions" : [ {
-              "id" : "all-phases-complete",
-              "type" : "expression",
-              "expression" : "phaseIndex >= 10"
-            } ],
-            "subGraph" : {
-              "id" : "agent.workflow.20260615130850.factory-phases",
-              "nodes" : [ {
-                "id" : "phase.F0",
-                "type" : "custom",
-                "position" : {
-                  "x" : 0,
-                  "y" : 0
+        {
+          "id": "process.PD1.scope-inventory",
+          "type": "custom",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "data": {
+            "type": "process-step",
+            "title": "接单与盘点",
+            "desc": "1-20 确认 live editing 入口、改动边界和当前四文件状态。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD1.scope-inventory",
+              "sourceSteps": "1-20",
+              "goal": "确认 live editing 入口、改动边界和当前四文件状态。",
+              "factoryConsiderations": [
+                "F0",
+                "F1",
+                "F3",
+                "F6"
+              ],
+              "metricIds": [
+                "pageIdResolvedCount",
+                "executionImplementationDecisionCount",
+                "fileBindingCount",
+                "unreadAssetCount",
+                "unresolvedBoundaryQuestionCount",
+                "allowedOperationDecisionCount",
+                "bootstrapMissingCapabilityCount",
+                "inventorySummaryCount"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD1.pre.pageId",
+                  "title": "页面定位已输入",
+                  "source": "runInput.pageId",
+                  "metrics": [
+                    {
+                      "metricId": "pageIdResolvedCount",
+                      "title": "已定位 pageId 数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "page"
+                    }
+                  ]
                 },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit identity",
-                  "desc" : "Single-model edit tool node for factory.identity",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F0",
-                    "section_path" : "factory.identity",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F0",
-                    "sectionPath" : "factory.identity",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F0",
-                    "sectionPath" : "factory.identity",
-                    "modelPath" : "workflow.graph.nodes.phase.F0.data.model",
-                    "publishPath" : "workflow.factory.identity"
-                  }
+                {
+                  "prerequisiteId": "PD1.pre.liveBinding",
+                  "title": "live editing binding 可用",
+                  "source": "PageDesignEditHost.bootstrap",
+                  "metrics": [
+                    {
+                      "metricId": "fileBindingCount",
+                      "title": "四文件 binding 数",
+                      "operator": "gte",
+                      "target": 4,
+                      "unit": "file"
+                    },
+                    {
+                      "metricId": "bootstrapMissingCapabilityCount",
+                      "title": "缺失 capability 数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "capability"
+                    }
+                  ]
                 }
-              }, {
-                "id" : "phase.F1",
-                "type" : "custom",
-                "position" : {
-                  "x" : 260,
-                  "y" : 0
+              ],
+              "model": {
+                "modelRole": "orchestration-planning",
+                "modelRef": "llm.reasoning.default",
+                "selectionReason": "需要归纳用户意图、风险边界和四文件盘点摘要，优先使用推理模型。",
+                "fallbackModelRefs": [
+                  "llm.reasoning.fast"
+                ]
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "pageId",
+                  "title": "页面 ID",
+                  "source": "runInput",
+                  "path": "pageId",
+                  "required": true
                 },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit materials",
-                  "desc" : "Single-model edit tool node for factory.materials",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F1",
-                    "section_path" : "factory.materials",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F1",
-                    "sectionPath" : "factory.materials",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F1",
-                    "sectionPath" : "factory.materials",
-                    "modelPath" : "workflow.graph.nodes.phase.F1.data.model",
-                    "publishPath" : "workflow.factory.materials"
-                  }
-                }
-              }, {
-                "id" : "phase.F2",
-                "type" : "custom",
-                "position" : {
-                  "x" : 520,
-                  "y" : 0
+                {
+                  "parameterId": "description",
+                  "title": "用户原始需求",
+                  "source": "runInput",
+                  "path": "description",
+                  "required": true
                 },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit knowledge",
-                  "desc" : "Single-model edit tool node for factory.knowledge",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F2",
-                    "section_path" : "factory.knowledge",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F2",
-                    "sectionPath" : "factory.knowledge",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F2",
-                    "sectionPath" : "factory.knowledge",
-                    "modelPath" : "workflow.graph.nodes.phase.F2.data.model",
-                    "publishPath" : "workflow.factory.knowledge"
-                  }
-                }
-              }, {
-                "id" : "phase.F3",
-                "type" : "custom",
-                "position" : {
-                  "x" : 780,
-                  "y" : 0
+                {
+                  "parameterId": "allowedOperations",
+                  "title": "允许操作范围",
+                  "source": "runInput",
+                  "path": "allowedOperations",
+                  "required": false
                 },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit contract",
-                  "desc" : "Single-model edit tool node for factory.contract",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F3",
-                    "section_path" : "factory.contract",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F3",
-                    "sectionPath" : "factory.contract",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F3",
-                    "sectionPath" : "factory.contract",
-                    "modelPath" : "workflow.graph.nodes.phase.F3.data.model",
-                    "publishPath" : "workflow.factory.contract"
-                  }
+                {
+                  "parameterId": "fileBindings",
+                  "title": "四文件 live binding",
+                  "source": "PageDesignEditHost",
+                  "path": "nodeTree,dataset,script,style",
+                  "required": true
                 }
-              }, {
-                "id" : "phase.F4",
-                "type" : "custom",
-                "position" : {
-                  "x" : 1040,
-                  "y" : 0
+              ],
+              "llmTask": {
+                "objective": "把用户请求转成可执行页面设计工单，并完成当前四文件盘点。",
+                "instructions": [
+                  "确认任务类型和改动边界",
+                  "列出 pagedata/rule/script/style 当前状态摘要",
+                  "识别必须先澄清的问题"
+                ],
+                "expectedOutput": [
+                  "pageId",
+                  "riskLevel",
+                  "changeBoundary",
+                  "inventorySummary"
+                ],
+                "forbidden": [
+                  "直接修改四文件",
+                  "设计执行调度实现"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD1.verify.entry",
+                  "title": "入口和盘点验收",
+                  "method": "检查 bootstrap 结果、四文件摘要和边界问题数。",
+                  "metrics": [
+                    {
+                      "metricId": "unresolvedBoundaryQuestionCount",
+                      "title": "未解决边界问题数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "question"
+                    },
+                    {
+                      "metricId": "inventorySummaryCount",
+                      "title": "盘点摘要数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "summary"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "pageId 已解析",
+                  "四文件 binding 齐全",
+                  "边界问题为 0",
+                  "盘点摘要可供后续步骤使用"
+                ],
+                "nextWhen": "入口验收指标全部达标后进入数据规划与最小表模型。",
+                "stopWhen": "pageId 缺失、live binding 缺失或用户边界未确认时停止并请求澄清。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD1.1",
+                  "title": "入口定界",
+                  "sourceSteps": "1-10",
+                  "actions": [
+                    "识别任务类型",
+                    "定位 pageId",
+                    "bootstrap live editing",
+                    "确认风险和改动边界"
+                  ],
+                  "outputs": [
+                    "pageId",
+                    "editing phase",
+                    "change boundary"
+                  ],
+                  "checks": [
+                    "nodeTree/dataset/script/style binding 齐全",
+                    "数据优先，不先铺表格 UI 细节"
+                  ]
                 },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit runtime",
-                  "desc" : "Single-model edit tool node for factory.runtime",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F4",
-                    "section_path" : "factory.runtime",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F4",
-                    "sectionPath" : "factory.runtime",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F4",
-                    "sectionPath" : "factory.runtime",
-                    "modelPath" : "workflow.graph.nodes.phase.F4.data.model",
-                    "publishPath" : "workflow.factory.runtime"
-                  }
+                {
+                  "stepId": "PD1.2",
+                  "title": "四文件盘点",
+                  "sourceSteps": "11-20",
+                  "actions": [
+                    "读取 pagedata 摘要",
+                    "读取 rule 绑定",
+                    "收集 handler/class",
+                    "读取 script/style"
+                  ],
+                  "outputs": [
+                    "DataTable/Relation/View 清单",
+                    "组件绑定清单",
+                    "handler/class 清单"
+                  ],
+                  "checks": [
+                    "已有表、字段、viewId、handler 和 class 可见",
+                    "不在未知结构上直接生成"
+                  ]
                 }
-              }, {
-                "id" : "phase.F5",
-                "type" : "custom",
-                "position" : {
-                  "x" : 1040,
-                  "y" : 240
-                },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit governance",
-                  "desc" : "Single-model edit tool node for factory.governance",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F5",
-                    "section_path" : "factory.governance",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F5",
-                    "sectionPath" : "factory.governance",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F5",
-                    "sectionPath" : "factory.governance",
-                    "modelPath" : "workflow.graph.nodes.phase.F5.data.model",
-                    "publishPath" : "workflow.factory.governance"
-                  }
-                }
-              }, {
-                "id" : "phase.F6",
-                "type" : "custom",
-                "position" : {
-                  "x" : 780,
-                  "y" : 240
-                },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit acceptance",
-                  "desc" : "Single-model edit tool node for factory.acceptance",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F6",
-                    "section_path" : "factory.acceptance",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F6",
-                    "sectionPath" : "factory.acceptance",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F6",
-                    "sectionPath" : "factory.acceptance",
-                    "modelPath" : "workflow.graph.nodes.phase.F6.data.model",
-                    "publishPath" : "workflow.factory.acceptance"
-                  }
-                }
-              }, {
-                "id" : "phase.F7",
-                "type" : "custom",
-                "position" : {
-                  "x" : 520,
-                  "y" : 240
-                },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit activation",
-                  "desc" : "Single-model edit tool node for factory.activation",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F7",
-                    "section_path" : "factory.activation",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F7",
-                    "sectionPath" : "factory.activation",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F7",
-                    "sectionPath" : "factory.activation",
-                    "modelPath" : "workflow.graph.nodes.phase.F7.data.model",
-                    "publishPath" : "workflow.factory.activation"
-                  }
-                }
-              }, {
-                "id" : "phase.F8",
-                "type" : "custom",
-                "position" : {
-                  "x" : 260,
-                  "y" : 240
-                },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit work order",
-                  "desc" : "Single-model edit tool node for factory.workOrder",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F8",
-                    "section_path" : "factory.workOrder",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F8",
-                    "sectionPath" : "factory.workOrder",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F8",
-                    "sectionPath" : "factory.workOrder",
-                    "modelPath" : "workflow.graph.nodes.phase.F8.data.model",
-                    "publishPath" : "workflow.factory.workOrder"
-                  }
-                }
-              }, {
-                "id" : "phase.F9",
-                "type" : "custom",
-                "position" : {
-                  "x" : 0,
-                  "y" : 240
-                },
-                "data" : {
-                  "type" : "tool",
-                  "title" : "Edit delivery",
-                  "desc" : "Single-model edit tool node for factory.delivery",
-                  "provider_id" : "spark.model-editor",
-                  "provider_type" : "builtin",
-                  "tool_name" : "single_model_edit",
-                  "tool_label" : "Single Model Edit",
-                  "tool_config" : {
-                    "target" : "node.data.model",
-                    "operation" : "replace-model",
-                    "outputVariable" : "updated_model"
-                  },
-                  "tool_parameters" : {
-                    "document_id" : "{{#sys.workflow_id#}}",
-                    "node_id" : "phase.F9",
-                    "section_path" : "factory.delivery",
-                    "patch" : "{}"
-                  },
-                  "outputs" : {
-                    "updated_model" : "object",
-                    "validation_issues" : "array[object]"
-                  },
-                  "model" : {
-                    "phaseId" : "F9",
-                    "sectionPath" : "factory.delivery",
-                    "value" : { }
-                  },
-                  "x_spark" : {
-                    "nodeRole" : "single-model-edit",
-                    "phaseId" : "F9",
-                    "sectionPath" : "factory.delivery",
-                    "modelPath" : "workflow.graph.nodes.phase.F9.data.model",
-                    "publishPath" : "workflow.factory.delivery"
-                  }
-                }
-              }, {
-                "id" : "loop.exit",
-                "type" : "custom",
-                "position" : {
-                  "x" : 260,
-                  "y" : 480
-                },
-                "data" : {
-                  "type" : "exit-loop",
-                  "title" : "Exit Loop",
-                  "desc" : "Leave the business factory phase loop"
-                }
-              } ],
-              "edges" : [ {
-                "id" : "edge.F0.F1",
-                "source" : "phase.F0",
-                "target" : "phase.F1",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F1.F2",
-                "source" : "phase.F1",
-                "target" : "phase.F2",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F2.F3",
-                "source" : "phase.F2",
-                "target" : "phase.F3",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F3.F4",
-                "source" : "phase.F3",
-                "target" : "phase.F4",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F4.F5",
-                "source" : "phase.F4",
-                "target" : "phase.F5",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F5.F6",
-                "source" : "phase.F5",
-                "target" : "phase.F6",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F6.F7",
-                "source" : "phase.F6",
-                "target" : "phase.F7",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F7.F8",
-                "source" : "phase.F7",
-                "target" : "phase.F8",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F8.F9",
-                "source" : "phase.F8",
-                "target" : "phase.F9",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              }, {
-                "id" : "edge.F9.exit",
-                "source" : "phase.F9",
-                "target" : "loop.exit",
-                "sourceHandle" : "source",
-                "targetHandle" : "target",
-                "type" : "custom",
-                "data" : {
-                  "relation" : "sequence"
-                }
-              } ]
+              ]
             }
           }
-        }
-      }, {
-        "id" : "end",
-        "type" : "custom",
-        "position" : {
-          "x" : 740,
-          "y" : 160
         },
-        "data" : {
-          "type" : "end",
-          "title" : "End",
-          "desc" : "Workflow design saved as JSON",
-          "outputs" : [ ]
+        {
+          "id": "process.PD2.data-model",
+          "type": "custom",
+          "position": {
+            "x": 300,
+            "y": 0
+          },
+          "data": {
+            "type": "process-step",
+            "title": "数据规划与最小表模型",
+            "desc": "21-40 先立业务数据事实，再建立足够支撑关系和视图的最小 DataTable。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD2.data-model",
+              "sourceSteps": "21-40",
+              "goal": "先立业务数据事实，再建立足够支撑关系和视图的最小 DataTable。",
+              "factoryConsiderations": [
+                "F1",
+                "F2",
+                "F4",
+                "F6"
+              ],
+              "metricIds": [
+                "businessObjectCount",
+                "fieldDefinitionCount",
+                "uiStateColumnCount",
+                "tablePrimaryKeyCoveragePercent",
+                "dataSetCrudMutationCount",
+                "directPageDataOverwriteCount",
+                "dataSetRoundTripErrorCount",
+                "rowColumnMismatchCount",
+                "inventorySummaryCount",
+                "businessObjectCandidateCount"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD2.pre.inventory",
+                  "title": "已有四文件盘点结果",
+                  "source": "PD1.inventorySummary",
+                  "metrics": [
+                    {
+                      "metricId": "inventorySummaryCount",
+                      "title": "盘点摘要数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "summary"
+                    }
+                  ]
+                },
+                {
+                  "prerequisiteId": "PD2.pre.dataNeed",
+                  "title": "存在数据建模需求",
+                  "source": "runInput.description + inventorySummary",
+                  "metrics": [
+                    {
+                      "metricId": "businessObjectCandidateCount",
+                      "title": "业务对象候选数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "object"
+                    }
+                  ]
+                }
+              ],
+              "model": {
+                "modelRole": "data-modeling",
+                "modelRef": "llm.reasoning.default",
+                "selectionReason": "需要从业务需求抽取对象、字段、资源语义和最小表结构，使用推理模型保证结构一致性。",
+                "fallbackModelRefs": [
+                  "llm.reasoning.fast"
+                ]
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "requirement",
+                  "title": "用户需求与有效描述",
+                  "source": "runInput",
+                  "path": "description,effectiveDescription",
+                  "required": true
+                },
+                {
+                  "parameterId": "currentPageData",
+                  "title": "当前 pagedata.json",
+                  "source": "PageDesignEditHost.dataset",
+                  "path": "pagedata.json",
+                  "required": true
+                },
+                {
+                  "parameterId": "datasetGuides",
+                  "title": "DataSet/DataTable/DataView 知识",
+                  "source": "model_guide",
+                  "path": "DataSet,DataTable,DataView",
+                  "required": true
+                }
+              ],
+              "llmTask": {
+                "objective": "输出最小 DataTable 方案并通过结构化工具落到 pagedata.json。",
+                "instructions": [
+                  "识别主表、子表、字典/引用表",
+                  "规划字段、主键、类型、label 和资源语义",
+                  "只创建关系和视图需要的最小表模型"
+                ],
+                "expectedOutput": [
+                  "businessObjects",
+                  "tableRoles",
+                  "fieldPlan",
+                  "minimalDataTablePatch"
+                ],
+                "forbidden": [
+                  "把 UI 临时状态写进 columns",
+                  "直接整文件覆盖 pagedata.json"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD2.verify.dataset",
+                  "title": "DataSet 模型验收",
+                  "method": "执行 DataSet canonical 序列化和字段/rows/API 对齐检查。",
+                  "metrics": [
+                    {
+                      "metricId": "businessObjectCount",
+                      "title": "业务对象数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "object"
+                    },
+                    {
+                      "metricId": "tablePrimaryKeyCoveragePercent",
+                      "title": "主键覆盖率",
+                      "operator": "gte",
+                      "target": 100,
+                      "unit": "percent"
+                    },
+                    {
+                      "metricId": "dataSetRoundTripErrorCount",
+                      "title": "DataSet round-trip 错误数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "error"
+                    },
+                    {
+                      "metricId": "rowColumnMismatchCount",
+                      "title": "rows 与 columns 不匹配数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "mismatch"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "至少 1 个业务对象已建模",
+                  "主键覆盖率 100%",
+                  "DataSet round-trip 错误为 0",
+                  "rows 与 columns 不匹配数为 0"
+                ],
+                "nextWhen": "数据模型验收通过后进入表关系建模。",
+                "stopWhen": "业务对象无法确定、字段主键不闭合或 DataSet 不能序列化时停止。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD2.1",
+                  "title": "业务对象和字段规划",
+                  "sourceSteps": "21-30",
+                  "actions": [
+                    "识别业务对象",
+                    "区分主表/子表/引用表/字典表/树节点表",
+                    "规划字段、类型、label、校验和资源语义"
+                  ],
+                  "outputs": [
+                    "业务对象清单",
+                    "表角色清单",
+                    "字段清单",
+                    "资源语义"
+                  ],
+                  "checks": [
+                    "表名可用于 DataViewKey",
+                    "不把 UI 临时状态塞进 DataTable columns"
+                  ]
+                },
+                {
+                  "stepId": "PD2.2",
+                  "title": "最小 DataTable 落地",
+                  "sourceSteps": "31-40",
+                  "actions": [
+                    "创建或更新主表、子表、字典/引用表",
+                    "补静态 rows 或远端 API family",
+                    "设置 crudConfig",
+                    "执行 canonical 序列化"
+                  ],
+                  "outputs": [
+                    "最小 DataTable 模型",
+                    "基础 rows/API/crudConfig",
+                    "可序列化 pagedata.json"
+                  ],
+                  "checks": [
+                    "样例 rows 与 columns 对齐",
+                    "表名不破坏 DataViewKey",
+                    "DataSet 可 round-trip"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "process.PD3.table-relations",
+          "type": "custom",
+          "position": {
+            "x": 600,
+            "y": 0
+          },
+          "data": {
+            "type": "process-step",
+            "title": "表关系建模",
+            "desc": "41-50 建立业务父子关系，并只保留有真实页面价值的关系。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD3.table-relations",
+              "sourceSteps": "41-50",
+              "goal": "建立业务父子关系，并只保留有真实页面价值的关系。",
+              "factoryConsiderations": [
+                "F3",
+                "F5",
+                "F6"
+              ],
+              "metricIds": [
+                "relationAmbiguityCount",
+                "relationFieldMissingCount",
+                "relationWithoutConsumerCount",
+                "databaseOnlyForeignKeyCount",
+                "missingParentFieldCount",
+                "missingChildFieldCount",
+                "businessObjectCount",
+                "fieldDefinitionCount"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD3.pre.tables",
+                  "title": "最小表模型已存在",
+                  "source": "PD2.minimalDataTablePatch",
+                  "metrics": [
+                    {
+                      "metricId": "businessObjectCount",
+                      "title": "业务对象数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "object"
+                    },
+                    {
+                      "metricId": "fieldDefinitionCount",
+                      "title": "字段定义数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "field"
+                    }
+                  ]
+                }
+              ],
+              "model": {
+                "modelRole": "relation-modeling",
+                "modelRef": "llm.reasoning.default",
+                "selectionReason": "需要判断业务父子链条、字段闭合和关系消费价值，使用推理模型。"
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "tables",
+                  "title": "表与字段清单",
+                  "source": "pagedata.json",
+                  "path": "tables.*.columns",
+                  "required": true
+                },
+                {
+                  "parameterId": "requirement",
+                  "title": "业务关系描述",
+                  "source": "runInput",
+                  "path": "description,effectiveDescription",
+                  "required": true
+                },
+                {
+                  "parameterId": "existingRelations",
+                  "title": "已有 tableRelations",
+                  "source": "pagedata.json",
+                  "path": "tableRelations",
+                  "required": false
+                }
+              ],
+              "llmTask": {
+                "objective": "设计必要 tableRelations，并证明每条关系有业务解释和页面消费价值。",
+                "instructions": [
+                  "识别父表、子表、parentField、childField",
+                  "多关系场景补 relationName",
+                  "删除无消费场景的伪关系"
+                ],
+                "expectedOutput": [
+                  "tableRelationsPatch",
+                  "relationRationale",
+                  "relationValidationReport"
+                ],
+                "forbidden": [
+                  "把数据库外键概念直接照搬进页面配置",
+                  "为看起来完整而创建无消费者关系"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD3.verify.relations",
+                  "title": "关系闭合验收",
+                  "method": "校验 parentField/childField 存在、关系无歧义且有消费场景。",
+                  "metrics": [
+                    {
+                      "metricId": "relationFieldMissingCount",
+                      "title": "关系字段缺失数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "field"
+                    },
+                    {
+                      "metricId": "relationAmbiguityCount",
+                      "title": "关系歧义数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "relation"
+                    },
+                    {
+                      "metricId": "relationWithoutConsumerCount",
+                      "title": "无消费场景关系数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "relation"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "关系字段缺失数为 0",
+                  "关系歧义数为 0",
+                  "无消费场景关系数为 0"
+                ],
+                "nextWhen": "关系验收通过后进入页面规划与数据消费。",
+                "stopWhen": "父子字段缺失、关系解释不成立或消费场景不明确时停止。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD3.1",
+                  "title": "关系建模",
+                  "sourceSteps": "41-43",
+                  "actions": [
+                    "设计 tableRelations",
+                    "处理多层主从",
+                    "用字段和 relationName 消歧"
+                  ],
+                  "outputs": [
+                    "tableRelations"
+                  ],
+                  "checks": [
+                    "父子链条能从业务上解释"
+                  ]
+                },
+                {
+                  "stepId": "PD3.2",
+                  "title": "关系验收",
+                  "sourceSteps": "44-50",
+                  "actions": [
+                    "校验 parentField/childField",
+                    "判断级联策略",
+                    "暂缓 viewDependencies",
+                    "复核关系消费价值"
+                  ],
+                  "outputs": [
+                    "关系校验结果"
+                  ],
+                  "checks": [
+                    "没有消费场景的关系先不建",
+                    "不把数据库外键概念误写进页面数据配置"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "process.PD4.page-data-use",
+          "type": "custom",
+          "position": {
+            "x": 900,
+            "y": 0
+          },
+          "data": {
+            "type": "process-step",
+            "title": "页面规划与数据消费",
+            "desc": "51-70 从数据事实推导页面区域，再把每个区域声明为明确的数据消费点。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD4.page-data-use",
+              "sourceSteps": "51-70",
+              "goal": "从数据事实推导页面区域，再把每个区域声明为明确的数据消费点。",
+              "factoryConsiderations": [
+                "F3",
+                "F5",
+                "F8"
+              ],
+              "metricIds": [
+                "regionMappingCoveragePercent",
+                "dataConsumerWithoutRegionCount",
+                "decorativeDataViewCount",
+                "invalidDataViewKeyPartCount",
+                "consumerTraceabilityPercent",
+                "ambiguousActionScopeCount",
+                "businessObjectCount",
+                "relationFieldMissingCount"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD4.pre.dataFacts",
+                  "title": "数据事实和关系已闭合",
+                  "source": "PD2 + PD3 outputs",
+                  "metrics": [
+                    {
+                      "metricId": "businessObjectCount",
+                      "title": "业务对象数",
+                      "operator": "gte",
+                      "target": 1,
+                      "unit": "object"
+                    },
+                    {
+                      "metricId": "relationFieldMissingCount",
+                      "title": "关系字段缺失数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "field"
+                    }
+                  ]
+                }
+              ],
+              "model": {
+                "modelRole": "page-information-architecture",
+                "modelRef": "llm.reasoning.default",
+                "selectionReason": "需要把数据事实转为区域、操作路径和 DataView 消费契约，使用推理模型。",
+                "fallbackModelRefs": [
+                  "llm.reasoning.fast"
+                ]
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "dataFacts",
+                  "title": "表、字段、关系事实",
+                  "source": "pagedata.json",
+                  "path": "tables,tableRelations",
+                  "required": true
+                },
+                {
+                  "parameterId": "currentRule",
+                  "title": "当前组件树",
+                  "source": "PageDesignEditHost.nodeTree",
+                  "path": "rule.json",
+                  "required": true
+                },
+                {
+                  "parameterId": "requirement",
+                  "title": "页面目标和用户路径",
+                  "source": "runInput",
+                  "path": "description,effectiveDescription",
+                  "required": true
+                }
+              ],
+              "llmTask": {
+                "objective": "规划页面区域和数据消费点，明确每个 UI 区域消费哪个 DataView 成员。",
+                "instructions": [
+                  "规划首屏、主工作区、辅助区和操作路径",
+                  "标注 rows/currentRow/selectedRows/aggregateResult 等消费成员",
+                  "规划 field、$[fieldName]、optionDataViewKey 和按钮作用域"
+                ],
+                "expectedOutput": [
+                  "pageRegionPlan",
+                  "dataConsumerPlan",
+                  "fieldBindingPlan",
+                  "actionScopePlan"
+                ],
+                "forbidden": [
+                  "为装饰区创建 DataView",
+                  "把 dataMember/dataField 拼进 dataViewKey"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD4.verify.consumers",
+                  "title": "页面消费验收",
+                  "method": "检查区域映射覆盖、消费点追溯和非法 DataViewKey。",
+                  "metrics": [
+                    {
+                      "metricId": "regionMappingCoveragePercent",
+                      "title": "区域到数据对象映射覆盖率",
+                      "operator": "gte",
+                      "target": 100,
+                      "unit": "percent"
+                    },
+                    {
+                      "metricId": "dataConsumerWithoutRegionCount",
+                      "title": "无页面区域的数据消费点数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "consumer"
+                    },
+                    {
+                      "metricId": "invalidDataViewKeyPartCount",
+                      "title": "非法 DataViewKey 片段数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "binding"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "区域映射覆盖率 100%",
+                  "无页面区域的数据消费点数为 0",
+                  "非法 DataViewKey 片段数为 0"
+                ],
+                "nextWhen": "页面数据消费验收通过后进入按需视图与依赖。",
+                "stopWhen": "存在未映射区域、悬空消费点或非法 DataViewKey 时停止。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD4.1",
+                  "title": "页面区域规划",
+                  "sourceSteps": "51-60",
+                  "actions": [
+                    "规划信息架构、操作路径、首屏、主工作区和辅助区",
+                    "区分真实数据容器和静态展示区"
+                  ],
+                  "outputs": [
+                    "页面区域清单",
+                    "区域到数据对象映射草图"
+                  ],
+                  "checks": [
+                    "装饰区不创建无意义 DataView",
+                    "每个区域都能解释其业务目的"
+                  ]
+                },
+                {
+                  "stepId": "PD4.2",
+                  "title": "数据消费规划",
+                  "sourceSteps": "61-70",
+                  "actions": [
+                    "标注 rows/currentRow/selectedRows/aggregateResult/selectionAggregateResult",
+                    "规划 field、$[fieldName]、optionDataViewKey 和按钮作用域"
+                  ],
+                  "outputs": [
+                    "DataView 消费点清单",
+                    "字段消费规则",
+                    "按钮数据作用域"
+                  ],
+                  "checks": [
+                    "每个消费点都有真实页面区域",
+                    "不把字段名或成员名拼进 dataViewKey"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "process.PD5.views-dependencies",
+          "type": "custom",
+          "position": {
+            "x": 900,
+            "y": 240
+          },
+          "data": {
+            "type": "process-step",
+            "title": "按需视图与依赖",
+            "desc": "71-88 按视图状态隔离创建或复用 DataView，并只在必要时显式声明 viewDependencies。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD5.views-dependencies",
+              "sourceSteps": "71-88",
+              "goal": "按视图状态隔离创建或复用 DataView，并只在必要时显式声明 viewDependencies。",
+              "factoryConsiderations": [
+                "F4",
+                "F5",
+                "F6"
+              ],
+              "metricIds": [
+                "stateIsolationDecisionCoveragePercent",
+                "freeformViewDependencyCount",
+                "viewWithoutConsumerCount",
+                "sharedStateConflictCount",
+                "missingRelationForDependencyCount",
+                "circularDependencyCount",
+                "dataConsumerWithoutRegionCount",
+                "consumerTraceabilityPercent"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD5.pre.consumers",
+                  "title": "数据消费点已定义",
+                  "source": "PD4.dataConsumerPlan",
+                  "metrics": [
+                    {
+                      "metricId": "dataConsumerWithoutRegionCount",
+                      "title": "无页面区域的数据消费点数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "consumer"
+                    },
+                    {
+                      "metricId": "consumerTraceabilityPercent",
+                      "title": "消费点可追溯率",
+                      "operator": "gte",
+                      "target": 100,
+                      "unit": "percent"
+                    }
+                  ]
+                }
+              ],
+              "model": {
+                "modelRole": "view-state-and-dependency-planning",
+                "modelRef": "llm.reasoning.default",
+                "selectionReason": "需要判断视图状态隔离、默认联动和显式 viewDependencies，使用推理模型。"
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "consumerPlan",
+                  "title": "DataView 消费点清单",
+                  "source": "PD4.output",
+                  "path": "dataConsumerPlan",
+                  "required": true
+                },
+                {
+                  "parameterId": "tablesAndRelations",
+                  "title": "表与关系",
+                  "source": "pagedata.json",
+                  "path": "tables,tableRelations",
+                  "required": true
+                },
+                {
+                  "parameterId": "currentViews",
+                  "title": "已有 DataView",
+                  "source": "pagedata.json",
+                  "path": "tables.*.views",
+                  "required": false
+                }
+              ],
+              "llmTask": {
+                "objective": "按消费点创建或复用 DataView，并决定是否需要显式 viewDependencies。",
+                "instructions": [
+                  "判断每个消费点的 rows/currentRow/selection/requestState 是否独立",
+                  "命名主消费 view 和可复用 view",
+                  "只在覆盖默认策略时显式声明 viewDependencies"
+                ],
+                "expectedOutput": [
+                  "dataViewPlan",
+                  "viewDependencyDecision",
+                  "pagedataViewPatch"
+                ],
+                "forbidden": [
+                  "创建无消费点 view",
+                  "表达任意命名 view 自由连线"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD5.verify.views",
+                  "title": "视图和依赖验收",
+                  "method": "检查状态隔离决策、无消费者 view、依赖关系和循环依赖。",
+                  "metrics": [
+                    {
+                      "metricId": "stateIsolationDecisionCoveragePercent",
+                      "title": "视图状态隔离决策覆盖率",
+                      "operator": "gte",
+                      "target": 100,
+                      "unit": "percent"
+                    },
+                    {
+                      "metricId": "viewWithoutConsumerCount",
+                      "title": "无消费点 view 数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "view"
+                    },
+                    {
+                      "metricId": "missingRelationForDependencyCount",
+                      "title": "依赖缺失关系数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "dependency"
+                    },
+                    {
+                      "metricId": "circularDependencyCount",
+                      "title": "循环依赖数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "cycle"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "视图状态隔离决策覆盖率 100%",
+                  "无消费点 view 数为 0",
+                  "依赖缺失关系数为 0",
+                  "循环依赖数为 0"
+                ],
+                "nextWhen": "视图与依赖验收通过后进入结构行为样式落地。",
+                "stopWhen": "状态隔离不明、无消费者 view 或依赖不闭合时停止。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD5.1",
+                  "title": "按消费点建视图",
+                  "sourceSteps": "71-80",
+                  "actions": [
+                    "判断消费点是否需要独立 DataView",
+                    "命名主消费 view",
+                    "配置分页、选择器、筛选、树、排序、过滤、autoLoad 和首行策略"
+                  ],
+                  "outputs": [
+                    "DataView 命名和复用方案",
+                    "DataView 行为配置"
+                  ],
+                  "checks": [
+                    "同表多 UI 不串分页、筛选、当前行和选择状态",
+                    "首屏行为与自动加载策略一致"
+                  ]
+                },
+                {
+                  "stepId": "PD5.2",
+                  "title": "视图依赖闭合",
+                  "sourceSteps": "81-88",
+                  "actions": [
+                    "判断是否需要显式 viewDependencies",
+                    "设置 parentTable/childTable/dependencyType/autoLoad",
+                    "校验关系、default view 和循环依赖",
+                    "再次序列化"
+                  ],
+                  "outputs": [
+                    "viewDependencies 决策",
+                    "依赖校验结果",
+                    "canonical pagedata.json"
+                  ],
+                  "checks": [
+                    "省略表示从 tableRelations 自动推导，[] 表示明确禁用",
+                    "ViewDependency 不表达任意命名 view 自由连线"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "process.PD6.structure-behavior-style",
+          "type": "custom",
+          "position": {
+            "x": 600,
+            "y": 240
+          },
+          "data": {
+            "type": "process-step",
+            "title": "结构行为样式落地",
+            "desc": "89-96 最后落 rule/script/style，保持组件、事件和样式引用闭合。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD6.structure-behavior-style",
+              "sourceSteps": "89-96",
+              "goal": "最后落 rule/script/style，保持组件、事件和样式引用闭合。",
+              "factoryConsiderations": [
+                "F2",
+                "F4",
+                "F6",
+                "F9"
+              ],
+              "metricIds": [
+                "componentGuideCoveragePercent",
+                "forbiddenScriptApiCount",
+                "nodeTreeMutationCount",
+                "wrongToolMutationCount",
+                "danglingDataBindingCount",
+                "missingHandlerCount",
+                "unusedClassCount",
+                "outOfArtifactWriteCount",
+                "deliveryImplementationDecisionCount",
+                "invalidDataViewKeyPartCount",
+                "viewWithoutConsumerCount"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD6.pre.viewPlan",
+                  "title": "数据消费与视图方案已闭合",
+                  "source": "PD4 + PD5 outputs",
+                  "metrics": [
+                    {
+                      "metricId": "invalidDataViewKeyPartCount",
+                      "title": "非法 DataViewKey 片段数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "binding"
+                    },
+                    {
+                      "metricId": "viewWithoutConsumerCount",
+                      "title": "无消费点 view 数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "view"
+                    }
+                  ]
+                }
+              ],
+              "model": {
+                "modelRole": "structured-ui-and-script-generation",
+                "modelRef": "llm.code.default",
+                "selectionReason": "需要生成 rule 结构、script 函数和 style 文本，使用代码模型并依赖组件指南。",
+                "fallbackModelRefs": [
+                  "llm.reasoning.default"
+                ]
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "viewPlan",
+                  "title": "DataView 与依赖方案",
+                  "source": "PD5.output",
+                  "path": "dataViewPlan,viewDependencyDecision",
+                  "required": true
+                },
+                {
+                  "parameterId": "componentPayloads",
+                  "title": "组件 payload 与 guide",
+                  "source": "model_guide",
+                  "path": "component payload guides",
+                  "required": true
+                },
+                {
+                  "parameterId": "currentRuleScriptStyle",
+                  "title": "当前 rule/script/style",
+                  "source": "PageDesignEditHost",
+                  "path": "rule.json,script.js,style.css",
+                  "required": true
+                }
+              ],
+              "llmTask": {
+                "objective": "把页面区域和数据消费方案落到 rule/script/style。",
+                "instructions": [
+                  "查询组件 payload 和 guide 后写节点树",
+                  "绑定 dataViewKey/dataMember/dataField/field",
+                  "补齐 handler、__init__ 和样式 class"
+                ],
+                "expectedOutput": [
+                  "rulePatch",
+                  "scriptText",
+                  "styleText",
+                  "bindingClosureReport"
+                ],
+                "forbidden": [
+                  "使用禁用脚本 API",
+                  "绕过 nodeTree 进行结构修改",
+                  "写四文件之外的资产"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD6.verify.files",
+                  "title": "结构行为样式验收",
+                  "method": "检查组件指南覆盖、数据绑定、handler、class 和脚本 API。",
+                  "metrics": [
+                    {
+                      "metricId": "componentGuideCoveragePercent",
+                      "title": "组件 guide 覆盖率",
+                      "operator": "gte",
+                      "target": 100,
+                      "unit": "percent"
+                    },
+                    {
+                      "metricId": "danglingDataBindingCount",
+                      "title": "悬空数据绑定数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "binding"
+                    },
+                    {
+                      "metricId": "missingHandlerCount",
+                      "title": "缺失 handler 数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "handler"
+                    },
+                    {
+                      "metricId": "forbiddenScriptApiCount",
+                      "title": "禁用脚本 API 数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "api"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "组件 guide 覆盖率 100%",
+                  "悬空数据绑定数为 0",
+                  "缺失 handler 数为 0",
+                  "禁用脚本 API 数为 0"
+                ],
+                "nextWhen": "结构行为样式验收通过后进入交叉校验与收尾。",
+                "stopWhen": "存在悬空引用、缺失 handler、禁用 API 或错误工位修改时停止。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD6.1",
+                  "title": "rule 结构落地",
+                  "sourceSteps": "89-92",
+                  "actions": [
+                    "查询组件 payload",
+                    "guide 组件参数",
+                    "写入页面节点树",
+                    "设置稳定 component id"
+                  ],
+                  "outputs": [
+                    "rule.json 节点树"
+                  ],
+                  "checks": [
+                    "组件、dataViewKey、dataMember、dataField、field 对齐",
+                    "脚本访问的组件 id 稳定"
+                  ]
+                },
+                {
+                  "stepId": "PD6.2",
+                  "title": "script/style 落地",
+                  "sourceSteps": "93-96",
+                  "actions": [
+                    "生成 handler 清单",
+                    "补 __init__ 和事件函数",
+                    "写 script.js",
+                    "从 rule 收集 class 并补 style.css"
+                  ],
+                  "outputs": [
+                    "script.js",
+                    "style.css"
+                  ],
+                  "checks": [
+                    "script 只用 $dataSet.getView(table, view)",
+                    "style class 都被 rule 使用"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "process.PD7.verify-deliver",
+          "type": "custom",
+          "position": {
+            "x": 300,
+            "y": 240
+          },
+          "data": {
+            "type": "process-step",
+            "title": "交叉校验与收尾",
+            "desc": "97-100 完成四文件交叉校验、预览回补和交付说明。",
+            "x_spark": {
+              "nodeRole": "process-stage",
+              "stageId": "PD7.verify-deliver",
+              "sourceSteps": "97-100",
+              "goal": "完成四文件交叉校验、预览回补和交付说明。",
+              "factoryConsiderations": [
+                "F6",
+                "F7",
+                "F9"
+              ],
+              "metricIds": [
+                "crossFileIssueCount",
+                "previewErrorCount",
+                "handoffArtifactCount",
+                "executionImplementationStepCount",
+                "deliveryArtifactCount",
+                "openDeliveryDesignQuestionCount",
+                "danglingDataBindingCount",
+                "missingHandlerCount"
+              ],
+              "prerequisites": [
+                {
+                  "prerequisiteId": "PD7.pre.filesClosed",
+                  "title": "四文件引用已初步闭合",
+                  "source": "PD6.bindingClosureReport",
+                  "metrics": [
+                    {
+                      "metricId": "danglingDataBindingCount",
+                      "title": "悬空数据绑定数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "binding"
+                    },
+                    {
+                      "metricId": "missingHandlerCount",
+                      "title": "缺失 handler 数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "handler"
+                    }
+                  ]
+                }
+              ],
+              "model": {
+                "modelRole": "verification-and-risk-summary",
+                "modelRef": "llm.reasoning.default",
+                "selectionReason": "需要解释验证结果、归因预览错误并输出交付风险，使用推理模型。"
+              },
+              "parameterSources": [
+                {
+                  "parameterId": "crossFileReport",
+                  "title": "四文件交叉校验报告",
+                  "source": "verification",
+                  "path": "crossFileReport",
+                  "required": true
+                },
+                {
+                  "parameterId": "previewResult",
+                  "title": "预览或渲染结果",
+                  "source": "DevPreviewTab",
+                  "path": "previewResult",
+                  "required": false
+                },
+                {
+                  "parameterId": "changedArtifacts",
+                  "title": "变更资产清单",
+                  "source": "PageDesignEditHost",
+                  "path": "rule,pagedata,script,style",
+                  "required": true
+                }
+              ],
+              "llmTask": {
+                "objective": "验证 LLM 产物是否正确，并在通过后形成交付摘要。",
+                "instructions": [
+                  "检查表/字段/view/关系/handler/class 全部闭合",
+                  "根据预览错误回补前序阶段",
+                  "输出修改摘要和剩余风险"
+                ],
+                "expectedOutput": [
+                  "crossFileVerification",
+                  "previewFixReport",
+                  "deliverySummary",
+                  "residualRisk"
+                ],
+                "forbidden": [
+                  "在验证失败时宣布完成",
+                  "设计保存或回滚实现"
+                ]
+              },
+              "verification": [
+                {
+                  "verificationId": "PD7.verify.delivery",
+                  "title": "最终交付验收",
+                  "method": "四文件交叉校验和预览结果均达标才允许结束。",
+                  "metrics": [
+                    {
+                      "metricId": "crossFileIssueCount",
+                      "title": "四文件交叉问题数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "issue"
+                    },
+                    {
+                      "metricId": "previewErrorCount",
+                      "title": "预览错误数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "error"
+                    },
+                    {
+                      "metricId": "deliveryArtifactCount",
+                      "title": "交付资产数",
+                      "operator": "gte",
+                      "target": 4,
+                      "unit": "file"
+                    },
+                    {
+                      "metricId": "executionImplementationStepCount",
+                      "title": "执行实现步骤数",
+                      "operator": "eq",
+                      "target": 0,
+                      "unit": "step"
+                    }
+                  ]
+                }
+              ],
+              "completion": {
+                "criteria": [
+                  "四文件交叉问题数为 0",
+                  "预览错误数为 0",
+                  "交付资产数不少于 4",
+                  "执行实现步骤数为 0"
+                ],
+                "nextWhen": "最终验收通过后结束工艺流程图定型候选。",
+                "stopWhen": "任一最终验收指标未达标时回到对应前序阶段修正；执行实现留到流程图定型后再设计。"
+              },
+              "steps": [
+                {
+                  "stepId": "PD7.1",
+                  "title": "四文件闭合校验",
+                  "sourceSteps": "97-98",
+                  "actions": [
+                    "校验 dataViewKey、dataMember、dataField、field、relation、dependency",
+                    "校验 handler、component id、class"
+                  ],
+                  "outputs": [
+                    "交叉校验结果"
+                  ],
+                  "checks": [
+                    "表、字段、view、关系、handler、class 全部闭合"
+                  ]
+                },
+                {
+                  "stepId": "PD7.2",
+                  "title": "预览与总结",
+                  "sourceSteps": "99-100",
+                  "actions": [
+                    "触发预览或页面渲染",
+                    "回补解析/渲染/自动加载/主从联动错误",
+                    "总结修改和剩余风险"
+                  ],
+                  "outputs": [
+                    "预览修正结果",
+                    "修改摘要",
+                    "剩余风险"
+                  ],
+                  "checks": [
+                    "用户知道改了哪些文件、如何验证"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "end",
+          "type": "custom",
+          "position": {
+            "x": 0,
+            "y": 240
+          },
+          "data": {
+            "type": "end",
+            "title": "End",
+            "desc": "页面设计工艺收口",
+            "outputs": []
+          }
         }
-      } ],
-      "edges" : [ {
-        "id" : "edge.start.loop",
-        "source" : "start",
-        "target" : "loop.business-factory",
-        "sourceHandle" : "source",
-        "targetHandle" : "target",
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence"
+      ],
+      "edges": [
+        {
+          "id": "edge.start.PD1",
+          "source": "start",
+          "target": "process.PD1.scope-inventory",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD1.PD2",
+          "source": "process.PD1.scope-inventory",
+          "target": "process.PD2.data-model",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD2.PD3",
+          "source": "process.PD2.data-model",
+          "target": "process.PD3.table-relations",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD3.PD4",
+          "source": "process.PD3.table-relations",
+          "target": "process.PD4.page-data-use",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD4.PD5",
+          "source": "process.PD4.page-data-use",
+          "target": "process.PD5.views-dependencies",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD5.PD6",
+          "source": "process.PD5.views-dependencies",
+          "target": "process.PD6.structure-behavior-style",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD6.PD7",
+          "source": "process.PD6.structure-behavior-style",
+          "target": "process.PD7.verify-deliver",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
+        },
+        {
+          "id": "edge.PD7.end",
+          "source": "process.PD7.verify-deliver",
+          "target": "end",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "custom",
+          "data": {
+            "relation": "sequence",
+            "meaning": "craft-order"
+          }
         }
-      }, {
-        "id" : "edge.loop.end",
-        "source" : "loop.business-factory",
-        "target" : "end",
-        "sourceHandle" : "source",
-        "targetHandle" : "target",
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence"
-        }
-      } ],
-      "viewport" : {
-        "x" : 0,
-        "y" : 0,
-        "zoom" : 1
+      ],
+      "viewport": {
+        "x": 0,
+        "y": 0,
+        "zoom": 1
       }
     }
   },
-  "x_spark" : {
-    "schema" : "spark.agent.workflow.design.v1",
-    "businessFactory" : true,
-    "phaseModel" : "F0-F9",
-    "draft" : {
-      "status" : "draft",
-      "dirtyPaths" : [ ]
+  "x_spark": {
+    "schema": "spark.agent.workflow.design.v1",
+    "businessFactory": true,
+    "phaseModel": "F0-F9-considerations",
+    "process": {
+      "processId": "pageDesign.data-first-100-step-process",
+      "title": "页面设计七段式数据优先工艺",
+      "sourceRef": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+      "principle": "流程图只表达页面设计工艺步骤；100 步文档提供工艺主线，generated/dts-class-model 知识库提供模型、参数和验证依据；F0-F9 是每个步骤的工厂检查维度，不作为流程节点。",
+      "stages": [
+        {
+          "stageId": "PD1.scope-inventory",
+          "title": "接单与盘点",
+          "sourceSteps": "1-20",
+          "goal": "确认 live editing 入口、改动边界和当前四文件状态。",
+          "considerations": [
+            {
+              "phaseId": "F0",
+              "title": "身份边界",
+              "checks": [
+                "pageDesign 工艺对象明确",
+                "workflow 当前只表达流程图和节点工艺说明"
+              ],
+              "metrics": [
+                {
+                  "metricId": "pageIdResolvedCount",
+                  "title": "已定位 pageId 数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "page"
+                },
+                {
+                  "metricId": "executionImplementationDecisionCount",
+                  "title": "执行实现决策数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "decision"
+                }
+              ]
+            },
+            {
+              "phaseId": "F1",
+              "title": "原料盘点",
+              "checks": [
+                "四文件 binding 可读",
+                "现有表、视图、handler、class 先盘点"
+              ],
+              "metrics": [
+                {
+                  "metricId": "fileBindingCount",
+                  "title": "四文件 binding 数",
+                  "operator": "gte",
+                  "target": 4,
+                  "unit": "file"
+                },
+                {
+                  "metricId": "unreadAssetCount",
+                  "title": "未读取资产数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "asset"
+                }
+              ]
+            },
+            {
+              "phaseId": "F3",
+              "title": "工单契约",
+              "checks": [
+                "任务类型和风险级别明确",
+                "边界问题先收敛"
+              ],
+              "metrics": [
+                {
+                  "metricId": "unresolvedBoundaryQuestionCount",
+                  "title": "未解决边界问题数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "question"
+                },
+                {
+                  "metricId": "allowedOperationDecisionCount",
+                  "title": "操作权限决策数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "decision"
+                }
+              ]
+            },
+            {
+              "phaseId": "F6",
+              "title": "入口验收",
+              "checks": [
+                "bootstrap 进入 editing phase",
+                "读盘点结果可被后续步骤消费"
+              ],
+              "metrics": [
+                {
+                  "metricId": "bootstrapMissingCapabilityCount",
+                  "title": "缺失 capability 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "capability"
+                },
+                {
+                  "metricId": "inventorySummaryCount",
+                  "title": "盘点摘要数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "summary"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD1.pre.pageId",
+              "title": "页面定位已输入",
+              "source": "runInput.pageId",
+              "metrics": [
+                {
+                  "metricId": "pageIdResolvedCount",
+                  "title": "已定位 pageId 数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "page"
+                }
+              ]
+            },
+            {
+              "prerequisiteId": "PD1.pre.liveBinding",
+              "title": "live editing binding 可用",
+              "source": "PageDesignEditHost.bootstrap",
+              "metrics": [
+                {
+                  "metricId": "fileBindingCount",
+                  "title": "四文件 binding 数",
+                  "operator": "gte",
+                  "target": 4,
+                  "unit": "file"
+                },
+                {
+                  "metricId": "bootstrapMissingCapabilityCount",
+                  "title": "缺失 capability 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "capability"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "orchestration-planning",
+            "modelRef": "llm.reasoning.default",
+            "selectionReason": "需要归纳用户意图、风险边界和四文件盘点摘要，优先使用推理模型。",
+            "fallbackModelRefs": [
+              "llm.reasoning.fast"
+            ]
+          },
+          "parameterSources": [
+            {
+              "parameterId": "pageId",
+              "title": "页面 ID",
+              "source": "runInput",
+              "path": "pageId",
+              "required": true
+            },
+            {
+              "parameterId": "description",
+              "title": "用户原始需求",
+              "source": "runInput",
+              "path": "description",
+              "required": true
+            },
+            {
+              "parameterId": "allowedOperations",
+              "title": "允许操作范围",
+              "source": "runInput",
+              "path": "allowedOperations",
+              "required": false
+            },
+            {
+              "parameterId": "fileBindings",
+              "title": "四文件 live binding",
+              "source": "PageDesignEditHost",
+              "path": "nodeTree,dataset,script,style",
+              "required": true
+            }
+          ],
+          "llmTask": {
+            "objective": "把用户请求转成可执行页面设计工单，并完成当前四文件盘点。",
+            "instructions": [
+              "确认任务类型和改动边界",
+              "列出 pagedata/rule/script/style 当前状态摘要",
+              "识别必须先澄清的问题"
+            ],
+            "expectedOutput": [
+              "pageId",
+              "riskLevel",
+              "changeBoundary",
+              "inventorySummary"
+            ],
+            "forbidden": [
+              "直接修改四文件",
+              "设计执行调度实现"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD1.verify.entry",
+              "title": "入口和盘点验收",
+              "method": "检查 bootstrap 结果、四文件摘要和边界问题数。",
+              "metrics": [
+                {
+                  "metricId": "unresolvedBoundaryQuestionCount",
+                  "title": "未解决边界问题数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "question"
+                },
+                {
+                  "metricId": "inventorySummaryCount",
+                  "title": "盘点摘要数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "summary"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "pageId 已解析",
+              "四文件 binding 齐全",
+              "边界问题为 0",
+              "盘点摘要可供后续步骤使用"
+            ],
+            "nextWhen": "入口验收指标全部达标后进入数据规划与最小表模型。",
+            "stopWhen": "pageId 缺失、live binding 缺失或用户边界未确认时停止并请求澄清。"
+          },
+          "steps": [
+            {
+              "stepId": "PD1.1",
+              "title": "入口定界",
+              "sourceSteps": "1-10",
+              "actions": [
+                "识别任务类型",
+                "定位 pageId",
+                "bootstrap live editing",
+                "确认风险和改动边界"
+              ],
+              "outputs": [
+                "pageId",
+                "editing phase",
+                "change boundary"
+              ],
+              "checks": [
+                "nodeTree/dataset/script/style binding 齐全",
+                "数据优先，不先铺表格 UI 细节"
+              ]
+            },
+            {
+              "stepId": "PD1.2",
+              "title": "四文件盘点",
+              "sourceSteps": "11-20",
+              "actions": [
+                "读取 pagedata 摘要",
+                "读取 rule 绑定",
+                "收集 handler/class",
+                "读取 script/style"
+              ],
+              "outputs": [
+                "DataTable/Relation/View 清单",
+                "组件绑定清单",
+                "handler/class 清单"
+              ],
+              "checks": [
+                "已有表、字段、viewId、handler 和 class 可见",
+                "不在未知结构上直接生成"
+              ]
+            }
+          ]
+        },
+        {
+          "stageId": "PD2.data-model",
+          "title": "数据规划与最小表模型",
+          "sourceSteps": "21-40",
+          "goal": "先立业务数据事实，再建立足够支撑关系和视图的最小 DataTable。",
+          "considerations": [
+            {
+              "phaseId": "F1",
+              "title": "数据原料",
+              "checks": [
+                "业务对象、字段、资源语义进入 pagedata 规划",
+                "静态 rows 与 API 来源分离"
+              ],
+              "metrics": [
+                {
+                  "metricId": "businessObjectCount",
+                  "title": "业务对象数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "object"
+                },
+                {
+                  "metricId": "fieldDefinitionCount",
+                  "title": "字段定义数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "field"
+                }
+              ]
+            },
+            {
+              "phaseId": "F2",
+              "title": "数据知识",
+              "checks": [
+                "DataSet/DataTable/DataView 规则已应用",
+                "不把 UI 状态写入 columns"
+              ],
+              "metrics": [
+                {
+                  "metricId": "uiStateColumnCount",
+                  "title": "UI 状态字段数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "column"
+                },
+                {
+                  "metricId": "tablePrimaryKeyCoveragePercent",
+                  "title": "主键覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                }
+              ]
+            },
+            {
+              "phaseId": "F4",
+              "title": "数据工位",
+              "checks": [
+                "使用 DataSetCrudTool 做结构化修改",
+                "避免直接拼 pagedata 大 JSON"
+              ],
+              "metrics": [
+                {
+                  "metricId": "dataSetCrudMutationCount",
+                  "title": "DataSetCrudTool 修改次数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "mutation"
+                },
+                {
+                  "metricId": "directPageDataOverwriteCount",
+                  "title": "直接覆盖 pagedata 次数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "write"
+                }
+              ]
+            },
+            {
+              "phaseId": "F6",
+              "title": "模型验收",
+              "checks": [
+                "DataSet 可 canonical 序列化",
+                "columns/rows/API/crudConfig 闭合"
+              ],
+              "metrics": [
+                {
+                  "metricId": "dataSetRoundTripErrorCount",
+                  "title": "DataSet round-trip 错误数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "error"
+                },
+                {
+                  "metricId": "rowColumnMismatchCount",
+                  "title": "rows 与 columns 不匹配数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "mismatch"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD2.pre.inventory",
+              "title": "已有四文件盘点结果",
+              "source": "PD1.inventorySummary",
+              "metrics": [
+                {
+                  "metricId": "inventorySummaryCount",
+                  "title": "盘点摘要数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "summary"
+                }
+              ]
+            },
+            {
+              "prerequisiteId": "PD2.pre.dataNeed",
+              "title": "存在数据建模需求",
+              "source": "runInput.description + inventorySummary",
+              "metrics": [
+                {
+                  "metricId": "businessObjectCandidateCount",
+                  "title": "业务对象候选数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "object"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "data-modeling",
+            "modelRef": "llm.reasoning.default",
+            "selectionReason": "需要从业务需求抽取对象、字段、资源语义和最小表结构，使用推理模型保证结构一致性。",
+            "fallbackModelRefs": [
+              "llm.reasoning.fast"
+            ]
+          },
+          "parameterSources": [
+            {
+              "parameterId": "requirement",
+              "title": "用户需求与有效描述",
+              "source": "runInput",
+              "path": "description,effectiveDescription",
+              "required": true
+            },
+            {
+              "parameterId": "currentPageData",
+              "title": "当前 pagedata.json",
+              "source": "PageDesignEditHost.dataset",
+              "path": "pagedata.json",
+              "required": true
+            },
+            {
+              "parameterId": "datasetGuides",
+              "title": "DataSet/DataTable/DataView 知识",
+              "source": "model_guide",
+              "path": "DataSet,DataTable,DataView",
+              "required": true
+            }
+          ],
+          "llmTask": {
+            "objective": "输出最小 DataTable 方案并通过结构化工具落到 pagedata.json。",
+            "instructions": [
+              "识别主表、子表、字典/引用表",
+              "规划字段、主键、类型、label 和资源语义",
+              "只创建关系和视图需要的最小表模型"
+            ],
+            "expectedOutput": [
+              "businessObjects",
+              "tableRoles",
+              "fieldPlan",
+              "minimalDataTablePatch"
+            ],
+            "forbidden": [
+              "把 UI 临时状态写进 columns",
+              "直接整文件覆盖 pagedata.json"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD2.verify.dataset",
+              "title": "DataSet 模型验收",
+              "method": "执行 DataSet canonical 序列化和字段/rows/API 对齐检查。",
+              "metrics": [
+                {
+                  "metricId": "businessObjectCount",
+                  "title": "业务对象数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "object"
+                },
+                {
+                  "metricId": "tablePrimaryKeyCoveragePercent",
+                  "title": "主键覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "dataSetRoundTripErrorCount",
+                  "title": "DataSet round-trip 错误数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "error"
+                },
+                {
+                  "metricId": "rowColumnMismatchCount",
+                  "title": "rows 与 columns 不匹配数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "mismatch"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "至少 1 个业务对象已建模",
+              "主键覆盖率 100%",
+              "DataSet round-trip 错误为 0",
+              "rows 与 columns 不匹配数为 0"
+            ],
+            "nextWhen": "数据模型验收通过后进入表关系建模。",
+            "stopWhen": "业务对象无法确定、字段主键不闭合或 DataSet 不能序列化时停止。"
+          },
+          "steps": [
+            {
+              "stepId": "PD2.1",
+              "title": "业务对象和字段规划",
+              "sourceSteps": "21-30",
+              "actions": [
+                "识别业务对象",
+                "区分主表/子表/引用表/字典表/树节点表",
+                "规划字段、类型、label、校验和资源语义"
+              ],
+              "outputs": [
+                "业务对象清单",
+                "表角色清单",
+                "字段清单",
+                "资源语义"
+              ],
+              "checks": [
+                "表名可用于 DataViewKey",
+                "不把 UI 临时状态塞进 DataTable columns"
+              ]
+            },
+            {
+              "stepId": "PD2.2",
+              "title": "最小 DataTable 落地",
+              "sourceSteps": "31-40",
+              "actions": [
+                "创建或更新主表、子表、字典/引用表",
+                "补静态 rows 或远端 API family",
+                "设置 crudConfig",
+                "执行 canonical 序列化"
+              ],
+              "outputs": [
+                "最小 DataTable 模型",
+                "基础 rows/API/crudConfig",
+                "可序列化 pagedata.json"
+              ],
+              "checks": [
+                "样例 rows 与 columns 对齐",
+                "表名不破坏 DataViewKey",
+                "DataSet 可 round-trip"
+              ]
+            }
+          ]
+        },
+        {
+          "stageId": "PD3.table-relations",
+          "title": "表关系建模",
+          "sourceSteps": "41-50",
+          "goal": "建立业务父子关系，并只保留有真实页面价值的关系。",
+          "considerations": [
+            {
+              "phaseId": "F3",
+              "title": "关系契约",
+              "checks": [
+                "每条关系说明 parent/child/table/field",
+                "同表多关系用 relationName 消歧"
+              ],
+              "metrics": [
+                {
+                  "metricId": "relationAmbiguityCount",
+                  "title": "关系歧义数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "relation"
+                },
+                {
+                  "metricId": "relationFieldMissingCount",
+                  "title": "关系字段缺失数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "field"
+                }
+              ]
+            },
+            {
+              "phaseId": "F5",
+              "title": "关系治理",
+              "checks": [
+                "没有消费场景的关系先不建",
+                "不把数据库外键概念写进页面关系"
+              ],
+              "metrics": [
+                {
+                  "metricId": "relationWithoutConsumerCount",
+                  "title": "无消费场景关系数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "relation"
+                },
+                {
+                  "metricId": "databaseOnlyForeignKeyCount",
+                  "title": "数据库外键式配置数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "relation"
+                }
+              ]
+            },
+            {
+              "phaseId": "F6",
+              "title": "关系验收",
+              "checks": [
+                "parentField/childField 存在",
+                "多层主从链条可解释"
+              ],
+              "metrics": [
+                {
+                  "metricId": "missingParentFieldCount",
+                  "title": "缺失父字段数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "field"
+                },
+                {
+                  "metricId": "missingChildFieldCount",
+                  "title": "缺失子字段数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "field"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD3.pre.tables",
+              "title": "最小表模型已存在",
+              "source": "PD2.minimalDataTablePatch",
+              "metrics": [
+                {
+                  "metricId": "businessObjectCount",
+                  "title": "业务对象数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "object"
+                },
+                {
+                  "metricId": "fieldDefinitionCount",
+                  "title": "字段定义数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "field"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "relation-modeling",
+            "modelRef": "llm.reasoning.default",
+            "selectionReason": "需要判断业务父子链条、字段闭合和关系消费价值，使用推理模型。"
+          },
+          "parameterSources": [
+            {
+              "parameterId": "tables",
+              "title": "表与字段清单",
+              "source": "pagedata.json",
+              "path": "tables.*.columns",
+              "required": true
+            },
+            {
+              "parameterId": "requirement",
+              "title": "业务关系描述",
+              "source": "runInput",
+              "path": "description,effectiveDescription",
+              "required": true
+            },
+            {
+              "parameterId": "existingRelations",
+              "title": "已有 tableRelations",
+              "source": "pagedata.json",
+              "path": "tableRelations",
+              "required": false
+            }
+          ],
+          "llmTask": {
+            "objective": "设计必要 tableRelations，并证明每条关系有业务解释和页面消费价值。",
+            "instructions": [
+              "识别父表、子表、parentField、childField",
+              "多关系场景补 relationName",
+              "删除无消费场景的伪关系"
+            ],
+            "expectedOutput": [
+              "tableRelationsPatch",
+              "relationRationale",
+              "relationValidationReport"
+            ],
+            "forbidden": [
+              "把数据库外键概念直接照搬进页面配置",
+              "为看起来完整而创建无消费者关系"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD3.verify.relations",
+              "title": "关系闭合验收",
+              "method": "校验 parentField/childField 存在、关系无歧义且有消费场景。",
+              "metrics": [
+                {
+                  "metricId": "relationFieldMissingCount",
+                  "title": "关系字段缺失数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "field"
+                },
+                {
+                  "metricId": "relationAmbiguityCount",
+                  "title": "关系歧义数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "relation"
+                },
+                {
+                  "metricId": "relationWithoutConsumerCount",
+                  "title": "无消费场景关系数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "relation"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "关系字段缺失数为 0",
+              "关系歧义数为 0",
+              "无消费场景关系数为 0"
+            ],
+            "nextWhen": "关系验收通过后进入页面规划与数据消费。",
+            "stopWhen": "父子字段缺失、关系解释不成立或消费场景不明确时停止。"
+          },
+          "steps": [
+            {
+              "stepId": "PD3.1",
+              "title": "关系建模",
+              "sourceSteps": "41-43",
+              "actions": [
+                "设计 tableRelations",
+                "处理多层主从",
+                "用字段和 relationName 消歧"
+              ],
+              "outputs": [
+                "tableRelations"
+              ],
+              "checks": [
+                "父子链条能从业务上解释"
+              ]
+            },
+            {
+              "stepId": "PD3.2",
+              "title": "关系验收",
+              "sourceSteps": "44-50",
+              "actions": [
+                "校验 parentField/childField",
+                "判断级联策略",
+                "暂缓 viewDependencies",
+                "复核关系消费价值"
+              ],
+              "outputs": [
+                "关系校验结果"
+              ],
+              "checks": [
+                "没有消费场景的关系先不建",
+                "不把数据库外键概念误写进页面数据配置"
+              ]
+            }
+          ]
+        },
+        {
+          "stageId": "PD4.page-data-use",
+          "title": "页面规划与数据消费",
+          "sourceSteps": "51-70",
+          "goal": "从数据事实推导页面区域，再把每个区域声明为明确的数据消费点。",
+          "considerations": [
+            {
+              "phaseId": "F3",
+              "title": "页面消费契约",
+              "checks": [
+                "每个区域映射到业务对象或明确为静态区",
+                "每个数据消费点说明成员语义"
+              ],
+              "metrics": [
+                {
+                  "metricId": "regionMappingCoveragePercent",
+                  "title": "区域到数据对象映射覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "dataConsumerWithoutRegionCount",
+                  "title": "无页面区域的数据消费点数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "consumer"
+                }
+              ]
+            },
+            {
+              "phaseId": "F5",
+              "title": "消费治理",
+              "checks": [
+                "不为装饰区创建 DataView",
+                "不把 dataMember/dataField 拼进 dataViewKey"
+              ],
+              "metrics": [
+                {
+                  "metricId": "decorativeDataViewCount",
+                  "title": "装饰区 DataView 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "view"
+                },
+                {
+                  "metricId": "invalidDataViewKeyPartCount",
+                  "title": "非法 DataViewKey 片段数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "binding"
+                }
+              ]
+            },
+            {
+              "phaseId": "F8",
+              "title": "工单推进",
+              "checks": [
+                "消费点必须服务当前页面任务",
+                "按钮作用域区分行内、工具栏、页面级"
+              ],
+              "metrics": [
+                {
+                  "metricId": "consumerTraceabilityPercent",
+                  "title": "消费点可追溯率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "ambiguousActionScopeCount",
+                  "title": "动作作用域不明数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "action"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD4.pre.dataFacts",
+              "title": "数据事实和关系已闭合",
+              "source": "PD2 + PD3 outputs",
+              "metrics": [
+                {
+                  "metricId": "businessObjectCount",
+                  "title": "业务对象数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "object"
+                },
+                {
+                  "metricId": "relationFieldMissingCount",
+                  "title": "关系字段缺失数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "field"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "page-information-architecture",
+            "modelRef": "llm.reasoning.default",
+            "selectionReason": "需要把数据事实转为区域、操作路径和 DataView 消费契约，使用推理模型。",
+            "fallbackModelRefs": [
+              "llm.reasoning.fast"
+            ]
+          },
+          "parameterSources": [
+            {
+              "parameterId": "dataFacts",
+              "title": "表、字段、关系事实",
+              "source": "pagedata.json",
+              "path": "tables,tableRelations",
+              "required": true
+            },
+            {
+              "parameterId": "currentRule",
+              "title": "当前组件树",
+              "source": "PageDesignEditHost.nodeTree",
+              "path": "rule.json",
+              "required": true
+            },
+            {
+              "parameterId": "requirement",
+              "title": "页面目标和用户路径",
+              "source": "runInput",
+              "path": "description,effectiveDescription",
+              "required": true
+            }
+          ],
+          "llmTask": {
+            "objective": "规划页面区域和数据消费点，明确每个 UI 区域消费哪个 DataView 成员。",
+            "instructions": [
+              "规划首屏、主工作区、辅助区和操作路径",
+              "标注 rows/currentRow/selectedRows/aggregateResult 等消费成员",
+              "规划 field、$[fieldName]、optionDataViewKey 和按钮作用域"
+            ],
+            "expectedOutput": [
+              "pageRegionPlan",
+              "dataConsumerPlan",
+              "fieldBindingPlan",
+              "actionScopePlan"
+            ],
+            "forbidden": [
+              "为装饰区创建 DataView",
+              "把 dataMember/dataField 拼进 dataViewKey"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD4.verify.consumers",
+              "title": "页面消费验收",
+              "method": "检查区域映射覆盖、消费点追溯和非法 DataViewKey。",
+              "metrics": [
+                {
+                  "metricId": "regionMappingCoveragePercent",
+                  "title": "区域到数据对象映射覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "dataConsumerWithoutRegionCount",
+                  "title": "无页面区域的数据消费点数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "consumer"
+                },
+                {
+                  "metricId": "invalidDataViewKeyPartCount",
+                  "title": "非法 DataViewKey 片段数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "binding"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "区域映射覆盖率 100%",
+              "无页面区域的数据消费点数为 0",
+              "非法 DataViewKey 片段数为 0"
+            ],
+            "nextWhen": "页面数据消费验收通过后进入按需视图与依赖。",
+            "stopWhen": "存在未映射区域、悬空消费点或非法 DataViewKey 时停止。"
+          },
+          "steps": [
+            {
+              "stepId": "PD4.1",
+              "title": "页面区域规划",
+              "sourceSteps": "51-60",
+              "actions": [
+                "规划信息架构、操作路径、首屏、主工作区和辅助区",
+                "区分真实数据容器和静态展示区"
+              ],
+              "outputs": [
+                "页面区域清单",
+                "区域到数据对象映射草图"
+              ],
+              "checks": [
+                "装饰区不创建无意义 DataView",
+                "每个区域都能解释其业务目的"
+              ]
+            },
+            {
+              "stepId": "PD4.2",
+              "title": "数据消费规划",
+              "sourceSteps": "61-70",
+              "actions": [
+                "标注 rows/currentRow/selectedRows/aggregateResult/selectionAggregateResult",
+                "规划 field、$[fieldName]、optionDataViewKey 和按钮作用域"
+              ],
+              "outputs": [
+                "DataView 消费点清单",
+                "字段消费规则",
+                "按钮数据作用域"
+              ],
+              "checks": [
+                "每个消费点都有真实页面区域",
+                "不把字段名或成员名拼进 dataViewKey"
+              ]
+            }
+          ]
+        },
+        {
+          "stageId": "PD5.views-dependencies",
+          "title": "按需视图与依赖",
+          "sourceSteps": "71-88",
+          "goal": "按视图状态隔离创建或复用 DataView，并只在必要时显式声明 viewDependencies。",
+          "considerations": [
+            {
+              "phaseId": "F4",
+              "title": "视图工位",
+              "checks": [
+                "按消费点创建或复用 DataView",
+                "显式 viewDependencies 只表达 parentTable/childTable"
+              ],
+              "metrics": [
+                {
+                  "metricId": "stateIsolationDecisionCoveragePercent",
+                  "title": "视图状态隔离决策覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "freeformViewDependencyCount",
+                  "title": "任意命名 view 连线数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "dependency"
+                }
+              ]
+            },
+            {
+              "phaseId": "F5",
+              "title": "视图治理",
+              "checks": [
+                "同表多 UI 不串分页、筛选、当前行和选择状态",
+                "没有消费点不建 view"
+              ],
+              "metrics": [
+                {
+                  "metricId": "viewWithoutConsumerCount",
+                  "title": "无消费点 view 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "view"
+                },
+                {
+                  "metricId": "sharedStateConflictCount",
+                  "title": "共享状态冲突数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "conflict"
+                }
+              ]
+            },
+            {
+              "phaseId": "F6",
+              "title": "依赖验收",
+              "checks": [
+                "依赖对应 tableRelations 存在",
+                "default view 可用且无循环"
+              ],
+              "metrics": [
+                {
+                  "metricId": "missingRelationForDependencyCount",
+                  "title": "依赖缺失关系数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "dependency"
+                },
+                {
+                  "metricId": "circularDependencyCount",
+                  "title": "循环依赖数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "cycle"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD5.pre.consumers",
+              "title": "数据消费点已定义",
+              "source": "PD4.dataConsumerPlan",
+              "metrics": [
+                {
+                  "metricId": "dataConsumerWithoutRegionCount",
+                  "title": "无页面区域的数据消费点数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "consumer"
+                },
+                {
+                  "metricId": "consumerTraceabilityPercent",
+                  "title": "消费点可追溯率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "view-state-and-dependency-planning",
+            "modelRef": "llm.reasoning.default",
+            "selectionReason": "需要判断视图状态隔离、默认联动和显式 viewDependencies，使用推理模型。"
+          },
+          "parameterSources": [
+            {
+              "parameterId": "consumerPlan",
+              "title": "DataView 消费点清单",
+              "source": "PD4.output",
+              "path": "dataConsumerPlan",
+              "required": true
+            },
+            {
+              "parameterId": "tablesAndRelations",
+              "title": "表与关系",
+              "source": "pagedata.json",
+              "path": "tables,tableRelations",
+              "required": true
+            },
+            {
+              "parameterId": "currentViews",
+              "title": "已有 DataView",
+              "source": "pagedata.json",
+              "path": "tables.*.views",
+              "required": false
+            }
+          ],
+          "llmTask": {
+            "objective": "按消费点创建或复用 DataView，并决定是否需要显式 viewDependencies。",
+            "instructions": [
+              "判断每个消费点的 rows/currentRow/selection/requestState 是否独立",
+              "命名主消费 view 和可复用 view",
+              "只在覆盖默认策略时显式声明 viewDependencies"
+            ],
+            "expectedOutput": [
+              "dataViewPlan",
+              "viewDependencyDecision",
+              "pagedataViewPatch"
+            ],
+            "forbidden": [
+              "创建无消费点 view",
+              "表达任意命名 view 自由连线"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD5.verify.views",
+              "title": "视图和依赖验收",
+              "method": "检查状态隔离决策、无消费者 view、依赖关系和循环依赖。",
+              "metrics": [
+                {
+                  "metricId": "stateIsolationDecisionCoveragePercent",
+                  "title": "视图状态隔离决策覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "viewWithoutConsumerCount",
+                  "title": "无消费点 view 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "view"
+                },
+                {
+                  "metricId": "missingRelationForDependencyCount",
+                  "title": "依赖缺失关系数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "dependency"
+                },
+                {
+                  "metricId": "circularDependencyCount",
+                  "title": "循环依赖数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "cycle"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "视图状态隔离决策覆盖率 100%",
+              "无消费点 view 数为 0",
+              "依赖缺失关系数为 0",
+              "循环依赖数为 0"
+            ],
+            "nextWhen": "视图与依赖验收通过后进入结构行为样式落地。",
+            "stopWhen": "状态隔离不明、无消费者 view 或依赖不闭合时停止。"
+          },
+          "steps": [
+            {
+              "stepId": "PD5.1",
+              "title": "按消费点建视图",
+              "sourceSteps": "71-80",
+              "actions": [
+                "判断消费点是否需要独立 DataView",
+                "命名主消费 view",
+                "配置分页、选择器、筛选、树、排序、过滤、autoLoad 和首行策略"
+              ],
+              "outputs": [
+                "DataView 命名和复用方案",
+                "DataView 行为配置"
+              ],
+              "checks": [
+                "同表多 UI 不串分页、筛选、当前行和选择状态",
+                "首屏行为与自动加载策略一致"
+              ]
+            },
+            {
+              "stepId": "PD5.2",
+              "title": "视图依赖闭合",
+              "sourceSteps": "81-88",
+              "actions": [
+                "判断是否需要显式 viewDependencies",
+                "设置 parentTable/childTable/dependencyType/autoLoad",
+                "校验关系、default view 和循环依赖",
+                "再次序列化"
+              ],
+              "outputs": [
+                "viewDependencies 决策",
+                "依赖校验结果",
+                "canonical pagedata.json"
+              ],
+              "checks": [
+                "省略表示从 tableRelations 自动推导，[] 表示明确禁用",
+                "ViewDependency 不表达任意命名 view 自由连线"
+              ]
+            }
+          ]
+        },
+        {
+          "stageId": "PD6.structure-behavior-style",
+          "title": "结构行为样式落地",
+          "sourceSteps": "89-96",
+          "goal": "最后落 rule/script/style，保持组件、事件和样式引用闭合。",
+          "considerations": [
+            {
+              "phaseId": "F2",
+              "title": "组件知识",
+              "checks": [
+                "新增或替换组件前查 payload 和 guide",
+                "脚本 API 使用真实约束"
+              ],
+              "metrics": [
+                {
+                  "metricId": "componentGuideCoveragePercent",
+                  "title": "组件 guide 覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "forbiddenScriptApiCount",
+                  "title": "禁用脚本 API 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "api"
+                }
+              ]
+            },
+            {
+              "phaseId": "F4",
+              "title": "结构工位",
+              "checks": [
+                "rule 用 nodeTree 精细修改",
+                "script/style 用 textModel 全文写入"
+              ],
+              "metrics": [
+                {
+                  "metricId": "nodeTreeMutationCount",
+                  "title": "nodeTree 修改次数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "mutation"
+                },
+                {
+                  "metricId": "wrongToolMutationCount",
+                  "title": "错误工位修改次数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "mutation"
+                }
+              ]
+            },
+            {
+              "phaseId": "F6",
+              "title": "四文件验收",
+              "checks": [
+                "rule/pagedata/script/style 引用闭合",
+                "handler、component id、class 不悬空"
+              ],
+              "metrics": [
+                {
+                  "metricId": "danglingDataBindingCount",
+                  "title": "悬空数据绑定数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "binding"
+                },
+                {
+                  "metricId": "missingHandlerCount",
+                  "title": "缺失 handler 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "handler"
+                },
+                {
+                  "metricId": "unusedClassCount",
+                  "title": "未使用 class 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "class"
+                }
+              ]
+            },
+            {
+              "phaseId": "F9",
+              "title": "交付约束",
+              "checks": [
+                "结构、行为、样式变更都落在四文件资产",
+                "本轮只记录交付判定，不设计保存实现"
+              ],
+              "metrics": [
+                {
+                  "metricId": "outOfArtifactWriteCount",
+                  "title": "四文件外写入数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "write"
+                },
+                {
+                  "metricId": "deliveryImplementationDecisionCount",
+                  "title": "交付实现决策数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "decision"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD6.pre.viewPlan",
+              "title": "数据消费与视图方案已闭合",
+              "source": "PD4 + PD5 outputs",
+              "metrics": [
+                {
+                  "metricId": "invalidDataViewKeyPartCount",
+                  "title": "非法 DataViewKey 片段数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "binding"
+                },
+                {
+                  "metricId": "viewWithoutConsumerCount",
+                  "title": "无消费点 view 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "view"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "structured-ui-and-script-generation",
+            "modelRef": "llm.code.default",
+            "selectionReason": "需要生成 rule 结构、script 函数和 style 文本，使用代码模型并依赖组件指南。",
+            "fallbackModelRefs": [
+              "llm.reasoning.default"
+            ]
+          },
+          "parameterSources": [
+            {
+              "parameterId": "viewPlan",
+              "title": "DataView 与依赖方案",
+              "source": "PD5.output",
+              "path": "dataViewPlan,viewDependencyDecision",
+              "required": true
+            },
+            {
+              "parameterId": "componentPayloads",
+              "title": "组件 payload 与 guide",
+              "source": "model_guide",
+              "path": "component payload guides",
+              "required": true
+            },
+            {
+              "parameterId": "currentRuleScriptStyle",
+              "title": "当前 rule/script/style",
+              "source": "PageDesignEditHost",
+              "path": "rule.json,script.js,style.css",
+              "required": true
+            }
+          ],
+          "llmTask": {
+            "objective": "把页面区域和数据消费方案落到 rule/script/style。",
+            "instructions": [
+              "查询组件 payload 和 guide 后写节点树",
+              "绑定 dataViewKey/dataMember/dataField/field",
+              "补齐 handler、__init__ 和样式 class"
+            ],
+            "expectedOutput": [
+              "rulePatch",
+              "scriptText",
+              "styleText",
+              "bindingClosureReport"
+            ],
+            "forbidden": [
+              "使用禁用脚本 API",
+              "绕过 nodeTree 进行结构修改",
+              "写四文件之外的资产"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD6.verify.files",
+              "title": "结构行为样式验收",
+              "method": "检查组件指南覆盖、数据绑定、handler、class 和脚本 API。",
+              "metrics": [
+                {
+                  "metricId": "componentGuideCoveragePercent",
+                  "title": "组件 guide 覆盖率",
+                  "operator": "gte",
+                  "target": 100,
+                  "unit": "percent"
+                },
+                {
+                  "metricId": "danglingDataBindingCount",
+                  "title": "悬空数据绑定数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "binding"
+                },
+                {
+                  "metricId": "missingHandlerCount",
+                  "title": "缺失 handler 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "handler"
+                },
+                {
+                  "metricId": "forbiddenScriptApiCount",
+                  "title": "禁用脚本 API 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "api"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "组件 guide 覆盖率 100%",
+              "悬空数据绑定数为 0",
+              "缺失 handler 数为 0",
+              "禁用脚本 API 数为 0"
+            ],
+            "nextWhen": "结构行为样式验收通过后进入交叉校验与收尾。",
+            "stopWhen": "存在悬空引用、缺失 handler、禁用 API 或错误工位修改时停止。"
+          },
+          "steps": [
+            {
+              "stepId": "PD6.1",
+              "title": "rule 结构落地",
+              "sourceSteps": "89-92",
+              "actions": [
+                "查询组件 payload",
+                "guide 组件参数",
+                "写入页面节点树",
+                "设置稳定 component id"
+              ],
+              "outputs": [
+                "rule.json 节点树"
+              ],
+              "checks": [
+                "组件、dataViewKey、dataMember、dataField、field 对齐",
+                "脚本访问的组件 id 稳定"
+              ]
+            },
+            {
+              "stepId": "PD6.2",
+              "title": "script/style 落地",
+              "sourceSteps": "93-96",
+              "actions": [
+                "生成 handler 清单",
+                "补 __init__ 和事件函数",
+                "写 script.js",
+                "从 rule 收集 class 并补 style.css"
+              ],
+              "outputs": [
+                "script.js",
+                "style.css"
+              ],
+              "checks": [
+                "script 只用 $dataSet.getView(table, view)",
+                "style class 都被 rule 使用"
+              ]
+            }
+          ]
+        },
+        {
+          "stageId": "PD7.verify-deliver",
+          "title": "交叉校验与收尾",
+          "sourceSteps": "97-100",
+          "goal": "完成四文件交叉校验、预览回补和交付说明。",
+          "considerations": [
+            {
+              "phaseId": "F6",
+              "title": "最终验收",
+              "checks": [
+                "四文件交叉校验通过",
+                "预览错误回补完成"
+              ],
+              "metrics": [
+                {
+                  "metricId": "crossFileIssueCount",
+                  "title": "四文件交叉问题数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "issue"
+                },
+                {
+                  "metricId": "previewErrorCount",
+                  "title": "预览错误数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "error"
+                }
+              ]
+            },
+            {
+              "phaseId": "F7",
+              "title": "设计交接",
+              "checks": [
+                "只交接流程图、参数来源和验证结果",
+                "不设计执行调度实现"
+              ],
+              "metrics": [
+                {
+                  "metricId": "handoffArtifactCount",
+                  "title": "交接资料数",
+                  "operator": "gte",
+                  "target": 1,
+                  "unit": "artifact"
+                },
+                {
+                  "metricId": "executionImplementationStepCount",
+                  "title": "执行实现步骤数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "step"
+                }
+              ]
+            },
+            {
+              "phaseId": "F9",
+              "title": "交付闭环",
+              "checks": [
+                "四文件交付清单完整",
+                "保存/回滚实现不在本轮流程图定型范围"
+              ],
+              "metrics": [
+                {
+                  "metricId": "deliveryArtifactCount",
+                  "title": "交付资产数",
+                  "operator": "gte",
+                  "target": 4,
+                  "unit": "file"
+                },
+                {
+                  "metricId": "openDeliveryDesignQuestionCount",
+                  "title": "交付设计遗留问题数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "question"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            {
+              "prerequisiteId": "PD7.pre.filesClosed",
+              "title": "四文件引用已初步闭合",
+              "source": "PD6.bindingClosureReport",
+              "metrics": [
+                {
+                  "metricId": "danglingDataBindingCount",
+                  "title": "悬空数据绑定数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "binding"
+                },
+                {
+                  "metricId": "missingHandlerCount",
+                  "title": "缺失 handler 数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "handler"
+                }
+              ]
+            }
+          ],
+          "model": {
+            "modelRole": "verification-and-risk-summary",
+            "modelRef": "llm.reasoning.default",
+            "selectionReason": "需要解释验证结果、归因预览错误并输出交付风险，使用推理模型。"
+          },
+          "parameterSources": [
+            {
+              "parameterId": "crossFileReport",
+              "title": "四文件交叉校验报告",
+              "source": "verification",
+              "path": "crossFileReport",
+              "required": true
+            },
+            {
+              "parameterId": "previewResult",
+              "title": "预览或渲染结果",
+              "source": "DevPreviewTab",
+              "path": "previewResult",
+              "required": false
+            },
+            {
+              "parameterId": "changedArtifacts",
+              "title": "变更资产清单",
+              "source": "PageDesignEditHost",
+              "path": "rule,pagedata,script,style",
+              "required": true
+            }
+          ],
+          "llmTask": {
+            "objective": "验证 LLM 产物是否正确，并在通过后形成交付摘要。",
+            "instructions": [
+              "检查表/字段/view/关系/handler/class 全部闭合",
+              "根据预览错误回补前序阶段",
+              "输出修改摘要和剩余风险"
+            ],
+            "expectedOutput": [
+              "crossFileVerification",
+              "previewFixReport",
+              "deliverySummary",
+              "residualRisk"
+            ],
+            "forbidden": [
+              "在验证失败时宣布完成",
+              "设计保存或回滚实现"
+            ]
+          },
+          "verification": [
+            {
+              "verificationId": "PD7.verify.delivery",
+              "title": "最终交付验收",
+              "method": "四文件交叉校验和预览结果均达标才允许结束。",
+              "metrics": [
+                {
+                  "metricId": "crossFileIssueCount",
+                  "title": "四文件交叉问题数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "issue"
+                },
+                {
+                  "metricId": "previewErrorCount",
+                  "title": "预览错误数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "error"
+                },
+                {
+                  "metricId": "deliveryArtifactCount",
+                  "title": "交付资产数",
+                  "operator": "gte",
+                  "target": 4,
+                  "unit": "file"
+                },
+                {
+                  "metricId": "executionImplementationStepCount",
+                  "title": "执行实现步骤数",
+                  "operator": "eq",
+                  "target": 0,
+                  "unit": "step"
+                }
+              ]
+            }
+          ],
+          "completion": {
+            "criteria": [
+              "四文件交叉问题数为 0",
+              "预览错误数为 0",
+              "交付资产数不少于 4",
+              "执行实现步骤数为 0"
+            ],
+            "nextWhen": "最终验收通过后结束工艺流程图定型候选。",
+            "stopWhen": "任一最终验收指标未达标时回到对应前序阶段修正；执行实现留到流程图定型后再设计。"
+          },
+          "steps": [
+            {
+              "stepId": "PD7.1",
+              "title": "四文件闭合校验",
+              "sourceSteps": "97-98",
+              "actions": [
+                "校验 dataViewKey、dataMember、dataField、field、relation、dependency",
+                "校验 handler、component id、class"
+              ],
+              "outputs": [
+                "交叉校验结果"
+              ],
+              "checks": [
+                "表、字段、view、关系、handler、class 全部闭合"
+              ]
+            },
+            {
+              "stepId": "PD7.2",
+              "title": "预览与总结",
+              "sourceSteps": "99-100",
+              "actions": [
+                "触发预览或页面渲染",
+                "回补解析/渲染/自动加载/主从联动错误",
+                "总结修改和剩余风险"
+              ],
+              "outputs": [
+                "预览修正结果",
+                "修改摘要",
+                "剩余风险"
+              ],
+              "checks": [
+                "用户知道改了哪些文件、如何验证"
+              ]
+            }
+          ]
+        }
+      ]
     },
-    "validation" : {
-      "status" : "unknown",
-      "issues" : [ ]
+    "factory": {
+      "identity": {
+        "phaseId": "F0",
+        "phase": "identity",
+        "sectionPath": "factory.identity",
+        "publishPath": "workflow.factory.identity",
+        "value": {
+          "alias": "pageDesign",
+          "moduleId": "pageDesign",
+          "rootClassName": "ProjectModel",
+          "capability": {
+            "alias": "pageDesign",
+            "moduleId": "pageDesign",
+            "rootClassName": "ProjectModel"
+          },
+          "display": {
+            "name": "页面设计工厂",
+            "description": "以数据规划优先工艺生产 SPARK View 页面四文件。"
+          },
+          "boundary": {
+            "ownsMutation": [
+              "ConfigPageNode.rule",
+              "ConfigPageNode.dataSet",
+              "ConfigPageNode.script",
+              "ConfigPageNode.style"
+            ],
+            "forbiddenScenes": [
+              "direct-file-write",
+              "execution-implementation-inside-workflow-definition"
+            ]
+          }
+        }
+      },
+      "materials": {
+        "phaseId": "F1",
+        "phase": "materials",
+        "sectionPath": "factory.materials",
+        "publishPath": "workflow.factory.materials",
+        "value": {
+          "moduleClass": "ProjectModel",
+          "editorResolver": "getPageDesignEditor",
+          "domainRoot": {
+            "className": "ProjectModel",
+            "pageEntryAction": "openPageDesign",
+            "pageModelClassName": "ConfigPageNode"
+          },
+          "artifacts": {
+            "editableFiles": [
+              "rule.json",
+              "pagedata.json",
+              "script.js",
+              "style.css"
+            ],
+            "dataModel": [
+              "DataSet",
+              "DataTable",
+              "DataView"
+            ]
+          },
+          "appContext": {
+            "moduleInstanceId": "pageId",
+            "editingMode": "live-memory-model"
+          }
+        }
+      },
+      "knowledge": {
+        "phaseId": "F2",
+        "phase": "knowledge",
+        "sectionPath": "factory.knowledge",
+        "publishPath": "workflow.factory.knowledge",
+        "value": {
+          "rootClassName": "ProjectModel",
+          "provider": "dtsClassModelWorker",
+          "processRef": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+          "closure": {
+            "requiredKinds": [
+              "ProjectModel",
+              "ConfigPageNode",
+              "DataSet",
+              "DataTable",
+              "DataView",
+              "SparkNodeTree"
+            ],
+            "requiredActions": [
+              "openPageDesign",
+              "editDataSet",
+              "editNodeTree",
+              "setFileText"
+            ]
+          },
+          "craftPrinciples": [
+            "data-first",
+            "minimal-DataTable-before-r-table",
+            "DataView-as-ui-consumption-contract",
+            "four-file-cross-check"
+          ]
+        }
+      },
+      "contract": {
+        "phaseId": "F3",
+        "phase": "contract",
+        "sectionPath": "factory.contract",
+        "publishPath": "workflow.factory.contract",
+        "value": {
+          "identityField": "pageId",
+          "messageField": "description",
+          "input": {
+            "requiredFields": [
+              "pageId",
+              "description",
+              "effectiveDescription"
+            ],
+            "optionalFields": [
+              "projectId",
+              "planningTitle",
+              "planningPath",
+              "mode",
+              "allowedOperations"
+            ]
+          },
+          "orchestration": {
+            "planningSource": "readPlanningProjection.effectiveDescription",
+            "scopeKey": "pageId"
+          }
+        }
+      },
+      "runtime": {
+        "phaseId": "F4",
+        "phase": "runtime",
+        "sectionPath": "factory.runtime",
+        "publishPath": "workflow.factory.runtime",
+        "value": {
+          "status": "deferred",
+          "reason": "process-flow-shaping-only",
+          "boundary": "本轮只定型工艺流程图，不设计执行实现或自动推进。"
+        }
+      },
+      "governance": {
+        "phaseId": "F5",
+        "phase": "governance",
+        "sectionPath": "factory.governance",
+        "publishPath": "workflow.factory.governance",
+        "value": {
+          "beforeFunctionCall": "pageDesignMutationToolGate",
+          "toolLoopNudge": "pageDesign",
+          "craftDiscipline": {
+            "dataFirst": true,
+            "forbidDirectDiskWrite": true,
+            "forbidDraftProjection": true,
+            "requireModelScriptForMutation": true,
+            "modelScriptEntry": "this.openPageDesign(pageId)"
+          },
+          "recovery": {
+            "planWithoutTool": "force-tool-call",
+            "modelScriptFailure": "read-recovery-hint-and-retry"
+          }
+        }
+      },
+      "acceptance": {
+        "phaseId": "F6",
+        "phase": "acceptance",
+        "sectionPath": "factory.acceptance",
+        "publishPath": "workflow.factory.acceptance",
+        "value": {
+          "dryRun": true,
+          "inspectFactory": true,
+          "processAcceptance": {
+            "requiredStageIds": [
+              "PD1.scope-inventory",
+              "PD2.data-model",
+              "PD3.table-relations",
+              "PD4.page-data-use",
+              "PD5.views-dependencies",
+              "PD6.structure-behavior-style",
+              "PD7.verify-deliver"
+            ],
+            "requiredClosures": [
+              "pagedata-table-field-view-closure",
+              "tableRelations-viewDependencies-closure",
+              "rule-dataViewKey-field-closure",
+              "rule-script-handler-closure",
+              "rule-style-class-closure"
+            ]
+          }
+        }
+      },
+      "activation": {
+        "phaseId": "F7",
+        "phase": "activation",
+        "sectionPath": "factory.activation",
+        "publishPath": "workflow.factory.activation",
+        "value": {
+          "status": "deferred",
+          "reason": "process-flow-shaping-only",
+          "boundary": "流程图节点只表达工艺阶段，激活绑定留到流程图定型后再设计。"
+        }
+      },
+      "workOrder": {
+        "phaseId": "F8",
+        "phase": "workOrder",
+        "sectionPath": "factory.workOrder",
+        "publishPath": "workflow.factory.workOrder",
+        "value": {
+          "hostRunAlias": "pageDesign",
+          "productionProcess": {
+            "processId": "pageDesign.data-first-100-step-process",
+            "stageIds": [
+              "PD1.scope-inventory",
+              "PD2.data-model",
+              "PD3.table-relations",
+              "PD4.page-data-use",
+              "PD5.views-dependencies",
+              "PD6.structure-behavior-style",
+              "PD7.verify-deliver"
+            ],
+            "mode": "progressive-data-first-craft"
+          }
+        }
+      },
+      "delivery": {
+        "phaseId": "F9",
+        "phase": "delivery",
+        "sectionPath": "factory.delivery",
+        "publishPath": "workflow.factory.delivery",
+        "value": {
+          "status": "deferred",
+          "reason": "process-flow-shaping-only",
+          "artifactScope": [
+            "rule.json",
+            "pagedata.json",
+            "script.js",
+            "style.css"
+          ],
+          "boundary": "保存、回滚和发布策略留到流程图定型后再设计。"
+        }
+      }
     },
-    "history" : {
-      "commands" : [ ]
+    "validation": {
+      "status": "valid",
+      "issues": []
+    },
+    "draft": {
+      "status": "saved",
+      "dirtyPaths": []
+    },
+    "history": {
+      "commands": []
     }
   }
 }
