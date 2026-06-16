@@ -25,6 +25,9 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
           <el-dropdown-menu>
             <el-dropdown-item @click="expandAll">展开全部</el-dropdown-item>
             <el-dropdown-item @click="collapseAll">折叠全部</el-dropdown-item>
+            <el-dropdown-item divided @click="state.openRequirementImportDialog()">
+              <NavIcon name="Upload" :size="14" /> 导入需求文档
+            </el-dropdown-item>
             <el-dropdown-item
               :disabled="state.hasReservedRootGroup('toolbar')"
               @click="state.restoreReservedRootGroup('toolbar')"

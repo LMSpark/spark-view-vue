@@ -173,6 +173,7 @@ import { chainAiHostRunPrepare } from '@/services/ai/ai-host-run-bridge'
 import { preparePageDesignHostRun } from '@/services/page-design/page-design-host-run-provider'
 import { preparePageDataDesignHostRun } from '@/services/page-data-design/page-data-design-host-run-provider'
 import { prepareProjectPlanningHostRun } from '@/services/project-planning/project-planning-host-run-provider'
+import { prepareRequirementImportHostRun } from '@/services/requirement-import/requirement-import-host-run-provider'
 import { runAiHostRunSmokeLauncherFromUrl } from '@/services/ai/ai-host-run-smoke-launcher'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project/project-shell'
@@ -603,6 +604,7 @@ onMounted(() => {
         preparePageDesignHostRun,
         preparePageDataDesignHostRun,
         prepareProjectPlanningHostRun,
+        prepareRequirementImportHostRun,
       ),
     }).start()
   }

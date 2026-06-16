@@ -46,6 +46,8 @@ import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
 } from '@/services/page-design/page-design-ai-runner'
+import { runRequirementImportAiSession } from '@/services/requirement-import/requirement-import-ai-runner'
+import { parseDocxToText, isDocxFile } from '@/services/requirement-import/docx-parser'
 import { getAppProjectWorkspace } from '@/services/project/project-shell'
 import type { ProjectWorkspaceScope } from '@/services/project/project-shell'
 import { reloadAndSyncNavigation, syncCommittedNavigationFromRouter } from '@/services/project/project-shell'
@@ -443,6 +445,14 @@ export function useDevState() {
     aiToolApprovalRevision.value += 1
   })
 
+  // ── SPARK AI requirement import ──
+  const requirementImportDialogVisible = ref(false)
+  const requirementImportParsing = ref(false)
+  const requirementImportAiRunning = ref(false)
+  const requirementImportDocumentText = ref('')
+  const requirementImportFileName = ref('')
+  const requirementImportAdapter = createAiRunAdapter()
+
   // ═══════════════════════════════════════════════════════════
   // 计算属性
   // ═══════════════════════════════════════════════════════════
@@ -653,6 +663,82 @@ export function useDevState() {
     } finally {
       aiToolApprovals.cancelPending('AI 编辑会话已结束。')
       pageDesignAiRunRevision.value += 1
+    }
+  }
+
+  // ── 需求文档导入 ──
+
+  function openRequirementImportDialog(): void {
+    requirementImportDialogVisible.value = true
+  }
+
+  function closeRequirementImportDialog(): void {
+    requirementImportDialogVisible.value = false
+    requirementImportDocumentText.value = ''
+    requirementImportFileName.value = ''
+  }
+
+  async function handleRequirementFileSelected(file: File): Promise<void> {
+    if (!isDocxFile(file)) {
+      addStatus('请选择 .docx 格式的需求文档', 'warning')
+      return
+    }
+    requirementImportParsing.value = true
+    requirementImportFileName.value = file.name
+    try {
+      const text = await parseDocxToText(file)
+      if (text.trim().length === 0) {
+        addStatus('文档内容为空，请检查文件', 'warning')
+        return
+      }
+      requirementImportDocumentText.value = text
+      addStatus(`已解析文档: ${file.name} (${text.length} 字符)`, 'success')
+    } catch (error) {
+      addStatus(`文档解析失败: ${String(error)}`, 'error')
+    } finally {
+      requirementImportParsing.value = false
+    }
+  }
+
+  async function runRequirementImportAi(): Promise<void> {
+    const documentText = requirementImportDocumentText.value.trim()
+    if (!documentText) {
+      addStatus('请先选择并解析需求文档', 'warning')
+      return
+    }
+    if (requirementImportAdapter.isRunning()) return
+
+    requirementImportAiRunning.value = true
+    try {
+      addStatus('AI 开始生成导航树...', 'info')
+      const result = await runRequirementImportAiSession({
+        documentText,
+        projectName: project.name,
+        editor,
+        consumeCapability: capabilityConsumer,
+        adapter: requirementImportAdapter,
+        beforeFunctionCall: aiToolApprovals.beforeFunctionCall,
+        onAbort: aiToolApprovals.cancelPending,
+        saveNavigationAfterRun: true,
+        events: {
+          onToolCall: (record) => {
+            const type: StatusMessage['type'] = record.status === 'success' ? 'info' : 'warning'
+            addStatus(`AI 工具 ${record.toolName} ${record.status === 'success' ? '完成' : '失败'}`, type)
+          },
+        },
+      })
+      addStatus(
+        result.savedNavigation
+          ? '需求导入完成，导航树已保存'
+          : '需求导入完成，请手动保存导航树',
+        result.savedNavigation ? 'success' : 'warning',
+      )
+      closeRequirementImportDialog()
+    } catch (error) {
+      addStatus(`需求导入失败: ${String(error)}`, 'error')
+    } finally {
+      aiToolApprovals.cancelPending('需求导入会话已结束。')
+      requirementImportAiRunning.value = false
     }
   }
 
@@ -1205,6 +1291,13 @@ export function useDevState() {
     pageDesignAiRunning,
     aiToolApprovalPending,
 
+    // 需求文档导入
+    requirementImportDialogVisible,
+    requirementImportParsing,
+    requirementImportAiRunning,
+    requirementImportDocumentText,
+    requirementImportFileName,
+
     // 计算属性
     hasAnyFileDirty,
     hasAnyDirty,
@@ -1249,6 +1342,10 @@ export function useDevState() {
     addContextItem,
     removeContextItem,
     commitContextEdit,
+    openRequirementImportDialog,
+    closeRequirementImportDialog,
+    handleRequirementFileSelected,
+    runRequirementImportAi,
     initialize,
   }
 }

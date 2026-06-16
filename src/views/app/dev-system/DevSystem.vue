@@ -157,6 +157,12 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
 
     </div>
 
+    <!-- ═══ 需求文档导入对话框 ═══ -->
+    <RequirementImportDialog
+      v-model="state.requirementImportDialogVisible.value"
+      :state="state"
+    />
+
     <!-- ═══ 底部状态栏 ═══ -->
     <div class="dev-status-bar">
       <div class="status-messages">
@@ -184,6 +190,7 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
+import RequirementImportDialog from './RequirementImportDialog.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const {
