@@ -34,7 +34,7 @@ function resolveManifestBaseOrigin(explicit?: string | URL): string | URL {
 
 function readBrowserOrigin(): string | undefined {
   if (typeof globalThis === 'undefined' || !('location' in globalThis)) return undefined
-  const origin = globalThis.location?.origin
+  const origin = globalThis.location.origin
   if (typeof origin !== 'string' || origin.length === 0 || origin === 'null') return undefined
   return origin
 }

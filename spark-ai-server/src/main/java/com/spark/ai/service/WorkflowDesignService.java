@@ -26,12 +26,26 @@ import java.util.regex.Pattern;
 public class WorkflowDesignService {
 
     public static final String DESIGN_FILENAME = "design.json";
+    public static final String DEFINITION_FILENAME = "definition.json";
 
     private static final Pattern SAFE_SCOPE_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,127}");
     private static final String DESIGN_KIND = "agent.workflow.design";
+    private static final String DEFINITION_KIND = "agent.workflow";
+    private static final String DEFINITION_SCHEMA = "spark.agent.workflow.definition.v1";
     private static final String GRAPH_NODE_TYPE = "custom";
     private static final String SINGLE_MODEL_EDIT_TOOL_NAME = "single_model_edit";
     private static final String SINGLE_MODEL_EDIT_PROVIDER = "spark.model-editor";
+    private static final List<FactoryPhase> FACTORY_PHASES = List.of(
+            new FactoryPhase("F0", "identity", "factory.identity", "workflow.factory.identity"),
+            new FactoryPhase("F1", "materials", "factory.materials", "workflow.factory.materials"),
+            new FactoryPhase("F2", "knowledge", "factory.knowledge", "workflow.factory.knowledge"),
+            new FactoryPhase("F3", "contract", "factory.contract", "workflow.factory.contract"),
+            new FactoryPhase("F4", "runtime", "factory.runtime", "workflow.factory.runtime"),
+            new FactoryPhase("F5", "governance", "factory.governance", "workflow.factory.governance"),
+            new FactoryPhase("F6", "acceptance", "factory.acceptance", "workflow.factory.acceptance"),
+            new FactoryPhase("F7", "activation", "factory.activation", "workflow.factory.activation"),
+            new FactoryPhase("F8", "workOrder", "factory.workOrder", "workflow.factory.workOrder"),
+            new FactoryPhase("F9", "delivery", "factory.delivery", "workflow.factory.delivery"));
 
     private final ObjectMapper objectMapper;
     private final Path root;
@@ -137,6 +151,21 @@ public class WorkflowDesignService {
 
         Path file = designFile(tenantId, projectId, workflowId);
         writeDocument(file, document);
+        return resultWithTimestamp(workflowId, file);
+    }
+
+    public Map<String, Object> publishDefinition(String tenantId, String projectId,
+                                                 String workflowId, JsonNode definition) throws IOException {
+        guardProject(tenantId, projectId);
+        validateScopeId("workflowId", workflowId);
+        Path design = designFile(tenantId, projectId, workflowId);
+        if (!Files.isRegularFile(design)) {
+            throw new NoSuchFileException(workflowId + "/" + DESIGN_FILENAME);
+        }
+        validateDefinitionDocument(workflowId, definition);
+
+        Path file = definitionFile(tenantId, projectId, workflowId);
+        writeDocument(file, definition);
         return resultWithTimestamp(workflowId, file);
     }
 
@@ -441,6 +470,48 @@ public class WorkflowDesignService {
         requiredObject(spark, "validation");
     }
 
+    private void validateDefinitionDocument(String workflowId, JsonNode document) {
+        if (document == null || !document.isObject()) {
+            throw new IllegalArgumentException("workflow definition document must be a JSON object");
+        }
+        requireText(document, "kind", DEFINITION_KIND);
+        requireInt(document, "version", 1);
+        String documentWorkflowId = requireNonBlankText(document, "workflowId");
+        if (!workflowId.equals(documentWorkflowId)) {
+            throw new IllegalArgumentException("workflowId mismatch: path=" + workflowId
+                    + ", definition=" + documentWorkflowId);
+        }
+
+        JsonNode source = requiredObject(document, "source");
+        requireText(source, "designKind", DESIGN_KIND);
+        String designId = requireNonBlankText(source, "designId");
+        if (!workflowId.equals(designId)) {
+            throw new IllegalArgumentException("workflowId mismatch: path=" + workflowId
+                    + ", definition.source.designId=" + designId);
+        }
+        requireInt(source, "designVersion", 1);
+
+        JsonNode factory = requiredObject(document, "factory");
+        for (FactoryPhase phase : FACTORY_PHASES) {
+            JsonNode section = requiredObject(factory, phase.phase());
+            requireText(section, "phaseId", phase.phaseId());
+            requireText(section, "phase", phase.phase());
+            requireText(section, "sectionPath", phase.sectionPath());
+            requireText(section, "publishPath", phase.publishPath());
+            requiredObject(section, "value");
+        }
+
+        JsonNode spark = requiredObject(document, "x_spark");
+        requireText(spark, "schema", DEFINITION_SCHEMA);
+        requireNonBlankText(spark, "publishedAt");
+        JsonNode validation = requiredObject(spark, "validation");
+        String status = requireNonBlankText(validation, "status");
+        if (!"valid".equals(status) && !"warning".equals(status)) {
+            throw new IllegalArgumentException("invalid workflow definition validation status: " + status);
+        }
+        requireArray(validation, "issues");
+    }
+
     private boolean containsSingleModelEditTool(JsonNode graph) {
         JsonNode nodes = graph.path("nodes");
         if (nodes.isArray()) {
@@ -529,7 +600,7 @@ public class WorkflowDesignService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("ok", true);
         result.put("workflowId", workflowId);
-        result.put("filename", DESIGN_FILENAME);
+        result.put("filename", file.getFileName().toString());
         result.put("timestamp", String.valueOf(Files.getLastModifiedTime(file).toMillis()));
         return result;
     }
@@ -552,6 +623,10 @@ public class WorkflowDesignService {
         return workflowDir(tenantId, projectId, workflowId).resolve(DESIGN_FILENAME);
     }
 
+    private Path definitionFile(String tenantId, String projectId, String workflowId) {
+        return workflowDir(tenantId, projectId, workflowId).resolve(DEFINITION_FILENAME);
+    }
+
     private void guardProject(String tenantId, String projectId) {
         validateScopeId("tenantId", tenantId);
         validateScopeId("projectId", projectId);
@@ -566,5 +641,8 @@ public class WorkflowDesignService {
                 || !SAFE_SCOPE_ID.matcher(value).matches()) {
             throw new IllegalArgumentException("invalid " + label + ": " + value);
         }
+    }
+
+    private record FactoryPhase(String phaseId, String phase, String sectionPath, String publishPath) {
     }
 }

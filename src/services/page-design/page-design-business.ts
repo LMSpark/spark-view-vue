@@ -11,8 +11,10 @@
  * making spark-project-model depend on AI runtime or generated metadata files.
  */
 import {
+  activateAgentWorkflowDefinition,
   createSimpleInputContract,
   ClassModelAgentAdapter,
+  type AgentWorkflowDefinition,
   type AiAgentBeforeFunctionCallDirective,
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
@@ -41,6 +43,9 @@ export type { PageDesignAllowedOperations, PageDesignRunMode }
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
 const PAGE_DESIGN_ROOT_CLASS_NAME = 'ProjectModel'
+const PAGE_DESIGN_WORKFLOW_ID = 'agent.workflow.pageDesign'
+const PAGE_DESIGN_REGISTRATION_BINDING_KEY = 'pageDesign.registration'
+const PAGE_DESIGN_WORKFLOW_PUBLISHED_AT = '1970-01-01T00:00:00.000Z'
 
 /** pageDesign SOP：toolLoopNudge 触发时机与 pageId / allowedOperations 上下文。 */
 export function buildPageDesignToolLoopNudge(
@@ -150,9 +155,144 @@ export function resolvePageDesignPlanningContext(
 }
 
 export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOptions): AiAgentHost {
-  return options.host.ensure(PAGE_DESIGN_MODULE_ID, {
-    moduleId: PAGE_DESIGN_MODULE_ID,
-    create: () => ClassModelAgentAdapter.createRegistration({
+  return activateAgentWorkflowDefinition({
+    host: options.host,
+    definition: createPageDesignAgentWorkflowDefinition(),
+    bindings: {
+      registrations: {
+        [PAGE_DESIGN_REGISTRATION_BINDING_KEY]: {
+          moduleId: PAGE_DESIGN_MODULE_ID,
+          create: () => createPageDesignRegistration(options),
+        },
+      },
+    },
+  })
+}
+
+export function createPageDesignAgentWorkflowDefinition(): AgentWorkflowDefinition {
+  return {
+    kind: 'agent.workflow',
+    version: 1,
+    workflowId: PAGE_DESIGN_WORKFLOW_ID,
+    source: {
+      designKind: 'agent.workflow.design',
+      designId: PAGE_DESIGN_WORKFLOW_ID,
+      designVersion: 1,
+    },
+    factory: {
+      identity: {
+        phaseId: 'F0',
+        phase: 'identity',
+        sectionPath: 'factory.identity',
+        publishPath: 'workflow.factory.identity',
+        value: {
+          alias: PAGE_DESIGN_MODULE_ID,
+          moduleId: PAGE_DESIGN_MODULE_ID,
+          rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
+        },
+      },
+      materials: {
+        phaseId: 'F1',
+        phase: 'materials',
+        sectionPath: 'factory.materials',
+        publishPath: 'workflow.factory.materials',
+        value: {
+          moduleClass: 'ProjectModel',
+          editorResolver: 'getPageDesignEditor',
+        },
+      },
+      knowledge: {
+        phaseId: 'F2',
+        phase: 'knowledge',
+        sectionPath: 'factory.knowledge',
+        publishPath: 'workflow.factory.knowledge',
+        value: {
+          rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
+          provider: 'dtsClassModelWorker',
+        },
+      },
+      contract: {
+        phaseId: 'F3',
+        phase: 'contract',
+        sectionPath: 'factory.contract',
+        publishPath: 'workflow.factory.contract',
+        value: {
+          identityField: 'pageId',
+          messageField: 'description',
+        },
+      },
+      runtime: {
+        phaseId: 'F4',
+        phase: 'runtime',
+        sectionPath: 'factory.runtime',
+        publishPath: 'workflow.factory.runtime',
+        value: {
+          adapter: 'ClassModelAgentAdapter',
+          executionToolNames: [CLASS_MODEL_TOOL_NAMES.script],
+        },
+      },
+      governance: {
+        phaseId: 'F5',
+        phase: 'governance',
+        sectionPath: 'factory.governance',
+        publishPath: 'workflow.factory.governance',
+        value: {
+          beforeFunctionCall: 'pageDesignMutationToolGate',
+          toolLoopNudge: 'pageDesign',
+        },
+      },
+      acceptance: {
+        phaseId: 'F6',
+        phase: 'acceptance',
+        sectionPath: 'factory.acceptance',
+        publishPath: 'workflow.factory.acceptance',
+        value: {
+          dryRun: true,
+          inspectFactory: true,
+        },
+      },
+      activation: {
+        phaseId: 'F7',
+        phase: 'activation',
+        sectionPath: 'factory.activation',
+        publishPath: 'workflow.factory.activation',
+        value: {
+          registrationBindingKey: PAGE_DESIGN_REGISTRATION_BINDING_KEY,
+        },
+      },
+      workOrder: {
+        phaseId: 'F8',
+        phase: 'workOrder',
+        sectionPath: 'factory.workOrder',
+        publishPath: 'workflow.factory.workOrder',
+        value: {
+          hostRunAlias: PAGE_DESIGN_MODULE_ID,
+        },
+      },
+      delivery: {
+        phaseId: 'F9',
+        phase: 'delivery',
+        sectionPath: 'factory.delivery',
+        publishPath: 'workflow.factory.delivery',
+        value: {
+          mode: 'appDeliveryPort',
+          owner: 'pageDesignHostRunProvider',
+        },
+      },
+    },
+    x_spark: {
+      schema: 'spark.agent.workflow.definition.v1',
+      publishedAt: PAGE_DESIGN_WORKFLOW_PUBLISHED_AT,
+      validation: {
+        status: 'valid',
+        issues: [],
+      },
+    },
+  }
+}
+
+function createPageDesignRegistration(options: EnsurePageDesignBusinessOptions) {
+  return ClassModelAgentAdapter.createRegistration({
       moduleClass: ProjectModel,
       options: {
         moduleId: PAGE_DESIGN_MODULE_ID,
@@ -206,7 +346,6 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
         planWithoutToolMarkers: PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createPageDesignToolLoopNudge,
       },
-    }),
   })
 }
 

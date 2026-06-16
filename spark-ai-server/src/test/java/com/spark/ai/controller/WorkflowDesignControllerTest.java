@@ -149,9 +149,32 @@ class WorkflowDesignControllerTest {
                                     "validation": {}
                                   }
                                 }
-                                """))
+                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.ok").value(true));
+    }
+
+    @Test
+    void publishDefinition_writesDefinitionJson() throws Exception {
+        when(workflowDesignService.publishDefinition(eq("t1"), eq("p1"), eq("spark.workflow.demo"), any(JsonNode.class)))
+                .thenReturn(Map.of(
+                        "ok", true,
+                        "workflowId", "spark.workflow.demo",
+                        "filename", "definition.json",
+                        "timestamp", "123"));
+
+        mockMvc.perform(post("/api/tenants/t1/projects/p1/workflow-designs/spark.workflow.demo/__publish")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "kind": "agent.workflow",
+                                  "version": 1,
+                                  "workflowId": "spark.workflow.demo"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.ok").value(true))
+                .andExpect(jsonPath("$.data.filename").value("definition.json"));
     }
 
     @Test
@@ -180,5 +203,29 @@ class WorkflowDesignControllerTest {
                         .header("X-Project-Id", "p1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    void flatPublishRoute_usesTenantAndProjectHeaders() throws Exception {
+        when(workflowDesignService.publishDefinition(eq("t1"), eq("p1"), eq("spark.workflow.demo"), any(JsonNode.class)))
+                .thenReturn(Map.of(
+                        "ok", true,
+                        "workflowId", "spark.workflow.demo",
+                        "filename", "definition.json",
+                        "timestamp", "123"));
+
+        mockMvc.perform(post("/api/workflow-designs/spark.workflow.demo/__publish")
+                        .header("X-Tenant-Id", "t1")
+                        .header("X-Project-Id", "p1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "kind": "agent.workflow",
+                                  "version": 1,
+                                  "workflowId": "spark.workflow.demo"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.filename").value("definition.json"));
     }
 }

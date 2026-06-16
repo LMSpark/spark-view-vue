@@ -5,6 +5,10 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
     const hostModule = await import('../agent')
 
     expect(Object.keys(hostModule).sort()).toEqual([
+      'AGENT_WORKFLOW_DEFINITION_KIND',
+      'AGENT_WORKFLOW_DEFINITION_SCHEMA',
+      'AGENT_WORKFLOW_DEFINITION_VERSION',
+      'AGENT_WORKFLOW_FACTORY_PHASES',
       'AI_AGENT_HOST',
       'AiApiScriptActionFailure',
       'AiAgentHost',
@@ -20,6 +24,9 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'AiAgentToolResult',
       'DefaultAiAgentSessionStore',
       'ClassModelAgentAdapter',
+      'activateAgentWorkflowDefinition',
+      'assertAgentWorkflowDefinition',
+      'createAgentWorkflowDefinitionValidation',
       'createAiApiScriptContext',
       'createAiAgentHost',
       'createAiAgentRunTrace',
@@ -46,9 +53,11 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'createSparkAgUiTextMessageStartEvent',
       'createSparkAgUiToolCallEvents',
       'createTurnEventCollector',
+      'dryRunAgentWorkflowDefinition',
       'executeAiApiAction',
       'executeAiNativeScript',
       'previewAiAgentDiagnosticValue',
+      'resolveAgentWorkflowActivation',
       'runAiAgent',
       'startAiAgentRegistrationSession',
       'stringifySparkAgUiPayload',
@@ -58,6 +67,7 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'toSparkAgUiReasoningMessageId',
       'toSparkAgUiTool',
       'toSparkAgUiTools',
+      'validateAgentWorkflowDefinition',
     ].sort())
   }, 60000)
 

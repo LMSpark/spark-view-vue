@@ -87,6 +87,9 @@ const publicSurfaceAllowlist = new Set([
   // Agent 与 ClassModel 协议聚合出口是允许 @spark-appworks/spark-ai subpath 背后的显式公共门面。
   'packages/spark-ai/src/agent/index.ts:./business/ai-host',
   'packages/spark-ai/src/agent/index.ts:./business/business-kit',
+  'packages/spark-ai/src/agent/index.ts:./workflow',
+  'packages/spark-ai/src/agent/workflow/index.ts:./agent-workflow-definition',
+  'packages/spark-ai/src/agent/workflow/index.ts:./agent-workflow-dry-run',
   'packages/spark-ai/src/agent/index.ts:./tool-runtime',
   'packages/spark-ai/src/agent/index.ts:./native-runtime',
   'packages/spark-ai/src/agent/tool-runtime/index.ts:./tool-runtime-types',
@@ -307,7 +310,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'createAiBusinessKit is removed; register business AI through ClassModelAgentAdapter only',
+      message: 'createAiBusinessKit is removed; register business AI through AgentWorkflowDefinition activation bindings',
     })
   }
 
@@ -315,7 +318,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'createAiAgentRegistration is forbidden in src/services; use ClassModelAgentAdapter.createRegistration only',
+      message: 'createAiAgentRegistration is forbidden in src/services; use AgentWorkflowDefinition activation bindings with ClassModelAgentAdapter.createRegistration providers',
     })
   }
 
@@ -323,7 +326,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'manual removed agent module construction is forbidden in src/services; use ClassModelAgentAdapter + DTS ClassModel',
+      message: 'manual removed agent module construction is forbidden in src/services; use AgentWorkflowDefinition activation bindings + DTS ClassModel',
     })
   }
 
@@ -370,7 +373,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
         violations.push({
           file,
           line: lineFor(sourceFile, node, lineOffset),
-          message: 'manual removed agent runtime register is forbidden in src/services; use ClassModelAgentAdapter',
+          message: 'manual removed agent runtime register is forbidden in src/services; use AgentWorkflowDefinition activation bindings',
         })
       }
     }

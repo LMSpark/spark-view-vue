@@ -147,7 +147,7 @@ describe('verification rules', () => {
     expect(output).toContain('manual removed agent module construction is forbidden in src/services')
     expect(output).toContain('createAiBusinessKit is removed')
     expect(output).toContain('manual removed agent runtime register is forbidden in src/services')
-    expect(output).toContain('ClassModelAgentAdapter')
+    expect(output).toContain('AgentWorkflowDefinition activation bindings')
   })
 
   it('rejects createAiAgentRegistration in src/services', () => {
@@ -162,7 +162,7 @@ describe('verification rules', () => {
 
     expect(result.status).toBe(1)
     expect(output).toContain('createAiAgentRegistration is forbidden in src/services')
-    expect(output).toContain('ClassModelAgentAdapter.createRegistration')
+    expect(output).toContain('AgentWorkflowDefinition activation bindings')
   })
 
   it('rejects removed parameter-surface hooks in src/services', () => {

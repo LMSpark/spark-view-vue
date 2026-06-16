@@ -93,6 +93,23 @@ public class WorkflowDesignController {
         }
     }
 
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}/__publish")
+    public ResponseEntity<?> publishDefinition(@PathVariable String tenantId,
+                                               @PathVariable String projectId,
+                                               @PathVariable String workflowId,
+                                               @RequestBody JsonNode definition) {
+        try {
+            return ResponseEntity.ok(workflowDesignService.publishDefinition(
+                    tenantId, projectId, workflowId, definition));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/tenants/{tenantId}/projects/{projectId}/workflow-designs/{workflowId}")
     public ResponseEntity<?> deleteDesign(@PathVariable String tenantId,
                                           @PathVariable String projectId,
@@ -138,6 +155,15 @@ public class WorkflowDesignController {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
         return putDesign(ctx[0], ctx[1], workflowId, document);
+    }
+
+    @PostMapping("/workflow-designs/{workflowId}/__publish")
+    public ResponseEntity<?> publishDefinitionFlat(HttpServletRequest request,
+                                                   @PathVariable String workflowId,
+                                                   @RequestBody JsonNode definition) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return publishDefinition(ctx[0], ctx[1], workflowId, definition);
     }
 
     @DeleteMapping("/workflow-designs/{workflowId}")

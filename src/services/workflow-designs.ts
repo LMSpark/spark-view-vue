@@ -4,6 +4,15 @@
  * 边界：只处理编辑态 workflow design，不执行 Agent workflow 运行时。
  * AI用途：排查业务工厂 workflow 设计稿、loop 子图或 single_model_edit 工具节点时，用本模块确认前端接线。
  */
+import {
+  AGENT_WORKFLOW_FACTORY_PHASES,
+  createAgentWorkflowDefinitionValidation,
+  type AgentWorkflowDefinition,
+  type AgentWorkflowDefinitionValidationIssue,
+  type AgentWorkflowFactoryPhaseDescriptor,
+  type AgentWorkflowFactorySection,
+  type AgentWorkflowFactorySections,
+} from '@spark-appworks/spark-ai/agent'
 import { http } from './http'
 import { getWorkflowDesignApi } from './api-paths'
 
@@ -213,6 +222,17 @@ export type WorkflowDesignEdgePatch = {
   relation?: string
 }
 
+export type CreateAgentWorkflowDefinitionFromDesignOptions = {
+  publishedAt?: string
+}
+
+type CollectWorkflowDesignNodeCommand = Readonly<{
+  graph: WorkflowDesignGraph
+  scopePath: string
+  depth: number
+  ancestry: string[]
+}>
+
 const SINGLE_MODEL_EDIT_TOOL_NAME = 'single_model_edit'
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
@@ -243,12 +263,144 @@ export async function saveWorkflowDesign(
   return http.put<WorkflowDesignWriteResult>(designDocumentUrl(workflowId), document)
 }
 
+export async function publishWorkflowDefinition(
+  workflowId: string,
+  definition: AgentWorkflowDefinition,
+): Promise<WorkflowDesignWriteResult> {
+  return http.post<WorkflowDesignWriteResult>(workflowDefinitionPublishUrl(workflowId), definition)
+}
+
 export async function deleteWorkflowDesign(workflowId: string): Promise<WorkflowDesignDeleteResult> {
   return http.delete<WorkflowDesignDeleteResult>(`${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}`)
 }
 
+export function createAgentWorkflowDefinitionFromDesign(
+  document: WorkflowDesignDocument,
+  options: CreateAgentWorkflowDefinitionFromDesignOptions = {},
+): AgentWorkflowDefinition {
+  const issues: AgentWorkflowDefinitionValidationIssue[] = []
+  const sectionByPhase = new Map<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>()
+  const publishPathByNode = new Map<string, WorkflowDesignNodeView>()
+  const descriptorByPublishPath = new Map(
+    AGENT_WORKFLOW_FACTORY_PHASES.map(descriptor => [descriptor.publishPath, descriptor] as const),
+  )
+
+  for (const node of collectWorkflowDesignNodes(document)) {
+    if (!node.isSingleModelEditTool) continue
+    const publishPath = node.publishPath?.trim()
+    if (publishPath === undefined || publishPath.length === 0) {
+      issues.push({
+        severity: 'warning',
+        code: 'AGENT_WORKFLOW_TOOL_WITHOUT_PUBLISH_PATH',
+        message: `single_model_edit node "${node.id}" has no publishPath and will not be published.`,
+        nodeId: node.id,
+        path: `${node.scopePath}.${node.id}.data.x_spark.publishPath`,
+      })
+      continue
+    }
+
+    const descriptor = descriptorByPublishPath.get(publishPath)
+    if (descriptor === undefined) continue
+    const duplicate = publishPathByNode.get(publishPath)
+    if (duplicate !== undefined) {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_DUPLICATE_PUBLISH_PATH',
+        message: `publishPath "${publishPath}" is used by both "${duplicate.id}" and "${node.id}".`,
+        phaseId: descriptor.phaseId,
+        publishPath,
+        nodeId: node.id,
+        path: `${node.scopePath}.${node.id}`,
+      })
+      continue
+    }
+    publishPathByNode.set(publishPath, node)
+
+    if (node.phaseId !== undefined && node.phaseId !== descriptor.phaseId) {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_PHASE_ID_MISMATCH',
+        message: `node "${node.id}" phaseId "${node.phaseId}" does not match ${descriptor.phaseId}.`,
+        phaseId: descriptor.phaseId,
+        publishPath,
+        nodeId: node.id,
+        path: `${node.scopePath}.${node.id}.data.x_spark.phaseId`,
+      })
+    }
+    if (node.sectionPath !== undefined && node.sectionPath !== descriptor.sectionPath) {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_SECTION_PATH_MISMATCH',
+        message: `node "${node.id}" sectionPath "${node.sectionPath}" does not match ${descriptor.sectionPath}.`,
+        phaseId: descriptor.phaseId,
+        publishPath,
+        nodeId: node.id,
+        path: `${node.scopePath}.${node.id}.data.x_spark.sectionPath`,
+      })
+    }
+
+    const value = readSingleModelEditObjectValue(node, descriptor, issues)
+    if (Object.keys(value).length === 0) {
+      issues.push({
+        severity: 'warning',
+        code: 'AGENT_WORKFLOW_EMPTY_SECTION_VALUE',
+        message: `${descriptor.phaseId} ${descriptor.phase} section value is empty.`,
+        phaseId: descriptor.phaseId,
+        publishPath,
+        nodeId: node.id,
+        path: `${node.scopePath}.${node.id}.data.model.value`,
+      })
+    }
+    sectionByPhase.set(descriptor.phase, {
+      phaseId: descriptor.phaseId,
+      phase: descriptor.phase,
+      sectionPath: descriptor.sectionPath,
+      publishPath: descriptor.publishPath,
+      nodeId: node.id,
+      scopePath: node.scopePath,
+      value,
+    })
+  }
+
+  for (const descriptor of AGENT_WORKFLOW_FACTORY_PHASES) {
+    if (sectionByPhase.has(descriptor.phase)) continue
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_FACTORY_PHASE_MISSING',
+      message: `${descriptor.phaseId} ${descriptor.phase} section is missing from workflow design.`,
+      phaseId: descriptor.phaseId,
+      publishPath: descriptor.publishPath,
+      path: `workflow.factory.${descriptor.phase}`,
+    })
+    sectionByPhase.set(descriptor.phase, createEmptyAgentWorkflowSection(descriptor))
+  }
+
+  const validation = createAgentWorkflowDefinitionValidation(issues)
+  return {
+    kind: 'agent.workflow',
+    version: 1,
+    workflowId: document.workflow.id,
+    source: {
+      designKind: document.kind,
+      designId: document.id,
+      designVersion: document.version,
+    },
+    factory: createAgentWorkflowFactorySections(sectionByPhase),
+    x_spark: {
+      schema: 'spark.agent.workflow.definition.v1',
+      publishedAt: options.publishedAt ?? new Date().toISOString(),
+      validation,
+    },
+  }
+}
+
 export function collectWorkflowDesignNodes(document: WorkflowDesignDocument): WorkflowDesignNodeView[] {
-  return collectGraphNodes(document.workflow.graph, 'workflow.graph', 0, [])
+  return collectGraphNodes({
+    graph: document.workflow.graph,
+    scopePath: 'workflow.graph',
+    depth: 0,
+    ancestry: [],
+  })
 }
 
 export function collectWorkflowDesignGraphs(document: WorkflowDesignDocument): WorkflowDesignGraphView[] {
@@ -390,12 +542,161 @@ function designDocumentUrl(workflowId: string): string {
   return `${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}/design.json`
 }
 
-function collectGraphNodes(
-  graph: WorkflowDesignGraph,
-  scopePath: string,
-  depth: number,
-  ancestry: string[],
-): WorkflowDesignNodeView[] {
+function workflowDefinitionPublishUrl(workflowId: string): string {
+  return `${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}/__publish`
+}
+
+function readSingleModelEditObjectValue(
+  node: WorkflowDesignNodeView,
+  descriptor: AgentWorkflowFactoryPhaseDescriptor,
+  issues: AgentWorkflowDefinitionValidationIssue[],
+): Readonly<Record<string, unknown>> {
+  const value = getSingleModelEditValue(node.node)
+  if (isJsonRecord(value)) return value
+  issues.push({
+    severity: 'error',
+    code: 'AGENT_WORKFLOW_SECTION_VALUE_NOT_OBJECT',
+    message: `${descriptor.phaseId} ${descriptor.phase} section value must be an object.`,
+    phaseId: descriptor.phaseId,
+    publishPath: descriptor.publishPath,
+    nodeId: node.id,
+    path: `${node.scopePath}.${node.id}.data.model.value`,
+  })
+  return {}
+}
+
+function createEmptyAgentWorkflowSection(
+  descriptor: AgentWorkflowFactoryPhaseDescriptor,
+): AgentWorkflowFactorySection {
+  return {
+    phaseId: descriptor.phaseId,
+    phase: descriptor.phase,
+    sectionPath: descriptor.sectionPath,
+    publishPath: descriptor.publishPath,
+    value: {},
+  }
+}
+
+function createAgentWorkflowFactorySections(
+  sectionByPhase: ReadonlyMap<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>,
+): AgentWorkflowFactorySections {
+  const identity = readPublishedSection(sectionByPhase, 'identity')
+  const materials = readPublishedSection(sectionByPhase, 'materials')
+  const knowledge = readPublishedSection(sectionByPhase, 'knowledge')
+  const contract = readPublishedSection(sectionByPhase, 'contract')
+  const runtime = readPublishedSection(sectionByPhase, 'runtime')
+  const governance = readPublishedSection(sectionByPhase, 'governance')
+  const acceptance = readPublishedSection(sectionByPhase, 'acceptance')
+  const activation = readPublishedSection(sectionByPhase, 'activation')
+  const workOrder = readPublishedSection(sectionByPhase, 'workOrder')
+  const delivery = readPublishedSection(sectionByPhase, 'delivery')
+
+  return {
+    identity: {
+      phaseId: 'F0',
+      phase: 'identity',
+      sectionPath: 'factory.identity',
+      publishPath: 'workflow.factory.identity',
+      ...readPublishedSectionSource(identity),
+      value: identity.value,
+    },
+    materials: {
+      phaseId: 'F1',
+      phase: 'materials',
+      sectionPath: 'factory.materials',
+      publishPath: 'workflow.factory.materials',
+      ...readPublishedSectionSource(materials),
+      value: materials.value,
+    },
+    knowledge: {
+      phaseId: 'F2',
+      phase: 'knowledge',
+      sectionPath: 'factory.knowledge',
+      publishPath: 'workflow.factory.knowledge',
+      ...readPublishedSectionSource(knowledge),
+      value: knowledge.value,
+    },
+    contract: {
+      phaseId: 'F3',
+      phase: 'contract',
+      sectionPath: 'factory.contract',
+      publishPath: 'workflow.factory.contract',
+      ...readPublishedSectionSource(contract),
+      value: contract.value,
+    },
+    runtime: {
+      phaseId: 'F4',
+      phase: 'runtime',
+      sectionPath: 'factory.runtime',
+      publishPath: 'workflow.factory.runtime',
+      ...readPublishedSectionSource(runtime),
+      value: runtime.value,
+    },
+    governance: {
+      phaseId: 'F5',
+      phase: 'governance',
+      sectionPath: 'factory.governance',
+      publishPath: 'workflow.factory.governance',
+      ...readPublishedSectionSource(governance),
+      value: governance.value,
+    },
+    acceptance: {
+      phaseId: 'F6',
+      phase: 'acceptance',
+      sectionPath: 'factory.acceptance',
+      publishPath: 'workflow.factory.acceptance',
+      ...readPublishedSectionSource(acceptance),
+      value: acceptance.value,
+    },
+    activation: {
+      phaseId: 'F7',
+      phase: 'activation',
+      sectionPath: 'factory.activation',
+      publishPath: 'workflow.factory.activation',
+      ...readPublishedSectionSource(activation),
+      value: activation.value,
+    },
+    workOrder: {
+      phaseId: 'F8',
+      phase: 'workOrder',
+      sectionPath: 'factory.workOrder',
+      publishPath: 'workflow.factory.workOrder',
+      ...readPublishedSectionSource(workOrder),
+      value: workOrder.value,
+    },
+    delivery: {
+      phaseId: 'F9',
+      phase: 'delivery',
+      sectionPath: 'factory.delivery',
+      publishPath: 'workflow.factory.delivery',
+      ...readPublishedSectionSource(delivery),
+      value: delivery.value,
+    },
+  }
+}
+
+function readPublishedSection(
+  sectionByPhase: ReadonlyMap<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>,
+  phase: AgentWorkflowFactoryPhaseDescriptor['phase'],
+): AgentWorkflowFactorySection {
+  const section = sectionByPhase.get(phase)
+  if (section === undefined) {
+    throw new Error(`Missing agent workflow section after normalization: ${phase}`)
+  }
+  return section
+}
+
+function readPublishedSectionSource(
+  section: AgentWorkflowFactorySection,
+): Readonly<Pick<AgentWorkflowFactorySection, 'nodeId' | 'scopePath'>> {
+  return {
+    ...(section.nodeId === undefined ? {} : { nodeId: section.nodeId }),
+    ...(section.scopePath === undefined ? {} : { scopePath: section.scopePath }),
+  }
+}
+
+function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowDesignNodeView[] {
+  const { graph, scopePath, depth, ancestry } = command
   const result: WorkflowDesignNodeView[] = []
   for (const node of graph.nodes) {
     const data = node.data
@@ -422,11 +723,21 @@ function collectGraphNodes(
     const childAncestry = [...ancestry, node.id]
     const loopSubGraph = data?.loop?.subGraph
     if (isWorkflowDesignGraph(loopSubGraph)) {
-      result.push(...collectGraphNodes(loopSubGraph, `${scopePath}.${node.id}.loop.subGraph`, depth + 1, childAncestry))
+      result.push(...collectGraphNodes({
+        graph: loopSubGraph,
+        scopePath: `${scopePath}.${node.id}.loop.subGraph`,
+        depth: depth + 1,
+        ancestry: childAncestry,
+      }))
     }
     const iterationSubGraph = data?.iteration?.subGraph
     if (isWorkflowDesignGraph(iterationSubGraph)) {
-      result.push(...collectGraphNodes(iterationSubGraph, `${scopePath}.${node.id}.iteration.subGraph`, depth + 1, childAncestry))
+      result.push(...collectGraphNodes({
+        graph: iterationSubGraph,
+        scopePath: `${scopePath}.${node.id}.iteration.subGraph`,
+        depth: depth + 1,
+        ancestry: childAncestry,
+      }))
     }
   }
   return result
@@ -545,6 +856,10 @@ function defaultNodeId(kind: WorkflowDesignNodeCreateKind, phaseId?: string): st
 function sanitizeIdentifier(value: string): string {
   const normalized = value.trim().replace(/[^\w.-]+/gu, '-').replace(/^-+|-+$/gu, '')
   return normalized.length > 0 ? normalized : 'node.custom'
+}
+
+function isJsonRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function normalizePosition(

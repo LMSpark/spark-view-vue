@@ -65,7 +65,7 @@ describe('formatPageDesignSystemPrompt', () => {
     expect(prompt).toContain('ConfigPageNode')
     expect(prompt).toContain('model_query 只用 kind / keyword / includeMembers')
     expect(prompt).toContain('禁止 member / select / query')
-    expect(prompt).toContain('script 是 async function body')
+    expect(prompt).toContain('script 是 JavaScript async function body')
     expect(prompt).toContain('style.css')
     expect(prompt).not.toContain('pageDataDesign preset')
   })

@@ -80,6 +80,7 @@ class WorkflowDesignApiIntegrationTest {
     void scopedHttpApi_persistsWorkflowDesignJsonEndToEnd() throws Exception {
         String workflowId = "spark.workflow.api";
         Path designFile = WORKFLOW_ROOT.resolve("t1/p1/" + workflowId + "/design.json");
+        Path definitionFile = WORKFLOW_ROOT.resolve("t1/p1/" + workflowId + "/definition.json");
 
         mockMvc.perform(post("/api/tenants/t1/projects/p1/workflow-designs/__create")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,6 +121,17 @@ class WorkflowDesignApiIntegrationTest {
         assertEquals("API Workflow Saved", saved.path("app").path("name").asText());
         assertEquals("updated-from-api", saved.at("/workflow/graph/nodes/1/data/loop/subGraph/nodes/0/data/model/value/name").asText());
 
+        mockMvc.perform(post("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/__publish", workflowId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDefinition(workflowId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.ok").value(true))
+                .andExpect(jsonPath("$.data.filename").value("definition.json"));
+        assertTrue(Files.isRegularFile(definitionFile));
+        JsonNode definition = objectMapper.readTree(definitionFile.toFile());
+        assertEquals("agent.workflow", definition.path("kind").asText());
+        assertEquals(workflowId, definition.path("workflowId").asText());
+
         mockMvc.perform(get("/api/tenants/t1/projects/p1/workflow-designs/__list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].workflowId").value(workflowId))
@@ -134,6 +146,51 @@ class WorkflowDesignApiIntegrationTest {
     private ObjectNode readDocumentFromEnvelope(MvcResult result) throws IOException {
         JsonNode envelope = objectMapper.readTree(result.getResponse().getContentAsString());
         return (ObjectNode) envelope.at("/data/document").deepCopy();
+    }
+
+    private ObjectNode createDefinition(String workflowId) {
+        ObjectNode document = objectMapper.createObjectNode();
+        document.put("kind", "agent.workflow");
+        document.put("version", 1);
+        document.put("workflowId", workflowId);
+
+        ObjectNode source = document.putObject("source");
+        source.put("designKind", "agent.workflow.design");
+        source.put("designId", workflowId);
+        source.put("designVersion", 1);
+
+        ObjectNode factory = document.putObject("factory");
+        addDefinitionSection(factory, "identity", "F0", "factory.identity", "workflow.factory.identity");
+        addDefinitionSection(factory, "materials", "F1", "factory.materials", "workflow.factory.materials");
+        addDefinitionSection(factory, "knowledge", "F2", "factory.knowledge", "workflow.factory.knowledge");
+        addDefinitionSection(factory, "contract", "F3", "factory.contract", "workflow.factory.contract");
+        addDefinitionSection(factory, "runtime", "F4", "factory.runtime", "workflow.factory.runtime");
+        addDefinitionSection(factory, "governance", "F5", "factory.governance", "workflow.factory.governance");
+        addDefinitionSection(factory, "acceptance", "F6", "factory.acceptance", "workflow.factory.acceptance");
+        addDefinitionSection(factory, "activation", "F7", "factory.activation", "workflow.factory.activation");
+        addDefinitionSection(factory, "workOrder", "F8", "factory.workOrder", "workflow.factory.workOrder");
+        addDefinitionSection(factory, "delivery", "F9", "factory.delivery", "workflow.factory.delivery");
+
+        ObjectNode spark = document.putObject("x_spark");
+        spark.put("schema", "spark.agent.workflow.definition.v1");
+        spark.put("publishedAt", "2026-06-16T00:00:00.000Z");
+        ObjectNode validation = spark.putObject("validation");
+        validation.put("status", "valid");
+        validation.putArray("issues");
+        return document;
+    }
+
+    private void addDefinitionSection(ObjectNode factory,
+                                      String phase,
+                                      String phaseId,
+                                      String sectionPath,
+                                      String publishPath) {
+        ObjectNode section = factory.putObject(phase);
+        section.put("phaseId", phaseId);
+        section.put("phase", phase);
+        section.put("sectionPath", sectionPath);
+        section.put("publishPath", publishPath);
+        section.putObject("value");
     }
 
     private static Path createTempDirectory() {

@@ -17,6 +17,9 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
           保存
         </el-button>
+        <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
+          发布
+        </el-button>
       </template>
     </el-page-header>
 
@@ -591,6 +594,7 @@ import {
   collectWorkflowDesignEdges,
   collectWorkflowDesignGraphs,
   createWorkflowDesign,
+  createAgentWorkflowDefinitionFromDesign,
   createWorkflowDesignNode,
   deleteWorkflowDesign,
   formatJson,
@@ -598,6 +602,7 @@ import {
   listWorkflowDesigns,
   markWorkflowDesignDirty,
   markWorkflowDesignSaved,
+  publishWorkflowDefinition,
   readWorkflowDesign,
   removeWorkflowDesignEdge,
   removeWorkflowDesignNode,
@@ -688,6 +693,7 @@ const graphSplitCollapsed = ref<GraphSplitCollapse>(null)
 const loadingList = ref(false)
 const opening = ref(false)
 const saving = ref(false)
+const publishing = ref(false)
 const creating = ref(false)
 const createDialogVisible = ref(false)
 const nodeCreateDialogVisible = ref(false)
@@ -805,6 +811,7 @@ const flowDefaultEdgeOptions: DefaultEdgeOptions = {
   interactionWidth: 18,
 }
 const canSave = computed(() => currentDocument.value !== null && currentWorkflowId.value.length > 0 && !opening.value)
+const canPublish = computed(() => canSave.value && !saving.value && !publishing.value)
 const hasUnsavedChanges = computed(() => {
   const status = currentDocument.value?.x_spark.draft?.['status']
   return (typeof status === 'string' ? status : 'draft') === 'dirty' || editorDirty.value
@@ -1616,10 +1623,10 @@ function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
   return true
 }
 
-async function saveCurrentDesign(): Promise<void> {
+async function saveCurrentDesign(): Promise<boolean> {
   const document = currentDocument.value
-  if (document === null || currentWorkflowId.value.length === 0) return
-  if (!applySelectedDraft({ silent: true })) return
+  if (document === null || currentWorkflowId.value.length === 0) return false
+  if (!applySelectedDraft({ silent: true })) return false
 
   saving.value = true
   try {
@@ -1629,10 +1636,37 @@ async function saveCurrentDesign(): Promise<void> {
     editorDirty.value = false
     await loadDesigns()
     ElMessage.success('设计稿已保存')
+    return true
   } catch (error: unknown) {
     ElMessage.error(`保存失败: ${errorMessage(error)}`)
+    return false
   } finally {
     saving.value = false
+  }
+}
+
+async function publishCurrentDefinition(): Promise<void> {
+  const document = currentDocument.value
+  const workflowId = currentWorkflowId.value
+  if (document === null || workflowId.length === 0) return
+  if (!applySelectedDraft({ silent: true })) return
+  if (hasUnsavedChanges.value && !await saveCurrentDesign()) return
+
+  const definition = createAgentWorkflowDefinitionFromDesign(document)
+  if (definition.x_spark.validation.status === 'invalid') {
+    const firstIssue = definition.x_spark.validation.issues.find(issue => issue.severity === 'error')
+    ElMessage.error(`发布失败: ${firstIssue?.message ?? 'definition 校验未通过'}`)
+    return
+  }
+
+  publishing.value = true
+  try {
+    await publishWorkflowDefinition(workflowId, definition)
+    ElMessage.success('definition.json 已发布')
+  } catch (error: unknown) {
+    ElMessage.error(`发布失败: ${errorMessage(error)}`)
+  } finally {
+    publishing.value = false
   }
 }
 

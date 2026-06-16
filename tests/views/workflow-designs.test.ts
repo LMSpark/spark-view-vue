@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   listWorkflowDesigns: vi.fn(),
   readWorkflowDesign: vi.fn(),
   saveWorkflowDesign: vi.fn(),
+  createAgentWorkflowDefinitionFromDesign: vi.fn(),
+  publishWorkflowDefinition: vi.fn(),
   createWorkflowDesign: vi.fn(),
   deleteWorkflowDesign: vi.fn(),
   message: {
@@ -33,6 +35,8 @@ vi.mock('@/services/workflow-designs', async (importOriginal) => {
     listWorkflowDesigns: mocks.listWorkflowDesigns,
     readWorkflowDesign: mocks.readWorkflowDesign,
     saveWorkflowDesign: mocks.saveWorkflowDesign,
+    createAgentWorkflowDefinitionFromDesign: mocks.createAgentWorkflowDefinitionFromDesign,
+    publishWorkflowDefinition: mocks.publishWorkflowDefinition,
     createWorkflowDesign: mocks.createWorkflowDesign,
     deleteWorkflowDesign: mocks.deleteWorkflowDesign,
   }
@@ -452,6 +456,23 @@ describe('WorkflowDesigns visual editor', () => {
       filename: 'design.json',
       timestamp: '2',
     })
+    mocks.createAgentWorkflowDefinitionFromDesign.mockReturnValue({
+      kind: 'agent.workflow',
+      version: 1,
+      workflowId: 'agent.workflow.demo',
+      x_spark: {
+        validation: {
+          status: 'valid',
+          issues: [],
+        },
+      },
+    })
+    mocks.publishWorkflowDefinition.mockResolvedValue({
+      ok: true,
+      workflowId: 'agent.workflow.demo',
+      filename: 'definition.json',
+      timestamp: '3',
+    })
   })
 
   it('lists, opens, edits, and saves a single_model_edit tool node', async () => {
@@ -715,6 +736,24 @@ describe('WorkflowDesigns visual editor', () => {
       source: 'start',
       target: 'end',
     }))
+  })
+
+  it('publishes the current design as definition.json', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, '发布').trigger('click')
+    await flushPromises()
+
+    expect(mocks.createAgentWorkflowDefinitionFromDesign).toHaveBeenCalledOnce()
+    expect(mocks.publishWorkflowDefinition).toHaveBeenCalledWith(
+      'agent.workflow.demo',
+      expect.objectContaining({
+        kind: 'agent.workflow',
+        workflowId: 'agent.workflow.demo',
+      }),
+    )
+    expect(mocks.message.success).toHaveBeenCalledWith('definition.json 已发布')
   })
 })
 

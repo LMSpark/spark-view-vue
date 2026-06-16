@@ -11,8 +11,10 @@
  * 不绑定 pageDesign 四文件或 config-page metadata。
  */
 import {
+  activateAgentWorkflowDefinition,
   createSimpleInputContract,
   ClassModelAgentAdapter,
+  type AgentWorkflowDefinition,
   type AiAgentBeforeFunctionCallDirective,
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
@@ -33,6 +35,9 @@ import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-ur
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 
 const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectModel'
+const PROJECT_PLANNING_WORKFLOW_ID = 'agent.workflow.projectPlanning'
+const PROJECT_PLANNING_REGISTRATION_BINDING_KEY = 'projectPlanning.registration'
+const PROJECT_PLANNING_WORKFLOW_PUBLISHED_AT = '1970-01-01T00:00:00.000Z'
 
 function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
   return createWorkerDtsClassModelKnowledgeProvider({
@@ -132,6 +137,8 @@ export type EnsureProjectPlanningBusinessOptions = Readonly<{
   host: AiAgentHost
   /** 按 moduleInstanceId 获取 ProjectWorkspace 编辑器。 */
   getProjectPlanningEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
+  /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */
+  knowledge?: ClassModelKnowledgeProvider
 }>
 
 export function resolveProjectPlanningRunInput(
@@ -276,15 +283,151 @@ export function buildProjectPlanningAgentInput(
 }
 
 export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusinessOptions): AiAgentHost {
-  return options.host.ensure(PROJECT_PLANNING_MODULE_ID, {
-    moduleId: PROJECT_PLANNING_MODULE_ID,
-    create: () => ClassModelAgentAdapter.createRegistration({
+  return activateAgentWorkflowDefinition({
+    host: options.host,
+    definition: createProjectPlanningAgentWorkflowDefinition(),
+    bindings: {
+      registrations: {
+        [PROJECT_PLANNING_REGISTRATION_BINDING_KEY]: {
+          moduleId: PROJECT_PLANNING_MODULE_ID,
+          create: () => createProjectPlanningRegistration(options),
+        },
+      },
+    },
+  })
+}
+
+export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDefinition {
+  return {
+    kind: 'agent.workflow',
+    version: 1,
+    workflowId: PROJECT_PLANNING_WORKFLOW_ID,
+    source: {
+      designKind: 'agent.workflow.design',
+      designId: PROJECT_PLANNING_WORKFLOW_ID,
+      designVersion: 1,
+    },
+    factory: {
+      identity: {
+        phaseId: 'F0',
+        phase: 'identity',
+        sectionPath: 'factory.identity',
+        publishPath: 'workflow.factory.identity',
+        value: {
+          alias: PROJECT_PLANNING_MODULE_ID,
+          moduleId: PROJECT_PLANNING_MODULE_ID,
+          rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
+        },
+      },
+      materials: {
+        phaseId: 'F1',
+        phase: 'materials',
+        sectionPath: 'factory.materials',
+        publishPath: 'workflow.factory.materials',
+        value: {
+          moduleClass: 'ProjectModel',
+          editorResolver: 'getProjectPlanningEditor',
+        },
+      },
+      knowledge: {
+        phaseId: 'F2',
+        phase: 'knowledge',
+        sectionPath: 'factory.knowledge',
+        publishPath: 'workflow.factory.knowledge',
+        value: {
+          rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
+          provider: 'dtsClassModelWorker',
+        },
+      },
+      contract: {
+        phaseId: 'F3',
+        phase: 'contract',
+        sectionPath: 'factory.contract',
+        publishPath: 'workflow.factory.contract',
+        value: {
+          identityField: 'projectScopeKey',
+          messageField: 'requirement',
+        },
+      },
+      runtime: {
+        phaseId: 'F4',
+        phase: 'runtime',
+        sectionPath: 'factory.runtime',
+        publishPath: 'workflow.factory.runtime',
+        value: {
+          adapter: 'ClassModelAgentAdapter',
+          executionToolNames: [CLASS_MODEL_TOOL_NAMES.script],
+          agentCompleteMethodName: 'completeProjectPlanning',
+        },
+      },
+      governance: {
+        phaseId: 'F5',
+        phase: 'governance',
+        sectionPath: 'factory.governance',
+        publishPath: 'workflow.factory.governance',
+        value: {
+          beforeFunctionCall: 'projectPlanningToolGate',
+          toolLoopNudge: 'projectPlanning',
+        },
+      },
+      acceptance: {
+        phaseId: 'F6',
+        phase: 'acceptance',
+        sectionPath: 'factory.acceptance',
+        publishPath: 'workflow.factory.acceptance',
+        value: {
+          dryRun: true,
+          inspectFactory: true,
+        },
+      },
+      activation: {
+        phaseId: 'F7',
+        phase: 'activation',
+        sectionPath: 'factory.activation',
+        publishPath: 'workflow.factory.activation',
+        value: {
+          registrationBindingKey: PROJECT_PLANNING_REGISTRATION_BINDING_KEY,
+        },
+      },
+      workOrder: {
+        phaseId: 'F8',
+        phase: 'workOrder',
+        sectionPath: 'factory.workOrder',
+        publishPath: 'workflow.factory.workOrder',
+        value: {
+          hostRunAlias: PROJECT_PLANNING_MODULE_ID,
+        },
+      },
+      delivery: {
+        phaseId: 'F9',
+        phase: 'delivery',
+        sectionPath: 'factory.delivery',
+        publishPath: 'workflow.factory.delivery',
+        value: {
+          mode: 'appDeliveryPort',
+          owner: 'projectPlanningHostRunProvider',
+        },
+      },
+    },
+    x_spark: {
+      schema: 'spark.agent.workflow.definition.v1',
+      publishedAt: PROJECT_PLANNING_WORKFLOW_PUBLISHED_AT,
+      validation: {
+        status: 'valid',
+        issues: [],
+      },
+    },
+  }
+}
+
+function createProjectPlanningRegistration(options: EnsureProjectPlanningBusinessOptions) {
+  return ClassModelAgentAdapter.createRegistration({
       moduleClass: ProjectModel,
       options: {
         moduleId: PROJECT_PLANNING_MODULE_ID,
         rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
         dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
-        knowledge: createProjectPlanningClassModelKnowledgeProvider(),
+        knowledge: options.knowledge ?? createProjectPlanningClassModelKnowledgeProvider(),
         inputContract: createSimpleInputContract<ProjectPlanningAgentInput>({
           businessId: PROJECT_PLANNING_MODULE_ID,
           identityField: 'projectScopeKey',
@@ -331,7 +474,6 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
         planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createProjectPlanningToolLoopNudge,
       },
-    }),
   })
 }
 

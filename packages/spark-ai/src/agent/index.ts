@@ -64,6 +64,42 @@ export type {
 } from './business/business-factory'
 
 export {
+  AGENT_WORKFLOW_DEFINITION_KIND,
+  AGENT_WORKFLOW_DEFINITION_SCHEMA,
+  AGENT_WORKFLOW_DEFINITION_VERSION,
+  AGENT_WORKFLOW_FACTORY_PHASES,
+  activateAgentWorkflowDefinition,
+  assertAgentWorkflowDefinition,
+  createAgentWorkflowDefinitionValidation,
+  dryRunAgentWorkflowDefinition,
+  resolveAgentWorkflowActivation,
+  validateAgentWorkflowDefinition,
+} from './workflow'
+
+export type {
+  ActivateAgentWorkflowDefinitionCommand,
+  AgentWorkflowActivation,
+  AgentWorkflowBindings,
+  AgentWorkflowDefinition,
+  AgentWorkflowDefinitionKind,
+  AgentWorkflowDefinitionSchema,
+  AgentWorkflowDefinitionSource,
+  AgentWorkflowDefinitionSparkMeta,
+  AgentWorkflowDefinitionValidation,
+  AgentWorkflowDefinitionValidationIssue,
+  AgentWorkflowDefinitionValidationSeverity,
+  AgentWorkflowDefinitionValidationStatus,
+  AgentWorkflowDefinitionVersion,
+  AgentWorkflowDryRunCommand,
+  AgentWorkflowDryRunResult,
+  AgentWorkflowFactoryPhaseDescriptor,
+  AgentWorkflowFactorySection,
+  AgentWorkflowFactorySections,
+  AgentWorkflowJsonRecord,
+  AgentWorkflowRegistrationBinding,
+} from './workflow'
+
+export {
   AiAgentRegistration,
 } from './business/registration-types'
 

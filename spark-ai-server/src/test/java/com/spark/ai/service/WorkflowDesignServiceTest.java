@@ -102,6 +102,49 @@ class WorkflowDesignServiceTest {
     }
 
     @Test
+    void publishDefinition_writesDefinitionJson() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+
+        Map<String, Object> result = service.publishDefinition(
+                "t1", "p1", "spark.workflow.demo", createDefinition("spark.workflow.demo", "valid"));
+
+        assertEquals(true, result.get("ok"));
+        assertEquals("definition.json", result.get("filename"));
+        Path file = tempDir.resolve("t1/p1/spark.workflow.demo/definition.json");
+        assertTrue(Files.isRegularFile(file));
+        JsonNode saved = objectMapper.readTree(file.toFile());
+        assertEquals("agent.workflow", saved.path("kind").asText());
+        assertEquals("spark.workflow.demo", saved.path("workflowId").asText());
+        assertEquals("workflow.factory.activation",
+                saved.path("factory").path("activation").path("publishPath").asText());
+    }
+
+    @Test
+    void publishDefinition_rejectsWorkflowIdMismatch() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.publishDefinition(
+                        "t1", "p1", "spark.workflow.demo", createDefinition("spark.workflow.other", "valid")));
+
+        assertTrue(error.getMessage().contains("workflowId mismatch"));
+    }
+
+    @Test
+    void publishDefinition_rejectsInvalidDefinitionStatus() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.publishDefinition(
+                        "t1", "p1", "spark.workflow.demo", createDefinition("spark.workflow.demo", "invalid")));
+
+        assertTrue(error.getMessage().contains("validation status"));
+    }
+
+    @Test
     void listDesigns_returnsSortedSummaries() throws Exception {
         WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
         service.createDesign("t1", "p1", "spark.workflow.beta", "Beta");
@@ -132,5 +175,50 @@ class WorkflowDesignServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.createDesign("t1", "p1", "../bad", "Bad"));
+    }
+
+    private ObjectNode createDefinition(String workflowId, String validationStatus) {
+        ObjectNode document = objectMapper.createObjectNode();
+        document.put("kind", "agent.workflow");
+        document.put("version", 1);
+        document.put("workflowId", workflowId);
+
+        ObjectNode source = document.putObject("source");
+        source.put("designKind", "agent.workflow.design");
+        source.put("designId", workflowId);
+        source.put("designVersion", 1);
+
+        ObjectNode factory = document.putObject("factory");
+        addDefinitionSection(factory, "identity", "F0", "factory.identity", "workflow.factory.identity");
+        addDefinitionSection(factory, "materials", "F1", "factory.materials", "workflow.factory.materials");
+        addDefinitionSection(factory, "knowledge", "F2", "factory.knowledge", "workflow.factory.knowledge");
+        addDefinitionSection(factory, "contract", "F3", "factory.contract", "workflow.factory.contract");
+        addDefinitionSection(factory, "runtime", "F4", "factory.runtime", "workflow.factory.runtime");
+        addDefinitionSection(factory, "governance", "F5", "factory.governance", "workflow.factory.governance");
+        addDefinitionSection(factory, "acceptance", "F6", "factory.acceptance", "workflow.factory.acceptance");
+        addDefinitionSection(factory, "activation", "F7", "factory.activation", "workflow.factory.activation");
+        addDefinitionSection(factory, "workOrder", "F8", "factory.workOrder", "workflow.factory.workOrder");
+        addDefinitionSection(factory, "delivery", "F9", "factory.delivery", "workflow.factory.delivery");
+
+        ObjectNode spark = document.putObject("x_spark");
+        spark.put("schema", "spark.agent.workflow.definition.v1");
+        spark.put("publishedAt", "2026-06-16T00:00:00.000Z");
+        ObjectNode validation = spark.putObject("validation");
+        validation.put("status", validationStatus);
+        validation.putArray("issues");
+        return document;
+    }
+
+    private void addDefinitionSection(ObjectNode factory,
+                                      String phase,
+                                      String phaseId,
+                                      String sectionPath,
+                                      String publishPath) {
+        ObjectNode section = factory.putObject(phase);
+        section.put("phaseId", phaseId);
+        section.put("phase", phase);
+        section.put("sectionPath", sectionPath);
+        section.put("publishPath", publishPath);
+        section.putObject("value");
     }
 }
