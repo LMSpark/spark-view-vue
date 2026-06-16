@@ -1,0 +1,58 @@
+# 知识库
+
+> AI 编码过程中发现的隐含规则和踩坑记录。
+> 本目录是 `docs/ai/` 的补充——规程告诉你"应该怎么做"，知识库告诉你"实际踩过什么坑"。
+
+## 何时读
+
+AI 在阶段 1（深度研读）时，除了读源码，还应根据任务涉及的领域读取对应知识文件：
+
+| 任务涉及的包/目录 | 应读的知识文件 |
+|---|---|
+| `packages/spark-ai/` | `class-model-system.md` |
+| `packages/spark-project-model/` | `class-model-system.md`、`page-design.md` |
+| `packages/spark-component/` | `vue-frontend.md` |
+| `packages/spark-data/` | `page-design.md` |
+| `packages/spark-utils/` | `monorepo-dependencies.md` |
+| `src/`（应用壳） | `vue-frontend.md`、`monorepo-dependencies.md` |
+| `spark-ai-server/` | `java-backend.md` |
+| 跨多个包 | `monorepo-dependencies.md` + 上述对应的文件 |
+
+## 何时写
+
+阶段 7（知识沉淀）时写入。判断标准：
+
+**该写的**（满足任一）：
+- 读了源码才发现的行为，文档没写，"常规经验"推断不出来
+- 框架/API 的隐含约束（调用顺序、参数互斥、边界条件、编译报错但报错信息误导）
+- 踩坑后回滚的路径（下次遇到直接跳过）
+- 修改传播超出预期（改了 A 结果 B 也坏了）
+
+**不该写的**：
+- 从类型签名或已有文档可直接推断的常识
+- 只与某次特定业务逻辑相关的一次性决策
+
+## 写入格式
+
+每条知识按此格式写入对应领域文件：
+
+```markdown
+### [简短标题]
+
+- **场景**：什么情况下会遇到这个问题
+- **规则**：应该怎么做
+- **违反后果**：不这么做会怎样
+- **发现来源**：哪次任务中发现的（可选，便于追溯）
+```
+
+## 文件索引
+
+| 文件 | 领域 | 说明 |
+|------|------|------|
+| `monorepo-dependencies.md` | 工程结构 | 包间依赖传播、catalog 版本管理、验证命令 |
+| `class-model-system.md` | AI/ClassModel | ClassModel 工具链路、知识边界、投影机制 |
+| `page-design.md` | 页面设计 | 四文件编辑、内存模型、落盘机制 |
+| `vue-frontend.md` | Vue 前端 | 组件开发、状态管理、路由约束 |
+| `java-backend.md` | Java 后端 | Spring Boot 配置、SSE、会话管理 |
+| `testing.md` | 测试 | 测试命令、验证套件、异步测试注意事项 |
+| `ai-metrics.md` | 效果度量 | AI编码存活率、返工率、记录模板、行业基准 |
