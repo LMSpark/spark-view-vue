@@ -28,19 +28,30 @@ export function createHeadlessProjectPlanningEditor(
 ): ProjectWorkspace {
   const explicitTenantId = typeof scope === 'string' ? undefined : scope?.tenantId?.trim()
   const explicitProjectId = (typeof scope === 'string' ? scope : scope?.projectId)?.trim()
+  const defaultTenantId = getUser()?.tenantId.trim()
   const defaultProjectId = getUser()?.defaultProjectId.trim()
+  const resolvedTenantId = explicitTenantId !== undefined && explicitTenantId.length > 0
+    ? explicitTenantId
+    : defaultTenantId !== undefined && defaultTenantId.length > 0
+      ? defaultTenantId
+      : 'platform'
   const resolvedProjectId = explicitProjectId !== undefined && explicitProjectId.length > 0
     ? explicitProjectId
     : defaultProjectId !== undefined && defaultProjectId.length > 0
       ? defaultProjectId
       : 'homepage'
-  return new ProjectWorkspace({
+  const editor = new ProjectWorkspace({
     projectId: resolvedProjectId,
     http,
-    getPageFilesApi: () => getProjectPageApi(resolvedProjectId, explicitTenantId),
-    getNavigationApi: () => getProjectNavigationApi(resolvedProjectId, explicitTenantId),
+    getPageFilesApi: () => getProjectPageApi(resolvedProjectId, resolvedTenantId),
+    getNavigationApi: () => getProjectNavigationApi(resolvedProjectId, resolvedTenantId),
     getHeaders: createAuthHeaders,
   })
+  editor.project.replaceProjectInfo({
+    tenantId: resolvedTenantId,
+    projectId: resolvedProjectId,
+  })
+  return editor
 }
 
 export function resolveProjectPlanningEditor(

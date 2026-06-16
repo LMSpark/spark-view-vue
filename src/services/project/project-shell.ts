@@ -99,7 +99,7 @@ function toScopeKey(scope: ProjectWorkspaceScope): string {
 }
 
 function createScopedProjectWorkspace(scope: ProjectWorkspaceScope): ProjectWorkspace {
-  return new ProjectWorkspace({
+  const workspace = new ProjectWorkspace({
     projectId: scope.projectId,
     http,
     getPageFilesApi: () => getProjectPageApi(scope.projectId, scope.tenantId),
@@ -108,6 +108,11 @@ function createScopedProjectWorkspace(scope: ProjectWorkspaceScope): ProjectWork
     getProjectNavigationApi: (projectId: string) => getProjectNavigationApi(projectId, scope.tenantId),
     getHeaders: createAuthHeaders,
   })
+  workspace.project.replaceProjectInfo({
+    tenantId: scope.tenantId,
+    projectId: scope.projectId,
+  })
+  return workspace
 }
 
 export function getAppProjectWorkspace(scope?: string | Partial<ProjectApiScope>): ProjectWorkspace {

@@ -166,6 +166,9 @@ public class ProjectService {
         if (patch.containsKey("name")) entity.setName((String) patch.get("name"));
         if (patch.containsKey("icon")) entity.setIcon((String) patch.get("icon"));
         if (patch.containsKey("description")) entity.setDescription((String) patch.get("description"));
+        if (patch.containsKey("planningAttachmentRef")) {
+            entity.setPlanningAttachmentRef(blankToNull((String) patch.get("planningAttachmentRef")));
+        }
         if (patch.containsKey("homeNodeId")) entity.setHomeNodeId(blankToNull((String) patch.get("homeNodeId")));
         if (patch.containsKey("order")) entity.setOrder(((Number) patch.get("order")).intValue());
 
@@ -918,6 +921,7 @@ public class ProjectService {
         m.put("projectType", p.getProjectType());
         m.put("icon", p.getIcon());
         m.put("description", p.getDescription());
+        m.put("planningAttachmentRef", p.getPlanningAttachmentRef());
         m.put("homeNodeId", p.getHomeNodeId());
         m.put("order", p.getOrder());
         m.put("createdAt", p.getCreatedAt() != null ? p.getCreatedAt().toString() : null);

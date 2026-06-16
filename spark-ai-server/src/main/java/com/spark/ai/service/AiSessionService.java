@@ -54,6 +54,10 @@ public class AiSessionService {
     private static final int DEFAULT_WINDOW_SIZE = 30;
     private static final String LLM_STREAM_ID = "llm-stream";
     private static final long SESSION_TIMEOUT_MS = 30 * 60 * 1000L;
+    private static final String PROJECT_PLANNING_MODULE_ID = "projectPlanning";
+    private static final String PROJECT_PLANNING_TENANT_ID_LINE = "tenantId:";
+    private static final String PROJECT_PLANNING_PROJECT_ID_LINE = "projectId:";
+    private static final String PROJECT_PLANNING_ATTACHMENT_REF_LINE = "projectPlanningAttachmentRef:";
 
     private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> sessionIdsByScopeKey = new ConcurrentHashMap<>();
@@ -70,9 +74,10 @@ public class AiSessionService {
     private final AiSessionProperties aiSessionProperties;
     private final AccessGuardService accessGuardService;
     private final SseService sseService;
+    private final PlanningAttachmentService planningAttachmentService;
 
     public AiSessionService(OpenAiProperties props, ObjectMapper objectMapper) {
-        this(props, objectMapper, null, null, null, null, null, null, null);
+        this(props, objectMapper, null, null, null, null, null, null, null, null);
     }
 
     @Autowired
@@ -85,7 +90,8 @@ public class AiSessionService {
             AiContextSnapshotRepository aiContextSnapshotRepository,
             AiSessionProperties aiSessionProperties,
             AccessGuardService accessGuardService,
-            SseService sseService) {
+            SseService sseService,
+            PlanningAttachmentService planningAttachmentService) {
         this.props = props;
         this.objectMapper = objectMapper;
         this.aiSessionRepository = aiSessionRepository;
@@ -95,6 +101,7 @@ public class AiSessionService {
         this.aiSessionProperties = aiSessionProperties != null ? aiSessionProperties : new AiSessionProperties();
         this.accessGuardService = accessGuardService;
         this.sseService = sseService != null ? sseService : new SseService();
+        this.planningAttachmentService = planningAttachmentService;
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(15_000);
@@ -1038,7 +1045,7 @@ public class AiSessionService {
         List<Map<String, Object>> result = new ArrayList<>();
 
         // system prompt 始终在最前
-        result.add(Map.of("role", "system", "content", session.systemPrompt));
+        result.add(Map.of("role", "system", "content", buildEffectiveSystemPrompt(session)));
 
         List<Message> conv = conversation;
         int windowSize = session.windowSize;
@@ -1075,6 +1082,94 @@ public class AiSessionService {
         }
 
         return result;
+    }
+
+    private String buildEffectiveSystemPrompt(Session session) {
+        String prompt = session.systemPrompt != null ? session.systemPrompt : "";
+        if (planningAttachmentService == null || !PROJECT_PLANNING_MODULE_ID.equals(session.moduleId)) {
+            return prompt;
+        }
+        String attachmentRef = readProjectPlanningAttachmentRef(prompt);
+        if (attachmentRef == null) {
+            return prompt;
+        }
+        String tenantId = readProjectPlanningTenantId(prompt, session);
+        String projectId = readProjectPlanningProjectId(prompt, session);
+        if (tenantId == null || projectId == null) {
+            return prompt + "\n\n[projectPlanningAttachmentError]\n"
+                    + "ref: " + attachmentRef + "\n"
+                    + "message: backend could not resolve tenantId/projectId for this attachment.\n";
+        }
+        String attachmentText = readCachedPlanningAttachmentText(session, tenantId, projectId, attachmentRef);
+        if (attachmentText == null || attachmentText.isBlank()) {
+            return prompt + "\n\n[projectPlanningAttachmentError]\n"
+                    + "ref: " + attachmentRef + "\n"
+                    + "message: backend could not extract non-empty text from this attachment.\n";
+        }
+        return prompt + "\n\n[projectPlanningAttachmentText]\n"
+                + "ref: " + attachmentRef + "\n"
+                + "tenantId: " + tenantId + "\n"
+                + "projectId: " + projectId + "\n"
+                + "source: backend Apache Tika transient extraction; not persisted as project truth.\n"
+                + "content:\n"
+                + attachmentText
+                + "\n[/projectPlanningAttachmentText]\n";
+    }
+
+    private String readCachedPlanningAttachmentText(Session session, String tenantId, String projectId, String attachmentRef) {
+        String cacheKey = tenantId + "\u0000" + projectId + "\u0000" + attachmentRef;
+        if (cacheKey.equals(session.planningAttachmentPromptRef)
+                && session.planningAttachmentPromptText != null) {
+            return session.planningAttachmentPromptText;
+        }
+        try {
+            String text = planningAttachmentService.extractTextForPrompt(tenantId, projectId, attachmentRef);
+            session.planningAttachmentPromptRef = cacheKey;
+            session.planningAttachmentPromptText = text;
+            return text;
+        } catch (RuntimeException error) {
+            log.warn("[SESSION] projectPlanning attachment extraction failed tenant={} project={} ref={}: {}",
+                    tenantId, projectId, attachmentRef, error.getMessage());
+            session.planningAttachmentPromptRef = cacheKey;
+            session.planningAttachmentPromptText = "";
+            return "";
+        }
+    }
+
+    private static String readProjectPlanningTenantId(String prompt, Session session) {
+        String fromPrompt = readPromptLine(prompt, PROJECT_PLANNING_TENANT_ID_LINE);
+        if (fromPrompt != null) return fromPrompt;
+        return blankToNull(session.tenantId);
+    }
+
+    private static String readProjectPlanningProjectId(String prompt, Session session) {
+        String fromPrompt = readPromptLine(prompt, PROJECT_PLANNING_PROJECT_ID_LINE);
+        if (fromPrompt != null) return fromPrompt;
+        String fromModuleInstance = blankToNull(session.moduleInstanceId);
+        if (fromModuleInstance != null) return fromModuleInstance;
+        return blankToNull(session.projectId);
+    }
+
+    private static String readProjectPlanningAttachmentRef(String prompt) {
+        return readPromptLine(prompt, PROJECT_PLANNING_ATTACHMENT_REF_LINE);
+    }
+
+    private static String readPromptLine(String prompt, String prefix) {
+        if (prompt == null || prompt.isBlank()) return null;
+        String[] lines = prompt.split("\\R");
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (!trimmed.startsWith(prefix)) continue;
+            String value = trimmed.substring(prefix.length()).trim();
+            return value.isBlank() ? null : value;
+        }
+        return null;
+    }
+
+    private static String blankToNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -1789,6 +1884,8 @@ public class AiSessionService {
         String instanceId;
         String runtimeInstanceId;
         String scopeKey;
+        String planningAttachmentPromptRef;
+        String planningAttachmentPromptText;
         Map<String, Object> scope;
         int windowSize;
         long lastActiveTime;

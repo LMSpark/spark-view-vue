@@ -240,14 +240,12 @@ function normalizeProjectPlanningHostRunInput(
   }
   const record = args
   const requirementOverride = readOptionalString(record, 'requirement')
-  const planningAttachmentText = readOptionalString(record, 'planningAttachmentText')
-  const navigationAttachmentTextByNodeId = readOptionalStringRecord(record, 'navigationAttachmentTextByNodeId')
+  const planningAttachmentRef = readOptionalString(record, 'planningAttachmentRef')
   const scopeNodeIds = readOptionalStringArray(record, 'scopeNodeIds')
   const includeEmptyRequirement = readOptionalBoolean(record, 'includeEmptyRequirement')
   const options = {
     ...(requirementOverride === undefined ? {} : { requirementOverride }),
-    ...(planningAttachmentText === undefined ? {} : { planningAttachmentText }),
-    ...(navigationAttachmentTextByNodeId === undefined ? {} : { navigationAttachmentTextByNodeId }),
+    ...(planningAttachmentRef === undefined ? {} : { planningAttachmentRef }),
     ...(scopeNodeIds === undefined ? {} : { scopeNodeIds }),
     ...(includeEmptyRequirement === undefined ? {} : { includeEmptyRequirement }),
   }
@@ -309,16 +307,4 @@ function readOptionalStringArray(args: Record<string, unknown>, field: string): 
     .map(item => item.trim())
     .filter(item => item.length > 0)
   return strings.length > 0 ? strings : undefined
-}
-
-function readOptionalStringRecord(args: Record<string, unknown>, field: string): Record<string, string> | undefined {
-  const value = args[field]
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
-  const result: Record<string, string> = {}
-  for (const [key, item] of Object.entries(value)) {
-    if (typeof item !== 'string') continue
-    const normalized = item.trim()
-    if (normalized.length > 0) result[key] = normalized
-  }
-  return Object.keys(result).length > 0 ? result : undefined
 }

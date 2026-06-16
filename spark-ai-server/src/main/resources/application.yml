@@ -35,6 +35,11 @@ spark:
   workflow-designs:
     storage-dir: ${WORKFLOW_DESIGNS_DIR:./data/workflow-designs}
 
+  planning-attachments:
+    storage-dir: ${PLANNING_ATTACHMENTS_DIR:./data/planning-attachments}
+    max-file-bytes: ${PLANNING_ATTACHMENTS_MAX_FILE_BYTES:20971520}
+    max-extract-chars: ${PLANNING_ATTACHMENTS_MAX_EXTRACT_CHARS:120000}
+
   rate-limit:
     enabled: ${SPARK_RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${SPARK_RATE_LIMIT_RPM:600}

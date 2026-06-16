@@ -157,9 +157,9 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
 
     </div>
 
-    <!-- ═══ 需求文档导入对话框 ═══ -->
-    <RequirementImportDialog
-      v-model="state.requirementImportDialogVisible.value"
+    <!-- ═══ 项目策划文档导入对话框 ═══ -->
+    <ProjectPlanningDocumentImportDialog
+      v-model="state.projectPlanningDocumentImportDialogVisible.value"
       :state="state"
     />
 
@@ -190,7 +190,7 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
-import RequirementImportDialog from './RequirementImportDialog.vue'
+import ProjectPlanningDocumentImportDialog from './ProjectPlanningDocumentImportDialog.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const {

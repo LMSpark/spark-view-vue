@@ -11,6 +11,7 @@ import com.spark.ai.config.AiSessionProperties;
 import com.spark.ai.config.DynamicDataSourceProperties;
 import com.spark.ai.config.OpenAiProperties;
 import com.spark.ai.config.PagesConfigProperties;
+import com.spark.ai.config.PlanningAttachmentProperties;
 import com.spark.ai.config.RateLimitProperties;
 import com.spark.ai.config.WorkflowDesignProperties;
 
@@ -20,6 +21,7 @@ import com.spark.ai.config.WorkflowDesignProperties;
     OpenAiProperties.class,
     PagesConfigProperties.class,
     WorkflowDesignProperties.class,
+    PlanningAttachmentProperties.class,
     DynamicDataSourceProperties.class,
     AiSessionProperties.class,
     RateLimitProperties.class

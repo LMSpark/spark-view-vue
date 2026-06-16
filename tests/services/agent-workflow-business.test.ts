@@ -14,6 +14,7 @@ import {
 import {
   createProjectPlanningAgentWorkflowDefinition,
   ensureProjectPlanningBusiness,
+  PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS,
   PROJECT_PLANNING_MODULE_ID,
 } from '@/services/project-planning/project-planning-business'
 
@@ -73,6 +74,31 @@ describe('app agent workflow business activation', () => {
 
     expect(definition.factory.activation.value).toEqual({
       registrationBindingKey: 'projectPlanning.registration',
+      handoff: {
+        target: 'runtime-binding',
+        workflowDoesNotActivateHost: true,
+        bindingRef: 'projectPlanning.registration',
+      },
+    })
+    expect(definition.process).toEqual(PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS)
+    expect(definition.process?.stages.map(stage => stage.stageId)).toEqual([
+      'PP1.intake-inventory',
+      'PP2.domain-decomposition',
+      'PP3.page-tree-planning',
+      'PP4.node-contract',
+      'PP5.model-write',
+      'PP6.verify-deliver',
+    ])
+    expect(definition.process?.knowledgeSources?.map(ref => ref.refId)).toEqual(expect.arrayContaining([
+      'doc.platformRouting.projectPlanning',
+      'generated.projectModel',
+      'generated.projectNode',
+    ]))
+    expect(definition.factory.workOrder.value).toMatchObject({
+      productionProcess: {
+        processId: 'projectPlanning.navigation-craft-process',
+        mode: 'progressive-navigation-craft',
+      },
     })
     expect(host.has(PROJECT_PLANNING_MODULE_ID)).toBe(true)
     expect(result.ok).toBe(true)

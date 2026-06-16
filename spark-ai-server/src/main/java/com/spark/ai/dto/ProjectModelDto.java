@@ -21,6 +21,7 @@ public record ProjectModelDto(
             String projectType,
             String icon,
             String description,
+            String planningAttachmentRef,
             String homeNodeId,
             Integer order,
             String createdAt,

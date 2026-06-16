@@ -87,6 +87,18 @@
       <version>2.25.60</version>
     </dependency>
 
+    <!-- Requirement/planning document text extraction -->
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>2.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-parsers-standard-package</artifactId>
+      <version>2.9.2</version>
+    </dependency>
+
     <!-- JWT (io.jsonwebtoken JJWT 0.12.x) -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>

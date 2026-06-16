@@ -41,6 +41,10 @@ public class ProjectEntity {
     @Column(length = 1024)
     private String description;
 
+    /** 项目级策划附件引用，对应 planning_attachment.attachment_ref。 */
+    @Column(name = "planning_attachment_ref", length = 128)
+    private String planningAttachmentRef;
+
     /** 项目打开时默认渲染的导航节点 ID，对应 NAVIGATION_NODE_FLAT.NODE_ID。 */
     @Column(name = "home_node_id", length = 255)
     private String homeNodeId;
@@ -88,6 +92,9 @@ public class ProjectEntity {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getPlanningAttachmentRef() { return planningAttachmentRef; }
+    public void setPlanningAttachmentRef(String planningAttachmentRef) { this.planningAttachmentRef = planningAttachmentRef; }
 
     public String getHomeNodeId() { return homeNodeId; }
     public void setHomeNodeId(String homeNodeId) { this.homeNodeId = homeNodeId; }

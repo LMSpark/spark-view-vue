@@ -99,6 +99,15 @@ export function getProjectPageApi(projectId: string, tenantId?: string): string 
   return `/api/tenants/${encodeURIComponent(resolvedTenantId)}/projects/${encodeURIComponent(normalizedProjectId)}/pages-config`
 }
 
+export function getProjectPlanningAttachmentApi(projectId: string, tenantId?: string): string {
+  const resolvedTenantId = resolveTenantId(tenantId)
+  const normalizedProjectId = projectId.trim()
+  if (!normalizedProjectId) {
+    throw new Error('projectId 不能为空，无法构造项目策划附件 API 路径')
+  }
+  return `/api/tenants/${encodeURIComponent(resolvedTenantId)}/projects/${encodeURIComponent(normalizedProjectId)}/planning-attachments`
+}
+
 export function getPlatformNavApi(): string {
   return '/api/platform/navigation'
 }

@@ -18,6 +18,7 @@
  */
 import { ref, shallowRef, reactive, computed, getCurrentInstance, getCurrentScope, nextTick, onScopeDispose } from 'vue'
 import { createAiRunAdapter, createAiToolApprovalBridge, getNavTree } from '@spark-appworks/spark-app'
+import type { AiRunTimelineEvent } from '@spark-appworks/spark-app'
 import type { AiToolApprovalRequest, NavNodeKind, ProjectNodeData } from '@spark-appworks/spark-app'
 import { useSparkComponent } from '@spark-appworks/spark-component'
 import type { ToolApprovalDisplayItem } from '@spark-appworks/spark-component'
@@ -46,13 +47,16 @@ import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
 } from '@/services/page-design/page-design-ai-runner'
-import { runRequirementImportAiSession } from '@/services/requirement-import/requirement-import-ai-runner'
-import { parseDocxToText, isDocxFile } from '@/services/requirement-import/docx-parser'
+import { runProjectPlanningAiSession } from '@/services/project-planning/project-planning-ai-runner'
+import {
+  isProjectPlanningDocumentFile,
+  uploadProjectPlanningAttachment,
+} from '@/services/project-planning/project-planning-attachments'
 import { getAppProjectWorkspace } from '@/services/project/project-shell'
 import type { ProjectWorkspaceScope } from '@/services/project/project-shell'
 import { reloadAndSyncNavigation, syncCommittedNavigationFromRouter } from '@/services/project/project-shell'
 import { getUser } from '@/services/auth'
-import { getProjectApi } from '@/services/api-paths'
+import { getProjectApi, getProjectDetailApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
 /** Dev Page File Name 的语义模型。 */
@@ -445,13 +449,22 @@ export function useDevState() {
     aiToolApprovalRevision.value += 1
   })
 
-  // ── SPARK AI requirement import ──
-  const requirementImportDialogVisible = ref(false)
-  const requirementImportParsing = ref(false)
-  const requirementImportAiRunning = ref(false)
-  const requirementImportDocumentText = ref('')
-  const requirementImportFileName = ref('')
-  const requirementImportAdapter = createAiRunAdapter()
+  // ── SPARK AI project planning document import ──
+  const projectPlanningDocumentImportDialogVisible = ref(false)
+  const projectPlanningDocumentUploading = ref(false)
+  const projectPlanningAiRunning = ref(false)
+  const projectPlanningDocumentFileName = ref('')
+  const projectPlanningAttachmentRef = ref('')
+  const projectPlanningAdapter = createAiRunAdapter()
+  const projectPlanningAiRunRevision = ref(0)
+  const projectPlanningAiTimeline = computed<readonly AiRunTimelineEvent[]>(() => {
+    void projectPlanningAiRunRevision.value
+    return projectPlanningAdapter.snapshot().timeline.slice(-8).reverse()
+  })
+
+  projectPlanningAdapter.subscribe(() => {
+    projectPlanningAiRunRevision.value += 1
+  })
 
   // ═══════════════════════════════════════════════════════════
   // 计算属性
@@ -666,57 +679,73 @@ export function useDevState() {
     }
   }
 
-  // ── 需求文档导入 ──
+  // ── 项目策划文档导入 ──
 
-  function openRequirementImportDialog(): void {
-    requirementImportDialogVisible.value = true
+  function openProjectPlanningDocumentImportDialog(): void {
+    projectPlanningAttachmentRef.value = project.projectInfo.planningAttachmentRef ?? ''
+    projectPlanningDocumentImportDialogVisible.value = true
   }
 
-  function closeRequirementImportDialog(): void {
-    requirementImportDialogVisible.value = false
-    requirementImportDocumentText.value = ''
-    requirementImportFileName.value = ''
+  function closeProjectPlanningDocumentImportDialog(): void {
+    projectPlanningDocumentImportDialogVisible.value = false
+    projectPlanningDocumentFileName.value = ''
   }
 
-  async function handleRequirementFileSelected(file: File): Promise<void> {
-    if (!isDocxFile(file)) {
-      addStatus('请选择 .docx 格式的需求文档', 'warning')
+  async function bindProjectPlanningAttachmentRef(attachmentRef: string): Promise<void> {
+    await http.put(getProjectDetailApi(projectId.value, tenantId.value), { planningAttachmentRef: attachmentRef })
+    project.replaceProjectInfo({
+      tenantId: tenantId.value,
+      projectId: projectId.value,
+      planningAttachmentRef: attachmentRef,
+    })
+    projectRevision.value += 1
+  }
+
+  async function handleProjectPlanningDocumentFileSelected(file: File): Promise<void> {
+    if (!isProjectPlanningDocumentFile(file)) {
+      addStatus('请选择 .docx 格式的项目策划文档', 'warning')
       return
     }
-    requirementImportParsing.value = true
-    requirementImportFileName.value = file.name
+    projectPlanningDocumentUploading.value = true
+    projectPlanningDocumentFileName.value = file.name
     try {
-      const text = await parseDocxToText(file)
-      if (text.trim().length === 0) {
-        addStatus('文档内容为空，请检查文件', 'warning')
-        return
-      }
-      requirementImportDocumentText.value = text
-      addStatus(`已解析文档: ${file.name} (${text.length} 字符)`, 'success')
+      const result = await uploadProjectPlanningAttachment({
+        tenantId: tenantId.value,
+        projectId: projectId.value,
+        file,
+      })
+      projectPlanningAttachmentRef.value = result.planningAttachmentRef
+      await bindProjectPlanningAttachmentRef(result.planningAttachmentRef)
+      addStatus(`项目策划文档已上传并绑定: ${result.originalFilename}`, 'success')
     } catch (error) {
-      addStatus(`文档解析失败: ${String(error)}`, 'error')
+      projectPlanningAttachmentRef.value = project.projectInfo.planningAttachmentRef ?? ''
+      addStatus(`项目策划文档上传失败: ${String(error)}`, 'error')
     } finally {
-      requirementImportParsing.value = false
+      projectPlanningDocumentUploading.value = false
     }
   }
 
-  async function runRequirementImportAi(): Promise<void> {
-    const documentText = requirementImportDocumentText.value.trim()
-    if (!documentText) {
-      addStatus('请先选择并解析需求文档', 'warning')
+  async function runProjectPlanningDocumentImportAi(): Promise<void> {
+    const localAttachmentRef = projectPlanningAttachmentRef.value.trim()
+    const modelAttachmentRef = project.projectInfo.planningAttachmentRef?.trim() ?? ''
+    const attachmentRef = localAttachmentRef.length > 0 ? localAttachmentRef : modelAttachmentRef
+    if (!attachmentRef) {
+      addStatus('请先上传并绑定项目策划文档', 'warning')
       return
     }
-    if (requirementImportAdapter.isRunning()) return
+    if (projectPlanningAdapter.isRunning()) return
 
-    requirementImportAiRunning.value = true
+    projectPlanningAiRunning.value = true
+    projectPlanningAiRunRevision.value += 1
+    await nextTick()
+
     try {
-      addStatus('AI 开始生成导航树...', 'info')
-      const result = await runRequirementImportAiSession({
-        documentText,
-        projectName: project.name,
+      addStatus('AI 开始读取项目策划附件并生成导航树...', 'info')
+      const result = await runProjectPlanningAiSession({
+        planningAttachmentRef: attachmentRef,
         editor,
         consumeCapability: capabilityConsumer,
-        adapter: requirementImportAdapter,
+        adapter: projectPlanningAdapter,
         beforeFunctionCall: aiToolApprovals.beforeFunctionCall,
         onAbort: aiToolApprovals.cancelPending,
         saveNavigationAfterRun: true,
@@ -729,16 +758,17 @@ export function useDevState() {
       })
       addStatus(
         result.savedNavigation
-          ? '需求导入完成，导航树已保存'
-          : '需求导入完成，请手动保存导航树',
+          ? '项目策划完成，导航树已保存'
+          : '项目策划完成，请手动保存导航树',
         result.savedNavigation ? 'success' : 'warning',
       )
-      closeRequirementImportDialog()
+      closeProjectPlanningDocumentImportDialog()
     } catch (error) {
-      addStatus(`需求导入失败: ${String(error)}`, 'error')
+      addStatus(`项目策划失败: ${String(error)}`, 'error')
     } finally {
-      aiToolApprovals.cancelPending('需求导入会话已结束。')
-      requirementImportAiRunning.value = false
+      aiToolApprovals.cancelPending('项目策划会话已结束。')
+      projectPlanningAiRunning.value = false
+      projectPlanningAiRunRevision.value += 1
     }
   }
 
@@ -1291,12 +1321,13 @@ export function useDevState() {
     pageDesignAiRunning,
     aiToolApprovalPending,
 
-    // 需求文档导入
-    requirementImportDialogVisible,
-    requirementImportParsing,
-    requirementImportAiRunning,
-    requirementImportDocumentText,
-    requirementImportFileName,
+    // 项目策划文档导入
+    projectPlanningDocumentImportDialogVisible,
+    projectPlanningDocumentUploading,
+    projectPlanningAiRunning,
+    projectPlanningDocumentFileName,
+    projectPlanningAttachmentRef,
+    projectPlanningAiTimeline,
 
     // 计算属性
     hasAnyFileDirty,
@@ -1342,10 +1373,10 @@ export function useDevState() {
     addContextItem,
     removeContextItem,
     commitContextEdit,
-    openRequirementImportDialog,
-    closeRequirementImportDialog,
-    handleRequirementFileSelected,
-    runRequirementImportAi,
+    openProjectPlanningDocumentImportDialog,
+    closeProjectPlanningDocumentImportDialog,
+    handleProjectPlanningDocumentFileSelected,
+    runProjectPlanningDocumentImportAi,
     initialize,
   }
 }

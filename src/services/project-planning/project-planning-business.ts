@@ -15,6 +15,18 @@ import {
   createSimpleInputContract,
   ClassModelAgentAdapter,
   type AgentWorkflowDefinition,
+  type AgentWorkflowProcess,
+  type AgentWorkflowProcessKnowledgeRef,
+  type AgentWorkflowProcessKnowledgeSourceKind,
+  type AgentWorkflowProcessStageCompletion,
+  type AgentWorkflowProcessStageConsideration,
+  type AgentWorkflowProcessStageLlmTask,
+  type AgentWorkflowProcessStageMetric,
+  type AgentWorkflowProcessStageMetricOperator,
+  type AgentWorkflowProcessStageModelSelection,
+  type AgentWorkflowProcessStageParameterSource,
+  type AgentWorkflowProcessStagePrerequisite,
+  type AgentWorkflowProcessStageVerification,
   type AiAgentBeforeFunctionCallDirective,
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
@@ -38,6 +50,195 @@ const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectModel'
 const PROJECT_PLANNING_WORKFLOW_ID = 'agent.workflow.projectPlanning'
 const PROJECT_PLANNING_REGISTRATION_BINDING_KEY = 'projectPlanning.registration'
 const PROJECT_PLANNING_WORKFLOW_PUBLISHED_AT = '1970-01-01T00:00:00.000Z'
+const PROJECT_PLANNING_PROCESS_SOURCE_REF = 'docs/architecture/PLATFORM_TENANT_ROUTING.md#项目策划'
+const PROJECT_PLANNING_DTS_FILE_ROOT = 'generated/dts-class-model/files'
+
+type ProjectPlanningKnowledgeRefOptions = Readonly<{
+  refId: string
+  title: string
+  source: AgentWorkflowProcessKnowledgeSourceKind
+  path: string
+  usage: string
+  symbols?: readonly string[]
+}>
+
+function projectPlanningMetric(
+  metricId: string,
+  title: string,
+  operator: AgentWorkflowProcessStageMetricOperator,
+  target: number,
+  unit: string,
+): AgentWorkflowProcessStageMetric {
+  return { metricId, title, operator, target, unit }
+}
+
+function projectPlanningKnowledgeRef(
+  options: ProjectPlanningKnowledgeRefOptions,
+): AgentWorkflowProcessKnowledgeRef {
+  return {
+    refId: options.refId,
+    title: options.title,
+    source: options.source,
+    path: options.path,
+    ...(options.symbols === undefined || options.symbols.length === 0 ? {} : { symbols: options.symbols }),
+    usage: options.usage,
+  }
+}
+
+function projectPlanningConsideration(
+  phaseId: AgentWorkflowProcessStageConsideration['phaseId'],
+  title: string,
+  checks: readonly string[],
+  metrics: readonly AgentWorkflowProcessStageMetric[],
+): AgentWorkflowProcessStageConsideration {
+  return { phaseId, title, checks, metrics }
+}
+
+function projectPlanningPrerequisite(
+  prerequisiteId: string,
+  title: string,
+  source: string,
+  metrics: readonly AgentWorkflowProcessStageMetric[],
+): AgentWorkflowProcessStagePrerequisite {
+  return { prerequisiteId, title, source, metrics }
+}
+
+function projectPlanningModel(
+  modelRole: string,
+  modelRef: string,
+  selectionReason: string,
+  fallbackModelRefs: readonly string[] = [],
+): AgentWorkflowProcessStageModelSelection {
+  return {
+    modelRole,
+    modelRef,
+    selectionReason,
+    ...(fallbackModelRefs.length === 0 ? {} : { fallbackModelRefs }),
+  }
+}
+
+function projectPlanningParameterSource(
+  parameterId: string,
+  title: string,
+  source: string,
+  path: string,
+  required = true,
+): AgentWorkflowProcessStageParameterSource {
+  return { parameterId, title, source, path, required }
+}
+
+function projectPlanningLlmTask(
+  objective: string,
+  instructions: readonly string[],
+  expectedOutput: readonly string[],
+  forbidden: readonly string[] = [],
+): AgentWorkflowProcessStageLlmTask {
+  return {
+    objective,
+    instructions,
+    expectedOutput,
+    ...(forbidden.length === 0 ? {} : { forbidden }),
+  }
+}
+
+function projectPlanningVerification(
+  verificationId: string,
+  title: string,
+  method: string,
+  metrics: readonly AgentWorkflowProcessStageMetric[],
+): AgentWorkflowProcessStageVerification {
+  return { verificationId, title, method, metrics }
+}
+
+function projectPlanningCompletion(
+  criteria: readonly string[],
+  nextWhen: string,
+  stopWhen: string,
+): AgentWorkflowProcessStageCompletion {
+  return { criteria, nextWhen, stopWhen }
+}
+
+const PROJECT_PLANNING_KNOWLEDGE_REFS = {
+  platformRouting: projectPlanningKnowledgeRef({
+    refId: 'doc.platformRouting.projectPlanning',
+    title: '平台项目节点与项目策划口径',
+    source: 'document',
+    path: PROJECT_PLANNING_PROCESS_SOURCE_REF,
+    usage: '确定项目策划等于模块策划加页面策划，项目节点树是模块/页面入口事实源。',
+  }),
+  projectDeepDive: projectPlanningKnowledgeRef({
+    refId: 'doc.projectDeepDive.planning',
+    title: 'SPARK AppWorks 项目深度解析',
+    source: 'document',
+    path: 'docs/SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md#功能策划',
+    usage: '确认 ProjectModel、ProjectDesign、ConfigPageNode 与功能策划的职责分层。',
+  }),
+  generatedManifest: projectPlanningKnowledgeRef({
+    refId: 'generated.manifest',
+    title: 'DTS ClassModel bundle manifest',
+    source: 'generated-dts-class-model',
+    path: 'generated/dts-class-model/manifest.json',
+    usage: '定位项目策划可用的 ProjectModel、导航节点和项目类型知识 shard。',
+  }),
+  projectModel: projectPlanningKnowledgeRef({
+    refId: 'generated.projectModel',
+    title: 'ProjectModel',
+    source: 'generated-dts-class-model',
+    path: `${PROJECT_PLANNING_DTS_FILE_ROOT}/packages/spark-project-model/src/project/project-model.ts.json`,
+    symbols: [
+      'ProjectModel',
+      'readProjectPlanningInput',
+      'readNavigationPlanningInputs',
+      'replaceNavigationChildren',
+      'completeProjectPlanning',
+    ],
+    usage: '确认项目策划的输入、写入、完成门禁和 action 查询入口。',
+  }),
+  projectDesign: projectPlanningKnowledgeRef({
+    refId: 'generated.projectDesign',
+    title: 'ProjectDesign',
+    source: 'generated-dts-class-model',
+    path: `${PROJECT_PLANNING_DTS_FILE_ROOT}/packages/spark-project-model/src/project/project-design.ts.json`,
+    symbols: ['ProjectDesign', 'replaceNavigationChildren', 'readPlanningProjection'],
+    usage: '确认项目设计内容、导航 children 替换和 pageFeatures 投影边界。',
+  }),
+  projectTypes: projectPlanningKnowledgeRef({
+    refId: 'generated.projectTypes',
+    title: 'Project planning types',
+    source: 'generated-dts-class-model',
+    path: `${PROJECT_PLANNING_DTS_FILE_ROOT}/packages/spark-project-model/src/project/project-types.ts.json`,
+    symbols: [
+      'ProjectPlanningInput',
+      'NavigationPlanningInput',
+      'ProjectPlanningCompletionResult',
+    ],
+    usage: '确认项目级需求、导航节点策划输入和完成结果结构。',
+  }),
+  projectNode: projectPlanningKnowledgeRef({
+    refId: 'generated.projectNode',
+    title: 'ProjectNodeData',
+    source: 'generated-dts-class-model',
+    path: `${PROJECT_PLANNING_DTS_FILE_ROOT}/packages/spark-project-model/src/navigation/project-node.ts.json`,
+    symbols: ['ProjectNodeData', 'ProjectModelData', 'ProjectPageNodeSummary'],
+    usage: '确认 module/page 节点字段、description、path、children 和 pageFeatures 摘要结构。',
+  }),
+  navigationTree: projectPlanningKnowledgeRef({
+    refId: 'generated.navigationTree',
+    title: 'Navigation tree',
+    source: 'generated-dts-class-model',
+    path: `${PROJECT_PLANNING_DTS_FILE_ROOT}/packages/spark-project-model/src/navigation/navigation-tree.ts.json`,
+    symbols: ['buildNavRoot', 'buildProjectPageSummaries', 'normalizeProjectNodeData'],
+    usage: '确认导航树规范化、模块/页面树投影和 page summary 构建规则。',
+  }),
+  projectWorkspace: projectPlanningKnowledgeRef({
+    refId: 'generated.projectWorkspace',
+    title: 'ProjectWorkspace',
+    source: 'generated-dts-class-model',
+    path: `${PROJECT_PLANNING_DTS_FILE_ROOT}/packages/spark-project-model/src/project/project-workspace.ts.json`,
+    symbols: ['ProjectWorkspace'],
+    usage: '确认 Host Run / headless 策划保存导航的工作区边界。',
+  }),
+} as const
 
 function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
   return createWorkerDtsClassModelKnowledgeProvider({
@@ -47,22 +248,485 @@ function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledge
   })
 }
 
+const PROJECT_PLANNING_STAGE_CONSIDERATIONS = {
+  intakeInventory: [
+    projectPlanningConsideration('F0', '身份边界', ['projectPlanning 工艺对象明确', '本流程只策划项目节点树'], [
+      projectPlanningMetric('projectIdResolvedCount', '已定位 projectId 数', 'gte', 1, 'project'),
+      projectPlanningMetric('pageDesignMutationCount', '页面四文件修改次数', 'eq', 0, 'mutation'),
+    ]),
+    projectPlanningConsideration('F1', '原料盘点', ['项目级需求、附件和现有导航节点可读'], [
+      projectPlanningMetric('projectRequirementLength', '项目需求字符数', 'gte', 1, 'char'),
+      projectPlanningMetric('navigationInputReadCount', '导航策划输入读取次数', 'gte', 1, 'read'),
+    ]),
+    projectPlanningConsideration('F3', '工单契约', ['projectScopeKey、projectId、requirement 和 navigationNodes 齐全'], [
+      projectPlanningMetric('missingRequiredInputCount', '缺失必填输入数', 'eq', 0, 'field'),
+    ]),
+  ],
+  domainDecomposition: [
+    projectPlanningConsideration('F1', '业务素材', ['从项目需求和节点需求抽取业务域'], [
+      projectPlanningMetric('businessDomainCandidateCount', '业务域候选数', 'gte', 1, 'domain'),
+    ]),
+    projectPlanningConsideration('F2', '项目模型知识', ['使用 ProjectNodeData 和 NavigationPlanningInput 约束模块边界'], [
+      projectPlanningMetric('generatedKnowledgeRefCount', 'generated 知识引用数', 'gte', 2, 'ref'),
+    ]),
+    projectPlanningConsideration('F5', '拆分治理', ['避免只有技术分层或空模块壳'], [
+      projectPlanningMetric('emptyModuleShellCount', '空模块壳数量', 'eq', 0, 'module'),
+    ]),
+  ],
+  pageTreePlanning: [
+    projectPlanningConsideration('F3', '页面契约', ['每个主要模块至少包含页面概要'], [
+      projectPlanningMetric('moduleWithPageCoveragePercent', '模块页面覆盖率', 'gte', 100, 'percent'),
+    ]),
+    projectPlanningConsideration('F5', '路由治理', ['节点 id/path 稳定且不冲突'], [
+      projectPlanningMetric('duplicateNodeIdCount', '重复 nodeId 数', 'eq', 0, 'node'),
+      projectPlanningMetric('duplicatePathCount', '重复 path 数', 'eq', 0, 'path'),
+    ]),
+    projectPlanningConsideration('F8', '工单推进', ['页面概要能交给 pageDesign 消费'], [
+      projectPlanningMetric('pageDescriptionCoveragePercent', '页面 description 覆盖率', 'gte', 100, 'percent'),
+    ]),
+  ],
+  nodeContract: [
+    projectPlanningConsideration('F2', '节点知识', ['ProjectNodeData 字段语义已应用'], [
+      projectPlanningMetric('projectNodeFieldCoveragePercent', '节点关键字段覆盖率', 'gte', 100, 'percent'),
+    ]),
+    projectPlanningConsideration('F3', '节点契约', ['module/page/path/description/children 关系明确'], [
+      projectPlanningMetric('invalidNodeKindCount', '非法 nodeKind 数', 'eq', 0, 'node'),
+      projectPlanningMetric('missingPagePathCount', '页面缺失 path 数', 'eq', 0, 'page'),
+    ]),
+    projectPlanningConsideration('F6', '策划验收', ['pageFeatures 可从节点树投影'], [
+      projectPlanningMetric('pageFeatureProjectionCount', 'pageFeatures 投影数', 'gte', 1, 'page'),
+    ]),
+  ],
+  modelWrite: [
+    projectPlanningConsideration('F4', '写入工位', ['只通过 ProjectModel action 写导航策划'], [
+      projectPlanningMetric('replaceNavigationChildrenCallCount', 'replaceNavigationChildren 调用数', 'gte', 1, 'call'),
+      projectPlanningMetric('forbiddenPageDesignApiCallCount', '禁止 pageDesign API 调用数', 'eq', 0, 'call'),
+    ]),
+    projectPlanningConsideration('F6', '完成门禁', ['completeProjectPlanning 可通过'], [
+      projectPlanningMetric('navigationDirtyCount', '导航 dirty 标记数', 'gte', 1, 'dirty'),
+      projectPlanningMetric('pageNodeCount', '页面节点数', 'gte', 1, 'page'),
+    ]),
+  ],
+  verifyDeliver: [
+    projectPlanningConsideration('F6', '最终验收', ['导航树、页面节点和 pageFeatures 闭合'], [
+      projectPlanningMetric('completionErrorCount', '完成门禁错误数', 'eq', 0, 'error'),
+      projectPlanningMetric('pageNodeCount', '页面节点数', 'gte', 1, 'page'),
+    ]),
+    projectPlanningConsideration('F7', '设计交接', ['交接给运行时/Host Run，不在流程图设计调度实现'], [
+      projectPlanningMetric('executionImplementationStepCount', '执行实现步骤数', 'eq', 0, 'step'),
+    ]),
+    projectPlanningConsideration('F9', '交付闭环', ['交付范围只包含 navigation/project planning 结果'], [
+      projectPlanningMetric('navigationArtifactCount', '导航交付资产数', 'gte', 1, 'artifact'),
+      projectPlanningMetric('pageFileArtifactCount', '页面四文件交付资产数', 'eq', 0, 'file'),
+    ]),
+  ],
+} as const satisfies Record<string, readonly AgentWorkflowProcessStageConsideration[]>
+
+export const PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
+  processId: 'projectPlanning.navigation-craft-process',
+  title: '项目策划六段式节点树工艺',
+  sourceRef: PROJECT_PLANNING_PROCESS_SOURCE_REF,
+  principle: '流程图只表达项目策划工艺步骤；项目策划事实是模块策划加页面策划，落点是 ProjectModel navigation children；F0-F9 是每个步骤的工厂检查维度，不作为流程节点。',
+  knowledgeSources: Object.values(PROJECT_PLANNING_KNOWLEDGE_REFS),
+  stages: [
+    {
+      stageId: 'PP1.intake-inventory',
+      title: '接单与需求盘点',
+      sourceSteps: 'projectPlanning.intake',
+      goal: '确认项目作用域、项目级需求、附件正文和现有导航策划输入。',
+      knowledgeRefs: [
+        PROJECT_PLANNING_KNOWLEDGE_REFS.platformRouting,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectDeepDive,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectModel,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectTypes,
+      ],
+      considerations: PROJECT_PLANNING_STAGE_CONSIDERATIONS.intakeInventory,
+      prerequisites: [
+        projectPlanningPrerequisite('PP1.pre.projectId', '项目定位已输入', 'runInput.projectId', [
+          projectPlanningMetric('projectIdResolvedCount', '已定位 projectId 数', 'gte', 1, 'project'),
+        ]),
+        projectPlanningPrerequisite('PP1.pre.requirement', '项目需求可读', 'readProjectPlanningInput.requirement', [
+          projectPlanningMetric('projectRequirementLength', '项目需求字符数', 'gte', 1, 'char'),
+        ]),
+      ],
+      model: projectPlanningModel(
+        'planning-intake',
+        'llm.reasoning.default',
+        '需要归纳项目级需求、附件正文和现有节点需求，优先使用推理模型。',
+        ['llm.reasoning.fast'],
+      ),
+      parameterSources: [
+        projectPlanningParameterSource('projectScopeKey', '项目策划 scope key', 'runInput', 'projectScopeKey'),
+        projectPlanningParameterSource('projectId', '项目 ID', 'runInput', 'projectId'),
+        projectPlanningParameterSource('requirement', '项目级需求', 'runInput', 'requirement'),
+        projectPlanningParameterSource('navigationNodes', '现有导航节点策划输入', 'runInput', 'navigationNodes'),
+      ],
+      llmTask: projectPlanningLlmTask(
+        '把项目需求转成项目策划工单，并完成现有导航节点盘点。',
+        ['确认项目边界和策划目标', '读取项目级 requirement 与 navigationNodes', '识别缺失需求或附件正文'],
+        ['projectScope', 'requirementSummary', 'navigationInventory', 'openQuestions'],
+        ['调用 openPageDesign', '修改页面四文件'],
+      ),
+      verification: [
+        projectPlanningVerification('PP1.verify.input', '输入验收', '检查必填输入、需求长度和导航节点读取结果。', [
+          projectPlanningMetric('missingRequiredInputCount', '缺失必填输入数', 'eq', 0, 'field'),
+          projectPlanningMetric('navigationInputReadCount', '导航策划输入读取次数', 'gte', 1, 'read'),
+        ]),
+      ],
+      completion: projectPlanningCompletion(
+        ['projectId 已解析', '项目需求非空', 'navigationNodes 可读', '页面四文件修改次数为 0'],
+        '输入验收通过后进入业务域与模块拆分。',
+        'projectId、requirement 或导航输入缺失时停止并请求澄清。',
+      ),
+      steps: [
+        {
+          stepId: 'PP1.1',
+          title: '项目作用域定界',
+          actions: ['定位 projectId', '读取 projectScopeKey', '确认本轮只处理项目节点树'],
+          outputs: ['projectScope', 'planningBoundary'],
+          checks: ['不进入 pageDesign 四文件', '不设计运行时调度实现'],
+        },
+        {
+          stepId: 'PP1.2',
+          title: '需求与现有节点盘点',
+          actions: ['读取项目级 requirement', '读取附件正文', '盘点 navigationNodes'],
+          outputs: ['requirementSummary', 'navigationInventory'],
+          checks: ['项目级需求可追溯', '现有节点需求不丢失'],
+        },
+      ],
+    },
+    {
+      stageId: 'PP2.domain-decomposition',
+      title: '业务域与模块拆分',
+      sourceSteps: 'projectPlanning.domain',
+      goal: '从项目需求中拆出稳定业务域，并形成模块候选和边界说明。',
+      knowledgeRefs: [
+        PROJECT_PLANNING_KNOWLEDGE_REFS.platformRouting,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectNode,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.navigationTree,
+      ],
+      considerations: PROJECT_PLANNING_STAGE_CONSIDERATIONS.domainDecomposition,
+      prerequisites: [
+        projectPlanningPrerequisite('PP2.pre.inventory', '需求盘点已完成', 'PP1.requirementSummary', [
+          projectPlanningMetric('projectRequirementLength', '项目需求字符数', 'gte', 1, 'char'),
+        ]),
+      ],
+      model: projectPlanningModel(
+        'business-domain-decomposition',
+        'llm.reasoning.default',
+        '需要从项目需求抽取业务域、模块边界和模块间关系，使用推理模型。',
+      ),
+      parameterSources: [
+        projectPlanningParameterSource('requirementSummary', '项目需求摘要', 'PP1.output', 'requirementSummary'),
+        projectPlanningParameterSource('navigationInventory', '现有节点盘点', 'PP1.output', 'navigationInventory'),
+        projectPlanningParameterSource(
+          'nodeGuides',
+          'ProjectNodeData 与导航树知识',
+          'generated-dts-class-model',
+          `${PROJECT_PLANNING_KNOWLEDGE_REFS.projectNode.path},${PROJECT_PLANNING_KNOWLEDGE_REFS.navigationTree.path}`,
+        ),
+      ],
+      llmTask: projectPlanningLlmTask(
+        '输出业务域和模块拆分方案，保证每个模块都有页面消费价值。',
+        ['抽取业务域', '合并重复模块', '为每个模块说明目标用户和核心任务'],
+        ['businessDomains', 'modulePlan', 'moduleBoundaryReport'],
+        ['只按技术层拆模块', '生成没有页面消费者的空模块壳'],
+      ),
+      verification: [
+        projectPlanningVerification('PP2.verify.modules', '模块拆分验收', '检查业务域数量和空模块壳。', [
+          projectPlanningMetric('businessDomainCandidateCount', '业务域候选数', 'gte', 1, 'domain'),
+          projectPlanningMetric('emptyModuleShellCount', '空模块壳数量', 'eq', 0, 'module'),
+        ]),
+      ],
+      completion: projectPlanningCompletion(
+        ['至少 1 个业务域', '空模块壳数量为 0', '模块边界可解释'],
+        '模块拆分验收通过后进入页面与子页面策划。',
+        '模块边界不清或只有空模块壳时停止。',
+      ),
+      steps: [
+        {
+          stepId: 'PP2.1',
+          title: '业务域识别',
+          actions: ['从需求抽取业务域', '识别角色、对象和主流程', '合并重复业务域'],
+          outputs: ['businessDomains'],
+          checks: ['业务域能从需求追溯', '不是技术层命名'],
+        },
+        {
+          stepId: 'PP2.2',
+          title: '模块边界确定',
+          actions: ['为业务域分配模块', '说明模块责任和边界', '标记后续页面候选'],
+          outputs: ['modulePlan'],
+          checks: ['每个模块至少有页面候选', '模块之间职责不重叠'],
+        },
+      ],
+    },
+    {
+      stageId: 'PP3.page-tree-planning',
+      title: '页面与子页面策划',
+      sourceSteps: 'projectPlanning.pages',
+      goal: '为每个主要模块规划页面和必要子页面，形成可交给 pageDesign 的页面概要。',
+      knowledgeRefs: [
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectDeepDive,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectNode,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.navigationTree,
+      ],
+      considerations: PROJECT_PLANNING_STAGE_CONSIDERATIONS.pageTreePlanning,
+      prerequisites: [
+        projectPlanningPrerequisite('PP3.pre.modules', '模块候选已验收', 'PP2.modulePlan', [
+          projectPlanningMetric('businessDomainCandidateCount', '业务域候选数', 'gte', 1, 'domain'),
+        ]),
+      ],
+      model: projectPlanningModel(
+        'page-tree-planning',
+        'llm.reasoning.default',
+        '需要把模块目标转成页面、子页面和路由结构，使用推理模型。',
+      ),
+      parameterSources: [
+        projectPlanningParameterSource('modulePlan', '模块拆分方案', 'PP2.output', 'modulePlan'),
+        projectPlanningParameterSource('projectNodeSchema', 'ProjectNodeData 字段结构', 'generated-dts-class-model', PROJECT_PLANNING_KNOWLEDGE_REFS.projectNode.path),
+      ],
+      llmTask: projectPlanningLlmTask(
+        '输出 module/page 两级以上的页面树策划，并为每个页面写功能描述。',
+        ['为每个模块规划主要页面', '必要时规划隐藏子页面', '生成稳定英文 id/path'],
+        ['pageTreePlan', 'pageDescriptionPlan', 'routePlan'],
+        ['只生成 module 不生成 page', '让 page 缺失 description 或 path'],
+      ),
+      verification: [
+        projectPlanningVerification('PP3.verify.pages', '页面树验收', '检查模块页面覆盖、重复 id/path 和页面描述覆盖。', [
+          projectPlanningMetric('moduleWithPageCoveragePercent', '模块页面覆盖率', 'gte', 100, 'percent'),
+          projectPlanningMetric('duplicateNodeIdCount', '重复 nodeId 数', 'eq', 0, 'node'),
+          projectPlanningMetric('duplicatePathCount', '重复 path 数', 'eq', 0, 'path'),
+          projectPlanningMetric('pageDescriptionCoveragePercent', '页面 description 覆盖率', 'gte', 100, 'percent'),
+        ]),
+      ],
+      completion: projectPlanningCompletion(
+        ['模块页面覆盖率 100%', '重复 id/path 为 0', '页面 description 覆盖率 100%'],
+        '页面树验收通过后进入节点契约细化。',
+        '任一主要模块缺页面或页面概要不可交付时停止。',
+      ),
+      steps: [
+        {
+          stepId: 'PP3.1',
+          title: '页面清单规划',
+          actions: ['为模块生成页面清单', '确定页面目标和用户任务', '规划必要子页面'],
+          outputs: ['pageList', 'subPagePlan'],
+          checks: ['每个主要模块有 page', '页面不是空壳入口'],
+        },
+        {
+          stepId: 'PP3.2',
+          title: '路由与描述规划',
+          actions: ['生成稳定 id/path', '写页面 description', '标记隐藏子页面'],
+          outputs: ['routePlan', 'pageDescriptionPlan'],
+          checks: ['id/path 不重复', 'description 足以约束后续 pageDesign'],
+        },
+      ],
+    },
+    {
+      stageId: 'PP4.node-contract',
+      title: '节点契约细化',
+      sourceSteps: 'projectPlanning.node-contract',
+      goal: '把模块/页面策划落实为 ProjectNodeData 结构契约。',
+      knowledgeRefs: [
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectTypes,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectNode,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.navigationTree,
+      ],
+      considerations: PROJECT_PLANNING_STAGE_CONSIDERATIONS.nodeContract,
+      prerequisites: [
+        projectPlanningPrerequisite('PP4.pre.pageTree', '页面树方案已通过', 'PP3.pageTreePlan', [
+          projectPlanningMetric('pageDescriptionCoveragePercent', '页面 description 覆盖率', 'gte', 100, 'percent'),
+        ]),
+      ],
+      model: projectPlanningModel(
+        'project-node-contract',
+        'llm.reasoning.default',
+        '需要把页面树方案转成合法 ProjectNodeData children 参数，使用推理模型。',
+      ),
+      parameterSources: [
+        projectPlanningParameterSource('pageTreePlan', '页面树方案', 'PP3.output', 'pageTreePlan'),
+        projectPlanningParameterSource('replaceNavigationChildrenSchema', 'replaceNavigationChildren 参数结构', 'model_action_guide', 'ProjectModel.replaceNavigationChildren'),
+      ],
+      llmTask: projectPlanningLlmTask(
+        '形成可直接传给 replaceNavigationChildren 的 children 参数。',
+        ['设置 nodeKind、title、description、path、children', '为模块设置 childPlacement', '保留必要权限/上下文字段'],
+        ['projectNodeChildren', 'nodeContractReport'],
+        ['查询 ProjectNodeData 当作 attribute', '让 page 节点缺少 path'],
+      ),
+      verification: [
+        projectPlanningVerification('PP4.verify.contract', '节点契约验收', '检查 nodeKind、path、description 和 pageFeatures 投影。', [
+          projectPlanningMetric('projectNodeFieldCoveragePercent', '节点关键字段覆盖率', 'gte', 100, 'percent'),
+          projectPlanningMetric('invalidNodeKindCount', '非法 nodeKind 数', 'eq', 0, 'node'),
+          projectPlanningMetric('missingPagePathCount', '页面缺失 path 数', 'eq', 0, 'page'),
+          projectPlanningMetric('pageFeatureProjectionCount', 'pageFeatures 投影数', 'gte', 1, 'page'),
+        ]),
+      ],
+      completion: projectPlanningCompletion(
+        ['节点关键字段覆盖率 100%', '非法 nodeKind 为 0', '页面缺失 path 为 0', 'pageFeatures 可投影'],
+        '节点契约验收通过后进入模型写入与完成门禁。',
+        'ProjectNodeData 结构不闭合或 pageFeatures 不可投影时停止。',
+      ),
+      steps: [
+        {
+          stepId: 'PP4.1',
+          title: 'children 参数成型',
+          actions: ['构造 module/page children', '设置 nodeKind/title/path/description', '补 childPlacement'],
+          outputs: ['projectNodeChildren'],
+          checks: ['children 是 ProjectNodeData[]', 'module 下有 page children'],
+        },
+        {
+          stepId: 'PP4.2',
+          title: '节点字段验收',
+          actions: ['校验 nodeKind', '校验 path 和 description', '预测 pageFeatures 投影'],
+          outputs: ['nodeContractReport'],
+          checks: ['page 节点 path 非空', 'description 可被 pageDesign 消费'],
+        },
+      ],
+    },
+    {
+      stageId: 'PP5.model-write',
+      title: '模型写入与完成门禁',
+      sourceSteps: 'projectPlanning.write',
+      goal: '通过 ProjectModel action 写入导航 children，并触发 projectPlanning 完成门禁。',
+      knowledgeRefs: [
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectModel,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectDesign,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectTypes,
+      ],
+      considerations: PROJECT_PLANNING_STAGE_CONSIDERATIONS.modelWrite,
+      prerequisites: [
+        projectPlanningPrerequisite('PP5.pre.children', 'children 参数已验收', 'PP4.projectNodeChildren', [
+          projectPlanningMetric('invalidNodeKindCount', '非法 nodeKind 数', 'eq', 0, 'node'),
+        ]),
+      ],
+      model: projectPlanningModel(
+        'model-script-writer',
+        'llm.code.default',
+        '需要生成 model_script 函数体并调用 ProjectModel action，使用代码模型。',
+        ['llm.reasoning.default'],
+      ),
+      parameterSources: [
+        projectPlanningParameterSource('projectNodeChildren', '已验收 children 参数', 'PP4.output', 'projectNodeChildren'),
+        projectPlanningParameterSource('projectModelActions', 'ProjectModel action 知识', 'model_action_guide', 'readProjectPlanningInput,readNavigationPlanningInputs,replaceNavigationChildren'),
+      ],
+      llmTask: projectPlanningLlmTask(
+        '生成并执行 model_script，把项目策划写入 ProjectModel navigation children。',
+        ['读取 readProjectPlanningInput/readNavigationPlanningInputs', '调用 replaceNavigationChildren({ children })', '返回 navigationRoot 和节点统计'],
+        ['modelScript', 'navigationRoot', 'writeReport'],
+        ['调用 openPageDesign', '直接写四文件', '在 model_script 中调用 completeProjectPlanning'],
+      ),
+      verification: [
+        projectPlanningVerification('PP5.verify.write', '模型写入验收', '检查 replaceNavigationChildren、navigationDirty 和 page 节点数量。', [
+          projectPlanningMetric('replaceNavigationChildrenCallCount', 'replaceNavigationChildren 调用数', 'gte', 1, 'call'),
+          projectPlanningMetric('forbiddenPageDesignApiCallCount', '禁止 pageDesign API 调用数', 'eq', 0, 'call'),
+          projectPlanningMetric('navigationDirtyCount', '导航 dirty 标记数', 'gte', 1, 'dirty'),
+          projectPlanningMetric('pageNodeCount', '页面节点数', 'gte', 1, 'page'),
+        ]),
+      ],
+      completion: projectPlanningCompletion(
+        ['replaceNavigationChildren 至少调用 1 次', '禁止 pageDesign API 调用数为 0', '页面节点数不少于 1'],
+        '模型写入验收通过后进入交叉校验与交付。',
+        '未写 navigation、只有模块壳或误调用 pageDesign API 时停止。',
+      ),
+      steps: [
+        {
+          stepId: 'PP5.1',
+          title: 'ProjectModel action 写入',
+          actions: ['查询 action guide', '执行 model_script', '调用 replaceNavigationChildren'],
+          outputs: ['navigationRoot', 'writeReport'],
+          checks: ['根对象是 this(ProjectModel)', '不调用页面四文件 API'],
+        },
+        {
+          stepId: 'PP5.2',
+          title: '完成门禁预检',
+          actions: ['检查 navigationDirty', '统计 page 节点', '准备 agent_complete summary'],
+          outputs: ['completionReadiness'],
+          checks: ['page 节点不少于 1', 'completeProjectPlanning 不在 model_script 中调用'],
+        },
+      ],
+    },
+    {
+      stageId: 'PP6.verify-deliver',
+      title: '交叉校验与策划交付',
+      sourceSteps: 'projectPlanning.verify',
+      goal: '完成项目节点树、pageFeatures 和 Host Run 交付范围校验。',
+      knowledgeRefs: [
+        PROJECT_PLANNING_KNOWLEDGE_REFS.platformRouting,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectModel,
+        PROJECT_PLANNING_KNOWLEDGE_REFS.projectWorkspace,
+      ],
+      considerations: PROJECT_PLANNING_STAGE_CONSIDERATIONS.verifyDeliver,
+      prerequisites: [
+        projectPlanningPrerequisite('PP6.pre.write', '导航写入已完成', 'PP5.writeReport', [
+          projectPlanningMetric('pageNodeCount', '页面节点数', 'gte', 1, 'page'),
+        ]),
+      ],
+      model: projectPlanningModel(
+        'planning-verification',
+        'llm.reasoning.default',
+        '需要解释完成门禁、交付范围和后续 pageDesign 输入，使用推理模型。',
+      ),
+      parameterSources: [
+        projectPlanningParameterSource('completionResult', 'completeProjectPlanning 结果', 'agent_complete', 'ProjectModel.completeProjectPlanning'),
+        projectPlanningParameterSource('navigationRoot', '导航树根', 'ProjectModel', 'navigationRoot'),
+        projectPlanningParameterSource('pageFeatures', '页面策划投影', 'ProjectModel', 'readPlanningProjection'),
+      ],
+      llmTask: projectPlanningLlmTask(
+        '验证项目策划产物是否正确，并形成可交给 pageDesign 的摘要。',
+        ['检查 module/page 两级结构', '检查 pageFeatures 可消费', '输出导航交付摘要和剩余风险'],
+        ['completionReport', 'pageDesignHandoff', 'deliverySummary', 'residualRisk'],
+        ['宣布已生成页面四文件', '设计保存/回滚实现'],
+      ),
+      verification: [
+        projectPlanningVerification('PP6.verify.delivery', '最终交付验收', 'completeProjectPlanning 通过且交付范围只包含 navigation。', [
+          projectPlanningMetric('completionErrorCount', '完成门禁错误数', 'eq', 0, 'error'),
+          projectPlanningMetric('navigationArtifactCount', '导航交付资产数', 'gte', 1, 'artifact'),
+          projectPlanningMetric('pageFileArtifactCount', '页面四文件交付资产数', 'eq', 0, 'file'),
+          projectPlanningMetric('executionImplementationStepCount', '执行实现步骤数', 'eq', 0, 'step'),
+        ]),
+      ],
+      completion: projectPlanningCompletion(
+        ['完成门禁错误数为 0', '导航交付资产数不少于 1', '页面四文件交付资产数为 0', '执行实现步骤数为 0'],
+        '最终验收通过后结束项目策划工艺流程图定型候选。',
+        '完成门禁失败、pageFeatures 不可消费或交付范围越界时回到对应前序阶段修正。',
+      ),
+      steps: [
+        {
+          stepId: 'PP6.1',
+          title: '完成门禁校验',
+          actions: ['触发 agent_complete', '读取 completeProjectPlanning 结果', '按 missingFacts 回补'],
+          outputs: ['completionReport'],
+          checks: ['PROJECT_PLANNING_NAVIGATION_NOT_WRITTEN 为 0', 'PROJECT_PLANNING_PAGE_NODES_MISSING 为 0'],
+        },
+        {
+          stepId: 'PP6.2',
+          title: '交付与 pageDesign 交接',
+          actions: ['总结 module/page 树', '列出 pageFeatures', '说明后续 pageDesign 输入'],
+          outputs: ['deliverySummary', 'pageDesignHandoff'],
+          checks: ['只交付 navigation/project planning', '不声明已完成页面四文件'],
+        },
+      ],
+    },
+  ],
+}
+
 /** Project Planning Run Input 的输入数据。 */
 export type ProjectPlanningRunInput = Readonly<{
+  /** 租户标识；用于后端附件读取 scope 校验。 */
+  tenantId?: string
   /** 项目唯一标识。 */
   projectId: string
   /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */
   requirement: string
   /** 项目级策划详细说明附件引用。 */
   planningAttachmentRef?: string
-  /** 项目级附件解析正文；runner 在调用 LLM 前由工作区填充。 */
-  planningAttachmentText?: string
   /** 各导航节点策划输入（含模块/页面）。 */
   navigationNodes: readonly NavigationPlanningRunInput[]
 }>
 
 /** Host inputContract 用可变数组，满足 AiJsonParams。 */
 export type ProjectPlanningAgentInput = Readonly<{
+  /** 租户标识；用于后端附件读取 scope 校验。 */
+  tenantId?: string
   /** Agent 输入的身份键（通常等于 projectId）。 */
   projectScopeKey: string
   /** 项目唯一标识。 */
@@ -71,8 +735,6 @@ export type ProjectPlanningAgentInput = Readonly<{
   requirement: string
   /** 项目级策划详细说明附件引用。 */
   planningAttachmentRef?: string
-  /** 项目级附件解析正文。 */
-  planningAttachmentText?: string
   /** 各导航节点的策划输入列表。 */
   navigationNodes: NavigationPlanningAgentInput[]
 }>
@@ -89,8 +751,6 @@ export type NavigationPlanningAgentInput = Readonly<{
   requirement: string
   /** 节点策划详细说明附件引用。 */
   planningAttachmentRef?: string
-  /** 节点附件解析正文。 */
-  planningAttachmentText?: string
 }>
 
 /** Navigation Planning Run Input 的输入数据。 */
@@ -105,18 +765,14 @@ export type NavigationPlanningRunInput = Readonly<{
   requirement: string
   /** 节点策划详细说明附件引用。 */
   planningAttachmentRef?: string
-  /** 节点附件解析正文；runner 在调用 LLM 前由工作区填充。 */
-  planningAttachmentText?: string
 }>
 
 /** Resolve Project Planning Run Input Options 的调用配置。 */
 export type ResolveProjectPlanningRunInputOptions = Readonly<{
   /** Host Run 可注入一次性需求，不写回 ProjectModel。 */
   requirementOverride?: string
-  /** 项目级附件正文。 */
-  planningAttachmentText?: string
-  /** 按 nodeId 提供节点附件正文。 */
-  navigationAttachmentTextByNodeId?: Readonly<Record<string, string>>
+  /** Host Run 或导入入口可注入一次性附件引用，不写回 ProjectModel。 */
+  planningAttachmentRef?: string
 }>
 
 /** Filter Navigation Planning Nodes Options 的调用配置。 */
@@ -147,34 +803,35 @@ export function resolveProjectPlanningRunInput(
 ): ProjectPlanningRunInput {
   const planning = project.readProjectPlanningInput()
   const overrideRequirement = options.requirementOverride?.trim()
+  const attachmentRefOverride = options.planningAttachmentRef?.trim()
+  const planningAttachmentRef = attachmentRefOverride !== undefined && attachmentRefOverride.length > 0
+    ? attachmentRefOverride
+    : planning.planningAttachmentRef
   const requirement = overrideRequirement !== undefined && overrideRequirement.length > 0
     ? overrideRequirement
-    : planning.requirement.trim()
-  if (requirement.length === 0) {
-    throw new Error('projectPlanning: requirement is empty; set navigation root description or project.description.')
+    : (planning.requirement.trim().length > 0
+      ? planning.requirement.trim()
+      : (planningAttachmentRef === undefined
+        ? ''
+        : '请读取项目策划附件，基于附件内容生成项目模块与页面策划概要。'))
+  if (requirement.length === 0 && planningAttachmentRef === undefined) {
+    throw new Error('projectPlanning: requirement is empty; set navigation root description, project.description, or planningAttachmentRef.')
   }
-  const projectAttachmentText = options.planningAttachmentText?.trim()
   const navigationNodes = project.readNavigationPlanningInputs().map((node) => {
-    const nodeAttachmentText = options.navigationAttachmentTextByNodeId?.[node.nodeId]?.trim()
     return {
       nodeId: node.nodeId,
       title: node.title,
       nodeKind: node.nodeKind,
       requirement: node.requirement,
       ...(node.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: node.planningAttachmentRef }),
-      ...(nodeAttachmentText === undefined || nodeAttachmentText.length === 0
-        ? {}
-        : { planningAttachmentText: nodeAttachmentText }),
     }
   })
 
   return {
+    ...(project.tenantId === undefined ? {} : { tenantId: project.tenantId }),
     projectId: project.projectId,
     requirement,
-    ...(planning.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: planning.planningAttachmentRef }),
-    ...(projectAttachmentText === undefined || projectAttachmentText.length === 0
-      ? {}
-      : { planningAttachmentText: projectAttachmentText }),
+    ...(planningAttachmentRef === undefined ? {} : { planningAttachmentRef }),
     navigationNodes,
   }
 }
@@ -182,17 +839,14 @@ export function resolveProjectPlanningRunInput(
 export function resolveNavigationPlanningRunInput(
   project: ProjectModel,
   nodeId: string,
-  options: Readonly<{ planningAttachmentText?: string }> = {},
 ): NavigationPlanningRunInput {
   const node = project.readNavigationNodePlanningInput(nodeId)
-  const attachmentText = options.planningAttachmentText?.trim()
   return {
     nodeId: node.nodeId,
     title: node.title,
     nodeKind: node.nodeKind,
     requirement: node.requirement,
     ...(node.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: node.planningAttachmentRef }),
-    ...(attachmentText === undefined || attachmentText.length === 0 ? {} : { planningAttachmentText: attachmentText }),
   }
 }
 
@@ -200,15 +854,13 @@ export function formatProjectPlanningPromptContext(input: ProjectPlanningRunInpu
   const lines = [
     '项目策划输入（短需求 + 附件详细说明）：',
     '策划阶段不涉及四文件，只产出导航/页面概要。',
+    ...(input.tenantId === undefined ? [] : [`tenantId: ${input.tenantId}`]),
     `projectId: ${input.projectId}`,
     'projectRequirement:',
     input.requirement,
   ]
   if (input.planningAttachmentRef !== undefined) {
     lines.push(`projectPlanningAttachmentRef: ${input.planningAttachmentRef}`)
-  }
-  if (input.planningAttachmentText !== undefined) {
-    lines.push('projectPlanningAttachmentText:', input.planningAttachmentText)
   }
   if (input.navigationNodes.length > 0) {
     lines.push('', 'navigationNodes:')
@@ -217,9 +869,6 @@ export function formatProjectPlanningPromptContext(input: ProjectPlanningRunInpu
       if (node.requirement.length > 0) lines.push(`  requirement: ${node.requirement}`)
       if (node.planningAttachmentRef !== undefined) {
         lines.push(`  planningAttachmentRef: ${node.planningAttachmentRef}`)
-      }
-      if (node.planningAttachmentText !== undefined) {
-        lines.push(`  planningAttachmentText: ${node.planningAttachmentText}`)
       }
     }
   }
@@ -242,9 +891,6 @@ export function filterNavigationPlanningRunNodes(
   return nodes.filter((node) => {
     if (node.requirement.trim().length > 0) return true
     if (node.planningAttachmentRef !== undefined) return true
-    if (node.planningAttachmentText !== undefined && node.planningAttachmentText.trim().length > 0) {
-      return true
-    }
     return false
   })
 }
@@ -266,18 +912,17 @@ export function buildProjectPlanningAgentInput(
 ): ProjectPlanningAgentInput {
   const scoped = resolveScopedProjectPlanningRunInput(project, options)
   return {
+    ...(scoped.tenantId === undefined ? {} : { tenantId: scoped.tenantId }),
     projectScopeKey: scoped.projectId,
     projectId: scoped.projectId,
     requirement: scoped.requirement,
     ...(scoped.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: scoped.planningAttachmentRef }),
-    ...(scoped.planningAttachmentText === undefined ? {} : { planningAttachmentText: scoped.planningAttachmentText }),
     navigationNodes: scoped.navigationNodes.map((node) => ({
       nodeId: node.nodeId,
       title: node.title,
       nodeKind: node.nodeKind,
       requirement: node.requirement,
       ...(node.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: node.planningAttachmentRef }),
-      ...(node.planningAttachmentText === undefined ? {} : { planningAttachmentText: node.planningAttachmentText }),
     })),
   }
 }
@@ -307,6 +952,7 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
       designId: PROJECT_PLANNING_WORKFLOW_ID,
       designVersion: 1,
     },
+    process: PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS,
     factory: {
       identity: {
         phaseId: 'F0',
@@ -317,6 +963,14 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
           alias: PROJECT_PLANNING_MODULE_ID,
           moduleId: PROJECT_PLANNING_MODULE_ID,
           rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
+          display: {
+            name: '项目策划工厂',
+            description: '以项目节点树为交付物，生产模块与页面策划概要。',
+          },
+          boundary: {
+            ownsMutation: ['ProjectModel.navigationRoot'],
+            forbiddenScenes: ['page-design-four-file-mutation', 'runtime-scheduling-inside-workflow-definition'],
+          },
         },
       },
       materials: {
@@ -327,6 +981,16 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         value: {
           moduleClass: 'ProjectModel',
           editorResolver: 'getProjectPlanningEditor',
+          domainRoot: {
+            className: 'ProjectModel',
+            readActions: ['readProjectPlanningInput', 'readNavigationPlanningInputs'],
+            writeAction: 'replaceNavigationChildren',
+            completionAction: 'completeProjectPlanning',
+          },
+          artifacts: {
+            editableModels: ['navigationRoot'],
+            downstreamPlanningProjection: 'pageFeatures',
+          },
         },
       },
       knowledge: {
@@ -337,6 +1001,22 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         value: {
           rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
           provider: 'dtsClassModelWorker',
+          processRef: PROJECT_PLANNING_PROCESS_SOURCE_REF,
+          closure: {
+            requiredKinds: ['ProjectModel', 'ProjectNodeData', 'ProjectModelData', 'ProjectPlanningInput'],
+            requiredActions: [
+              'readProjectPlanningInput',
+              'readNavigationPlanningInputs',
+              'replaceNavigationChildren',
+              'completeProjectPlanning',
+            ],
+          },
+          craftPrinciples: [
+            'project-planning-equals-module-plus-page-planning',
+            'navigation-tree-as-project-fact',
+            'module-must-contain-page',
+            'page-description-handoff-to-pageDesign',
+          ],
         },
       },
       contract: {
@@ -347,6 +1027,14 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         value: {
           identityField: 'projectScopeKey',
           messageField: 'requirement',
+          input: {
+            requiredFields: ['projectScopeKey', 'projectId', 'requirement', 'navigationNodes'],
+            optionalFields: ['tenantId', 'planningAttachmentRef'],
+          },
+          orchestration: {
+            planningSource: 'readProjectPlanningInput.requirement',
+            scopeKey: 'projectScopeKey',
+          },
         },
       },
       runtime: {
@@ -358,6 +1046,11 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
           adapter: 'ClassModelAgentAdapter',
           executionToolNames: [CLASS_MODEL_TOOL_NAMES.script],
           agentCompleteMethodName: 'completeProjectPlanning',
+          stationSpec: {
+            role: 'runtime-consumer-spec',
+            workflowResponsibility: 'declare-required-tools-only',
+            runtimeResponsibility: 'Host/Registration/ToolLoop/model_script execute this craft outside definition',
+          },
         },
       },
       governance: {
@@ -368,6 +1061,17 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         value: {
           beforeFunctionCall: 'projectPlanningToolGate',
           toolLoopNudge: 'projectPlanning',
+          craftDiscipline: {
+            forbidPageDesignFourFiles: true,
+            requireNavigationChildrenWrite: true,
+            requireModuleWithPageChildren: true,
+            modelScriptEntry: 'this.replaceNavigationChildren({ children })',
+          },
+          recovery: {
+            planWithoutTool: 'force-tool-call',
+            modelScriptFailure: 'read-recovery-hint-and-retry',
+            completionFailure: 'repair-navigation-children-and-complete-again',
+          },
         },
       },
       acceptance: {
@@ -378,6 +1082,15 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         value: {
           dryRun: true,
           inspectFactory: true,
+          processAcceptance: {
+            requiredStageIds: PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS.stages.map(stage => stage.stageId),
+            requiredClosures: [
+              'project-requirement-navigation-input-closure',
+              'module-page-tree-closure',
+              'project-node-contract-closure',
+              'completeProjectPlanning-closure',
+            ],
+          },
         },
       },
       activation: {
@@ -387,6 +1100,11 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         publishPath: 'workflow.factory.activation',
         value: {
           registrationBindingKey: PROJECT_PLANNING_REGISTRATION_BINDING_KEY,
+          handoff: {
+            target: 'runtime-binding',
+            workflowDoesNotActivateHost: true,
+            bindingRef: PROJECT_PLANNING_REGISTRATION_BINDING_KEY,
+          },
         },
       },
       workOrder: {
@@ -396,6 +1114,11 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         publishPath: 'workflow.factory.workOrder',
         value: {
           hostRunAlias: PROJECT_PLANNING_MODULE_ID,
+          productionProcess: {
+            processId: PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS.processId,
+            stageIds: PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS.stages.map(stage => stage.stageId),
+            mode: 'progressive-navigation-craft',
+          },
         },
       },
       delivery: {
@@ -406,6 +1129,11 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         value: {
           mode: 'appDeliveryPort',
           owner: 'projectPlanningHostRunProvider',
+          deliveryRules: {
+            artifactScope: ['navigationRoot'],
+            workflowDoesNotSaveArtifacts: true,
+            pageDesignFourFileArtifacts: [],
+          },
         },
       },
     },
@@ -435,11 +1163,11 @@ function createProjectPlanningRegistration(options: EnsureProjectPlanningBusines
           paramsSchema: {
             type: 'object',
             properties: {
+              tenantId: { type: 'string' },
               projectScopeKey: { type: 'string' },
               projectId: { type: 'string' },
               requirement: { type: 'string' },
               planningAttachmentRef: { type: 'string' },
-              planningAttachmentText: { type: 'string' },
               navigationNodes: {
                 type: 'array',
                 items: {
@@ -450,7 +1178,6 @@ function createProjectPlanningRegistration(options: EnsureProjectPlanningBusines
                     nodeKind: { type: 'string' },
                     requirement: { type: 'string' },
                     planningAttachmentRef: { type: 'string' },
-                    planningAttachmentText: { type: 'string' },
                   },
                   required: ['nodeId', 'title', 'nodeKind', 'requirement'],
                   additionalProperties: false,
@@ -511,6 +1238,7 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
   return [
     `当前 projectPlanning 项目: ${input.projectId}`,
     context,
+    '附件规则: 如果上下文出现 projectPlanningAttachmentRef，后端会在本轮 LLM 调用前临时解析 Word 并追加 [projectPlanningAttachmentText]；策划必须优先基于该正文，前端和项目模型只保存附件引用。',
     '知识索引: DTS ClassModel（ProjectModel 根模型）；只把 ClassModel 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
     '职责边界: LLM 只负责发出 model_script({ script }) tool_call；script 必须是 JavaScript async function body；禁止 TS/TSX/JSX、类型注解、import/export、函数包裹；运行时负责把 this 绑定到 ProjectModel 并执行脚本。',
     '执行规则: 不要把脚本写成普通文本回答；最终必须通过 model_script 的 script 字符串调用 this.xxx。',
