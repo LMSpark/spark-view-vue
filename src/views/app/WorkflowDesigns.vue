@@ -89,120 +89,193 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         <el-skeleton v-else-if="opening" :rows="12" animated />
 
         <template v-else-if="currentDocument">
-          <details
-            v-for="graphView in graphViews"
-            :key="graphView.key"
-            class="graph-section collapsible-section"
-            :class="{ 'is-loop-group': graphView.carrier === 'loop' }"
-            open
+          <section
+            v-if="currentMainGraphView"
+            class="graph-split"
+            :class="{
+              'is-top-collapsed': graphSplitCollapsed === 'top',
+              'is-bottom-collapsed': graphSplitCollapsed === 'bottom' || currentChildGraphView === null,
+            }"
+            :style="graphSplitStyle"
           >
-            <summary class="section-label">
-              <span class="section-title">{{ graphView.title }}</span>
-              <span class="section-label-actions" @click.stop>
-                <el-tag v-if="graphView.carrier === 'loop'" size="small" type="warning">循环分组</el-tag>
-                <el-tag size="small" type="info">节点 {{ nodesForGraph(graphView).length }}</el-tag>
-                <el-tag size="small" type="info">连线 {{ edgesForGraph(graphView).length }}</el-tag>
-                <el-button
-                  link
-                  size="small"
-                  :icon="DocumentAdd"
-                  @click.stop.prevent="openNodeCreateDialog(graphView, 'tool')"
-                >
-                  加工具
-                </el-button>
-                <el-button
-                  link
-                  size="small"
-                  :icon="DocumentAdd"
-                  @click.stop.prevent="openNodeCreateDialog(graphView, 'loop')"
-                >
-                  加循环
-                </el-button>
-                <el-button
-                  link
-                  size="small"
-                  :icon="DocumentAdd"
-                  @click.stop.prevent="openNodeCreateDialog(graphView, 'custom')"
-                >
-                  加节点
-                </el-button>
-              </span>
-            </summary>
-
-            <div class="collapsible-body">
-              <div
-                v-if="graphView.carrier === 'loop'"
-                class="loop-group-meta"
-                role="group"
-                aria-label="循环分组配置摘要"
+            <template v-for="panel in graphSplitPanels" :key="panel.key">
+              <section
+                class="graph-split-pane graph-section"
+                :class="[
+                  `graph-split-pane--${panel.role}`,
+                  { 'is-collapsed': panel.collapsed },
+                ]"
               >
-                <span>owner {{ graphView.ownerNodeId }}</span>
-                <span>mode {{ loopMode(graphView.ownerNode) }}</span>
-                <span>max {{ loopMaxCount(graphView.ownerNode) }}</span>
-                <span>exit {{ loopExitNodeId(graphView.ownerNode) }}</span>
-              </div>
-
-              <div class="workflow-flow-shell" :style="flowShellStyle(graphView, nodesForGraph(graphView))">
-                <VueFlow
-                  :id="flowId(graphView)"
-                  class="workflow-flow"
-                  :class="{ 'workflow-flow--subgraph': graphView.carrier !== 'root' }"
-                  :nodes="flowNodesForGraph(graphView)"
-                  :edges="flowEdgesForGraph(graphView)"
-                  :default-viewport="flowDefaultViewport(graphView)"
-                  :connection-mode="ConnectionMode.Strict"
-                  :connection-line-type="ConnectionLineType.SmoothStep"
-                  :default-edge-options="flowDefaultEdgeOptions"
-                  :edges-updatable="true"
-                  :nodes-draggable="true"
-                  :nodes-connectable="true"
-                  :elements-selectable="true"
-                  :fit-view-on-init="false"
-                  :auto-pan-on-connect="true"
-                  :auto-pan-on-node-drag="true"
-                  :delete-key-code="null"
-                  :min-zoom="0.3"
-                  :max-zoom="1.6"
-                  @node-click="handleFlowNodeClick"
-                  @node-drag-stop="handleFlowNodeDragStop"
-                  @edge-click="handleFlowEdgeClick"
-                  @edge-update="event => handleFlowEdgeUpdate(event, graphView)"
-                  @connect="connection => handleFlowConnect(connection, graphView)"
-                >
-                  <Background pattern-color="#dbe3ee" :gap="24" />
-                  <Controls position="bottom-left" />
-                  <MiniMap pannable zoomable />
-
-                  <template #node-workflow="{ data, selected }">
-                    <div class="workflow-node" :class="flowNodeClass(data, selected)">
-                      <Handle
-                        id="target"
-                        type="target"
-                        :position="Position.Left"
-                        :title="`连到 ${data.title}`"
-                      />
-                      <Handle
-                        id="source"
-                        type="source"
-                        :position="Position.Right"
-                        :title="`从 ${data.title} 连线`"
-                      />
-                      <span class="node-kind">{{ data.phaseId || data.nodeType }}</span>
-                      <strong>{{ data.title }}</strong>
-                      <small>{{ data.sectionPath || data.id }}</small>
-                      <span v-if="data.isSingleModelEditTool" class="tool-name">single_model_edit</span>
-                    </div>
-                  </template>
-                </VueFlow>
                 <button
+                  v-if="panel.collapsed"
                   type="button"
-                  class="graph-resize-handle"
-                  title="拖拽调整区域大小"
-                  @pointerdown.stop.prevent="startGraphResize($event, graphView)"
+                  class="graph-collapse-edge"
+                  :title="panel.role === 'main' ? '主图已折叠' : '子图已折叠'"
+                  @click="resetGraphSplit"
                 />
+
+                <template v-else-if="panel.graphView">
+                  <div class="section-label graph-panel-label">
+                    <span class="section-title">{{ graphPanelTitle(panel) }}</span>
+                    <span class="section-label-actions" @click.stop>
+                      <select
+                        v-if="panel.role === 'child' && mainChildGraphOptions.length > 1"
+                        v-model="currentChildGraphKey"
+                        class="native-select graph-child-select"
+                        title="选择下部子图"
+                      >
+                        <option v-for="child in mainChildGraphOptions" :key="child.key" :value="child.key">
+                          {{ child.title }}
+                        </option>
+                      </select>
+                      <el-tag v-if="panel.graphView.carrier === 'loop'" size="small" type="warning">循环分组</el-tag>
+                      <el-tag size="small" type="info">节点 {{ nodesForGraph(panel.graphView).length }}</el-tag>
+                      <el-tag size="small" type="info">连线 {{ edgesForGraph(panel.graphView).length }}</el-tag>
+                      <el-button
+                        v-if="panel.role === 'main' && currentMainParentGraphView"
+                        link
+                        size="small"
+                        :icon="ArrowUp"
+                        @click.stop.prevent="returnMainGraphToParent"
+                      >
+                        回父级
+                      </el-button>
+                      <el-button
+                        v-if="panel.role === 'child'"
+                        link
+                        size="small"
+                        :icon="ArrowDown"
+                        @click.stop.prevent="promoteChildGraphToMain"
+                      >
+                        提升为 main
+                      </el-button>
+                      <el-button
+                        link
+                        size="small"
+                        :icon="DocumentAdd"
+                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'tool')"
+                      >
+                        加工具
+                      </el-button>
+                      <el-button
+                        link
+                        size="small"
+                        :icon="DocumentAdd"
+                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'loop')"
+                      >
+                        加循环
+                      </el-button>
+                      <el-button
+                        link
+                        size="small"
+                        :icon="DocumentAdd"
+                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'custom')"
+                      >
+                        加节点
+                      </el-button>
+                    </span>
+                  </div>
+
+                  <div class="graph-panel-body">
+                    <div
+                      v-if="panel.graphView.carrier === 'loop'"
+                      class="loop-group-meta"
+                      role="group"
+                      aria-label="循环分组配置摘要"
+                    >
+                      <span>owner {{ panel.graphView.ownerNodeId }}</span>
+                      <span>mode {{ panel.graphView.ownerNode?.data?.loop?.mode || 'progressive' }}</span>
+                      <span>max {{ panel.graphView.ownerNode?.data?.loop?.maxLoopCount ?? 1 }}</span>
+                      <span>exit {{ panel.graphView.ownerNode?.data?.loop?.exitNodeId || '-' }}</span>
+                    </div>
+
+                    <div class="workflow-flow-shell graph-panel-flow">
+                      <VueFlow
+                        :id="flowId(panel.graphView)"
+                        class="workflow-flow"
+                        :class="{ 'workflow-flow--subgraph': panel.graphView.carrier !== 'root' }"
+                        :nodes="flowNodesForGraph(panel.graphView)"
+                        :edges="flowEdgesForGraph(panel.graphView)"
+                        :default-viewport="flowDefaultViewport(panel.graphView)"
+                        :connection-mode="ConnectionMode.Strict"
+                        :connection-line-type="ConnectionLineType.SmoothStep"
+                        :default-edge-options="flowDefaultEdgeOptions"
+                        :edges-updatable="true"
+                        :delete-key-code="null"
+                        :min-zoom="0.3"
+                        :max-zoom="1.6"
+                        @nodes-change="changes => handlePanelFlowNodesChange(changes, panel.graphView)"
+                        @node-drag-stop="handleFlowNodeDragStop"
+                        @edges-change="changes => handlePanelFlowEdgesChange(changes, panel.graphView)"
+                        @edge-update="event => handlePanelFlowEdgeUpdate(event, panel.graphView)"
+                        @connect="connection => handlePanelFlowConnect(connection, panel.graphView)"
+                        @viewport-change-end="viewport => handlePanelFlowViewportChangeEnd(viewport, panel.graphView)"
+                      >
+                        <Background pattern-color="#dbe3ee" :gap="24" />
+                        <Controls position="bottom-left" />
+                        <MiniMap pannable zoomable />
+
+                        <template #node-workflow="{ data, selected, id }">
+                          <div class="workflow-node" :class="{
+                            'is-selected': selected || selectedNodeKey === data.viewKey,
+                            'is-tool': data.isSingleModelEditTool,
+                            'is-loop': data.nodeType === 'loop',
+                            'is-exit': data.nodeType === 'exit-loop',
+                          }">
+                            <Handle
+                              id="target"
+                              type="target"
+                              :position="Position.Left"
+                              :title="`连到 ${data.title}`"
+                            />
+                            <Handle
+                              id="source"
+                              type="source"
+                              :position="Position.Right"
+                              :title="`从 ${data.title} 连线`"
+                            />
+                            <span class="node-kind">{{ data.phaseId || data.nodeType }}</span>
+                            <strong>{{ data.title }}</strong>
+                            <small>{{ data.sectionPath || id }}</small>
+                            <span v-if="data.isSingleModelEditTool" class="tool-name">single_model_edit</span>
+                          </div>
+                        </template>
+                      </VueFlow>
+                    </div>
+                  </div>
+                </template>
+              </section>
+
+              <div
+                v-if="panel.role === 'main'"
+                class="graph-splitter"
+                title="拖拽调整上下图区域"
+                role="separator"
+                aria-orientation="horizontal"
+                @pointerdown.prevent="startGraphSplitResize"
+              >
+                <span class="graph-splitter-line" />
+                <span class="graph-splitter-actions" @pointerdown.stop>
+                  <el-button
+                    link
+                    size="small"
+                    :icon="ArrowUp"
+                    :disabled="currentChildGraphView === null"
+                    @click.stop.prevent="collapseGraphSplit('top')"
+                  >
+                    上折
+                  </el-button>
+                  <el-button link size="small" :icon="RefreshLeft" @click.stop.prevent="resetGraphSplit">
+                    复位
+                  </el-button>
+                  <el-button link size="small" :icon="ArrowDown" @click.stop.prevent="collapseGraphSplit('bottom')">
+                    下折
+                  </el-button>
+                </span>
+                <span class="graph-splitter-line" />
               </div>
-            </div>
-          </details>
+            </template>
+          </section>
         </template>
       </main>
 
@@ -281,7 +354,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                   </el-col>
                 </el-row>
               </el-form>
-              <div class="editor-actions split-actions">
+              <div class="editor-actions" style="justify-content: space-between">
                 <el-button :icon="CircleCheck" @click="applyEdgeEditorToSelected">应用连线</el-button>
                 <el-button type="danger" :icon="Delete" @click="deleteSelectedEdge">删除连线</el-button>
               </div>
@@ -330,12 +403,12 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                 <el-row :gutter="8">
                   <el-col :span="12">
                     <el-form-item label="X">
-                      <el-input-number v-model="nodeX" :step="20" controls-position="right" @change="applyNodePosition" />
+                      <el-input-number v-model="nodeX" :step="20" controls-position="right" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
                     <el-form-item label="Y">
-                      <el-input-number v-model="nodeY" :step="20" controls-position="right" @change="applyNodePosition" />
+                      <el-input-number v-model="nodeY" :step="20" controls-position="right" />
                     </el-form-item>
                   </el-col>
                 </el-row>
@@ -399,7 +472,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
 
           <details class="editor-section collapsible-section">
             <summary>危险操作</summary>
-            <div class="collapsible-body danger-actions">
+            <div class="collapsible-body editor-actions">
               <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">删除节点</el-button>
             </div>
           </details>
@@ -487,11 +560,11 @@ import {
   type Connection,
   type DefaultEdgeOptions,
   type Edge,
-  type EdgeMouseEvent,
+  type EdgeChange,
   type EdgeUpdateEvent,
   type Node,
+  type NodeChange,
   type NodeDragEvent,
-  type NodeMouseEvent,
   type ViewportTransform,
 } from '@vue-flow/core'
 import { MiniMap } from '@vue-flow/minimap'
@@ -500,12 +573,15 @@ import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
 import {
+  ArrowDown,
+  ArrowUp,
   CircleCheck,
   Delete,
   DocumentAdd,
   DocumentCopy,
   FolderOpened,
   Refresh,
+  RefreshLeft,
   Share,
   Upload,
 } from '@element-plus/icons-vue'
@@ -543,19 +619,23 @@ type LayoutResizeState = {
   startRightWidth: number
 }
 
-type GraphResizeState = {
-  scopePath: string
-  graph: WorkflowDesignGraphView['graph']
-  startClientX: number
-  startClientY: number
-  startWidth: number
-  startHeight: number
+type GraphSplitCollapse = 'top' | 'bottom' | null
+
+type GraphSplitResizeState = {
+  containerTop: number
+  containerHeight: number
   moved: boolean
+}
+
+type GraphSplitPanel = {
+  key: string
+  role: 'main' | 'child'
+  graphView: WorkflowDesignGraphView | null
+  collapsed: boolean
 }
 
 type WorkflowFlowNodeData = {
   viewKey: string
-  id: string
   title: string
   nodeType: string
   scopePath: string
@@ -566,7 +646,6 @@ type WorkflowFlowNodeData = {
 
 type WorkflowFlowEdgeData = {
   edgeKey: string
-  scopePath: string
 }
 
 type WorkflowFlowNode = Node<WorkflowFlowNodeData, Record<string, never>, 'workflow'>
@@ -582,15 +661,14 @@ type NodeCreateForm = {
   sectionPath: string
 }
 
-const NODE_WIDTH = 190
-const NODE_HEIGHT = 116
-const ROOT_NODE_HEIGHT = 92
 const MIN_LEFT_PANEL_WIDTH = 220
 const MAX_LEFT_PANEL_WIDTH = 480
 const MIN_RIGHT_PANEL_WIDTH = 300
 const MAX_RIGHT_PANEL_WIDTH = 560
-const MIN_GRAPH_REGION_WIDTH = 420
-const MIN_GRAPH_REGION_HEIGHT = 220
+const GRAPH_SPLIT_MIN_RATIO = 22
+const GRAPH_SPLIT_MAX_RATIO = 78
+const GRAPH_SPLIT_SNAP_RATIO = 12
+const GRAPH_SPLIT_STORAGE_PREFIX = 'spark.workflow-design.graph-split.'
 
 const designs = ref<WorkflowDesignSummary[]>([])
 const currentWorkflowId = ref('')
@@ -599,9 +677,13 @@ const currentDocument = ref<WorkflowDesignDocument | null>(null)
 const selectedNodeKey = ref('')
 const selectedEdgeKey = ref('')
 const layoutResizeState = ref<LayoutResizeState | null>(null)
-const graphResizeState = ref<GraphResizeState | null>(null)
+const graphSplitResizeState = ref<GraphSplitResizeState | null>(null)
 const leftPanelWidth = ref(280)
 const rightPanelWidth = ref(360)
+const currentMainGraphKey = ref('workflow.graph')
+const currentChildGraphKey = ref('')
+const graphSplitRatio = ref(48)
+const graphSplitCollapsed = ref<GraphSplitCollapse>(null)
 
 const loadingList = ref(false)
 const opening = ref(false)
@@ -616,8 +698,14 @@ const nodeTitleText = ref('')
 const nodeDescText = ref('')
 const modelJsonText = ref('{}')
 const modelJsonError = ref('')
-const nodeX = ref(0)
-const nodeY = ref(0)
+const nodeX = computed({
+  get: () => selectedNode.value?.node.position?.x ?? 0,
+  set: (value: number) => { applyNodePosition(value, nodeY.value) },
+})
+const nodeY = computed({
+  get: () => selectedNode.value?.node.position?.y ?? 0,
+  set: (value: number) => { applyNodePosition(nodeX.value, value) },
+})
 const loopModeText = ref('')
 const loopMaxCountValue = ref(10)
 const loopExitNodeText = ref('')
@@ -657,22 +745,77 @@ const selectedEdgeGraphNodes = computed(() => {
 const workflowShellStyle = computed<CSSProperties>(() => ({
   gridTemplateColumns: `${leftPanelWidth.value}px 12px minmax(520px, 1fr) 12px ${rightPanelWidth.value}px`,
 }))
+const rootGraphView = computed(() => graphViews.value[0] ?? null)
+const currentMainGraphView = computed(() => {
+  return graphViews.value.find(view => view.key === currentMainGraphKey.value)
+    ?? rootGraphView.value
+})
+const currentMainParentGraphView = computed(() => {
+  const main = currentMainGraphView.value
+  if (main === null || main.depth === 0) return null
+  return graphViews.value.find((view) => {
+    return view.depth === main.depth - 1 && main.scopePath.startsWith(`${view.scopePath}.`)
+  }) ?? null
+})
+const mainChildGraphOptions = computed(() => {
+  const main = currentMainGraphView.value
+  if (main === null) return []
+  return graphViews.value.filter((view) => {
+    return view.depth === main.depth + 1 && view.scopePath.startsWith(`${main.scopePath}.`)
+  })
+})
+const currentChildGraphView = computed(() => {
+  return mainChildGraphOptions.value.find(view => view.key === currentChildGraphKey.value)
+    ?? mainChildGraphOptions.value[0]
+    ?? null
+})
+const graphSplitPanels = computed<GraphSplitPanel[]>(() => {
+  const main = currentMainGraphView.value
+  if (main === null) return []
+  const child = currentChildGraphView.value
+  return [
+    {
+      key: 'main',
+      role: 'main',
+      graphView: main,
+      collapsed: graphSplitCollapsed.value === 'top',
+    },
+    {
+      key: 'child',
+      role: 'child',
+      graphView: child,
+      collapsed: graphSplitCollapsed.value === 'bottom' || child === null,
+    },
+  ]
+})
+const graphSplitStyle = computed<CSSProperties>(() => {
+  if (graphSplitCollapsed.value === 'top') {
+    return { gridTemplateRows: '8px 18px minmax(260px, 1fr)' }
+  }
+  if (graphSplitCollapsed.value === 'bottom' || currentChildGraphView.value === null) {
+    return { gridTemplateRows: 'minmax(300px, 1fr) 18px 8px' }
+  }
+  return {
+    gridTemplateRows: `minmax(220px, ${graphSplitRatio.value}fr) 18px minmax(220px, ${100 - graphSplitRatio.value}fr)`,
+  }
+})
 const flowDefaultEdgeOptions: DefaultEdgeOptions = {
-  type: ConnectionLineType.SmoothStep,
+  type: 'smoothstep',
   markerEnd: MarkerType.ArrowClosed,
   interactionWidth: 18,
-  updatable: true,
 }
 const canSave = computed(() => currentDocument.value !== null && currentWorkflowId.value.length > 0 && !opening.value)
-const draftStatus = computed(() => {
+const hasUnsavedChanges = computed(() => {
   const status = currentDocument.value?.x_spark.draft?.['status']
-  return typeof status === 'string' ? status : 'draft'
+  return (typeof status === 'string' ? status : 'draft') === 'dirty' || editorDirty.value
 })
-const hasUnsavedChanges = computed(() => draftStatus.value === 'dirty' || editorDirty.value)
 
 watch(
   () => selectedNode.value?.key ?? '',
-  () => syncEditorFromSelected(),
+  () => {
+    syncEditorFromSelected()
+    syncChildGraphFromSelectedMainNode()
+  },
   { immediate: true },
 )
 
@@ -680,6 +823,17 @@ watch(
   () => selectedEdge.value?.key ?? '',
   () => syncEdgeEditorFromSelected(),
   { immediate: true },
+)
+
+watch(
+  () => graphViews.value.map(view => view.key).join('|'),
+  () => normalizeGraphNavigation(),
+  { immediate: true },
+)
+
+watch(
+  () => currentMainGraphView.value?.key ?? '',
+  () => normalizeChildGraphSelection(),
 )
 
 onMounted(async () => {
@@ -691,7 +845,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stopLayoutResize()
-  stopGraphResize()
+  stopGraphSplitResize()
 })
 
 async function loadDesigns(): Promise<void> {
@@ -721,8 +875,12 @@ async function openDesign(workflowId: string): Promise<void> {
     currentTimestamp.value = result.timestamp
     currentDocument.value = result.document
     selectedEdgeKey.value = ''
-    selectedNodeKey.value = collectWorkflowDesignNodes(result.document).find(node => node.isSingleModelEditTool)?.key
-      ?? collectWorkflowDesignNodes(result.document)[0]?.key
+    currentMainGraphKey.value = 'workflow.graph'
+    currentChildGraphKey.value = ''
+    loadGraphSplitState(normalizedWorkflowId)
+    const nodes = collectWorkflowDesignNodes(result.document)
+    selectedNodeKey.value = nodes.find(node => node.isSingleModelEditTool)?.key
+      ?? nodes[0]?.key
       ?? ''
   } catch (error: unknown) {
     ElMessage.error(`打开失败: ${errorMessage(error)}`)
@@ -809,6 +967,24 @@ function syncNodeCreateKindDefaults(): void {
   form.sectionPath = form.nodeKind === 'tool' ? `factory.custom${phaseIndex}` : ''
 }
 
+function defaultCreateNodeId(nodeKind: WorkflowDesignNodeCreateKind, phaseIndex: number): string {
+  if (nodeKind === 'tool') return `phase.F${phaseIndex}`
+  if (nodeKind === 'loop') return 'loop.group'
+  if (nodeKind === 'start') return 'start'
+  if (nodeKind === 'end') return 'end'
+  if (nodeKind === 'exit-loop') return 'loop.exit'
+  return 'node.custom'
+}
+
+function defaultCreateNodeTitle(nodeKind: WorkflowDesignNodeCreateKind, phaseIndex: number): string {
+  if (nodeKind === 'tool') return `Single Model Edit F${phaseIndex}`
+  if (nodeKind === 'loop') return 'Loop Group'
+  if (nodeKind === 'start') return 'Start'
+  if (nodeKind === 'end') return 'End'
+  if (nodeKind === 'exit-loop') return 'Exit Loop'
+  return 'Custom Node'
+}
+
 function createNodeInSelectedGraph(): void {
   const document = currentDocument.value
   if (document === null) return
@@ -879,9 +1055,9 @@ function handleLayoutResizeMove(event: PointerEvent): void {
   if (state === null) return
   const deltaX = event.clientX - state.startClientX
   if (state.side === 'left') {
-    leftPanelWidth.value = clamp(state.startLeftWidth + deltaX, MIN_LEFT_PANEL_WIDTH, MAX_LEFT_PANEL_WIDTH)
+    leftPanelWidth.value = Math.min(MAX_LEFT_PANEL_WIDTH, Math.max(MIN_LEFT_PANEL_WIDTH, Math.round(state.startLeftWidth + deltaX)))
   } else {
-    rightPanelWidth.value = clamp(state.startRightWidth - deltaX, MIN_RIGHT_PANEL_WIDTH, MAX_RIGHT_PANEL_WIDTH)
+    rightPanelWidth.value = Math.min(MAX_RIGHT_PANEL_WIDTH, Math.max(MIN_RIGHT_PANEL_WIDTH, Math.round(state.startRightWidth - deltaX)))
   }
   event.preventDefault()
 }
@@ -890,6 +1066,158 @@ function stopLayoutResize(): void {
   window.document.removeEventListener('pointermove', handleLayoutResizeMove)
   window.document.removeEventListener('pointerup', stopLayoutResize)
   layoutResizeState.value = null
+}
+
+function normalizeGraphNavigation(): void {
+  const root = rootGraphView.value
+  if (root === null) {
+    currentMainGraphKey.value = 'workflow.graph'
+    currentChildGraphKey.value = ''
+    return
+  }
+  if (!graphViews.value.some(view => view.key === currentMainGraphKey.value)) {
+    currentMainGraphKey.value = root.key
+  }
+  normalizeChildGraphSelection()
+}
+
+function normalizeChildGraphSelection(): void {
+  const children = mainChildGraphOptions.value
+  if (children.length === 0) {
+    currentChildGraphKey.value = ''
+    graphSplitCollapsed.value = 'bottom'
+    return
+  }
+  if (!children.some(view => view.key === currentChildGraphKey.value)) {
+    currentChildGraphKey.value = children[0]?.key ?? ''
+  }
+  if (graphSplitCollapsed.value === 'bottom') graphSplitCollapsed.value = null
+}
+
+function syncChildGraphFromSelectedMainNode(): void {
+  const selected = selectedNode.value
+  const main = currentMainGraphView.value
+  if (selected === null || main === null || selected.graph !== main.graph) return
+  const child = mainChildGraphOptions.value.find(view => view.ownerNode === selected.node)
+  currentChildGraphKey.value = child?.key ?? mainChildGraphOptions.value[0]?.key ?? ''
+  if (currentChildGraphKey.value.length > 0 && graphSplitCollapsed.value === 'bottom') {
+    graphSplitCollapsed.value = null
+  }
+}
+
+function promoteChildGraphToMain(): void {
+  const child = currentChildGraphView.value
+  if (child === null) return
+  currentMainGraphKey.value = child.key
+  currentChildGraphKey.value = ''
+  selectedEdgeKey.value = ''
+  selectedNodeKey.value = child.graph.nodes[0] !== undefined ? `${child.scopePath}:${child.graph.nodes[0].id}` : ''
+  normalizeChildGraphSelection()
+}
+
+function returnMainGraphToParent(): void {
+  const main = currentMainGraphView.value
+  const parent = currentMainParentGraphView.value
+  if (main === null || parent === null) return
+  currentMainGraphKey.value = parent.key
+  currentChildGraphKey.value = main.key
+  selectedEdgeKey.value = ''
+  selectedNodeKey.value = main.ownerNodeId !== undefined ? `${parent.scopePath}:${main.ownerNodeId}` : ''
+  if (graphSplitCollapsed.value === 'bottom') graphSplitCollapsed.value = null
+}
+
+function graphPanelTitle(panel: GraphSplitPanel): string {
+  const graphView = panel.graphView
+  if (graphView === null) return panel.role === 'main' ? 'Main Graph' : 'Child Graph'
+  return panel.role === 'main' ? `Main / ${graphView.title}` : `Child / ${graphView.title}`
+}
+
+function startGraphSplitResize(event: PointerEvent): void {
+  if (editorDirty.value && !applySelectedDraft({ silent: false })) return
+  const shell = (event.currentTarget as HTMLElement | null)?.closest('.graph-split')
+  const rect = shell instanceof HTMLElement ? shell.getBoundingClientRect() : null
+  graphSplitResizeState.value = {
+    containerTop: rect?.top ?? 0,
+    containerHeight: rect !== null && rect.height > 0 ? rect.height : 720,
+    moved: false,
+  }
+  window.document.addEventListener('pointermove', handleGraphSplitResizeMove)
+  window.document.addEventListener('pointerup', handleGraphSplitResizeEnd, { once: true })
+}
+
+function handleGraphSplitResizeMove(event: PointerEvent): void {
+  const state = graphSplitResizeState.value
+  if (state === null) return
+  const rawRatio = ((event.clientY - state.containerTop) / state.containerHeight) * 100
+  state.moved = true
+  if (rawRatio <= GRAPH_SPLIT_SNAP_RATIO && currentChildGraphView.value !== null) {
+    graphSplitCollapsed.value = 'top'
+  } else if (rawRatio >= 100 - GRAPH_SPLIT_SNAP_RATIO) {
+    graphSplitCollapsed.value = 'bottom'
+  } else {
+    graphSplitCollapsed.value = null
+    graphSplitRatio.value = Math.min(
+      GRAPH_SPLIT_MAX_RATIO,
+      Math.max(GRAPH_SPLIT_MIN_RATIO, Math.round(rawRatio)),
+    )
+  }
+  event.preventDefault()
+}
+
+function handleGraphSplitResizeEnd(): void {
+  if (graphSplitResizeState.value?.moved === true) saveGraphSplitState()
+  stopGraphSplitResize()
+}
+
+function stopGraphSplitResize(): void {
+  window.document.removeEventListener('pointermove', handleGraphSplitResizeMove)
+  window.document.removeEventListener('pointerup', handleGraphSplitResizeEnd)
+  graphSplitResizeState.value = null
+}
+
+function collapseGraphSplit(side: Exclude<GraphSplitCollapse, null>): void {
+  if (side === 'top' && currentChildGraphView.value === null) return
+  graphSplitCollapsed.value = side
+  saveGraphSplitState()
+}
+
+function resetGraphSplit(): void {
+  graphSplitRatio.value = 48
+  graphSplitCollapsed.value = currentChildGraphView.value === null ? 'bottom' : null
+  saveGraphSplitState()
+}
+
+function loadGraphSplitState(workflowId: string): void {
+  const raw = window.localStorage.getItem(graphSplitStorageKey(workflowId))
+  if (raw === null) {
+    graphSplitRatio.value = 48
+    graphSplitCollapsed.value = null
+    return
+  }
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>
+    const ratio = value['ratio']
+    graphSplitRatio.value = typeof ratio === 'number' && Number.isFinite(ratio)
+      ? Math.min(GRAPH_SPLIT_MAX_RATIO, Math.max(GRAPH_SPLIT_MIN_RATIO, Math.round(ratio)))
+      : 48
+    const collapsed = value['collapsed']
+    graphSplitCollapsed.value = collapsed === 'top' || collapsed === 'bottom' ? collapsed : null
+  } catch {
+    graphSplitRatio.value = 48
+    graphSplitCollapsed.value = null
+  }
+}
+
+function saveGraphSplitState(): void {
+  if (currentWorkflowId.value.length === 0) return
+  window.localStorage.setItem(graphSplitStorageKey(currentWorkflowId.value), JSON.stringify({
+    ratio: graphSplitRatio.value,
+    collapsed: graphSplitCollapsed.value,
+  }))
+}
+
+function graphSplitStorageKey(workflowId: string): string {
+  return `${GRAPH_SPLIT_STORAGE_PREFIX}${workflowId}`
 }
 
 function selectNode(key: string): void {
@@ -903,24 +1231,6 @@ function selectEdge(key: string): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
   selectedNodeKey.value = ''
   selectedEdgeKey.value = key
-}
-
-function defaultCreateNodeId(nodeKind: WorkflowDesignNodeCreateKind, phaseIndex: number): string {
-  if (nodeKind === 'tool') return `phase.F${phaseIndex}`
-  if (nodeKind === 'loop') return 'loop.group'
-  if (nodeKind === 'start') return 'start'
-  if (nodeKind === 'end') return 'end'
-  if (nodeKind === 'exit-loop') return 'loop.exit'
-  return 'node.custom'
-}
-
-function defaultCreateNodeTitle(nodeKind: WorkflowDesignNodeCreateKind, phaseIndex: number): string {
-  if (nodeKind === 'tool') return `Single Model Edit F${phaseIndex}`
-  if (nodeKind === 'loop') return 'Loop Group'
-  if (nodeKind === 'start') return 'Start'
-  if (nodeKind === 'end') return 'End'
-  if (nodeKind === 'exit-loop') return 'Exit Loop'
-  return 'Custom Node'
 }
 
 function nodesForGraph(graphView: WorkflowDesignGraphView): WorkflowDesignNodeView[] {
@@ -937,19 +1247,21 @@ function flowId(graphView: WorkflowDesignGraphView): string {
 
 function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode[] {
   return nodesForGraph(graphView).map((view) => {
-    const dimensions = nodeDimensions(view)
     return {
       id: view.id,
       type: 'workflow',
-      position: nodePosition(view),
+      position: { x: view.node.position?.x ?? 0, y: view.node.position?.y ?? 0 },
       targetPosition: Position.Left,
       sourcePosition: Position.Right,
-      draggable: true,
-      selectable: true,
-      connectable: true,
-      width: dimensions.width,
-      height: dimensions.height,
-      data: createFlowNodeData(view),
+      data: {
+        viewKey: view.key,
+        title: view.title,
+        nodeType: view.nodeType,
+        scopePath: view.scopePath,
+        isSingleModelEditTool: view.isSingleModelEditTool,
+        ...(view.phaseId !== undefined ? { phaseId: view.phaseId } : {}),
+        ...(view.sectionPath !== undefined ? { sectionPath: view.sectionPath } : {}),
+      },
     }
   })
 }
@@ -960,138 +1272,86 @@ function flowEdgesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowEdge
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      sourceHandle: typeof edge.edge.sourceHandle === 'string' ? edge.edge.sourceHandle : 'source',
-      targetHandle: typeof edge.edge.targetHandle === 'string' ? edge.edge.targetHandle : 'target',
-      selectable: true,
+      sourceHandle: edge.edge.sourceHandle ?? 'source',
+      targetHandle: edge.edge.targetHandle ?? 'target',
       data: {
         edgeKey: edge.key,
-        scopePath: edge.scopePath,
       },
     }
   })
 }
 
-function createFlowNodeData(view: WorkflowDesignNodeView): WorkflowFlowNodeData {
-  return {
-    viewKey: view.key,
-    id: view.id,
-    title: view.title,
-    nodeType: view.nodeType,
-    scopePath: view.scopePath,
-    isSingleModelEditTool: view.isSingleModelEditTool,
-    ...(view.phaseId !== undefined ? { phaseId: view.phaseId } : {}),
-    ...(view.sectionPath !== undefined ? { sectionPath: view.sectionPath } : {}),
-  }
-}
-
-function flowNodeClass(data: WorkflowFlowNodeData, selected: boolean): Record<string, boolean> {
-  return {
-    'is-selected': selected || selectedNodeKey.value === data.viewKey,
-    'is-tool': data.isSingleModelEditTool,
-    'is-loop': data.nodeType === 'loop',
-    'is-exit': data.nodeType === 'exit-loop',
-  }
-}
-
 function flowDefaultViewport(graphView: WorkflowDesignGraphView): ViewportTransform {
-  const viewport = graphView.graph.viewport
+  const vp = graphView.graph.viewport
   return {
-    x: typeof viewport?.x === 'number' && Number.isFinite(viewport.x) ? viewport.x : 0,
-    y: typeof viewport?.y === 'number' && Number.isFinite(viewport.y) ? viewport.y : 0,
-    zoom: typeof viewport?.zoom === 'number' && Number.isFinite(viewport.zoom) ? viewport.zoom : 1,
+    x: vp?.x ?? 0,
+    y: vp?.y ?? 0,
+    zoom: vp?.zoom ?? 1,
   }
 }
 
-function flowShellStyle(
-  graphView: WorkflowDesignGraphView,
-  nodes: readonly WorkflowDesignNodeView[],
-): CSSProperties {
-  const contentSize = flowShellSize(nodes)
-  const width = readGraphViewportNumber(graphView, 'uiWidth')
-  const height = readGraphViewportNumber(graphView, 'uiHeight') ?? contentSize.height
-  return {
-    ...(width !== undefined ? { width: `${width}px` } : {}),
-    height: `${Math.max(MIN_GRAPH_REGION_HEIGHT, height)}px`,
+function handlePanelFlowNodesChange(changes: NodeChange[], graphView: WorkflowDesignGraphView | null): void {
+  if (graphView === null) return
+  handleFlowNodesChange(changes, graphView)
+}
+
+function handlePanelFlowEdgesChange(changes: EdgeChange[], graphView: WorkflowDesignGraphView | null): void {
+  if (graphView === null) return
+  handleFlowEdgesChange(changes, graphView)
+}
+
+function handlePanelFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView | null): void {
+  if (graphView === null) return
+  handleFlowEdgeUpdate(event, graphView)
+}
+
+function handlePanelFlowConnect(connection: Connection, graphView: WorkflowDesignGraphView | null): void {
+  if (graphView === null) return
+  handleFlowConnect(connection, graphView)
+}
+
+function handlePanelFlowViewportChangeEnd(
+  viewport: ViewportTransform,
+  graphView: WorkflowDesignGraphView | null,
+): void {
+  if (graphView === null) return
+  handleFlowViewportChangeEnd(viewport, graphView)
+}
+
+function handleFlowNodesChange(changes: NodeChange[], graphView: WorkflowDesignGraphView): void {
+  for (const change of changes) {
+    if (change.type === 'select') {
+      if (change.selected) {
+        selectNode(`${graphView.scopePath}:${change.id}`)
+      } else if (selectedNodeKey.value === `${graphView.scopePath}:${change.id}`) {
+        selectedNodeKey.value = ''
+      }
+    }
   }
 }
 
-function flowShellSize(nodes: readonly WorkflowDesignNodeView[]): { width: number; height: number } {
-  const maxX = Math.max(760, ...nodes.map(node => nodePosition(node).x + nodeDimensions(node).width + 80))
-  const maxY = Math.max(260, ...nodes.map(node => nodePosition(node).y + nodeDimensions(node).height + 80))
-  return { width: maxX, height: maxY }
-}
-
-function readGraphViewportNumber(graphView: WorkflowDesignGraphView, key: string): number | undefined {
-  const value = graphView.graph.viewport?.[key]
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
-}
-
-function startGraphResize(event: PointerEvent, graphView: WorkflowDesignGraphView): void {
-  if (editorDirty.value && !applySelectedDraft({ silent: false })) return
-  const shell = (event.currentTarget as HTMLElement | null)?.closest('.workflow-flow-shell')
-  const contentSize = flowShellSize(nodesForGraph(graphView))
-  const measuredWidth = shell instanceof HTMLElement && shell.clientWidth > 0 ? shell.clientWidth : contentSize.width
-  const measuredHeight = shell instanceof HTMLElement && shell.clientHeight > 0 ? shell.clientHeight : contentSize.height
-  graphResizeState.value = {
-    scopePath: graphView.scopePath,
-    graph: graphView.graph,
-    startClientX: event.clientX,
-    startClientY: event.clientY,
-    startWidth: measuredWidth,
-    startHeight: measuredHeight,
-    moved: false,
-  }
-  window.document.addEventListener('pointermove', handleGraphResizeMove)
-  window.document.addEventListener('pointerup', handleGraphResizeEnd, { once: true })
-}
-
-function handleGraphResizeMove(event: PointerEvent): void {
-  const state = graphResizeState.value
-  if (state === null) return
-  const deltaX = event.clientX - state.startClientX
-  const deltaY = event.clientY - state.startClientY
-  if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) state.moved = true
-  state.graph.viewport ??= {}
-  state.graph.viewport['uiWidth'] = clamp(state.startWidth + deltaX, MIN_GRAPH_REGION_WIDTH, 2200)
-  state.graph.viewport['uiHeight'] = clamp(state.startHeight + deltaY, MIN_GRAPH_REGION_HEIGHT, 1800)
-  event.preventDefault()
-}
-
-function handleGraphResizeEnd(): void {
-  const state = graphResizeState.value
-  if (state?.moved === true && currentDocument.value !== null) {
-    markWorkflowDesignDirty(currentDocument.value, `${state.scopePath}.viewport`)
-  }
-  stopGraphResize()
-}
-
-function stopGraphResize(): void {
-  window.document.removeEventListener('pointermove', handleGraphResizeMove)
-  window.document.removeEventListener('pointerup', handleGraphResizeEnd)
-  graphResizeState.value = null
-}
-
-function nodePosition(view: WorkflowDesignNodeView): { x: number; y: number } {
-  const position = view.node.position
-  return {
-    x: typeof position?.x === 'number' && Number.isFinite(position.x) ? position.x : 0,
-    y: typeof position?.y === 'number' && Number.isFinite(position.y) ? position.y : 0,
+function handleFlowEdgesChange(changes: EdgeChange[], graphView: WorkflowDesignGraphView): void {
+  for (const change of changes) {
+    if (change.type === 'select') {
+      if (change.selected) {
+        const edgeView = edgeViews.value.find(e => e.graph === graphView.graph && e.id === change.id)
+        if (edgeView) selectEdge(edgeView.key)
+      } else {
+        const edgeView = selectedEdge.value
+        if (edgeView?.id === change.id && edgeView.graph === graphView.graph) selectedEdgeKey.value = ''
+      }
+    }
   }
 }
 
-function nodeDimensions(view: WorkflowDesignNodeView): { width: number; height: number } {
-  if (view.depth === 0 && view.nodeType !== 'loop') return { width: NODE_WIDTH, height: ROOT_NODE_HEIGHT }
-  return { width: NODE_WIDTH, height: NODE_HEIGHT }
-}
-
-function handleFlowNodeClick(event: NodeMouseEvent): void {
-  const data = event.node.data as WorkflowFlowNodeData
-  selectNode(data.viewKey)
-}
-
-function handleFlowEdgeClick(event: EdgeMouseEvent): void {
-  const data = event.edge.data as WorkflowFlowEdgeData
-  selectEdge(data.edgeKey)
+function handleFlowViewportChangeEnd(viewport: ViewportTransform, graphView: WorkflowDesignGraphView): void {
+  const document = currentDocument.value
+  if (document === null) return
+  graphView.graph.viewport ??= {}
+  graphView.graph.viewport.x = Math.round(viewport.x)
+  graphView.graph.viewport.y = Math.round(viewport.y)
+  graphView.graph.viewport.zoom = Math.round(viewport.zoom * 100) / 100
+  markWorkflowDesignDirty(document, `${graphView.scopePath}.viewport`)
 }
 
 function handleFlowNodeDragStop(event: NodeDragEvent): void {
@@ -1100,15 +1360,9 @@ function handleFlowNodeDragStop(event: NodeDragEvent): void {
   const document = currentDocument.value
   if (view === undefined || document === null) return
 
-  const nextX = Math.max(0, Math.round(event.node.position.x / 10) * 10)
-  const nextY = Math.max(0, Math.round(event.node.position.y / 10) * 10)
   view.node.position ??= {}
-  view.node.position.x = nextX
-  view.node.position.y = nextY
-  selectedEdgeKey.value = ''
-  selectedNodeKey.value = view.key
-  nodeX.value = nextX
-  nodeY.value = nextY
+  view.node.position.x = Math.max(0, Math.round(event.node.position.x / 10) * 10)
+  view.node.position.y = Math.max(0, Math.round(event.node.position.y / 10) * 10)
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.position`)
 }
 
@@ -1127,8 +1381,8 @@ function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGrap
   }
   const existing = graphView.graph.edges.find(edge => edge.source === source && edge.target === target)
   if (existing !== undefined) {
-    selectedNodeKey.value = ''
-    selectedEdgeKey.value = workflowEdgeKey(graphView, existing)
+    const existingView = edgeViews.value.find(view => view.edge === existing)
+    selectedEdgeKey.value = existingView?.key ?? `${graphView.scopePath}:${existing.id ?? existing.source}`
     ElMessage.info('连线已存在')
     return
   }
@@ -1139,8 +1393,7 @@ function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGrap
     targetHandle: connection.targetHandle ?? 'target',
   })
   markWorkflowDesignDirty(document, `${graphView.scopePath}.edges`)
-  selectedNodeKey.value = ''
-  selectedEdgeKey.value = workflowEdgeKey(graphView, edge)
+  selectEdge(`${graphView.scopePath}:${edge.id ?? `${edge.source}.${edge.target}`}`)
   ElMessage.success('连线已创建')
 }
 
@@ -1162,38 +1415,9 @@ function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignG
     targetHandle: event.connection.targetHandle ?? 'target',
   })
   markWorkflowDesignDirty(document, `${edge.scopePath}.edges`)
-  selectedNodeKey.value = ''
-  selectedEdgeKey.value = edge.key
-  edgeSourceText.value = source
-  edgeTargetText.value = target
-  edgeSourceHandleText.value = event.connection.sourceHandle ?? 'source'
-  edgeTargetHandleText.value = event.connection.targetHandle ?? 'target'
   editorDirty.value = false
   ElMessage.success('连线端点已更新')
-}
-
-function workflowEdgeKey(
-  graphView: WorkflowDesignGraphView,
-  edge: WorkflowDesignEdgeView['edge'],
-): string {
-  const index = graphView.graph.edges.indexOf(edge)
-  const id = typeof edge.id === 'string' && edge.id.length > 0 ? edge.id : `edge.${index}`
-  return `${graphView.scopePath}:${id}`
-}
-
-function loopMode(ownerNode: WorkflowDesignNodeView['node'] | undefined): string {
-  const mode = ownerNode?.data?.loop?.mode
-  return typeof mode === 'string' && mode.length > 0 ? mode : 'progressive'
-}
-
-function loopMaxCount(ownerNode: WorkflowDesignNodeView['node'] | undefined): number {
-  const maxLoopCount = ownerNode?.data?.loop?.maxLoopCount
-  return typeof maxLoopCount === 'number' && Number.isFinite(maxLoopCount) ? maxLoopCount : 1
-}
-
-function loopExitNodeId(ownerNode: WorkflowDesignNodeView['node'] | undefined): string {
-  const exitNodeId = ownerNode?.data?.loop?.exitNodeId
-  return typeof exitNodeId === 'string' && exitNodeId.length > 0 ? exitNodeId : '-'
+  syncEdgeEditorFromSelected()
 }
 
 function deleteSelectedEdge(): void {
@@ -1270,23 +1494,20 @@ function syncEditorFromSelected(): void {
     nodeTitleText.value = ''
     nodeDescText.value = ''
     modelJsonText.value = '{}'
-    nodeX.value = 0
-    nodeY.value = 0
     loopModeText.value = ''
     loopMaxCountValue.value = 10
     loopExitNodeText.value = ''
     return
   }
-  const position = nodePosition(view)
-  nodeX.value = position.x
-  nodeY.value = position.y
   nodeTypeText.value = view.nodeType
   nodeTitleText.value = view.title
   nodeDescText.value = typeof view.node.data?.desc === 'string' ? view.node.data.desc : ''
   modelJsonText.value = view.isSingleModelEditTool ? formatJson(getSingleModelEditValue(view.node)) : '{}'
-  loopModeText.value = loopMode(view.node)
-  loopMaxCountValue.value = loopMaxCount(view.node)
-  loopExitNodeText.value = loopExitNodeId(view.node) === '-' ? '' : loopExitNodeId(view.node)
+  const loop = view.node.data?.loop
+  loopModeText.value = typeof loop?.mode === 'string' && loop.mode.length > 0 ? loop.mode : 'progressive'
+  loopMaxCountValue.value = typeof loop?.maxLoopCount === 'number' && Number.isFinite(loop.maxLoopCount) ? loop.maxLoopCount : 1
+  const exitNodeId = typeof loop?.exitNodeId === 'string' && loop.exitNodeId.length > 0 ? loop.exitNodeId : '-'
+  loopExitNodeText.value = exitNodeId === '-' ? '' : exitNodeId
 }
 
 function syncEdgeEditorFromSelected(): void {
@@ -1311,13 +1532,13 @@ function syncEdgeEditorFromSelected(): void {
   edgeRelationText.value = typeof relation === 'string' ? relation : 'sequence'
 }
 
-function applyNodePosition(): void {
+function applyNodePosition(x: number, y: number): void {
   const view = selectedNode.value
   const document = currentDocument.value
   if (view === null || document === null) return
   view.node.position ??= {}
-  view.node.position.x = Number.isFinite(nodeX.value) ? nodeX.value : 0
-  view.node.position.y = Number.isFinite(nodeY.value) ? nodeY.value : 0
+  view.node.position.x = Number.isFinite(x) ? x : 0
+  view.node.position.y = Number.isFinite(y) ? y : 0
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.position`)
 }
 
@@ -1347,7 +1568,7 @@ function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
     return false
   }
 
-  if (!isJsonObject(parsed)) {
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     modelJsonError.value = 'Model JSON 必须是对象'
     if (options.silent !== true) ElMessage.warning(modelJsonError.value)
     return false
@@ -1440,14 +1661,6 @@ async function confirmDiscardEditorDraft(): Promise<boolean> {
   }
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, Math.round(value)))
-}
-
-function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
 function errorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) return error.message
   return String(error)
@@ -1463,7 +1676,6 @@ function errorMessage(error: unknown): string {
 
 .workflow-design-shell {
   display: grid;
-  gap: 0;
   margin-top: 16px;
   min-height: calc(100vh - 132px);
 }
@@ -1486,7 +1698,6 @@ function errorMessage(error: unknown): string {
 .layout-resize-handle {
   align-self: stretch;
   cursor: col-resize;
-  background: transparent;
   transition: background 0.16s ease;
 }
 
@@ -1597,9 +1808,87 @@ function errorMessage(error: unknown): string {
   margin-bottom: 16px;
 }
 
+.graph-split {
+  display: grid;
+  height: calc(100vh - 216px);
+  min-height: 640px;
+}
+
+.graph-split-pane {
+  display: flex;
+  min-height: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.graph-split-pane.is-collapsed {
+  min-height: 8px;
+}
+
+.graph-collapse-edge {
+  width: 100%;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #cbd5e1;
+}
+
+.graph-splitter {
+  display: grid;
+  grid-template-columns: minmax(24px, 1fr) auto minmax(24px, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 18px;
+  cursor: row-resize;
+}
+
+.graph-splitter-line {
+  height: 1px;
+  background: #dbe3ee;
+}
+
+.graph-splitter-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.graph-panel-label {
+  flex: 0 0 auto;
+}
+
+.graph-panel-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.graph-panel-flow {
+  flex: 1 1 auto;
+  min-height: 220px;
+}
+
+.graph-child-select {
+  width: 180px;
+  min-height: 26px;
+  font-size: 12px;
+}
+
 .collapsible-section > summary {
   list-style: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .collapsible-section > summary::-webkit-details-marker {
@@ -1628,7 +1917,6 @@ function errorMessage(error: unknown): string {
   color: #334155;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -1671,28 +1959,22 @@ function errorMessage(error: unknown): string {
   background: #fbfdff;
 }
 
-.graph-resize-handle {
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 0;
-  cursor: nwse-resize;
-  background:
-    linear-gradient(135deg, transparent 0 48%, #94a3b8 48% 55%, transparent 55%),
-    linear-gradient(135deg, transparent 0 62%, #94a3b8 62% 69%, transparent 69%);
-}
-
 .workflow-flow {
   width: 100%;
   height: 100%;
   min-height: 260px;
 }
 
+.graph-split .workflow-flow {
+  min-height: 0;
+}
+
 .workflow-flow--subgraph {
   min-height: 520px;
+}
+
+.graph-split .workflow-flow--subgraph {
+  min-height: 0;
 }
 
 .workflow-node {
@@ -1702,7 +1984,6 @@ function errorMessage(error: unknown): string {
   border: 1px solid #dbe3ee;
   border-radius: 8px;
   text-align: left;
-  cursor: pointer;
   background: #ffffff;
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
   width: 190px;
@@ -1737,7 +2018,6 @@ function errorMessage(error: unknown): string {
 }
 
 .node-kind,
-.phase-badge,
 .tool-name {
   width: fit-content;
   max-width: 100%;
@@ -1751,8 +2031,7 @@ function errorMessage(error: unknown): string {
   white-space: nowrap;
 }
 
-.node-kind,
-.phase-badge {
+.node-kind {
   padding: 0 8px;
   background: #e8eef6;
 }
@@ -1788,33 +2067,16 @@ function errorMessage(error: unknown): string {
 }
 
 .editor-section > summary {
-  display: flex;
-  align-items: center;
-  gap: 7px;
   margin-bottom: 10px;
   color: #334155;
   font-size: 12px;
   font-weight: 700;
 }
 
-.node-editor-form {
-  display: grid;
-  gap: 10px;
-}
-
-.position-editor {
-  margin-top: 0;
-}
-
+.node-editor-form,
 .loop-editor-form {
   display: grid;
   gap: 10px;
-}
-
-.editor-subtitle {
-  color: #334155;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .position-editor :deep(.el-input-number) {
@@ -1843,16 +2105,6 @@ function errorMessage(error: unknown): string {
   gap: 8px;
 }
 
-.split-actions {
-  justify-content: space-between;
-}
-
-.danger-actions,
-.edge-editor-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 @media (max-width: 1180px) {
   .workflow-design-shell {
     grid-template-columns: 240px minmax(420px, 1fr);
@@ -1874,6 +2126,11 @@ function errorMessage(error: unknown): string {
 
   .workflow-flow-shell {
     max-width: calc(100vw - 20px);
+  }
+
+  .graph-split {
+    height: auto;
+    min-height: 720px;
   }
 }
 </style>

@@ -145,7 +145,7 @@ const VueFlowStub = defineComponent({
       default: () => [],
     },
   },
-  emits: ['nodeClick', 'nodeDragStop', 'edgeClick', 'edgeUpdate', 'connect'],
+  emits: ['nodesChange', 'nodeDragStop', 'edgesChange', 'edgeUpdate', 'connect', 'viewportChangeEnd'],
   setup(props, { emit, slots }) {
     const nodeTitle = (node: any) => String(node.data?.title ?? node.id)
     const nodeByTitle = (title: string) => props.nodes.find((node: any) => nodeTitle(node) === title) as any
@@ -154,7 +154,7 @@ const VueFlowStub = defineComponent({
       const renderedNodes = props.nodes.map((node: any) => h('div', {
         class: 'vue-flow__node',
         'data-node-id': node.id,
-        onClick: () => emit('nodeClick', { node }),
+        onClick: () => emit('nodesChange', [{ type: 'select', id: node.id, selected: true }]),
       }, [
         slots['node-workflow']?.({
           data: node.data,
@@ -181,7 +181,7 @@ const VueFlowStub = defineComponent({
         type: 'button',
         class: 'vue-flow__edge',
         title: `选择连线 ${edge.source} -> ${edge.target}`,
-        onClick: () => emit('edgeClick', { edge }),
+        onClick: () => emit('edgesChange', [{ type: 'select', id: edge.id, selected: true }]),
       }, `${edge.source}->${edge.target}`))
 
       const edgeUpdateButtons = props.edges.map((edge: any) => h('button', {
@@ -279,6 +279,43 @@ function createWorkflowDesignDocument(): WorkflowDesignDocument {
                       },
                     },
                     {
+                      id: 'loop.inner',
+                      type: 'custom',
+                      position: { x: 260, y: 120 },
+                      data: {
+                        type: 'loop',
+                        title: 'Nested Loop',
+                        loop: {
+                          subGraph: {
+                            nodes: [
+                              {
+                                id: 'phase.F0.inner',
+                                type: 'custom',
+                                position: { x: 0, y: 0 },
+                                data: {
+                                  type: 'tool',
+                                  title: 'Edit nested',
+                                  provider_id: 'spark.model-editor',
+                                  tool_name: 'single_model_edit',
+                                  model: {
+                                    phaseId: 'F0N',
+                                    sectionPath: 'factory.identity.nested',
+                                    value: { nested: true },
+                                  },
+                                  x_spark: {
+                                    phaseId: 'F0N',
+                                    sectionPath: 'factory.identity.nested',
+                                    publishPath: 'workflow.factory.identity.nested',
+                                  },
+                                },
+                              },
+                            ],
+                            edges: [],
+                          },
+                        },
+                      },
+                    },
+                    {
                       id: 'loop.exit',
                       type: 'custom',
                       position: { x: 260, y: 480 },
@@ -286,6 +323,43 @@ function createWorkflowDesignDocument(): WorkflowDesignDocument {
                     },
                   ],
                   edges: [{ id: 'edge.F0.exit', source: 'phase.F0', target: 'loop.exit' }],
+                },
+              },
+            },
+          },
+          {
+            id: 'loop.review',
+            type: 'custom',
+            position: { x: 500, y: 80 },
+            data: {
+              type: 'loop',
+              title: 'Review Loop',
+              loop: {
+                subGraph: {
+                  nodes: [
+                    {
+                      id: 'phase.F1',
+                      type: 'custom',
+                      position: { x: 0, y: 0 },
+                      data: {
+                        type: 'tool',
+                        title: 'Edit review',
+                        provider_id: 'spark.model-editor',
+                        tool_name: 'single_model_edit',
+                        model: {
+                          phaseId: 'F1',
+                          sectionPath: 'factory.review',
+                          value: { review: true },
+                        },
+                        x_spark: {
+                          phaseId: 'F1',
+                          sectionPath: 'factory.review',
+                          publishPath: 'workflow.factory.review',
+                        },
+                      },
+                    },
+                  ],
+                  edges: [],
                 },
               },
             },
@@ -354,6 +428,7 @@ function findButton(wrapper: ReturnType<typeof mountWorkflowDesigns>, label: str
 describe('WorkflowDesigns visual editor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    window.localStorage.clear()
     mocks.messageBox.confirm.mockResolvedValue(undefined)
     mocks.listWorkflowDesigns.mockResolvedValue([
       {
@@ -471,13 +546,71 @@ describe('WorkflowDesigns visual editor', () => {
     )
   })
 
-  it('renders graph and editor partitions as collapsible sections', async () => {
+  it('renders the two-level graph editor panes', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    expect(wrapper.findAll('details.graph-section')).toHaveLength(2)
+    expect(wrapper.findAll('.graph-split-pane')).toHaveLength(2)
     expect(wrapper.findAll('details.editor-section').length).toBeGreaterThanOrEqual(4)
-    expect(wrapper.find('summary.section-label').text()).toContain('Main Graph')
+    expect(wrapper.find('.graph-split-pane--main .section-label').text()).toContain('Main / Main Graph')
+    expect(wrapper.find('.graph-split-pane--child .section-label').text()).toContain('Child / Loop Loop Subgraph')
+  })
+
+  it('switches the child graph from node selection and manual dropdown', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    const childSelect = wrapper.find('select.graph-child-select')
+    expect(childSelect.exists()).toBe(true)
+    await childSelect.setValue('workflow.graph.loop.review.loop.subGraph')
+    expect(wrapper.find('.graph-split-pane--child').text()).toContain('Edit review')
+
+    const reviewLoopNode = wrapper.findAll('.workflow-node').find(node => node.text().includes('Review Loop'))
+    if (reviewLoopNode === undefined) throw new Error('missing review loop node')
+    await reviewLoopNode.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.graph-split-pane--child').text()).toContain('Review Loop Loop Subgraph')
+    expect(wrapper.find('.graph-split-pane--child').text()).toContain('Edit review')
+  })
+
+  it('promotes the child graph to main and returns it to the parent', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, '提升为 main').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.graph-split-pane--main .section-label').text()).toContain('Main / Loop Loop Subgraph')
+    expect(wrapper.find('.graph-split-pane--child .section-label').text()).toContain('Child / Nested Loop Loop Subgraph')
+
+    await findButton(wrapper, '回父级').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.graph-split-pane--main .section-label').text()).toContain('Main / Main Graph')
+    expect(wrapper.find('.graph-split-pane--child .section-label').text()).toContain('Child / Loop Loop Subgraph')
+  })
+
+  it('persists splitter ratio and collapsed state in localStorage only', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    const splitter = wrapper.find('.graph-splitter')
+    expect(splitter.exists()).toBe(true)
+
+    dispatchPointerEvent('pointerdown', { clientX: 0, clientY: 360 }, splitter.element)
+    dispatchPointerEvent('pointermove', { clientX: 0, clientY: 710 })
+    dispatchPointerEvent('pointerup', { clientX: 0, clientY: 710 })
+    await flushPromises()
+
+    expect(wrapper.find('.graph-split').classes()).toContain('is-bottom-collapsed')
+    expect(window.localStorage.getItem('spark.workflow-design.graph-split.agent.workflow.demo')).toContain('"collapsed":"bottom"')
+
+    await findButton(wrapper, '保存').trigger('click')
+    await flushPromises()
+
+    const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
+    expect(JSON.stringify(savedDocument)).not.toContain('graph-split')
   })
 
   it('creates a node in the selected graph section and saves it', async () => {
@@ -493,7 +626,7 @@ describe('WorkflowDesigns visual editor', () => {
     expect(savedDocument.workflow.graph.nodes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'phase.F1',
+          id: 'phase.F3',
           data: expect.objectContaining({
             type: 'tool',
             tool_name: 'single_model_edit',
@@ -533,6 +666,7 @@ describe('WorkflowDesigns visual editor', () => {
     await firstEdge.trigger('click')
 
     const selects = wrapper.findAll('select.native-select')
+      .filter(select => !select.classes().includes('graph-child-select'))
     expect(selects.length).toBeGreaterThanOrEqual(2)
     await selects[1]?.setValue('end')
     await findButton(wrapper, '应用连线').trigger('click')
@@ -559,24 +693,6 @@ describe('WorkflowDesigns visual editor', () => {
     await flushPromises()
 
     expect(wrapper.find('.workflow-design-shell').attributes('style')).toContain('340px')
-  })
-
-  it('resizes a graph region and saves the region dimensions in viewport', async () => {
-    const wrapper = mountWorkflowDesigns()
-    await flushPromises()
-
-    const resizeHandle = wrapper.find('.graph-resize-handle')
-    expect(resizeHandle.exists()).toBe(true)
-
-    dispatchPointerEvent('pointerdown', { clientX: 100, clientY: 100 }, resizeHandle.element)
-    dispatchPointerEvent('pointermove', { clientX: 220, clientY: 180 })
-    dispatchPointerEvent('pointerup', { clientX: 220, clientY: 180 })
-    await findButton(wrapper, '保存').trigger('click')
-    await flushPromises()
-
-    const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
-    expect(savedDocument.workflow.graph.viewport?.['uiWidth']).toBeGreaterThanOrEqual(420)
-    expect(savedDocument.workflow.graph.viewport?.['uiHeight']).toBeGreaterThanOrEqual(220)
   })
 
   it('rewires an edge target by dragging its endpoint to another node handle', async () => {
