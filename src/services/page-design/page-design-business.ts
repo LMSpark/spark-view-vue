@@ -16,6 +16,8 @@ import {
   ClassModelAgentAdapter,
   type AgentWorkflowDefinition,
   type AgentWorkflowProcess,
+  type AgentWorkflowProcessKnowledgeRef,
+  type AgentWorkflowProcessKnowledgeSourceKind,
   type AgentWorkflowProcessStageCompletion,
   type AgentWorkflowProcessStageConsideration,
   type AgentWorkflowProcessStageLlmTask,
@@ -57,6 +59,208 @@ const PAGE_DESIGN_WORKFLOW_ID = 'agent.workflow.pageDesign'
 const PAGE_DESIGN_REGISTRATION_BINDING_KEY = 'pageDesign.registration'
 const PAGE_DESIGN_WORKFLOW_PUBLISHED_AT = '1970-01-01T00:00:00.000Z'
 const PAGE_DESIGN_PROCESS_SOURCE_REF = 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10'
+const PAGE_DESIGN_DTS_FILE_ROOT = 'generated/dts-class-model/files'
+
+type PageDesignKnowledgeRefOptions = Readonly<{
+  refId: string
+  title: string
+  source: AgentWorkflowProcessKnowledgeSourceKind
+  path: string
+  usage: string
+  symbols?: readonly string[]
+}>
+
+function pageDesignKnowledgeRef(options: PageDesignKnowledgeRefOptions): AgentWorkflowProcessKnowledgeRef {
+  return {
+    refId: options.refId,
+    title: options.title,
+    source: options.source,
+    path: options.path,
+    ...(options.symbols === undefined || options.symbols.length === 0 ? {} : { symbols: options.symbols }),
+    usage: options.usage,
+  }
+}
+
+const PAGE_DESIGN_KNOWLEDGE_REFS = {
+  pageDesign100: pageDesignKnowledgeRef({
+    refId: 'doc.pageDesign100',
+    title: '页面设计 100 步工艺',
+    source: 'document',
+    path: PAGE_DESIGN_PROCESS_SOURCE_REF,
+    usage: '确定七段式页面设计工艺主线、步骤边界和验收闭环。',
+  }),
+  generatedManifest: pageDesignKnowledgeRef({
+    refId: 'generated.manifest',
+    title: 'DTS ClassModel bundle manifest',
+    source: 'generated-dts-class-model',
+    path: 'generated/dts-class-model/manifest.json',
+    usage: '定位页面设计可用的模型、组件、工具和脚本知识 shard。',
+  }),
+  projectModel: pageDesignKnowledgeRef({
+    refId: 'generated.projectModel',
+    title: 'ProjectModel',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-project-model/src/project/project-model.ts.json`,
+    symbols: ['ProjectModel'],
+    usage: '确认 pageDesign 入口、规划投影和 openPageDesign 页面模型入口。',
+  }),
+  configPageNode: pageDesignKnowledgeRef({
+    refId: 'generated.configPageNode',
+    title: 'ConfigPageNode',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-project-model/src/page/config-page.ts.json`,
+    symbols: ['ConfigPageNode', 'editDataSet', 'editNodeTree', 'setFileText'],
+    usage: '确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。',
+  }),
+  dataSet: pageDesignKnowledgeRef({
+    refId: 'generated.dataSet',
+    title: 'DataSet',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-data/src/dataset.ts.json`,
+    symbols: ['DataSet'],
+    usage: '确认 pagedata 根模型、序列化和 DataTable/DataView 聚合边界。',
+  }),
+  dataTable: pageDesignKnowledgeRef({
+    refId: 'generated.dataTable',
+    title: 'DataTable',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-data/src/data-table.ts.json`,
+    symbols: ['DataTable'],
+    usage: '确认表、字段、rows、API 和 crudConfig 的结构依据。',
+  }),
+  dataView: pageDesignKnowledgeRef({
+    refId: 'generated.dataView',
+    title: 'DataView',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-data/src/data-view.ts.json`,
+    symbols: ['DataView'],
+    usage: '确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。',
+  }),
+  dataViewKey: pageDesignKnowledgeRef({
+    refId: 'generated.dataViewKey',
+    title: 'DataViewKey',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-data/src/core/data-view-key.ts.json`,
+    symbols: ['DataViewKeyDescriptor', 'DataViewMemberDescriptor', 'DataMember'],
+    usage: '确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。',
+  }),
+  dataSetCrudTool: pageDesignKnowledgeRef({
+    refId: 'generated.dataSetCrudTool',
+    title: 'DataSetCrudTool',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-data/src/dataset-crud-tool.ts.json`,
+    symbols: [
+      'DataSetCrudTool',
+      'DataSetCrudToolCreateTableOptions',
+      'DataSetCrudToolCreateRelationParams',
+      'DataSetCrudToolCreateDependencyParams',
+    ],
+    usage: '确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。',
+  }),
+  sparkNodeTree: pageDesignKnowledgeRef({
+    refId: 'generated.sparkNodeTree',
+    title: 'SparkNodeTree',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-project-model/src/node-tree/spark-node-tree.ts.json`,
+    symbols: ['SparkNodeTree'],
+    usage: '确认 rule.json 节点树的增删改和 parentId/items 结构规则。',
+  }),
+  sparkNode: pageDesignKnowledgeRef({
+    refId: 'generated.sparkNode',
+    title: 'SparkNode',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-project-model/src/node-tree/spark-node.ts.json`,
+    symbols: ['SparkNode'],
+    usage: '确认页面节点属性、组件类型、事件和样式 class 的节点载体。',
+  }),
+  pageDataDesigner: pageDesignKnowledgeRef({
+    refId: 'generated.pageDataDesigner',
+    title: 'Page data designer projection',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/src/services/project-model-artifacts/page-data-designer.ts.json`,
+    symbols: ['DesignerTableProjection', 'DesignerRelationProjection'],
+    usage: '确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。',
+  }),
+  ruleEditor: pageDesignKnowledgeRef({
+    refId: 'generated.ruleEditor',
+    title: 'Rule editor projection',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/src/services/project-model-artifacts/rule-editor.ts.json`,
+    usage: '确认 rule 设计器可见的节点树、绑定和编辑投影。',
+  }),
+  sparkPageRenderer: pageDesignKnowledgeRef({
+    refId: 'generated.sparkPageRenderer',
+    title: 'SparkPageRenderer',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.json`,
+    symbols: ['PageRuntimeErrorPhase', 'PageRuntimeErrorPayload'],
+    usage: '确认预览/渲染错误阶段和最终交叉校验反馈来源。',
+  }),
+  viewDataSource: pageDesignKnowledgeRef({
+    refId: 'generated.viewDataSource',
+    title: 'Container data source',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json`,
+    symbols: ['UseContainerDataSourceOptions', 'ContainerDataSourceState'],
+    usage: '确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。',
+  }),
+  rendererTable: pageDesignKnowledgeRef({
+    refId: 'generated.rendererTable',
+    title: 'RendererTable props',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json`,
+    symbols: ['RTableProps', 'RendererTable'],
+    usage: '确认表格容器的数据源、分页、工具栏和 actions 参数。',
+  }),
+  rendererForm: pageDesignKnowledgeRef({
+    refId: 'generated.rendererForm',
+    title: 'RendererForm props',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json`,
+    symbols: ['RFormProps', 'RendererForm'],
+    usage: '确认表单容器的数据源、contextDataMember/contextDataField 和 autoColumns 参数。',
+  }),
+  rendererDetail: pageDesignKnowledgeRef({
+    refId: 'generated.rendererDetail',
+    title: 'RendererDetail props',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json`,
+    symbols: ['RDetailProps', 'RendererDetail'],
+    usage: '确认详情容器的数据源、字段上下文和展示参数。',
+  }),
+  rendererList: pageDesignKnowledgeRef({
+    refId: 'generated.rendererList',
+    title: 'RendererList props',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json`,
+    symbols: ['RListProps', 'RendererList'],
+    usage: '确认列表容器的数据源、actions、分页和 item 配置。',
+  }),
+  rendererTree: pageDesignKnowledgeRef({
+    refId: 'generated.rendererTree',
+    title: 'RendererTree props',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json`,
+    symbols: ['RTreeProps', 'RendererTree'],
+    usage: '确认树容器的数据源、nodeKey、currentKey 和展开行为。',
+  }),
+  rendererButton: pageDesignKnowledgeRef({
+    refId: 'generated.rendererButton',
+    title: 'RendererButton props',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json`,
+    symbols: ['RButtonProps', 'RendererButton'],
+    usage: '确认按钮动作、dataViewKey、appendPayload、inheritFields 和 patch 参数。',
+  }),
+  scriptTypes: pageDesignKnowledgeRef({
+    refId: 'generated.scriptTypes',
+    title: 'Script runtime types',
+    source: 'generated-dts-class-model',
+    path: `${PAGE_DESIGN_DTS_FILE_ROOT}/packages/spark-utils/src/script-types.ts.json`,
+    symbols: ['FieldRenderConfig', 'ComponentInstanceSnapshot', 'ContextItem', 'ContextSnapshot'],
+    usage: '确认脚本可用的字段渲染、组件快照和上下文数据结构。',
+  }),
+} as const
 
 function pageDesignMetric(
   metricId: string,
@@ -260,12 +464,21 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
   title: '页面设计七段式数据优先工艺',
   sourceRef: PAGE_DESIGN_PROCESS_SOURCE_REF,
   principle: '流程图只表达页面设计工艺步骤；100 步文档提供工艺主线，generated/dts-class-model 知识库提供模型、参数和验证依据；F0-F9 是每个步骤的工厂检查维度，不作为流程节点。',
+  knowledgeSources: Object.values(PAGE_DESIGN_KNOWLEDGE_REFS),
   stages: [
     {
       stageId: 'PD1.scope-inventory',
       title: '接单与盘点',
       sourceSteps: '1-20',
       goal: '确认 live editing 入口、改动边界和当前四文件状态。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.generatedManifest,
+        PAGE_DESIGN_KNOWLEDGE_REFS.projectModel,
+        PAGE_DESIGN_KNOWLEDGE_REFS.configPageNode,
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDataDesigner,
+        PAGE_DESIGN_KNOWLEDGE_REFS.ruleEditor,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.scopeInventory,
       prerequisites: [
         pageDesignPrerequisite('PD1.pre.pageId', '页面定位已输入', 'runInput.pageId', [
@@ -329,6 +542,14 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       title: '数据规划与最小表模型',
       sourceSteps: '21-40',
       goal: '先立业务数据事实，再建立足够支撑关系和视图的最小 DataTable。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataSet,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataTable,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataView,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataSetCrudTool,
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDataDesigner,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.dataModel,
       prerequisites: [
         pageDesignPrerequisite('PD2.pre.inventory', '已有四文件盘点结果', 'PD1.inventorySummary', [
@@ -347,7 +568,12 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       parameterSources: [
         pageDesignParameterSource('requirement', '用户需求与有效描述', 'runInput', 'description,effectiveDescription'),
         pageDesignParameterSource('currentPageData', '当前 pagedata.json', 'PageDesignEditHost.dataset', 'pagedata.json'),
-        pageDesignParameterSource('datasetGuides', 'DataSet/DataTable/DataView 知识', 'model_guide', 'DataSet,DataTable,DataView'),
+        pageDesignParameterSource(
+          'datasetGuides',
+          'DataSet/DataTable/DataView 知识',
+          'generated-dts-class-model',
+          `${PAGE_DESIGN_KNOWLEDGE_REFS.dataSet.path},${PAGE_DESIGN_KNOWLEDGE_REFS.dataTable.path},${PAGE_DESIGN_KNOWLEDGE_REFS.dataView.path},${PAGE_DESIGN_KNOWLEDGE_REFS.dataSetCrudTool.path}`,
+        ),
       ],
       llmTask: pageDesignLlmTask(
         '输出最小 DataTable 方案并通过结构化工具落到 pagedata.json。',
@@ -392,6 +618,13 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       title: '表关系建模',
       sourceSteps: '41-50',
       goal: '建立业务父子关系，并只保留有真实页面价值的关系。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataSet,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataTable,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataSetCrudTool,
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDataDesigner,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.tableRelations,
       prerequisites: [
         pageDesignPrerequisite('PD3.pre.tables', '最小表模型已存在', 'PD2.minimalDataTablePatch', [
@@ -451,6 +684,18 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       title: '页面规划与数据消费',
       sourceSteps: '51-70',
       goal: '从数据事实推导页面区域，再把每个区域声明为明确的数据消费点。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataView,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataViewKey,
+        PAGE_DESIGN_KNOWLEDGE_REFS.viewDataSource,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererTable,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererForm,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererDetail,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererList,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererTree,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererButton,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.pageDataUse,
       prerequisites: [
         pageDesignPrerequisite('PD4.pre.dataFacts', '数据事实和关系已闭合', 'PD2 + PD3 outputs', [
@@ -468,6 +713,12 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
         pageDesignParameterSource('dataFacts', '表、字段、关系事实', 'pagedata.json', 'tables,tableRelations'),
         pageDesignParameterSource('currentRule', '当前组件树', 'PageDesignEditHost.nodeTree', 'rule.json'),
         pageDesignParameterSource('requirement', '页面目标和用户路径', 'runInput', 'description,effectiveDescription'),
+        pageDesignParameterSource(
+          'dataConsumerGuides',
+          'DataViewKey、数据容器和按钮参数知识',
+          'generated-dts-class-model',
+          `${PAGE_DESIGN_KNOWLEDGE_REFS.dataViewKey.path},${PAGE_DESIGN_KNOWLEDGE_REFS.viewDataSource.path},${PAGE_DESIGN_KNOWLEDGE_REFS.rendererButton.path}`,
+        ),
       ],
       llmTask: pageDesignLlmTask(
         '规划页面区域和数据消费点，明确每个 UI 区域消费哪个 DataView 成员。',
@@ -511,6 +762,13 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       title: '按需视图与依赖',
       sourceSteps: '71-88',
       goal: '按视图状态隔离创建或复用 DataView，并只在必要时显式声明 viewDependencies。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataView,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataViewKey,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataSetCrudTool,
+        PAGE_DESIGN_KNOWLEDGE_REFS.viewDataSource,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.viewsDependencies,
       prerequisites: [
         pageDesignPrerequisite('PD5.pre.consumers', '数据消费点已定义', 'PD4.dataConsumerPlan', [
@@ -527,6 +785,12 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
         pageDesignParameterSource('consumerPlan', 'DataView 消费点清单', 'PD4.output', 'dataConsumerPlan'),
         pageDesignParameterSource('tablesAndRelations', '表与关系', 'pagedata.json', 'tables,tableRelations'),
         pageDesignParameterSource('currentViews', '已有 DataView', 'pagedata.json', 'tables.*.views', false),
+        pageDesignParameterSource(
+          'viewDependencyGuides',
+          'DataView 与 ViewDependency 参数知识',
+          'generated-dts-class-model',
+          `${PAGE_DESIGN_KNOWLEDGE_REFS.dataView.path},${PAGE_DESIGN_KNOWLEDGE_REFS.dataSetCrudTool.path}`,
+        ),
       ],
       llmTask: pageDesignLlmTask(
         '按消费点创建或复用 DataView，并决定是否需要显式 viewDependencies。',
@@ -571,6 +835,20 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       title: '结构行为样式落地',
       sourceSteps: '89-96',
       goal: '最后落 rule/script/style，保持组件、事件和样式引用闭合。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.configPageNode,
+        PAGE_DESIGN_KNOWLEDGE_REFS.sparkNodeTree,
+        PAGE_DESIGN_KNOWLEDGE_REFS.sparkNode,
+        PAGE_DESIGN_KNOWLEDGE_REFS.ruleEditor,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererTable,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererForm,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererDetail,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererList,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererTree,
+        PAGE_DESIGN_KNOWLEDGE_REFS.rendererButton,
+        PAGE_DESIGN_KNOWLEDGE_REFS.scriptTypes,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.structureBehaviorStyle,
       prerequisites: [
         pageDesignPrerequisite('PD6.pre.viewPlan', '数据消费与视图方案已闭合', 'PD4 + PD5 outputs', [
@@ -586,7 +864,19 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       ),
       parameterSources: [
         pageDesignParameterSource('viewPlan', 'DataView 与依赖方案', 'PD5.output', 'dataViewPlan,viewDependencyDecision'),
-        pageDesignParameterSource('componentPayloads', '组件 payload 与 guide', 'model_guide', 'component payload guides'),
+        pageDesignParameterSource(
+          'componentPayloads',
+          '组件 payload 与 guide',
+          'generated-dts-class-model',
+          [
+            PAGE_DESIGN_KNOWLEDGE_REFS.rendererTable.path,
+            PAGE_DESIGN_KNOWLEDGE_REFS.rendererForm.path,
+            PAGE_DESIGN_KNOWLEDGE_REFS.rendererDetail.path,
+            PAGE_DESIGN_KNOWLEDGE_REFS.rendererList.path,
+            PAGE_DESIGN_KNOWLEDGE_REFS.rendererTree.path,
+            PAGE_DESIGN_KNOWLEDGE_REFS.rendererButton.path,
+          ].join(','),
+        ),
         pageDesignParameterSource('currentRuleScriptStyle', '当前 rule/script/style', 'PageDesignEditHost', 'rule.json,script.js,style.css'),
       ],
       llmTask: pageDesignLlmTask(
@@ -632,6 +922,14 @@ export const PAGE_DESIGN_AGENT_WORKFLOW_PROCESS: AgentWorkflowProcess = {
       title: '交叉校验与收尾',
       sourceSteps: '97-100',
       goal: '完成四文件交叉校验、预览回补和交付说明。',
+      knowledgeRefs: [
+        PAGE_DESIGN_KNOWLEDGE_REFS.pageDesign100,
+        PAGE_DESIGN_KNOWLEDGE_REFS.configPageNode,
+        PAGE_DESIGN_KNOWLEDGE_REFS.sparkPageRenderer,
+        PAGE_DESIGN_KNOWLEDGE_REFS.viewDataSource,
+        PAGE_DESIGN_KNOWLEDGE_REFS.dataViewKey,
+        PAGE_DESIGN_KNOWLEDGE_REFS.scriptTypes,
+      ],
       considerations: PAGE_DESIGN_STAGE_CONSIDERATIONS.verifyDeliver,
       prerequisites: [
         pageDesignPrerequisite('PD7.pre.filesClosed', '四文件引用已初步闭合', 'PD6.bindingClosureReport', [

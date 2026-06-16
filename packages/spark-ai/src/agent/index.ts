@@ -97,6 +97,8 @@ export type {
   AgentWorkflowFactorySections,
   AgentWorkflowJsonRecord,
   AgentWorkflowProcess,
+  AgentWorkflowProcessKnowledgeRef,
+  AgentWorkflowProcessKnowledgeSourceKind,
   AgentWorkflowProcessStageCompletion,
   AgentWorkflowProcessStage,
   AgentWorkflowProcessStageConsideration,

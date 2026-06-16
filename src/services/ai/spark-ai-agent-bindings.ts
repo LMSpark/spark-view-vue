@@ -18,6 +18,8 @@ export type {
   AgentWorkflowDefinition,
   AgentWorkflowFactorySection,
   AgentWorkflowProcess,
+  AgentWorkflowProcessKnowledgeRef,
+  AgentWorkflowProcessKnowledgeSourceKind,
   AgentWorkflowProcessStageCompletion,
   AgentWorkflowProcessStage,
   AgentWorkflowProcessStageConsideration,

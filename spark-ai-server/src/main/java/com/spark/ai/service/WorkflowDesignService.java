@@ -330,6 +330,17 @@ public class WorkflowDesignService {
         process.put("title", "Page design seven-stage data-first process");
         process.put("sourceRef", "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10");
         process.put("principle", "The graph contains craft steps; F0-F9 are stage considerations with numeric metrics.");
+        ArrayNode knowledgeSources = process.putArray("knowledgeSources");
+        addPageDesignProcessDocumentRef(knowledgeSources);
+        addGeneratedKnowledgeRef(knowledgeSources, "generated.manifest", "DTS ClassModel bundle manifest",
+                "generated/dts-class-model/manifest.json",
+                "Locate generated model, component, tool, and script knowledge shards.");
+        addGeneratedKnowledgeRef(knowledgeSources, "generated.configPageNode", "ConfigPageNode",
+                "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+                "Confirm four-file memory editing APIs.", "ConfigPageNode");
+        addGeneratedKnowledgeRef(knowledgeSources, "generated.dataSetCrudTool", "DataSetCrudTool",
+                "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                "Confirm structured DataSet, relation, view, and dependency mutation parameters.", "DataSetCrudTool");
         ArrayNode stages = process.putArray("stages");
         for (ProcessStage stage : PROCESS_STAGES) {
             ObjectNode stageNode = stages.addObject();
@@ -337,6 +348,7 @@ public class WorkflowDesignService {
             stageNode.put("title", stage.title());
             stageNode.put("sourceSteps", stage.sourceSteps());
             stageNode.put("goal", "Complete source steps " + stage.sourceSteps() + " in the page design craft.");
+            addStageKnowledgeRefs(stageNode.putArray("knowledgeRefs"), stage);
             ArrayNode steps = stageNode.putArray("steps");
             ObjectNode step = steps.addObject();
             step.put("stepId", stage.stageId() + ".1");
@@ -361,6 +373,88 @@ public class WorkflowDesignService {
             }
         }
         return process;
+    }
+
+    private void addStageKnowledgeRefs(ArrayNode knowledgeRefs, ProcessStage stage) {
+        addPageDesignProcessDocumentRef(knowledgeRefs);
+        switch (stage.stageId()) {
+            case "PD1.scope-inventory" -> {
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.projectModel", "ProjectModel",
+                        "generated/dts-class-model/files/packages/spark-project-model/src/project/project-model.ts.json",
+                        "Confirm pageDesign entry and openPageDesign page model access.", "ProjectModel");
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.configPageNode", "ConfigPageNode",
+                        "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+                        "Confirm four-file memory model and editing API boundaries.", "ConfigPageNode");
+            }
+            case "PD2.data-model" -> {
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataSet", "DataSet",
+                        "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
+                        "Confirm pagedata root model and serialization boundary.", "DataSet");
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataSetCrudTool", "DataSetCrudTool",
+                        "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                        "Confirm structured table creation and update parameters.", "DataSetCrudTool");
+            }
+            case "PD3.table-relations" -> addGeneratedKnowledgeRef(knowledgeRefs,
+                    "generated.dataSetCrudTool", "DataSetCrudTool",
+                    "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                    "Confirm relation selector and relation mutation parameters.", "DataSetCrudTool");
+            case "PD4.page-data-use" -> {
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataViewKey", "DataViewKey",
+                        "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+                        "Confirm dataViewKey, dataMember, and dataField separation.", "DataViewKeyDescriptor");
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.rendererButton", "RendererButton props",
+                        "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+                        "Confirm action scope and dataViewKey parameters.", "RButtonProps");
+            }
+            case "PD5.views-dependencies" -> addGeneratedKnowledgeRef(knowledgeRefs,
+                    "generated.dataView", "DataView",
+                    "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+                    "Confirm DataView state isolation and dependency basis.", "DataView");
+            case "PD6.structure-behavior-style" -> {
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.sparkNodeTree", "SparkNodeTree",
+                        "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node-tree.ts.json",
+                        "Confirm rule node tree mutation rules.", "SparkNodeTree");
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.rendererTable", "RendererTable props",
+                        "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+                        "Confirm table component data source and action props.", "RTableProps");
+            }
+            case "PD7.verify-deliver" -> {
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.sparkPageRenderer", "SparkPageRenderer",
+                        "generated/dts-class-model/files/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.json",
+                        "Confirm preview and render error feedback source.", "PageRuntimeErrorPayload");
+                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataViewKey", "DataViewKey",
+                        "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+                        "Confirm final binding closure checks.", "DataViewKeyDescriptor");
+            }
+            default -> addGeneratedKnowledgeRef(knowledgeRefs, "generated.manifest", "DTS ClassModel bundle manifest",
+                    "generated/dts-class-model/manifest.json",
+                    "Locate generated model, component, tool, and script knowledge shards.");
+        }
+    }
+
+    private void addPageDesignProcessDocumentRef(ArrayNode refs) {
+        ObjectNode ref = refs.addObject();
+        ref.put("refId", "doc.pageDesign100");
+        ref.put("title", "Page design 100-step process");
+        ref.put("source", "document");
+        ref.put("path", "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10");
+        ref.put("usage", "Define seven-stage page design craft boundaries and acceptance closure.");
+    }
+
+    private void addGeneratedKnowledgeRef(ArrayNode refs, String refId, String title, String path,
+                                          String usage, String... symbols) {
+        ObjectNode ref = refs.addObject();
+        ref.put("refId", refId);
+        ref.put("title", title);
+        ref.put("source", "generated-dts-class-model");
+        ref.put("path", path);
+        if (symbols.length > 0) {
+            ArrayNode symbolArray = ref.putArray("symbols");
+            for (String symbol : symbols) {
+                symbolArray.add(symbol);
+            }
+        }
+        ref.put("usage", usage);
     }
 
     private ObjectNode createDefaultWorkflowGraph(String workflowId) {

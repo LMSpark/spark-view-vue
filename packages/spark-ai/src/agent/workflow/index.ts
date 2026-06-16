@@ -40,6 +40,8 @@ export type {
   AgentWorkflowFactorySections,
   AgentWorkflowJsonRecord,
   AgentWorkflowProcess,
+  AgentWorkflowProcessKnowledgeRef,
+  AgentWorkflowProcessKnowledgeSourceKind,
   AgentWorkflowProcessStageCompletion,
   AgentWorkflowProcessStageMetric,
   AgentWorkflowProcessStageMetricOperator,

@@ -62,6 +62,17 @@ export type AgentWorkflowProcessStageMetric = Readonly<{
   unit: string
 }>
 
+export type AgentWorkflowProcessKnowledgeSourceKind = 'document' | 'generated-dts-class-model'
+
+export type AgentWorkflowProcessKnowledgeRef = Readonly<{
+  refId: string
+  title: string
+  source: AgentWorkflowProcessKnowledgeSourceKind
+  path: string
+  symbols?: readonly string[]
+  usage: string
+}>
+
 export type AgentWorkflowProcessStageConsideration = Readonly<{
   phaseId: BusinessFactoryWorkflowPhaseId
   title: string
@@ -117,6 +128,7 @@ export type AgentWorkflowProcessStage = Readonly<{
   sourceSteps: string
   goal: string
   steps: readonly AgentWorkflowProcessStep[]
+  knowledgeRefs?: readonly AgentWorkflowProcessKnowledgeRef[]
   considerations?: readonly AgentWorkflowProcessStageConsideration[]
   prerequisites?: readonly AgentWorkflowProcessStagePrerequisite[]
   model?: AgentWorkflowProcessStageModelSelection
@@ -131,6 +143,7 @@ export type AgentWorkflowProcess = Readonly<{
   title: string
   sourceRef: string
   principle: string
+  knowledgeSources?: readonly AgentWorkflowProcessKnowledgeRef[]
   stages: readonly AgentWorkflowProcessStage[]
 }>
 

@@ -46,6 +46,71 @@
               "stageId": "PD1.scope-inventory",
               "sourceSteps": "1-20",
               "goal": "确认 live editing 入口、改动边界和当前四文件状态。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.manifest",
+                "generated.projectModel",
+                "generated.configPageNode",
+                "generated.pageDataDesigner",
+                "generated.ruleEditor"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.manifest",
+                  "title": "DTS ClassModel bundle manifest",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/manifest.json",
+                  "usage": "定位页面设计可用的模型、组件、工具和脚本知识 shard。"
+                },
+                {
+                  "refId": "generated.projectModel",
+                  "title": "ProjectModel",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-project-model/src/project/project-model.ts.json",
+                  "symbols": [
+                    "ProjectModel"
+                  ],
+                  "usage": "确认 pageDesign 入口、规划投影和 openPageDesign 页面模型入口。"
+                },
+                {
+                  "refId": "generated.configPageNode",
+                  "title": "ConfigPageNode",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+                  "symbols": [
+                    "ConfigPageNode",
+                    "editDataSet",
+                    "editNodeTree",
+                    "setFileText"
+                  ],
+                  "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+                },
+                {
+                  "refId": "generated.pageDataDesigner",
+                  "title": "Page data designer projection",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+                  "symbols": [
+                    "DesignerTableProjection",
+                    "DesignerRelationProjection"
+                  ],
+                  "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+                },
+                {
+                  "refId": "generated.ruleEditor",
+                  "title": "Rule editor projection",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/src/services/project-model-artifacts/rule-editor.ts.json",
+                  "usage": "确认 rule 设计器可见的节点树、绑定和编辑投影。"
+                }
+              ],
               "factoryConsiderations": [
                 "F0",
                 "F1",
@@ -249,6 +314,77 @@
               "stageId": "PD2.data-model",
               "sourceSteps": "21-40",
               "goal": "先立业务数据事实，再建立足够支撑关系和视图的最小 DataTable。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.dataSet",
+                "generated.dataTable",
+                "generated.dataView",
+                "generated.dataSetCrudTool",
+                "generated.pageDataDesigner"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.dataSet",
+                  "title": "DataSet",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
+                  "symbols": [
+                    "DataSet"
+                  ],
+                  "usage": "确认 pagedata 根模型、序列化和 DataTable/DataView 聚合边界。"
+                },
+                {
+                  "refId": "generated.dataTable",
+                  "title": "DataTable",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json",
+                  "symbols": [
+                    "DataTable"
+                  ],
+                  "usage": "确认表、字段、rows、API 和 crudConfig 的结构依据。"
+                },
+                {
+                  "refId": "generated.dataView",
+                  "title": "DataView",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+                  "symbols": [
+                    "DataView"
+                  ],
+                  "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+                },
+                {
+                  "refId": "generated.dataSetCrudTool",
+                  "title": "DataSetCrudTool",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                  "symbols": [
+                    "DataSetCrudTool",
+                    "DataSetCrudToolCreateTableOptions",
+                    "DataSetCrudToolCreateRelationParams",
+                    "DataSetCrudToolCreateDependencyParams"
+                  ],
+                  "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+                },
+                {
+                  "refId": "generated.pageDataDesigner",
+                  "title": "Page data designer projection",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+                  "symbols": [
+                    "DesignerTableProjection",
+                    "DesignerRelationProjection"
+                  ],
+                  "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+                }
+              ],
               "factoryConsiderations": [
                 "F1",
                 "F2",
@@ -263,9 +399,7 @@
                 "dataSetCrudMutationCount",
                 "directPageDataOverwriteCount",
                 "dataSetRoundTripErrorCount",
-                "rowColumnMismatchCount",
-                "inventorySummaryCount",
-                "businessObjectCandidateCount"
+                "rowColumnMismatchCount"
               ],
               "prerequisites": [
                 {
@@ -323,8 +457,8 @@
                 {
                   "parameterId": "datasetGuides",
                   "title": "DataSet/DataTable/DataView 知识",
-                  "source": "model_guide",
-                  "path": "DataSet,DataTable,DataView",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json,generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json,generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json,generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
                   "required": true
                 }
               ],
@@ -455,6 +589,66 @@
               "stageId": "PD3.table-relations",
               "sourceSteps": "41-50",
               "goal": "建立业务父子关系，并只保留有真实页面价值的关系。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.dataSet",
+                "generated.dataTable",
+                "generated.dataSetCrudTool",
+                "generated.pageDataDesigner"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.dataSet",
+                  "title": "DataSet",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
+                  "symbols": [
+                    "DataSet"
+                  ],
+                  "usage": "确认 pagedata 根模型、序列化和 DataTable/DataView 聚合边界。"
+                },
+                {
+                  "refId": "generated.dataTable",
+                  "title": "DataTable",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json",
+                  "symbols": [
+                    "DataTable"
+                  ],
+                  "usage": "确认表、字段、rows、API 和 crudConfig 的结构依据。"
+                },
+                {
+                  "refId": "generated.dataSetCrudTool",
+                  "title": "DataSetCrudTool",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                  "symbols": [
+                    "DataSetCrudTool",
+                    "DataSetCrudToolCreateTableOptions",
+                    "DataSetCrudToolCreateRelationParams",
+                    "DataSetCrudToolCreateDependencyParams"
+                  ],
+                  "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+                },
+                {
+                  "refId": "generated.pageDataDesigner",
+                  "title": "Page data designer projection",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+                  "symbols": [
+                    "DesignerTableProjection",
+                    "DesignerRelationProjection"
+                  ],
+                  "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+                }
+              ],
               "factoryConsiderations": [
                 "F3",
                 "F5",
@@ -466,9 +660,7 @@
                 "relationWithoutConsumerCount",
                 "databaseOnlyForeignKeyCount",
                 "missingParentFieldCount",
-                "missingChildFieldCount",
-                "businessObjectCount",
-                "fieldDefinitionCount"
+                "missingChildFieldCount"
               ],
               "prerequisites": [
                 {
@@ -632,6 +824,126 @@
               "stageId": "PD4.page-data-use",
               "sourceSteps": "51-70",
               "goal": "从数据事实推导页面区域，再把每个区域声明为明确的数据消费点。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.dataView",
+                "generated.dataViewKey",
+                "generated.viewDataSource",
+                "generated.rendererTable",
+                "generated.rendererForm",
+                "generated.rendererDetail",
+                "generated.rendererList",
+                "generated.rendererTree",
+                "generated.rendererButton"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.dataView",
+                  "title": "DataView",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+                  "symbols": [
+                    "DataView"
+                  ],
+                  "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+                },
+                {
+                  "refId": "generated.dataViewKey",
+                  "title": "DataViewKey",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+                  "symbols": [
+                    "DataViewKeyDescriptor",
+                    "DataViewMemberDescriptor",
+                    "DataMember"
+                  ],
+                  "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+                },
+                {
+                  "refId": "generated.viewDataSource",
+                  "title": "Container data source",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+                  "symbols": [
+                    "UseContainerDataSourceOptions",
+                    "ContainerDataSourceState"
+                  ],
+                  "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+                },
+                {
+                  "refId": "generated.rendererTable",
+                  "title": "RendererTable props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+                  "symbols": [
+                    "RTableProps",
+                    "RendererTable"
+                  ],
+                  "usage": "确认表格容器的数据源、分页、工具栏和 actions 参数。"
+                },
+                {
+                  "refId": "generated.rendererForm",
+                  "title": "RendererForm props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json",
+                  "symbols": [
+                    "RFormProps",
+                    "RendererForm"
+                  ],
+                  "usage": "确认表单容器的数据源、contextDataMember/contextDataField 和 autoColumns 参数。"
+                },
+                {
+                  "refId": "generated.rendererDetail",
+                  "title": "RendererDetail props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json",
+                  "symbols": [
+                    "RDetailProps",
+                    "RendererDetail"
+                  ],
+                  "usage": "确认详情容器的数据源、字段上下文和展示参数。"
+                },
+                {
+                  "refId": "generated.rendererList",
+                  "title": "RendererList props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json",
+                  "symbols": [
+                    "RListProps",
+                    "RendererList"
+                  ],
+                  "usage": "确认列表容器的数据源、actions、分页和 item 配置。"
+                },
+                {
+                  "refId": "generated.rendererTree",
+                  "title": "RendererTree props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json",
+                  "symbols": [
+                    "RTreeProps",
+                    "RendererTree"
+                  ],
+                  "usage": "确认树容器的数据源、nodeKey、currentKey 和展开行为。"
+                },
+                {
+                  "refId": "generated.rendererButton",
+                  "title": "RendererButton props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+                  "symbols": [
+                    "RButtonProps",
+                    "RendererButton"
+                  ],
+                  "usage": "确认按钮动作、dataViewKey、appendPayload、inheritFields 和 patch 参数。"
+                }
+              ],
               "factoryConsiderations": [
                 "F3",
                 "F5",
@@ -643,9 +955,7 @@
                 "decorativeDataViewCount",
                 "invalidDataViewKeyPartCount",
                 "consumerTraceabilityPercent",
-                "ambiguousActionScopeCount",
-                "businessObjectCount",
-                "relationFieldMissingCount"
+                "ambiguousActionScopeCount"
               ],
               "prerequisites": [
                 {
@@ -698,6 +1008,13 @@
                   "title": "页面目标和用户路径",
                   "source": "runInput",
                   "path": "description,effectiveDescription",
+                  "required": true
+                },
+                {
+                  "parameterId": "dataConsumerGuides",
+                  "title": "DataViewKey、数据容器和按钮参数知识",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
                   "required": true
                 }
               ],
@@ -814,6 +1131,68 @@
               "stageId": "PD5.views-dependencies",
               "sourceSteps": "71-88",
               "goal": "按视图状态隔离创建或复用 DataView，并只在必要时显式声明 viewDependencies。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.dataView",
+                "generated.dataViewKey",
+                "generated.dataSetCrudTool",
+                "generated.viewDataSource"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.dataView",
+                  "title": "DataView",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+                  "symbols": [
+                    "DataView"
+                  ],
+                  "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+                },
+                {
+                  "refId": "generated.dataViewKey",
+                  "title": "DataViewKey",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+                  "symbols": [
+                    "DataViewKeyDescriptor",
+                    "DataViewMemberDescriptor",
+                    "DataMember"
+                  ],
+                  "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+                },
+                {
+                  "refId": "generated.dataSetCrudTool",
+                  "title": "DataSetCrudTool",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                  "symbols": [
+                    "DataSetCrudTool",
+                    "DataSetCrudToolCreateTableOptions",
+                    "DataSetCrudToolCreateRelationParams",
+                    "DataSetCrudToolCreateDependencyParams"
+                  ],
+                  "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+                },
+                {
+                  "refId": "generated.viewDataSource",
+                  "title": "Container data source",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+                  "symbols": [
+                    "UseContainerDataSourceOptions",
+                    "ContainerDataSourceState"
+                  ],
+                  "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+                }
+              ],
               "factoryConsiderations": [
                 "F4",
                 "F5",
@@ -825,9 +1204,7 @@
                 "viewWithoutConsumerCount",
                 "sharedStateConflictCount",
                 "missingRelationForDependencyCount",
-                "circularDependencyCount",
-                "dataConsumerWithoutRegionCount",
-                "consumerTraceabilityPercent"
+                "circularDependencyCount"
               ],
               "prerequisites": [
                 {
@@ -878,6 +1255,13 @@
                   "source": "pagedata.json",
                   "path": "tables.*.views",
                   "required": false
+                },
+                {
+                  "parameterId": "viewDependencyGuides",
+                  "title": "DataView 与 ViewDependency 参数知识",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json,generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+                  "required": true
                 }
               ],
               "llmTask": {
@@ -1003,6 +1387,148 @@
               "stageId": "PD6.structure-behavior-style",
               "sourceSteps": "89-96",
               "goal": "最后落 rule/script/style，保持组件、事件和样式引用闭合。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.configPageNode",
+                "generated.sparkNodeTree",
+                "generated.sparkNode",
+                "generated.ruleEditor",
+                "generated.rendererTable",
+                "generated.rendererForm",
+                "generated.rendererDetail",
+                "generated.rendererList",
+                "generated.rendererTree",
+                "generated.rendererButton",
+                "generated.scriptTypes"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.configPageNode",
+                  "title": "ConfigPageNode",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+                  "symbols": [
+                    "ConfigPageNode",
+                    "editDataSet",
+                    "editNodeTree",
+                    "setFileText"
+                  ],
+                  "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+                },
+                {
+                  "refId": "generated.sparkNodeTree",
+                  "title": "SparkNodeTree",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node-tree.ts.json",
+                  "symbols": [
+                    "SparkNodeTree"
+                  ],
+                  "usage": "确认 rule.json 节点树的增删改和 parentId/items 结构规则。"
+                },
+                {
+                  "refId": "generated.sparkNode",
+                  "title": "SparkNode",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node.ts.json",
+                  "symbols": [
+                    "SparkNode"
+                  ],
+                  "usage": "确认页面节点属性、组件类型、事件和样式 class 的节点载体。"
+                },
+                {
+                  "refId": "generated.ruleEditor",
+                  "title": "Rule editor projection",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/src/services/project-model-artifacts/rule-editor.ts.json",
+                  "usage": "确认 rule 设计器可见的节点树、绑定和编辑投影。"
+                },
+                {
+                  "refId": "generated.rendererTable",
+                  "title": "RendererTable props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+                  "symbols": [
+                    "RTableProps",
+                    "RendererTable"
+                  ],
+                  "usage": "确认表格容器的数据源、分页、工具栏和 actions 参数。"
+                },
+                {
+                  "refId": "generated.rendererForm",
+                  "title": "RendererForm props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json",
+                  "symbols": [
+                    "RFormProps",
+                    "RendererForm"
+                  ],
+                  "usage": "确认表单容器的数据源、contextDataMember/contextDataField 和 autoColumns 参数。"
+                },
+                {
+                  "refId": "generated.rendererDetail",
+                  "title": "RendererDetail props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json",
+                  "symbols": [
+                    "RDetailProps",
+                    "RendererDetail"
+                  ],
+                  "usage": "确认详情容器的数据源、字段上下文和展示参数。"
+                },
+                {
+                  "refId": "generated.rendererList",
+                  "title": "RendererList props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json",
+                  "symbols": [
+                    "RListProps",
+                    "RendererList"
+                  ],
+                  "usage": "确认列表容器的数据源、actions、分页和 item 配置。"
+                },
+                {
+                  "refId": "generated.rendererTree",
+                  "title": "RendererTree props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json",
+                  "symbols": [
+                    "RTreeProps",
+                    "RendererTree"
+                  ],
+                  "usage": "确认树容器的数据源、nodeKey、currentKey 和展开行为。"
+                },
+                {
+                  "refId": "generated.rendererButton",
+                  "title": "RendererButton props",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+                  "symbols": [
+                    "RButtonProps",
+                    "RendererButton"
+                  ],
+                  "usage": "确认按钮动作、dataViewKey、appendPayload、inheritFields 和 patch 参数。"
+                },
+                {
+                  "refId": "generated.scriptTypes",
+                  "title": "Script runtime types",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-utils/src/script-types.ts.json",
+                  "symbols": [
+                    "FieldRenderConfig",
+                    "ComponentInstanceSnapshot",
+                    "ContextItem",
+                    "ContextSnapshot"
+                  ],
+                  "usage": "确认脚本可用的字段渲染、组件快照和上下文数据结构。"
+                }
+              ],
               "factoryConsiderations": [
                 "F2",
                 "F4",
@@ -1018,9 +1544,7 @@
                 "missingHandlerCount",
                 "unusedClassCount",
                 "outOfArtifactWriteCount",
-                "deliveryImplementationDecisionCount",
-                "invalidDataViewKeyPartCount",
-                "viewWithoutConsumerCount"
+                "deliveryImplementationDecisionCount"
               ],
               "prerequisites": [
                 {
@@ -1064,8 +1588,8 @@
                 {
                   "parameterId": "componentPayloads",
                   "title": "组件 payload 与 guide",
-                  "source": "model_guide",
-                  "path": "component payload guides",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
                   "required": true
                 },
                 {
@@ -1200,6 +1724,83 @@
               "stageId": "PD7.verify-deliver",
               "sourceSteps": "97-100",
               "goal": "完成四文件交叉校验、预览回补和交付说明。",
+              "knowledgeRefIds": [
+                "doc.pageDesign100",
+                "generated.configPageNode",
+                "generated.sparkPageRenderer",
+                "generated.viewDataSource",
+                "generated.dataViewKey",
+                "generated.scriptTypes"
+              ],
+              "knowledgeRefs": [
+                {
+                  "refId": "doc.pageDesign100",
+                  "title": "页面设计 100 步工艺",
+                  "source": "document",
+                  "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+                  "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+                },
+                {
+                  "refId": "generated.configPageNode",
+                  "title": "ConfigPageNode",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+                  "symbols": [
+                    "ConfigPageNode",
+                    "editDataSet",
+                    "editNodeTree",
+                    "setFileText"
+                  ],
+                  "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+                },
+                {
+                  "refId": "generated.sparkPageRenderer",
+                  "title": "SparkPageRenderer",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.json",
+                  "symbols": [
+                    "PageRuntimeErrorPhase",
+                    "PageRuntimeErrorPayload"
+                  ],
+                  "usage": "确认预览/渲染错误阶段和最终交叉校验反馈来源。"
+                },
+                {
+                  "refId": "generated.viewDataSource",
+                  "title": "Container data source",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+                  "symbols": [
+                    "UseContainerDataSourceOptions",
+                    "ContainerDataSourceState"
+                  ],
+                  "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+                },
+                {
+                  "refId": "generated.dataViewKey",
+                  "title": "DataViewKey",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+                  "symbols": [
+                    "DataViewKeyDescriptor",
+                    "DataViewMemberDescriptor",
+                    "DataMember"
+                  ],
+                  "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+                },
+                {
+                  "refId": "generated.scriptTypes",
+                  "title": "Script runtime types",
+                  "source": "generated-dts-class-model",
+                  "path": "generated/dts-class-model/files/packages/spark-utils/src/script-types.ts.json",
+                  "symbols": [
+                    "FieldRenderConfig",
+                    "ComponentInstanceSnapshot",
+                    "ContextItem",
+                    "ContextSnapshot"
+                  ],
+                  "usage": "确认脚本可用的字段渲染、组件快照和上下文数据结构。"
+                }
+              ],
               "factoryConsiderations": [
                 "F6",
                 "F7",
@@ -1211,9 +1812,7 @@
                 "handoffArtifactCount",
                 "executionImplementationStepCount",
                 "deliveryArtifactCount",
-                "openDeliveryDesignQuestionCount",
-                "danglingDataBindingCount",
-                "missingHandlerCount"
+                "openDeliveryDesignQuestionCount"
               ],
               "prerequisites": [
                 {
@@ -1373,13 +1972,13 @@
           "id": "end",
           "type": "custom",
           "position": {
-            "x": 0,
+            "x": -260,
             "y": 240
           },
           "data": {
             "type": "end",
             "title": "End",
-            "desc": "页面设计工艺收口",
+            "desc": "页面设计工艺完成",
             "outputs": []
           }
         }
@@ -1492,18 +2091,308 @@
   "x_spark": {
     "schema": "spark.agent.workflow.design.v1",
     "businessFactory": true,
-    "phaseModel": "F0-F9-considerations",
+    "phaseModel": "process-stage-craft-only",
     "process": {
       "processId": "pageDesign.data-first-100-step-process",
       "title": "页面设计七段式数据优先工艺",
       "sourceRef": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
       "principle": "流程图只表达页面设计工艺步骤；100 步文档提供工艺主线，generated/dts-class-model 知识库提供模型、参数和验证依据；F0-F9 是每个步骤的工厂检查维度，不作为流程节点。",
+      "knowledgeSources": [
+        {
+          "refId": "doc.pageDesign100",
+          "title": "页面设计 100 步工艺",
+          "source": "document",
+          "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+          "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+        },
+        {
+          "refId": "generated.manifest",
+          "title": "DTS ClassModel bundle manifest",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/manifest.json",
+          "usage": "定位页面设计可用的模型、组件、工具和脚本知识 shard。"
+        },
+        {
+          "refId": "generated.projectModel",
+          "title": "ProjectModel",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-project-model/src/project/project-model.ts.json",
+          "symbols": [
+            "ProjectModel"
+          ],
+          "usage": "确认 pageDesign 入口、规划投影和 openPageDesign 页面模型入口。"
+        },
+        {
+          "refId": "generated.configPageNode",
+          "title": "ConfigPageNode",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+          "symbols": [
+            "ConfigPageNode",
+            "editDataSet",
+            "editNodeTree",
+            "setFileText"
+          ],
+          "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+        },
+        {
+          "refId": "generated.dataSet",
+          "title": "DataSet",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
+          "symbols": [
+            "DataSet"
+          ],
+          "usage": "确认 pagedata 根模型、序列化和 DataTable/DataView 聚合边界。"
+        },
+        {
+          "refId": "generated.dataTable",
+          "title": "DataTable",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json",
+          "symbols": [
+            "DataTable"
+          ],
+          "usage": "确认表、字段、rows、API 和 crudConfig 的结构依据。"
+        },
+        {
+          "refId": "generated.dataView",
+          "title": "DataView",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+          "symbols": [
+            "DataView"
+          ],
+          "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+        },
+        {
+          "refId": "generated.dataViewKey",
+          "title": "DataViewKey",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+          "symbols": [
+            "DataViewKeyDescriptor",
+            "DataViewMemberDescriptor",
+            "DataMember"
+          ],
+          "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+        },
+        {
+          "refId": "generated.dataSetCrudTool",
+          "title": "DataSetCrudTool",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+          "symbols": [
+            "DataSetCrudTool",
+            "DataSetCrudToolCreateTableOptions",
+            "DataSetCrudToolCreateRelationParams",
+            "DataSetCrudToolCreateDependencyParams"
+          ],
+          "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+        },
+        {
+          "refId": "generated.sparkNodeTree",
+          "title": "SparkNodeTree",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node-tree.ts.json",
+          "symbols": [
+            "SparkNodeTree"
+          ],
+          "usage": "确认 rule.json 节点树的增删改和 parentId/items 结构规则。"
+        },
+        {
+          "refId": "generated.sparkNode",
+          "title": "SparkNode",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node.ts.json",
+          "symbols": [
+            "SparkNode"
+          ],
+          "usage": "确认页面节点属性、组件类型、事件和样式 class 的节点载体。"
+        },
+        {
+          "refId": "generated.pageDataDesigner",
+          "title": "Page data designer projection",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+          "symbols": [
+            "DesignerTableProjection",
+            "DesignerRelationProjection"
+          ],
+          "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+        },
+        {
+          "refId": "generated.ruleEditor",
+          "title": "Rule editor projection",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/src/services/project-model-artifacts/rule-editor.ts.json",
+          "usage": "确认 rule 设计器可见的节点树、绑定和编辑投影。"
+        },
+        {
+          "refId": "generated.sparkPageRenderer",
+          "title": "SparkPageRenderer",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.json",
+          "symbols": [
+            "PageRuntimeErrorPhase",
+            "PageRuntimeErrorPayload"
+          ],
+          "usage": "确认预览/渲染错误阶段和最终交叉校验反馈来源。"
+        },
+        {
+          "refId": "generated.viewDataSource",
+          "title": "Container data source",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+          "symbols": [
+            "UseContainerDataSourceOptions",
+            "ContainerDataSourceState"
+          ],
+          "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+        },
+        {
+          "refId": "generated.rendererTable",
+          "title": "RendererTable props",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+          "symbols": [
+            "RTableProps",
+            "RendererTable"
+          ],
+          "usage": "确认表格容器的数据源、分页、工具栏和 actions 参数。"
+        },
+        {
+          "refId": "generated.rendererForm",
+          "title": "RendererForm props",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json",
+          "symbols": [
+            "RFormProps",
+            "RendererForm"
+          ],
+          "usage": "确认表单容器的数据源、contextDataMember/contextDataField 和 autoColumns 参数。"
+        },
+        {
+          "refId": "generated.rendererDetail",
+          "title": "RendererDetail props",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json",
+          "symbols": [
+            "RDetailProps",
+            "RendererDetail"
+          ],
+          "usage": "确认详情容器的数据源、字段上下文和展示参数。"
+        },
+        {
+          "refId": "generated.rendererList",
+          "title": "RendererList props",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json",
+          "symbols": [
+            "RListProps",
+            "RendererList"
+          ],
+          "usage": "确认列表容器的数据源、actions、分页和 item 配置。"
+        },
+        {
+          "refId": "generated.rendererTree",
+          "title": "RendererTree props",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json",
+          "symbols": [
+            "RTreeProps",
+            "RendererTree"
+          ],
+          "usage": "确认树容器的数据源、nodeKey、currentKey 和展开行为。"
+        },
+        {
+          "refId": "generated.rendererButton",
+          "title": "RendererButton props",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+          "symbols": [
+            "RButtonProps",
+            "RendererButton"
+          ],
+          "usage": "确认按钮动作、dataViewKey、appendPayload、inheritFields 和 patch 参数。"
+        },
+        {
+          "refId": "generated.scriptTypes",
+          "title": "Script runtime types",
+          "source": "generated-dts-class-model",
+          "path": "generated/dts-class-model/files/packages/spark-utils/src/script-types.ts.json",
+          "symbols": [
+            "FieldRenderConfig",
+            "ComponentInstanceSnapshot",
+            "ContextItem",
+            "ContextSnapshot"
+          ],
+          "usage": "确认脚本可用的字段渲染、组件快照和上下文数据结构。"
+        }
+      ],
       "stages": [
         {
           "stageId": "PD1.scope-inventory",
           "title": "接单与盘点",
           "sourceSteps": "1-20",
           "goal": "确认 live editing 入口、改动边界和当前四文件状态。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.manifest",
+              "title": "DTS ClassModel bundle manifest",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/manifest.json",
+              "usage": "定位页面设计可用的模型、组件、工具和脚本知识 shard。"
+            },
+            {
+              "refId": "generated.projectModel",
+              "title": "ProjectModel",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-project-model/src/project/project-model.ts.json",
+              "symbols": [
+                "ProjectModel"
+              ],
+              "usage": "确认 pageDesign 入口、规划投影和 openPageDesign 页面模型入口。"
+            },
+            {
+              "refId": "generated.configPageNode",
+              "title": "ConfigPageNode",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+              "symbols": [
+                "ConfigPageNode",
+                "editDataSet",
+                "editNodeTree",
+                "setFileText"
+              ],
+              "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+            },
+            {
+              "refId": "generated.pageDataDesigner",
+              "title": "Page data designer projection",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+              "symbols": [
+                "DesignerTableProjection",
+                "DesignerRelationProjection"
+              ],
+              "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+            },
+            {
+              "refId": "generated.ruleEditor",
+              "title": "Rule editor projection",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/src/services/project-model-artifacts/rule-editor.ts.json",
+              "usage": "确认 rule 设计器可见的节点树、绑定和编辑投影。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F0",
@@ -1776,6 +2665,69 @@
           "title": "数据规划与最小表模型",
           "sourceSteps": "21-40",
           "goal": "先立业务数据事实，再建立足够支撑关系和视图的最小 DataTable。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.dataSet",
+              "title": "DataSet",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
+              "symbols": [
+                "DataSet"
+              ],
+              "usage": "确认 pagedata 根模型、序列化和 DataTable/DataView 聚合边界。"
+            },
+            {
+              "refId": "generated.dataTable",
+              "title": "DataTable",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json",
+              "symbols": [
+                "DataTable"
+              ],
+              "usage": "确认表、字段、rows、API 和 crudConfig 的结构依据。"
+            },
+            {
+              "refId": "generated.dataView",
+              "title": "DataView",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+              "symbols": [
+                "DataView"
+              ],
+              "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+            },
+            {
+              "refId": "generated.dataSetCrudTool",
+              "title": "DataSetCrudTool",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+              "symbols": [
+                "DataSetCrudTool",
+                "DataSetCrudToolCreateTableOptions",
+                "DataSetCrudToolCreateRelationParams",
+                "DataSetCrudToolCreateDependencyParams"
+              ],
+              "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+            },
+            {
+              "refId": "generated.pageDataDesigner",
+              "title": "Page data designer projection",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+              "symbols": [
+                "DesignerTableProjection",
+                "DesignerRelationProjection"
+              ],
+              "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F1",
@@ -1930,8 +2882,8 @@
             {
               "parameterId": "datasetGuides",
               "title": "DataSet/DataTable/DataView 知识",
-              "source": "model_guide",
-              "path": "DataSet,DataTable,DataView",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json,generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json,generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json,generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
               "required": true
             }
           ],
@@ -2049,6 +3001,59 @@
           "title": "表关系建模",
           "sourceSteps": "41-50",
           "goal": "建立业务父子关系，并只保留有真实页面价值的关系。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.dataSet",
+              "title": "DataSet",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
+              "symbols": [
+                "DataSet"
+              ],
+              "usage": "确认 pagedata 根模型、序列化和 DataTable/DataView 聚合边界。"
+            },
+            {
+              "refId": "generated.dataTable",
+              "title": "DataTable",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/data-table.ts.json",
+              "symbols": [
+                "DataTable"
+              ],
+              "usage": "确认表、字段、rows、API 和 crudConfig 的结构依据。"
+            },
+            {
+              "refId": "generated.dataSetCrudTool",
+              "title": "DataSetCrudTool",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+              "symbols": [
+                "DataSetCrudTool",
+                "DataSetCrudToolCreateTableOptions",
+                "DataSetCrudToolCreateRelationParams",
+                "DataSetCrudToolCreateDependencyParams"
+              ],
+              "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+            },
+            {
+              "refId": "generated.pageDataDesigner",
+              "title": "Page data designer projection",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/src/services/project-model-artifacts/page-data-designer.ts.json",
+              "symbols": [
+                "DesignerTableProjection",
+                "DesignerRelationProjection"
+              ],
+              "usage": "确认设计器侧可见的 pagedata 投影、表关系和页面数据摘要。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F3",
@@ -2272,6 +3277,114 @@
           "title": "页面规划与数据消费",
           "sourceSteps": "51-70",
           "goal": "从数据事实推导页面区域，再把每个区域声明为明确的数据消费点。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.dataView",
+              "title": "DataView",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+              "symbols": [
+                "DataView"
+              ],
+              "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+            },
+            {
+              "refId": "generated.dataViewKey",
+              "title": "DataViewKey",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+              "symbols": [
+                "DataViewKeyDescriptor",
+                "DataViewMemberDescriptor",
+                "DataMember"
+              ],
+              "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+            },
+            {
+              "refId": "generated.viewDataSource",
+              "title": "Container data source",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+              "symbols": [
+                "UseContainerDataSourceOptions",
+                "ContainerDataSourceState"
+              ],
+              "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+            },
+            {
+              "refId": "generated.rendererTable",
+              "title": "RendererTable props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+              "symbols": [
+                "RTableProps",
+                "RendererTable"
+              ],
+              "usage": "确认表格容器的数据源、分页、工具栏和 actions 参数。"
+            },
+            {
+              "refId": "generated.rendererForm",
+              "title": "RendererForm props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json",
+              "symbols": [
+                "RFormProps",
+                "RendererForm"
+              ],
+              "usage": "确认表单容器的数据源、contextDataMember/contextDataField 和 autoColumns 参数。"
+            },
+            {
+              "refId": "generated.rendererDetail",
+              "title": "RendererDetail props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json",
+              "symbols": [
+                "RDetailProps",
+                "RendererDetail"
+              ],
+              "usage": "确认详情容器的数据源、字段上下文和展示参数。"
+            },
+            {
+              "refId": "generated.rendererList",
+              "title": "RendererList props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json",
+              "symbols": [
+                "RListProps",
+                "RendererList"
+              ],
+              "usage": "确认列表容器的数据源、actions、分页和 item 配置。"
+            },
+            {
+              "refId": "generated.rendererTree",
+              "title": "RendererTree props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json",
+              "symbols": [
+                "RTreeProps",
+                "RendererTree"
+              ],
+              "usage": "确认树容器的数据源、nodeKey、currentKey 和展开行为。"
+            },
+            {
+              "refId": "generated.rendererButton",
+              "title": "RendererButton props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+              "symbols": [
+                "RButtonProps",
+                "RendererButton"
+              ],
+              "usage": "确认按钮动作、dataViewKey、appendPayload、inheritFields 和 patch 参数。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F3",
@@ -2398,6 +3511,13 @@
               "source": "runInput",
               "path": "description,effectiveDescription",
               "required": true
+            },
+            {
+              "parameterId": "dataConsumerGuides",
+              "title": "DataViewKey、数据容器和按钮参数知识",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+              "required": true
             }
           ],
           "llmTask": {
@@ -2500,6 +3620,61 @@
           "title": "按需视图与依赖",
           "sourceSteps": "71-88",
           "goal": "按视图状态隔离创建或复用 DataView，并只在必要时显式声明 viewDependencies。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.dataView",
+              "title": "DataView",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
+              "symbols": [
+                "DataView"
+              ],
+              "usage": "确认页面数据消费、视图状态隔离、分页、筛选和选择状态语义。"
+            },
+            {
+              "refId": "generated.dataViewKey",
+              "title": "DataViewKey",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+              "symbols": [
+                "DataViewKeyDescriptor",
+                "DataViewMemberDescriptor",
+                "DataMember"
+              ],
+              "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+            },
+            {
+              "refId": "generated.dataSetCrudTool",
+              "title": "DataSetCrudTool",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+              "symbols": [
+                "DataSetCrudTool",
+                "DataSetCrudToolCreateTableOptions",
+                "DataSetCrudToolCreateRelationParams",
+                "DataSetCrudToolCreateDependencyParams"
+              ],
+              "usage": "确认 DataTable、Relation、DataView 和 ViewDependency 的结构化修改参数。"
+            },
+            {
+              "refId": "generated.viewDataSource",
+              "title": "Container data source",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+              "symbols": [
+                "UseContainerDataSourceOptions",
+                "ContainerDataSourceState"
+              ],
+              "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F4",
@@ -2623,6 +3798,13 @@
               "source": "pagedata.json",
               "path": "tables.*.views",
               "required": false
+            },
+            {
+              "parameterId": "viewDependencyGuides",
+              "title": "DataView 与 ViewDependency 参数知识",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json,generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
+              "required": true
             }
           ],
           "llmTask": {
@@ -2735,6 +3917,134 @@
           "title": "结构行为样式落地",
           "sourceSteps": "89-96",
           "goal": "最后落 rule/script/style，保持组件、事件和样式引用闭合。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.configPageNode",
+              "title": "ConfigPageNode",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+              "symbols": [
+                "ConfigPageNode",
+                "editDataSet",
+                "editNodeTree",
+                "setFileText"
+              ],
+              "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+            },
+            {
+              "refId": "generated.sparkNodeTree",
+              "title": "SparkNodeTree",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node-tree.ts.json",
+              "symbols": [
+                "SparkNodeTree"
+              ],
+              "usage": "确认 rule.json 节点树的增删改和 parentId/items 结构规则。"
+            },
+            {
+              "refId": "generated.sparkNode",
+              "title": "SparkNode",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node.ts.json",
+              "symbols": [
+                "SparkNode"
+              ],
+              "usage": "确认页面节点属性、组件类型、事件和样式 class 的节点载体。"
+            },
+            {
+              "refId": "generated.ruleEditor",
+              "title": "Rule editor projection",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/src/services/project-model-artifacts/rule-editor.ts.json",
+              "usage": "确认 rule 设计器可见的节点树、绑定和编辑投影。"
+            },
+            {
+              "refId": "generated.rendererTable",
+              "title": "RendererTable props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
+              "symbols": [
+                "RTableProps",
+                "RendererTable"
+              ],
+              "usage": "确认表格容器的数据源、分页、工具栏和 actions 参数。"
+            },
+            {
+              "refId": "generated.rendererForm",
+              "title": "RendererForm props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json",
+              "symbols": [
+                "RFormProps",
+                "RendererForm"
+              ],
+              "usage": "确认表单容器的数据源、contextDataMember/contextDataField 和 autoColumns 参数。"
+            },
+            {
+              "refId": "generated.rendererDetail",
+              "title": "RendererDetail props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json",
+              "symbols": [
+                "RDetailProps",
+                "RendererDetail"
+              ],
+              "usage": "确认详情容器的数据源、字段上下文和展示参数。"
+            },
+            {
+              "refId": "generated.rendererList",
+              "title": "RendererList props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json",
+              "symbols": [
+                "RListProps",
+                "RendererList"
+              ],
+              "usage": "确认列表容器的数据源、actions、分页和 item 配置。"
+            },
+            {
+              "refId": "generated.rendererTree",
+              "title": "RendererTree props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json",
+              "symbols": [
+                "RTreeProps",
+                "RendererTree"
+              ],
+              "usage": "确认树容器的数据源、nodeKey、currentKey 和展开行为。"
+            },
+            {
+              "refId": "generated.rendererButton",
+              "title": "RendererButton props",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
+              "symbols": [
+                "RButtonProps",
+                "RendererButton"
+              ],
+              "usage": "确认按钮动作、dataViewKey、appendPayload、inheritFields 和 patch 参数。"
+            },
+            {
+              "refId": "generated.scriptTypes",
+              "title": "Script runtime types",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-utils/src/script-types.ts.json",
+              "symbols": [
+                "FieldRenderConfig",
+                "ComponentInstanceSnapshot",
+                "ContextItem",
+                "ContextSnapshot"
+              ],
+              "usage": "确认脚本可用的字段渲染、组件快照和上下文数据结构。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F2",
@@ -2882,8 +4192,8 @@
             {
               "parameterId": "componentPayloads",
               "title": "组件 payload 与 guide",
-              "source": "model_guide",
-              "path": "component payload guides",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.props.ts.json,generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
               "required": true
             },
             {
@@ -3005,6 +4315,75 @@
           "title": "交叉校验与收尾",
           "sourceSteps": "97-100",
           "goal": "完成四文件交叉校验、预览回补和交付说明。",
+          "knowledgeRefs": [
+            {
+              "refId": "doc.pageDesign100",
+              "title": "页面设计 100 步工艺",
+              "source": "document",
+              "path": "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10",
+              "usage": "确定七段式页面设计工艺主线、步骤边界和验收闭环。"
+            },
+            {
+              "refId": "generated.configPageNode",
+              "title": "ConfigPageNode",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
+              "symbols": [
+                "ConfigPageNode",
+                "editDataSet",
+                "editNodeTree",
+                "setFileText"
+              ],
+              "usage": "确认 rule/pagedata/script/style 四文件内存模型和编辑 API 边界。"
+            },
+            {
+              "refId": "generated.sparkPageRenderer",
+              "title": "SparkPageRenderer",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.json",
+              "symbols": [
+                "PageRuntimeErrorPhase",
+                "PageRuntimeErrorPayload"
+              ],
+              "usage": "确认预览/渲染错误阶段和最终交叉校验反馈来源。"
+            },
+            {
+              "refId": "generated.viewDataSource",
+              "title": "Container data source",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/view-data-source.ts.json",
+              "symbols": [
+                "UseContainerDataSourceOptions",
+                "ContainerDataSourceState"
+              ],
+              "usage": "确认数据容器如何消费 DataView、rows/currentRow/selectedRows 和请求状态。"
+            },
+            {
+              "refId": "generated.dataViewKey",
+              "title": "DataViewKey",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
+              "symbols": [
+                "DataViewKeyDescriptor",
+                "DataViewMemberDescriptor",
+                "DataMember"
+              ],
+              "usage": "确认 dataViewKey、dataMember、dataField 分离规则和绑定校验依据。"
+            },
+            {
+              "refId": "generated.scriptTypes",
+              "title": "Script runtime types",
+              "source": "generated-dts-class-model",
+              "path": "generated/dts-class-model/files/packages/spark-utils/src/script-types.ts.json",
+              "symbols": [
+                "FieldRenderConfig",
+                "ComponentInstanceSnapshot",
+                "ContextItem",
+                "ContextSnapshot"
+              ],
+              "usage": "确认脚本可用的字段渲染、组件快照和上下文数据结构。"
+            }
+          ],
           "considerations": [
             {
               "phaseId": "F6",
@@ -3470,13 +4849,13 @@
         }
       }
     },
-    "validation": {
-      "status": "valid",
-      "issues": []
-    },
     "draft": {
       "status": "saved",
       "dirtyPaths": []
+    },
+    "validation": {
+      "status": "valid",
+      "issues": []
     },
     "history": {
       "commands": []

@@ -283,10 +283,27 @@ describe('workflow design helpers', () => {
     })
     expect(definition.process?.processId).toBe('test.page-design-process')
     expect(definition.process?.sourceRef).toBe('docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10')
+    expect(definition.process?.knowledgeSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        refId: 'doc.pageDesign100',
+        source: 'document',
+        path: 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10',
+      }),
+      expect.objectContaining({
+        refId: 'generated.dataSet',
+        source: 'generated-dts-class-model',
+      }),
+    ]))
     expect(definition.process?.stages).toHaveLength(7)
     expect(definition.process?.stages[0]).toMatchObject({
       stageId: 'PD1.scope-inventory',
       sourceSteps: '1-20',
+      knowledgeRefs: [
+        expect.objectContaining({
+          refId: 'generated.PD1.scope-inventory',
+          source: 'generated-dts-class-model',
+        }),
+      ],
       considerations: expect.arrayContaining([
         expect.objectContaining({
           phaseId: 'F0',
@@ -513,6 +530,7 @@ function createTestProcessStageNodes() {
         nodeRole: 'process-stage',
         stageId: stage.stageId,
         sourceSteps: stage.sourceSteps,
+        knowledgeRefIds: stage.knowledgeRefs?.map(item => item.refId) ?? [],
         factoryConsiderations: stage.considerations.map(item => item.phaseId),
       },
     },
@@ -607,6 +625,10 @@ function createTestProcess() {
     title: '页面设计测试工艺',
     sourceRef: 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10',
     principle: 'workflow graph contains craft steps; F0-F9 are stage considerations.',
+    knowledgeSources: [
+      createTestKnowledgeRef('doc.pageDesign100', 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10'),
+      createTestKnowledgeRef('generated.dataSet', 'generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json'),
+    ],
     stages: [
       createTestProcessStage('PD1.scope-inventory', '接单与盘点', '1-20'),
       createTestProcessStage('PD2.data-model', '数据规划与最小表模型', '21-40'),
@@ -625,6 +647,9 @@ function createTestProcessStage(stageId: string, title: string, sourceSteps: str
     title,
     sourceSteps,
     goal: `Run source steps ${sourceSteps}.`,
+    knowledgeRefs: [
+      createTestKnowledgeRef(`generated.${stageId}`, `generated/dts-class-model/files/${stageId}.json`),
+    ],
     considerations: [
       {
         phaseId: 'F0',
@@ -665,5 +690,16 @@ function createTestProcessStage(stageId: string, title: string, sourceSteps: str
         checks: ['stage closed'],
       },
     ],
+  }
+}
+
+function createTestKnowledgeRef(refId: string, path: string) {
+  return {
+    refId,
+    title: refId,
+    source: refId.startsWith('doc.') ? 'document' : 'generated-dts-class-model',
+    path,
+    symbols: refId.startsWith('generated.') ? ['TestSymbol'] : undefined,
+    usage: `Use ${refId} in workflow process tests.`,
   }
 }

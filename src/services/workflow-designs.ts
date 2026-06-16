@@ -14,6 +14,8 @@ import {
   type AgentWorkflowFactorySection,
   type AgentWorkflowFactorySections,
   type AgentWorkflowProcess,
+  type AgentWorkflowProcessKnowledgeRef,
+  type AgentWorkflowProcessKnowledgeSourceKind,
   type AgentWorkflowProcessStageCompletion,
   type AgentWorkflowProcessStageLlmTask,
   type AgentWorkflowProcessStage,
@@ -650,11 +652,13 @@ function readAgentWorkflowProcess(value: unknown): AgentWorkflowProcess | undefi
     .map(readAgentWorkflowProcessStage)
     .filter((stage): stage is AgentWorkflowProcessStage => stage !== undefined)
   if (stages.length !== stagesValue.length) return undefined
+  const knowledgeSources = readAgentWorkflowProcessKnowledgeRefs(value['knowledgeSources'])
   return {
     processId,
     title,
     sourceRef,
     principle,
+    ...(knowledgeSources === undefined ? {} : { knowledgeSources }),
     stages,
   }
 }
@@ -686,12 +690,14 @@ function readAgentWorkflowProcessStage(value: unknown): AgentWorkflowProcessStag
   const llmTask = readAgentWorkflowProcessStageLlmTask(value['llmTask'])
   const verification = readAgentWorkflowProcessStageVerificationList(value['verification'])
   const completion = readAgentWorkflowProcessStageCompletion(value['completion'])
+  const knowledgeRefs = readAgentWorkflowProcessKnowledgeRefs(value['knowledgeRefs'])
   return {
     stageId,
     title,
     sourceSteps,
     goal,
     steps,
+    ...(knowledgeRefs === undefined ? {} : { knowledgeRefs }),
     ...(considerations === undefined ? {} : { considerations }),
     ...(prerequisites === undefined ? {} : { prerequisites }),
     ...(model === undefined ? {} : { model }),
@@ -700,6 +706,50 @@ function readAgentWorkflowProcessStage(value: unknown): AgentWorkflowProcessStag
     ...(verification === undefined ? {} : { verification }),
     ...(completion === undefined ? {} : { completion }),
   }
+}
+
+function readAgentWorkflowProcessKnowledgeRefs(
+  value: unknown,
+): readonly AgentWorkflowProcessKnowledgeRef[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return undefined
+  const refs = value
+    .map(readAgentWorkflowProcessKnowledgeRef)
+    .filter((ref): ref is AgentWorkflowProcessKnowledgeRef => ref !== undefined)
+  return refs.length === value.length ? refs : undefined
+}
+
+function readAgentWorkflowProcessKnowledgeRef(value: unknown): AgentWorkflowProcessKnowledgeRef | undefined {
+  if (!isRecordValue(value)) return undefined
+  const refId = readProcessText(value, 'refId')
+  const title = readProcessText(value, 'title')
+  const source = readAgentWorkflowProcessKnowledgeSourceKind(value['source'])
+  const path = readProcessText(value, 'path')
+  const symbols = readOptionalTextList(value['symbols'])
+  const usage = readProcessText(value, 'usage')
+  if (
+    refId === undefined
+    || title === undefined
+    || source === undefined
+    || path === undefined
+    || usage === undefined
+  ) {
+    return undefined
+  }
+  return {
+    refId,
+    title,
+    source,
+    path,
+    ...(symbols === undefined ? {} : { symbols }),
+    usage,
+  }
+}
+
+function readAgentWorkflowProcessKnowledgeSourceKind(
+  value: unknown,
+): AgentWorkflowProcessKnowledgeSourceKind | undefined {
+  return value === 'document' || value === 'generated-dts-class-model' ? value : undefined
 }
 
 function readAgentWorkflowProcessStagePrerequisites(
