@@ -16,8 +16,7 @@
 - `knowledge/page-design.md`
 - `knowledge/testing.md`
 - `knowledge/vue-frontend.md`
-- `notes/research-business-factory-agent-workflow.md`
-- `notes/plan-business-factory-agent-workflow.md`
+- `packages/spark-ai/docs/business-factory-workflow-zh-cn.md`
 
 ## 现有链路事实
 
@@ -48,7 +47,7 @@
 - `requirementImport`：`documentText`，alias 为 `requirementImport`。
 - `projectPlanning`：`requirement` + `planningAttachmentText`，alias 为 `projectPlanning`。
 
-合并的合理方向是保留 Word 解析能力，但把解析后的正文作为 `planningAttachmentText` 注入 `projectPlanning`，让“需求文档 -> 项目策划”使用同一个 projectPlanning 工艺流程和同一个业务注册。
+合并的合理方向是保留 Word 解析能力，但把解析后的正文作为 `planningAttachmentText` 注入 `projectPlanning`，让“需求文档 -> 项目策划”使用同一个 projectPlanning workflow definition / runtime binding。
 
 ## 影响范围候选
 

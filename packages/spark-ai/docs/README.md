@@ -4,7 +4,8 @@
 
 | 文档 | 说明 |
 |------|------|
-| [`spark-ai-platform.md`](spark-ai-platform.md) | **全仓 AI SSOT**：五概念、L0–L5、业务工厂、工单/聊天、native-runtime、Delivery、接入 checklist、排错 |
+| [`spark-ai-platform.md`](spark-ai-platform.md) | 平台级入口索引：ClassModel、Agent Workflow / Chatflow、传输、runtime、pageDesign 专题跳转 |
+| [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) | **Agent Workflow / Chatflow / 业务工厂唯一权威文件**：对齐 Dify Workflow、Chatflow、Tool Node、Published App |
 | [`../ARCHITECTURE.md`](../ARCHITECTURE.md) | 包边界与生成命令（薄版） |
 
 ## 专题深潜
@@ -13,15 +14,12 @@
 |------|------|
 | [`transport-and-session-zh-cn.md`](transport-and-session-zh-cn.md) | V4 传输、session-turn / app-sse、ai-turn-bridge 序列与排错 |
 | [`class-model-knowledge-system-zh-cn.md`](class-model-knowledge-system-zh-cn.md) | ClassModel 知识体系：SSOT、JSON bundle、componentIndex、消费矩阵、按需加载、参数检测 |
-| [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) | 业务工厂注册体系：工艺流程、阶段验收、registration provider、Host 激活、工单运行、交付回执 |
 | [`pagedesign-devsystem-zh-cn.md`](pagedesign-devsystem-zh-cn.md) | APP 层 pageDesign × DevSystem 接线与排错 |
 
 ## 附录（已并入主文档，保留速查）
 
 | 文档 | 说明 |
 |------|------|
-| [`end-to-end-platform.md`](end-to-end-platform.md) | 端到端方案稿 + Phase 路线图 |
-| [`business-capability-onboarding.md`](business-capability-onboarding.md) | 新业务能力接入可打印 checklist |
 | [`native-runtime-and-agent-flow-zh-cn.md`](native-runtime-and-agent-flow-zh-cn.md) | native-runtime 文件索引与排错表 |
 
-**阅读顺序：** `ARCHITECTURE.md` → **`spark-ai-platform.md`** →（查 ClassModel / JSON / componentIndex）`class-model-knowledge-system-zh-cn.md` →（查业务工厂注册与阶段验收）`business-factory-workflow-zh-cn.md` →（按需）transport / pagedesign 专题 →（接新业务）主文档 §12 或 ONBOARDING 附录。
+**阅读顺序：** `ARCHITECTURE.md` → `spark-ai-platform.md` →（查 ClassModel / JSON / componentIndex）`class-model-knowledge-system-zh-cn.md` →（查 Agent Workflow / Chatflow / 业务工厂）**`business-factory-workflow-zh-cn.md`** →（按需）transport / runtime / pagedesign 专题。

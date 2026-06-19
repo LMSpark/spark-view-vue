@@ -9,13 +9,13 @@ AI 在阶段 1（深度研读）时，除了读源码，还应根据任务涉及
 
 | 任务涉及的包/目录 | 应读的知识文件 |
 |---|---|
-| `packages/spark-ai/` | `class-model-system.md` |
+| `packages/spark-ai/` | `class-model-system.md`、`packages/spark-ai/docs/business-factory-workflow-zh-cn.md` |
 | `packages/spark-project-model/` | `class-model-system.md`、`page-design.md` |
 | `packages/spark-component/` | `vue-frontend.md` |
 | `packages/spark-data/` | `page-design.md` |
 | `packages/spark-utils/` | `monorepo-dependencies.md` |
 | `src/`（应用壳） | `vue-frontend.md`、`monorepo-dependencies.md` |
-| `spark-ai-server/` | `java-backend.md` |
+| `spark-ai-server/` | `java-backend.md`、`packages/spark-ai/docs/business-factory-workflow-zh-cn.md` |
 | 跨多个包 | `monorepo-dependencies.md` + 上述对应的文件 |
 
 ## 何时写
@@ -51,6 +51,7 @@ AI 在阶段 1（深度研读）时，除了读源码，还应根据任务涉及
 |------|------|------|
 | `monorepo-dependencies.md` | 工程结构 | 包间依赖传播、catalog 版本管理、验证命令 |
 | `class-model-system.md` | AI/ClassModel | ClassModel 工具链路、知识边界、投影机制 |
+| `packages/spark-ai/docs/business-factory-workflow-zh-cn.md` | AI/Agent | Agent Workflow / Chatflow / 业务工厂唯一权威口径：对齐 Dify Workflow、Chatflow、Tool Node、Published App |
 | `page-design.md` | 页面设计 | 四文件编辑、内存模型、落盘机制 |
 | `vue-frontend.md` | Vue 前端 | 组件开发、状态管理、路由约束 |
 | `java-backend.md` | Java 后端 | Spring Boot 配置、SSE、会话管理 |
