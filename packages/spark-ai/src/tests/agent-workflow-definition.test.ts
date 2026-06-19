@@ -9,16 +9,13 @@ import {
   dryRunAgentWorkflowDefinition,
   validateAgentWorkflowDefinition,
   type AgentWorkflowDefinition,
-  type AgentWorkflowToolDescriptor,
   type AiAgentToolRuntime,
   type AiAgentTurnCallbacks,
 } from '../agent'
 
 describe('AgentWorkflowDefinition', () => {
   it('validates the workflow graph definition shape', () => {
-    const validation = validateAgentWorkflowDefinition(createDefinition(), {
-      resolveToolDescriptor: () => createToolDescriptor(),
-    })
+    const validation = validateAgentWorkflowDefinition(createDefinition())
 
     expect(validation).toEqual({
       status: 'valid',
@@ -44,24 +41,23 @@ describe('AgentWorkflowDefinition', () => {
     ]))
   })
 
-  it('validates ClassModel tool parameters through a descriptor resolver', () => {
+  it('rejects legacy tool parameter fields', () => {
     const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
     const tool = broken.workflow.graph.nodes.find(node => node.id === 'tool.demo')
     if (tool?.type !== 'tool') throw new Error('test fixture must include tool.demo')
-    ;(tool.data.toolParameters as Record<string, unknown>)['prompt'] = undefined
-    delete (tool.data.toolParameters as Record<string, unknown>)['prompt']
+    ;(tool.data as Record<string, unknown>)['toolParameters'] = {
+      prompt: '{{ start.prompt }}',
+    }
 
-    const validation = validateAgentWorkflowDefinition(broken, {
-      resolveToolDescriptor: () => createToolDescriptor(),
-    })
+    const validation = validateAgentWorkflowDefinition(broken)
 
     expect(validation.status).toBe('invalid')
     expect(validation.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({
         severity: 'error',
-        code: 'AGENT_WORKFLOW_TOOL_PARAMETER_MISSING',
+        code: 'AGENT_WORKFLOW_LEGACY_NODE_FIELD',
         nodeId: 'tool.demo',
-        path: 'definition.workflow.graph.nodes[1].data.toolParameters.prompt',
+        path: 'definition.workflow.graph.nodes[1].data.toolParameters',
       }),
     ]))
   })
@@ -80,19 +76,19 @@ describe('AgentWorkflowDefinition', () => {
               version: 1,
               definitionPath: 'workflows/demo.clarify/definition.json',
             },
-            inputMapping: {
+            inputs: {
               context: '{{ start.prompt }}',
             },
-            outputMapping: {
+            outputs: {
               answers: 'clarify.answers',
             },
           },
         },
-        createEndNode(),
+        createOutputNode(),
       ],
       edges: [
         { id: 'edge.start.chatflow', source: 'start', target: 'chatflow.clarify' },
-        { id: 'edge.chatflow.end', source: 'chatflow.clarify', target: 'end' },
+        { id: 'edge.chatflow.output', source: 'chatflow.clarify', target: 'output' },
       ],
     })
 
@@ -184,6 +180,15 @@ function createDefinition(options: {
         { name: 'id', required: true },
         { name: 'prompt', required: true },
       ],
+      capabilities: [
+        {
+          id: 'demo.run',
+          title: 'Demo Run',
+          scope: 'workflow',
+          description: 'Run the demo workflow.',
+          constraints: [],
+        },
+      ],
       graph: {
         nodes: options.nodes ?? [
           createStartNode(),
@@ -193,18 +198,37 @@ function createDefinition(options: {
             data: {
               title: 'Demo Tool',
               provider: 'class-model',
-              toolName: 'spark.demo.run',
-              toolParameters: {
+              toolName: 'demoModule',
+              inputs: {
                 id: '{{ start.id }}',
                 prompt: '{{ start.prompt }}',
               },
+              outputs: {
+                result: 'demo.result',
+              },
+              capabilities: [
+                {
+                  id: 'demo.execute',
+                  title: 'Execute Demo',
+                  scope: 'node',
+                  description: 'Let the demo module plan and execute the requested work.',
+                  inputs: {
+                    id: '{{ start.id }}',
+                    prompt: '{{ start.prompt }}',
+                  },
+                  outputs: {
+                    result: 'demo.result',
+                  },
+                  constraints: [],
+                },
+              ],
             },
           },
-          createEndNode(),
+          createOutputNode(),
         ],
         edges: options.edges ?? [
           { id: 'edge.start.tool', source: 'start', target: 'tool.demo' },
-          { id: 'edge.tool.end', source: 'tool.demo', target: 'end' },
+          { id: 'edge.tool.output', source: 'tool.demo', target: 'output' },
         ],
       },
     },
@@ -229,24 +253,16 @@ function createStartNode(): AgentWorkflowDefinition['workflow']['graph']['nodes'
   }
 }
 
-function createEndNode(): AgentWorkflowDefinition['workflow']['graph']['nodes'][number] {
+function createOutputNode(): AgentWorkflowDefinition['workflow']['graph']['nodes'][number] {
   return {
-    id: 'end',
-    type: 'end',
+    id: 'output',
+    type: 'output',
     data: {
-      title: 'End',
+      title: 'Output',
+      outputs: {
+        result: '{{ tool.demo.result }}',
+      },
     },
-  }
-}
-
-function createToolDescriptor(): AgentWorkflowToolDescriptor {
-  return {
-    provider: 'class-model',
-    toolName: 'spark.demo.run',
-    parameters: [
-      { name: 'id', required: true, source: 'constructor' },
-      { name: 'prompt', required: true, source: 'function' },
-    ],
   }
 }
 

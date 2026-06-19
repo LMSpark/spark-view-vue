@@ -185,6 +185,17 @@ export function createPageDesignAgentWorkflowDefinition(): AgentWorkflowDefiniti
         { name: 'description', required: true },
         { name: 'effectiveDescription', required: true },
       ],
+      capabilities: [
+        {
+          id: 'page-design.delivery',
+          title: 'Page Design Delivery',
+          scope: 'workflow',
+          description: 'Coordinate page design input, ClassModel runtime execution, and page file delivery.',
+          constraints: [
+            'Runtime binding owns ClassModel knowledge lookup, script generation, and file delivery.',
+          ],
+        },
+      ],
       graph: {
         nodes: [
           {
@@ -198,30 +209,53 @@ export function createPageDesignAgentWorkflowDefinition(): AgentWorkflowDefiniti
             id: 'tool.pageDesign',
             type: 'tool',
             data: {
-              title: 'Page Design ClassModel Tool',
+              title: 'Page Design Module',
               provider: 'class-model',
-              toolName: CLASS_MODEL_TOOL_NAMES.script,
-              toolParameters: {
+              toolName: PAGE_DESIGN_MODULE_ID,
+              inputs: {
                 pageId: '{{ start.pageId }}',
                 description: '{{ start.description }}',
                 effectiveDescription: '{{ start.effectiveDescription }}',
               },
+              outputs: {
+                result: 'pageDesign.result',
+              },
+              capabilities: [
+                {
+                  id: 'page-design.compose',
+                  title: 'Compose Page Design',
+                  scope: 'node',
+                  description: 'Let the pageDesign module inspect model knowledge and apply page design changes through runtime tools.',
+                  inputs: {
+                    pageId: '{{ start.pageId }}',
+                    description: '{{ start.description }}',
+                    effectiveDescription: '{{ start.effectiveDescription }}',
+                  },
+                  outputs: {
+                    result: 'pageDesign.result',
+                  },
+                  constraints: [
+                    'Workflow definition names the module; runtime chooses ClassModel actions and script calls.',
+                  ],
+                },
+              ],
             },
           },
           {
-            id: 'end',
-            type: 'end',
+            id: 'output',
+            type: 'output',
             data: {
-              title: 'End',
-              outputMapping: {
+              title: 'Output',
+              outputs: {
                 result: '{{ tool.pageDesign.result }}',
               },
+              capabilities: [],
             },
           },
         ],
         edges: [
           { id: 'edge.start.tool', source: 'start', target: 'tool.pageDesign' },
-          { id: 'edge.tool.end', source: 'tool.pageDesign', target: 'end' },
+          { id: 'edge.tool.output', source: 'tool.pageDesign', target: 'output' },
         ],
       },
     },

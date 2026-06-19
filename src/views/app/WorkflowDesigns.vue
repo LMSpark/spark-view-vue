@@ -39,7 +39,11 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
             v-for="item in designs"
             :key="item.workflowId"
             class="workflow-list-item"
-            :class="{ 'is-active': item.workflowId === currentWorkflowId }"
+            :class="{
+              'is-active': item.workflowId === currentWorkflowId,
+              'is-unreadable': isUnreadableDesign(item),
+            }"
+            :title="workflowDesignListItemTitle(item)"
             role="button"
             tabindex="0"
             @click="openDesign(item.workflowId)"
@@ -50,7 +54,7 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
               <span>{{ item.workflowId }}</span>
             </div>
             <div class="workflow-list-meta">
-              <el-tag size="small" :type="item.status === 'unreadable' ? 'danger' : 'success'">
+              <el-tag size="small" :type="isUnreadableDesign(item) ? 'danger' : 'success'">
                 {{ item.status || 'draft' }}
               </el-tag>
               <span>{{ item.version ? `v${item.version}` : 'v1' }}</span>
@@ -519,7 +523,7 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
             <option value="chatflow">Chatflow</option>
             <option value="workflow">Workflow</option>
             <option value="start">Start</option>
-            <option value="end">End</option>
+            <option value="output">Output</option>
             <option value="custom">Custom</option>
           </select>
         </el-form-item>
@@ -705,6 +709,8 @@ const GRAPH_SPLIT_MIN_RATIO = 22
 const GRAPH_SPLIT_MAX_RATIO = 78
 const GRAPH_SPLIT_SNAP_RATIO = 12
 const GRAPH_SPLIT_STORAGE_PREFIX = 'spark.workflow-design.graph-split.'
+const UNREADABLE_WORKFLOW_DESIGN_STATUS = 'unreadable'
+const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '设计稿格式不兼容或文件不可读'
 
 const designs = ref<WorkflowDesignSummary[]>([])
 const currentWorkflowId = ref('')
@@ -887,9 +893,7 @@ watch(
 
 onMounted(async () => {
   await loadDesigns()
-  if (designs.value.length > 0 && currentWorkflowId.value.length === 0) {
-    await openDesign(designs.value[0]?.workflowId ?? '')
-  }
+  await openInitialDesign()
 })
 
 onBeforeUnmount(() => {
@@ -908,9 +912,24 @@ async function loadDesigns(): Promise<void> {
   }
 }
 
+async function openInitialDesign(): Promise<void> {
+  if (designs.value.length === 0 || currentWorkflowId.value.length > 0) return
+  const firstReadableDesign = designs.value.find(item => !isUnreadableDesign(item))
+  if (firstReadableDesign !== undefined) {
+    await openDesign(firstReadableDesign.workflowId)
+    return
+  }
+  ElMessage.warning('当前设计稿均不可打开，请新建工作流或删除旧设计稿')
+}
+
 async function openDesign(workflowId: string): Promise<void> {
   const normalizedWorkflowId = workflowId.trim()
   if (normalizedWorkflowId.length === 0) return
+  const summary = findWorkflowDesignSummary(normalizedWorkflowId)
+  if (isUnreadableDesign(summary)) {
+    ElMessage.error(`设计稿不可打开: ${workflowDesignErrorMessage(summary)}`)
+    return
+  }
   if (normalizedWorkflowId !== currentWorkflowId.value) {
     if (!await confirmDiscardEditorDraft()) return
     if (!await confirmDiscardDefinitionDraft()) return
@@ -941,6 +960,23 @@ async function openDesign(workflowId: string): Promise<void> {
   } finally {
     opening.value = false
   }
+}
+
+function findWorkflowDesignSummary(workflowId: string): WorkflowDesignSummary | undefined {
+  return designs.value.find(item => item.workflowId === workflowId)
+}
+
+function isUnreadableDesign(item: WorkflowDesignSummary | undefined): boolean {
+  return item?.status === UNREADABLE_WORKFLOW_DESIGN_STATUS
+}
+
+function workflowDesignErrorMessage(item: WorkflowDesignSummary | undefined): string {
+  const message = item?.error?.trim()
+  return message && message.length > 0 ? message : UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR
+}
+
+function workflowDesignListItemTitle(item: WorkflowDesignSummary): string {
+  return isUnreadableDesign(item) ? workflowDesignErrorMessage(item) : item.title || item.workflowId
 }
 
 function openCreateDialog(): void {
@@ -1021,7 +1057,7 @@ function defaultCreateNodeId(nodeKind: WorkflowDesignNodeCreateKind): string {
   if (nodeKind === 'chatflow') return 'chatflow.clarify'
   if (nodeKind === 'workflow') return 'workflow.call'
   if (nodeKind === 'start') return 'start'
-  if (nodeKind === 'end') return 'end'
+  if (nodeKind === 'output') return 'output'
   return 'node.custom'
 }
 
@@ -1030,7 +1066,7 @@ function defaultCreateNodeTitle(nodeKind: WorkflowDesignNodeCreateKind): string 
   if (nodeKind === 'chatflow') return 'Chatflow'
   if (nodeKind === 'workflow') return 'Workflow'
   if (nodeKind === 'start') return 'Start'
-  if (nodeKind === 'end') return 'End'
+  if (nodeKind === 'output') return 'Output'
   return 'Custom Node'
 }
 
@@ -1061,8 +1097,8 @@ async function deleteSelectedNode(): Promise<void> {
   const view = selectedNode.value
   const document = currentDocument.value
   if (view === null || document === null) return
-  if ((view.nodeType === 'start' || view.nodeType === 'end') && allNodes.value.filter(node => node.nodeType === view.nodeType).length <= 1) {
-    ElMessage.warning('至少保留一个 start 和 end 节点')
+  if ((view.nodeType === 'start' || view.nodeType === 'output') && allNodes.value.filter(node => node.nodeType === view.nodeType).length <= 1) {
+    ElMessage.warning('至少保留一个 start 和 output 节点')
     return
   }
 
@@ -1940,6 +1976,16 @@ function errorMessage(error: unknown): string {
 .workflow-list-item.is-active {
   border-color: #0f766e;
   background: #eefaf7;
+}
+
+.workflow-list-item.is-unreadable {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.workflow-list-item.is-unreadable:hover {
+  border-color: #dc2626;
+  background: #fff1f2;
 }
 
 .workflow-list-main {

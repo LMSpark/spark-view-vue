@@ -197,12 +197,12 @@ const VueFlowStub = defineComponent({
       const edgeUpdateButtons = props.edges.map((edge: any) => h('button', {
         type: 'button',
         class: 'workflow-flow-edge-update',
-        title: `改连线 ${edge.source} -> ${edge.target} 到 end`,
+        title: `改连线 ${edge.source} -> ${edge.target} 到 output`,
         onClick: () => emit('edgeUpdate', {
           edge,
           connection: {
             source: edge.source,
-            target: 'end',
+            target: 'output',
             sourceHandle: 'source',
             targetHandle: 'target',
           },
@@ -218,16 +218,25 @@ const VueFlowStub = defineComponent({
   },
 })
 
-function createWorkflowDesignDocument(): WorkflowDesignDocument {
+function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): WorkflowDesignDocument {
   return {
     kind: 'agent.workflow.design',
     version: 1,
-    id: 'agent.workflow.demo',
+    id: workflowId,
     workflow: {
-      id: 'agent.workflow.demo',
+      id: workflowId,
       version: 1,
       variables: [
         { name: 'prompt', title: 'Prompt', required: true },
+      ],
+      capabilities: [
+        {
+          id: 'demo.workflow',
+          title: 'Demo Workflow',
+          scope: 'workflow',
+          description: 'Run the demo workflow.',
+          constraints: [],
+        },
       ],
       graph: {
         nodes: [
@@ -246,25 +255,47 @@ function createWorkflowDesignDocument(): WorkflowDesignDocument {
               title: 'ClassModel Tool',
               desc: 'Run class model script',
               provider: 'class-model',
-              toolName: 'model_script',
-              toolParameters: {
+              toolName: 'pageDesign',
+              inputs: {
                 prompt: 'initial',
               },
-              outputMapping: {
+              outputs: {
                 result: '$.result',
               },
+              capabilities: [
+                {
+                  id: 'page-design.execute',
+                  title: 'Execute Page Design',
+                  scope: 'node',
+                  description: 'Let the pageDesign module plan and apply page design changes.',
+                  inputs: {
+                    prompt: 'initial',
+                  },
+                  outputs: {
+                    result: '$.result',
+                  },
+                  constraints: [],
+                },
+              ],
             },
           },
           {
-            id: 'end',
-            type: 'end',
+            id: 'output',
+            type: 'output',
             position: { x: 560, y: 160 },
-            data: { type: 'end', title: 'End' },
+            data: {
+              type: 'output',
+              title: 'Output',
+              outputs: {
+                result: '{{ tool.classModel.result }}',
+              },
+              capabilities: [],
+            },
           },
         ],
         edges: [
           { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
-          { id: 'edge.tool.end', source: 'tool.classModel', target: 'end' },
+          { id: 'edge.tool.output', source: 'tool.classModel', target: 'output' },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
@@ -285,6 +316,7 @@ function createDefinition() {
     workflowId: 'agent.workflow.demo',
     workflow: {
       variables: [],
+      capabilities: [],
       graph: {
         nodes: [],
         edges: [],
@@ -387,6 +419,98 @@ describe('WorkflowDesigns visual editor', () => {
     })
   })
 
+  it('auto-opens the first readable design and skips unreadable summaries', async () => {
+    mocks.listWorkflowDesigns.mockResolvedValueOnce([
+      {
+        workflowId: 'agent.workflow.legacy',
+        filename: 'design.json',
+        timestamp: '1',
+        title: 'Legacy Workflow',
+        version: 1,
+        status: 'unreadable',
+        error: 'forbidden field: app',
+      },
+      {
+        workflowId: 'agent.workflow.next',
+        filename: 'design.json',
+        timestamp: '2',
+        title: 'Next Workflow',
+        version: 1,
+        status: 'draft',
+      },
+    ])
+    mocks.readWorkflowDesign.mockResolvedValueOnce({
+      workflowId: 'agent.workflow.next',
+      filename: 'design.json',
+      timestamp: '2',
+      document: createWorkflowDesignDocument('agent.workflow.next'),
+    })
+
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    expect(mocks.readWorkflowDesign).toHaveBeenCalledOnce()
+    expect(mocks.readWorkflowDesign).toHaveBeenCalledWith('agent.workflow.next')
+    expect(wrapper.text()).toContain('agent.workflow.next')
+    expect(mocks.message.warning).not.toHaveBeenCalled()
+  })
+
+  it('blocks opening an unreadable design without requesting design.json', async () => {
+    mocks.listWorkflowDesigns.mockResolvedValueOnce([
+      {
+        workflowId: 'agent.workflow.legacy',
+        filename: 'design.json',
+        timestamp: '1',
+        title: 'Legacy Workflow',
+        version: 1,
+        status: 'unreadable',
+        error: 'forbidden field: app',
+      },
+      {
+        workflowId: 'agent.workflow.demo',
+        filename: 'design.json',
+        timestamp: '2',
+        title: 'Demo Workflow',
+        version: 1,
+        status: 'draft',
+      },
+    ])
+
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    const legacyItem = wrapper.findAll('.workflow-list-item')
+      .find(item => item.text().includes('Legacy Workflow'))
+    if (legacyItem === undefined) throw new Error('missing legacy workflow item')
+    await legacyItem.trigger('click')
+    await flushPromises()
+
+    expect(mocks.readWorkflowDesign).toHaveBeenCalledOnce()
+    expect(mocks.readWorkflowDesign).toHaveBeenCalledWith('agent.workflow.demo')
+    expect(mocks.message.error).toHaveBeenCalledWith('设计稿不可打开: forbidden field: app')
+  })
+
+  it('keeps the empty state and warns when every design is unreadable', async () => {
+    mocks.listWorkflowDesigns.mockResolvedValueOnce([
+      {
+        workflowId: 'agent.workflow.legacy',
+        filename: 'design.json',
+        timestamp: '1',
+        title: 'Legacy Workflow',
+        version: 1,
+        status: 'unreadable',
+        error: 'forbidden field: app',
+      },
+    ])
+
+    mountWorkflowDesigns()
+    await flushPromises()
+
+    expect(mocks.readWorkflowDesign).not.toHaveBeenCalled()
+    expect(mocks.message.warning).toHaveBeenCalledWith('当前设计稿均不可打开，请新建工作流或删除旧设计稿')
+    expect(mocks.message.error).not.toHaveBeenCalled()
+  })
+
   it('opens, edits, and saves a ClassModel Tool node config', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
@@ -397,17 +521,18 @@ describe('WorkflowDesigns visual editor', () => {
 
     const modelEditor = wrapper.find('textarea.model-json-input')
     expect(modelEditor.exists()).toBe(true)
-    expect((modelEditor.element as HTMLTextAreaElement).value).toContain('"toolName": "model_script"')
+    expect((modelEditor.element as HTMLTextAreaElement).value).toContain('"toolName": "pageDesign"')
 
     await modelEditor.setValue(JSON.stringify({
       type: 'tool',
       title: 'ClassModel Tool',
       provider: 'class-model',
-      toolName: 'model_script',
-      toolParameters: {
+      toolName: 'pageDesign',
+      inputs: {
         prompt: 'edited',
       },
-      outputMapping: {},
+      outputs: {},
+      capabilities: [],
     }))
     await findButton(wrapper, '应用节点配置').trigger('click')
     await findButton(wrapper, '保存').trigger('click')
@@ -416,7 +541,7 @@ describe('WorkflowDesigns visual editor', () => {
     expect(mocks.saveWorkflowDesign).toHaveBeenCalledOnce()
     const [workflowId, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
     expect(workflowId).toBe('agent.workflow.demo')
-    expect(savedDocument.workflow.graph.nodes[1]?.data?.toolParameters?.['prompt']).toBe('edited')
+    expect(savedDocument.workflow.graph.nodes[1]?.data?.inputs?.['prompt']).toBe('edited')
     expect(savedDocument.x_spark.draft?.['status']).toBe('saved')
   })
 
@@ -459,7 +584,7 @@ describe('WorkflowDesigns visual editor', () => {
     )
   })
 
-  it('keeps start and end nodes protected while allowing tool deletion', async () => {
+  it('keeps start and output nodes protected while allowing tool deletion', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
@@ -469,7 +594,7 @@ describe('WorkflowDesigns visual editor', () => {
     await flushPromises()
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
-    expect(savedDocument.workflow.graph.nodes.map(node => node.id)).toEqual(['start', 'end'])
+    expect(savedDocument.workflow.graph.nodes.map(node => node.id)).toEqual(['start', 'output'])
     expect(savedDocument.workflow.graph.edges).toHaveLength(0)
   })
 
@@ -484,7 +609,7 @@ describe('WorkflowDesigns visual editor', () => {
     const selects = wrapper.findAll('select.native-select')
       .filter(select => !select.classes().includes('graph-child-select'))
     expect(selects.length).toBeGreaterThanOrEqual(2)
-    await selects[1]?.setValue('end')
+    await selects[1]?.setValue('output')
     await findButton(wrapper, '应用连线').trigger('click')
     await findButton(wrapper, '保存').trigger('click')
     await flushPromises()
@@ -492,7 +617,7 @@ describe('WorkflowDesigns visual editor', () => {
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
     expect(savedDocument.workflow.graph.edges[0]).toEqual(expect.objectContaining({
       source: 'start',
-      target: 'end',
+      target: 'output',
     }))
   })
 
@@ -500,7 +625,7 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const edgeUpdateButton = wrapper.find('[title="改连线 start -> tool.classModel 到 end"]')
+    const edgeUpdateButton = wrapper.find('[title="改连线 start -> tool.classModel 到 output"]')
     expect(edgeUpdateButton.exists()).toBe(true)
     await edgeUpdateButton.trigger('click')
     await findButton(wrapper, '保存').trigger('click')
@@ -509,7 +634,7 @@ describe('WorkflowDesigns visual editor', () => {
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
     expect(savedDocument.workflow.graph.edges[0]).toEqual(expect.objectContaining({
       source: 'start',
-      target: 'end',
+      target: 'output',
     }))
   })
 
@@ -529,6 +654,61 @@ describe('WorkflowDesigns visual editor', () => {
       }),
     )
     expect(mocks.message.success).toHaveBeenCalledWith('definition.json 已发布')
+  })
+
+  it('marks ClassModel schema refs as legacy when creating a definition', async () => {
+    const actual = await vi.importActual<typeof import('@/services/workflow-designs')>('@/services/workflow-designs')
+    const document = createWorkflowDesignDocument()
+    Object.assign(document.workflow as unknown as Record<string, unknown>, {
+      features: {
+        file_upload: { enabled: false },
+      },
+      environment_variables: [],
+      conversation_variables: [],
+    })
+    const toolData = document.workflow.graph.nodes[1]?.data
+    if (toolData === undefined) throw new Error('missing tool node data')
+    toolData.x_spark = {
+      classModel: {
+        manifestPath: 'generated/dts-class-model/manifest.json',
+        sourcePath: 'packages/spark-project-model/src/project/project-model.ts',
+        rootClassName: 'ProjectModel',
+        actionName: 'replaceNavigationChildren',
+        schemaRefs: {
+          params: {
+            $ref: 'project-model.ts.json#/$defs/ProjectModel/$defs/method.replaceNavigationChildren.params',
+          },
+        },
+      },
+    }
+
+    const definition = actual.createAgentWorkflowDefinitionFromDesign(document, {
+      publishedAt: '2026-06-19T00:00:00.000Z',
+    })
+
+    expect(definition.workflow.graph.nodes[1]?.data).toMatchObject({
+      type: 'tool',
+      desc: 'Run class model script',
+      provider: 'class-model',
+      toolName: 'pageDesign',
+    })
+    expect(definition.workflow.graph.nodes[1]?.data).not.toHaveProperty('x_spark')
+    expect(definition.x_spark.validation).toMatchObject({
+      status: 'invalid',
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          code: 'AGENT_WORKFLOW_LEGACY_CLASS_MODEL_META',
+          nodeId: 'tool.classModel',
+        }),
+      ]),
+    })
+    expect(definition.workflow as unknown as Record<string, unknown>).toMatchObject({
+      features: {
+        file_upload: { enabled: false },
+      },
+      environment_variables: [],
+      conversation_variables: [],
+    })
   })
 
   it('opens, edits, and saves definition.json', async () => {

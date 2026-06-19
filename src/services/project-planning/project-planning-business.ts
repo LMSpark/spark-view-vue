@@ -297,6 +297,17 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
         { name: 'requirement', required: true },
         { name: 'navigationNodes', required: true },
       ],
+      capabilities: [
+        {
+          id: 'project-planning.delivery',
+          title: 'Project Planning Delivery',
+          scope: 'workflow',
+          description: 'Coordinate project planning input, ClassModel runtime execution, and navigation plan delivery.',
+          constraints: [
+            'Runtime binding owns ClassModel knowledge lookup, script generation, and navigation mutation.',
+          ],
+        },
+      ],
       graph: {
         nodes: [
           {
@@ -310,31 +321,55 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
             id: 'tool.projectPlanning',
             type: 'tool',
             data: {
-              title: 'Project Planning ClassModel Tool',
+              title: 'Project Planning Module',
               provider: 'class-model',
-              toolName: CLASS_MODEL_TOOL_NAMES.script,
-              toolParameters: {
+              toolName: PROJECT_PLANNING_MODULE_ID,
+              inputs: {
                 projectScopeKey: '{{ start.projectScopeKey }}',
                 projectId: '{{ start.projectId }}',
                 requirement: '{{ start.requirement }}',
                 navigationNodes: '{{ start.navigationNodes }}',
               },
+              outputs: {
+                result: 'projectPlanning.result',
+              },
+              capabilities: [
+                {
+                  id: 'project-planning.compose',
+                  title: 'Compose Project Plan',
+                  scope: 'node',
+                  description: 'Let the projectPlanning module inspect model knowledge and produce navigation planning changes through runtime tools.',
+                  inputs: {
+                    projectScopeKey: '{{ start.projectScopeKey }}',
+                    projectId: '{{ start.projectId }}',
+                    requirement: '{{ start.requirement }}',
+                    navigationNodes: '{{ start.navigationNodes }}',
+                  },
+                  outputs: {
+                    result: 'projectPlanning.result',
+                  },
+                  constraints: [
+                    'Workflow definition names the module; runtime chooses ClassModel actions and script calls.',
+                  ],
+                },
+              ],
             },
           },
           {
-            id: 'end',
-            type: 'end',
+            id: 'output',
+            type: 'output',
             data: {
-              title: 'End',
-              outputMapping: {
+              title: 'Output',
+              outputs: {
                 result: '{{ tool.projectPlanning.result }}',
               },
+              capabilities: [],
             },
           },
         ],
         edges: [
           { id: 'edge.start.tool', source: 'start', target: 'tool.projectPlanning' },
-          { id: 'edge.tool.end', source: 'tool.projectPlanning', target: 'end' },
+          { id: 'edge.tool.output', source: 'tool.projectPlanning', target: 'output' },
         ],
       },
     },

@@ -44,6 +44,16 @@ export type AgentWorkflowVariable = Readonly<{
   defaultValue?: unknown
 }>
 
+export type AgentWorkflowCapability = Readonly<{
+  id: string
+  title: string
+  scope: string
+  description: string
+  inputs?: AgentWorkflowJsonRecord
+  outputs?: AgentWorkflowJsonRecord
+  constraints?: readonly string[]
+}>
+
 export type AgentWorkflowNodePosition = Readonly<{
   x: number
   y: number
@@ -51,20 +61,22 @@ export type AgentWorkflowNodePosition = Readonly<{
 
 export type AgentWorkflowStartNodeData = Readonly<{
   title?: string
-  inputMapping?: AgentWorkflowJsonRecord
+  capabilities?: readonly AgentWorkflowCapability[]
 }>
 
-export type AgentWorkflowEndNodeData = Readonly<{
+export type AgentWorkflowOutputNodeData = Readonly<{
   title?: string
-  outputMapping?: AgentWorkflowJsonRecord
+  outputs: AgentWorkflowJsonRecord
+  capabilities?: readonly AgentWorkflowCapability[]
 }>
 
 export type AgentWorkflowToolNodeData = Readonly<{
   title?: string
   provider: string
   toolName: string
-  toolParameters: AgentWorkflowJsonRecord
-  outputMapping?: AgentWorkflowJsonRecord
+  inputs: AgentWorkflowJsonRecord
+  outputs: AgentWorkflowJsonRecord
+  capabilities: readonly AgentWorkflowCapability[]
 }>
 
 export type AgentWorkflowReference = Readonly<{
@@ -76,19 +88,22 @@ export type AgentWorkflowReference = Readonly<{
 export type AgentWorkflowChatflowNodeData = Readonly<{
   title?: string
   workflowRef: AgentWorkflowReference
-  inputMapping: AgentWorkflowJsonRecord
-  outputMapping: AgentWorkflowJsonRecord
+  inputs: AgentWorkflowJsonRecord
+  outputs: AgentWorkflowJsonRecord
+  capabilities?: readonly AgentWorkflowCapability[]
 }>
 
 export type AgentWorkflowSubWorkflowNodeData = Readonly<{
   title?: string
   workflowRef: AgentWorkflowReference
-  inputMapping: AgentWorkflowJsonRecord
-  outputMapping: AgentWorkflowJsonRecord
+  inputs: AgentWorkflowJsonRecord
+  outputs: AgentWorkflowJsonRecord
+  capabilities?: readonly AgentWorkflowCapability[]
 }>
 
 export type AgentWorkflowGenericNodeData = Readonly<{
   title?: string
+  capabilities?: readonly AgentWorkflowCapability[]
   [key: string]: unknown
 }>
 
@@ -104,7 +119,7 @@ export type AgentWorkflowGraphNodeBase<
 
 export type AgentWorkflowStartNode = AgentWorkflowGraphNodeBase<'start', AgentWorkflowStartNodeData>
 
-export type AgentWorkflowEndNode = AgentWorkflowGraphNodeBase<'end', AgentWorkflowEndNodeData>
+export type AgentWorkflowOutputNode = AgentWorkflowGraphNodeBase<'output', AgentWorkflowOutputNodeData>
 
 export type AgentWorkflowToolNode = AgentWorkflowGraphNodeBase<'tool', AgentWorkflowToolNodeData>
 
@@ -122,7 +137,7 @@ export type AgentWorkflowAgentNode = AgentWorkflowGraphNodeBase<'agent', AgentWo
 
 export type AgentWorkflowGraphNode =
   | AgentWorkflowStartNode
-  | AgentWorkflowEndNode
+  | AgentWorkflowOutputNode
   | AgentWorkflowToolNode
   | AgentWorkflowChatflowNode
   | AgentWorkflowSubWorkflowNode
@@ -149,21 +164,8 @@ export type AgentWorkflowGraph = Readonly<{
 
 export type AgentWorkflowBody = Readonly<{
   variables: readonly AgentWorkflowVariable[]
+  capabilities: readonly AgentWorkflowCapability[]
   graph: AgentWorkflowGraph
-}>
-
-export type AgentWorkflowToolParameterSource = 'constructor' | 'function' | 'binding'
-
-export type AgentWorkflowToolParameterDescriptor = Readonly<{
-  name: string
-  required: boolean
-  source: AgentWorkflowToolParameterSource
-}>
-
-export type AgentWorkflowToolDescriptor = Readonly<{
-  provider: string
-  toolName: string
-  parameters: readonly AgentWorkflowToolParameterDescriptor[]
 }>
 
 export type AgentWorkflowDefinitionSparkMeta = Readonly<{
@@ -196,5 +198,5 @@ export const AGENT_WORKFLOW_GRAPH_NODE_TYPES = Object.freeze([
   'code',
   'llm',
   'agent',
-  'end',
+  'output',
 ] satisfies readonly AgentWorkflowGraphNodeType[])

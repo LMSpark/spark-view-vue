@@ -7,6 +7,7 @@
 import {
   assertAgentWorkflowDefinition,
   createAgentWorkflowDefinitionValidation,
+  type AgentWorkflowCapability,
   type AgentWorkflowDefinition,
   type AgentWorkflowDefinitionValidationIssue,
   type AgentWorkflowGraphEdge,
@@ -67,6 +68,7 @@ export type WorkflowDesignDocument = {
     id: string
     version: number
     variables?: WorkflowDesignVariable[]
+    capabilities?: WorkflowDesignCapability[]
     graph: WorkflowDesignGraph
     [key: string]: unknown
   }
@@ -87,6 +89,17 @@ export type WorkflowDesignVariable = {
   required?: boolean
   schema?: JsonRecord
   defaultValue?: unknown
+  [key: string]: unknown
+}
+
+export type WorkflowDesignCapability = {
+  id: string
+  title: string
+  scope: string
+  description: string
+  inputs?: JsonRecord
+  outputs?: JsonRecord
+  constraints?: string[]
   [key: string]: unknown
 }
 
@@ -132,11 +145,10 @@ export type WorkflowDesignNodeData = {
   desc?: string
   provider?: string
   toolName?: string
-  toolParameters?: JsonRecord
+  inputs?: JsonRecord
   workflowRef?: WorkflowDesignWorkflowReference
-  inputMapping?: JsonRecord
-  outputMapping?: JsonRecord
   outputs?: JsonRecord
+  capabilities?: WorkflowDesignCapability[]
   model?: JsonRecord
   loop?: WorkflowDesignNestedGraphCarrier
   iteration?: WorkflowDesignNestedGraphCarrier
@@ -211,7 +223,7 @@ export type WorkflowDesignNodeCreateKind =
   | 'chatflow'
   | 'workflow'
   | 'start'
-  | 'end'
+  | 'output'
   | 'condition'
   | 'code'
   | 'llm'
@@ -323,6 +335,7 @@ export function createAgentWorkflowDefinitionFromDesign(
 ): AgentWorkflowDefinition {
   const issues = collectDefinitionPublishIssues(document)
   const validation = createAgentWorkflowDefinitionValidation(issues)
+  const workflowExtras = normalizeDefinitionWorkflowExtras(document.workflow)
   return {
     kind: 'agent.workflow',
     version: 1,
@@ -333,7 +346,9 @@ export function createAgentWorkflowDefinitionFromDesign(
       designVersion: document.version,
     },
     workflow: {
+      ...workflowExtras,
       variables: normalizeDefinitionVariables(document.workflow.variables),
+      capabilities: normalizeDefinitionCapabilities(document.workflow.capabilities),
       graph: {
         nodes: document.workflow.graph.nodes.map(toDefinitionNode),
         edges: document.workflow.graph.edges.map(toDefinitionEdge),
@@ -400,12 +415,12 @@ export function isProcessStageNode(_node: WorkflowDesignGraphNode): boolean {
 }
 
 export function getSingleModelEditValue(node: WorkflowDesignGraphNode): unknown {
-  return node.data?.toolParameters ?? {}
+  return node.data?.inputs ?? {}
 }
 
 export function setSingleModelEditValue(node: WorkflowDesignGraphNode, value: unknown): void {
   const data = ensureNodeData(node)
-  data.toolParameters = isJsonRecord(value) ? value : {}
+  data.inputs = isJsonRecord(value) ? value : {}
 }
 
 export function ensureWorkflowDraft(document: WorkflowDesignDocument): JsonRecord {
@@ -545,6 +560,26 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Agent
         path: `${view.scopePath}.${view.id}.data`,
       })
     }
+    for (const field of ['toolParameters', 'inputMapping', 'outputMapping'] as const) {
+      if (Object.prototype.hasOwnProperty.call(data, field)) {
+        issues.push({
+          severity: 'error',
+          code: 'AGENT_WORKFLOW_LEGACY_NODE_FIELD',
+          message: `Legacy node field "${field}" is not allowed on "${view.id}".`,
+          nodeId: view.id,
+          path: `${view.scopePath}.${view.id}.data.${field}`,
+        })
+      }
+    }
+    if (isJsonRecord(data.x_spark) && Object.prototype.hasOwnProperty.call(data.x_spark, 'classModel')) {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_CLASS_MODEL_META',
+        message: `Legacy ClassModel node metadata is not allowed on "${view.id}".`,
+        nodeId: view.id,
+        path: `${view.scopePath}.${view.id}.data.x_spark.classModel`,
+      })
+    }
     if (data.type === 'process-step' || data.x_spark?.nodeRole === 'process-stage') {
       issues.push({
         severity: 'error',
@@ -556,6 +591,15 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Agent
     }
   }
   return issues
+}
+
+function normalizeDefinitionWorkflowExtras(workflow: WorkflowDesignDocument['workflow']): JsonRecord {
+  const extras: JsonRecord = {}
+  for (const [key, value] of Object.entries(workflow)) {
+    if (key === 'id' || key === 'version' || key === 'variables' || key === 'capabilities' || key === 'graph') continue
+    extras[key] = value
+  }
+  return extras
 }
 
 function normalizeDefinitionVariables(value: WorkflowDesignVariable[] | undefined): readonly AgentWorkflowVariable[] {
@@ -571,6 +615,10 @@ function normalizeDefinitionVariables(value: WorkflowDesignVariable[] | undefine
       ...(isJsonRecord(variable.schema) ? { schema: variable.schema } : {}),
       ...(Object.prototype.hasOwnProperty.call(variable, 'defaultValue') ? { defaultValue: variable.defaultValue } : {}),
     }))
+}
+
+function normalizeDefinitionCapabilities(value: WorkflowDesignCapability[] | undefined): readonly AgentWorkflowCapability[] {
+  return normalizeCapabilities(value, 'workflow')
 }
 
 function toDefinitionNode(node: WorkflowDesignGraphNode): AgentWorkflowGraphNode {
@@ -607,28 +655,42 @@ function normalizeNodeDataForDefinition(
   const data = value === undefined ? {} : { ...value }
   delete data.loop
   delete data.iteration
+  delete data['toolParameters']
+  delete data['inputMapping']
+  delete data['outputMapping']
+  delete data.x_spark
+  const normalized: JsonRecord = {
+    ...data,
+    type,
+    title: readTitle(data, defaultNodeTitleForType(type)),
+  }
   if (type === 'tool') {
     return {
-      title: readTitle(data, 'ClassModel Tool'),
+      ...normalized,
       provider: readNonBlankText(data['provider']) ?? 'class-model',
       toolName: readNonBlankText(data['toolName']) ?? PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
-      toolParameters: isJsonRecord(data['toolParameters']) ? data['toolParameters'] : {},
-      ...(isJsonRecord(data['outputMapping']) ? { outputMapping: data['outputMapping'] } : {}),
+      inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
+      outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
+      capabilities: normalizeCapabilities(data['capabilities'], 'node'),
     }
   }
   if (type === 'chatflow' || type === 'workflow') {
     return {
-      title: readTitle(data, type === 'chatflow' ? 'Chatflow' : 'Workflow'),
+      ...normalized,
       workflowRef: isWorkflowReference(data['workflowRef']) ? data['workflowRef'] : { workflowId: '', version: 1 },
-      inputMapping: isJsonRecord(data['inputMapping']) ? data['inputMapping'] : {},
-      outputMapping: isJsonRecord(data['outputMapping']) ? data['outputMapping'] : {},
+      inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
+      outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
+      capabilities: normalizeCapabilities(data['capabilities'], 'node'),
     }
   }
-  return {
-    title: readTitle(data, type),
-    ...(isJsonRecord(data['inputMapping']) ? { inputMapping: data['inputMapping'] } : {}),
-    ...(isJsonRecord(data['outputMapping']) ? { outputMapping: data['outputMapping'] } : {}),
+  if (type === 'output') {
+    return {
+      ...normalized,
+      outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
+      capabilities: normalizeOptionalCapabilities(data['capabilities'], 'node'),
+    }
   }
+  return normalized
 }
 
 function resolveDefinitionNodeType(node: WorkflowDesignGraphNode): AgentWorkflowGraphNodeType {
@@ -655,8 +717,9 @@ function createNodeData(nodeId: string, input: WorkflowDesignNodeCreateInput): W
       ...(desc === undefined || desc.length === 0 ? {} : { desc }),
       provider: 'class-model',
       toolName: PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
-      toolParameters: {},
-      outputMapping: {},
+      inputs: {},
+      outputs: {},
+      capabilities: [],
     }
   }
   if (input.nodeKind === 'chatflow' || input.nodeKind === 'workflow') {
@@ -669,8 +732,18 @@ function createNodeData(nodeId: string, input: WorkflowDesignNodeCreateInput): W
         version: 1,
         definitionPath: '',
       },
-      inputMapping: {},
-      outputMapping: {},
+      inputs: {},
+      outputs: {},
+      capabilities: [],
+    }
+  }
+  if (input.nodeKind === 'output') {
+    return {
+      type: 'output',
+      title,
+      ...(desc === undefined || desc.length === 0 ? {} : { desc }),
+      outputs: {},
+      capabilities: [],
     }
   }
   return {
@@ -861,8 +934,8 @@ function defaultNodeId(kind: WorkflowDesignNodeCreateKind): string {
       return 'workflow.call'
     case 'start':
       return 'start'
-    case 'end':
-      return 'end'
+    case 'output':
+      return 'output'
     case 'condition':
       return 'condition'
     case 'code':
@@ -886,8 +959,8 @@ function defaultNodeTitle(kind: WorkflowDesignNodeCreateKind): string {
       return 'Workflow'
     case 'start':
       return 'Start'
-    case 'end':
-      return 'End'
+    case 'output':
+      return 'Output'
     case 'condition':
       return 'Condition'
     case 'code':
@@ -899,6 +972,14 @@ function defaultNodeTitle(kind: WorkflowDesignNodeCreateKind): string {
     case 'custom':
       return 'Custom'
   }
+}
+
+function defaultNodeTitleForType(type: AgentWorkflowGraphNodeType): string {
+  if (type === 'tool') return 'ClassModel Tool'
+  if (type === 'chatflow') return 'Chatflow'
+  if (type === 'workflow') return 'Workflow'
+  if (type === 'llm') return 'LLM'
+  return type.charAt(0).toUpperCase() + type.slice(1)
 }
 
 function normalizePosition(
@@ -926,6 +1007,36 @@ function readTitle(data: JsonRecord, fallback: string): string {
   return title ?? fallback
 }
 
+function normalizeOptionalCapabilities(value: unknown, fallbackScope: string): readonly AgentWorkflowCapability[] | undefined {
+  if (value === undefined) return undefined
+  return normalizeCapabilities(value, fallbackScope)
+}
+
+function normalizeCapabilities(value: unknown, fallbackScope: string): readonly AgentWorkflowCapability[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(isJsonRecord)
+    .map((capability): AgentWorkflowCapability | null => {
+      const id = readNonBlankText(capability['id'])
+      const title = readNonBlankText(capability['title'])
+      const description = readNonBlankText(capability['description'])
+      if (id === undefined || title === undefined || description === undefined) return null
+      const scope = readNonBlankText(capability['scope']) ?? fallbackScope
+      return {
+        id,
+        title,
+        scope,
+        description,
+        ...(isJsonRecord(capability['inputs']) ? { inputs: capability['inputs'] } : {}),
+        ...(isJsonRecord(capability['outputs']) ? { outputs: capability['outputs'] } : {}),
+        ...(Array.isArray(capability['constraints'])
+          ? { constraints: capability['constraints'].filter((item): item is string => typeof item === 'string' && item.trim().length > 0) }
+          : {}),
+      }
+    })
+    .filter((capability): capability is AgentWorkflowCapability => capability !== null)
+}
+
 function readNonBlankText(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined
   const normalized = value.trim()
@@ -941,7 +1052,7 @@ function isDefinitionNodeType(value: unknown): value is AgentWorkflowGraphNodeTy
     || value === 'code'
     || value === 'llm'
     || value === 'agent'
-    || value === 'end'
+    || value === 'output'
 }
 
 function isWorkflowReference(value: unknown): value is WorkflowDesignWorkflowReference {

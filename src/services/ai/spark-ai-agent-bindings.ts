@@ -18,7 +18,6 @@ export type {
   AgentWorkflowDefinition,
   AgentWorkflowGraphNode,
   AgentWorkflowRuntimeBinding,
-  AgentWorkflowToolDescriptor,
   AiAgentBeforeFunctionCallDirective,
   AiAgentBeforeFunctionCallOptions,
   AiAgentHost,

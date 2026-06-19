@@ -49,7 +49,11 @@ class WorkflowDesignServiceTest {
         assertEquals("tool", nodes.get(1).path("type").asText());
         assertEquals("class-model", nodes.get(1).path("data").path("provider").asText());
         assertEquals("spark.placeholder.tool", nodes.get(1).path("data").path("toolName").asText());
-        assertEquals("end", nodes.get(2).path("type").asText());
+        assertTrue(nodes.get(1).path("data").path("inputs").isObject());
+        assertTrue(nodes.get(1).path("data").path("outputs").isObject());
+        assertTrue(nodes.get(1).path("data").path("capabilities").isArray());
+        assertEquals("output", nodes.get(2).path("type").asText());
+        assertTrue(nodes.get(2).path("data").path("outputs").isObject());
         assertEquals(2, document.path("workflow").path("graph").path("edges").size());
     }
 
@@ -130,7 +134,7 @@ class WorkflowDesignServiceTest {
         JsonNode saved = objectMapper.readTree(file.toFile());
         assertEquals("agent.workflow", saved.path("kind").asText());
         assertEquals("spark.workflow.demo", saved.path("workflowId").asText());
-        assertEquals("spark.demo.run",
+        assertEquals("demoModule",
                 saved.at("/workflow/graph/nodes/1/data/toolName").asText());
         assertFalse(saved.has("factory"));
     }
@@ -163,14 +167,14 @@ class WorkflowDesignServiceTest {
         service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
         ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
         ObjectNode toolData = (ObjectNode) definition.at("/workflow/graph/nodes/1/data");
-        toolData.put("toolName", "spark.demo.updated");
+        toolData.put("toolName", "demoModuleUpdated");
 
         Map<String, Object> result = service.writeDefinition("t1", "p1", "spark.workflow.demo", definition);
 
         assertEquals(true, result.get("ok"));
         assertEquals("definition.json", result.get("filename"));
         JsonNode saved = objectMapper.readTree(tempDir.resolve("t1/p1/spark.workflow.demo/definition.json").toFile());
-        assertEquals("spark.demo.updated", saved.at("/workflow/graph/nodes/1/data/toolName").asText());
+        assertEquals("demoModuleUpdated", saved.at("/workflow/graph/nodes/1/data/toolName").asText());
     }
 
     @Test
@@ -212,6 +216,22 @@ class WorkflowDesignServiceTest {
     }
 
     @Test
+    void publishDefinition_rejectsClassModelSchemaRefs() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+        ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
+        ((ObjectNode) definition.at("/workflow/graph/nodes/1/data"))
+                .putObject("x_spark")
+                .putObject("classModel")
+                .put("sourcePath", "packages/spark-project-model/src/project/project-model.ts");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.publishDefinition("t1", "p1", "spark.workflow.demo", definition));
+
+        assertTrue(error.getMessage().contains("classModel"));
+    }
+
+    @Test
     void listDesigns_returnsSortedSummaries() throws Exception {
         WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
         service.createDesign("t1", "p1", "spark.workflow.beta", "Beta");
@@ -223,6 +243,28 @@ class WorkflowDesignServiceTest {
         assertEquals("spark.workflow.alpha", designs.get(0).get("workflowId"));
         assertEquals("Alpha", designs.get(0).get("title"));
         assertEquals("spark.workflow.beta", designs.get(1).get("workflowId"));
+    }
+
+    @Test
+    void listDesigns_marksLegacyDesignAsUnreadable() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.legacy", "Legacy Workflow");
+        Path file = tempDir.resolve("t1/p1/spark.workflow.legacy/design.json");
+        ObjectNode document = (ObjectNode) objectMapper.readTree(file.toFile());
+        document.putObject("app").put("mode", "workflow");
+        ((ObjectNode) document.path("x_spark").path("draft")).put("status", "saved");
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file.toFile(), document);
+
+        List<Map<String, Object>> designs = service.listDesigns("t1", "p1");
+
+        assertEquals(1, designs.size());
+        assertEquals("spark.workflow.legacy", designs.get(0).get("workflowId"));
+        assertEquals("Legacy Workflow", designs.get(0).get("title"));
+        assertEquals("unreadable", designs.get(0).get("status"));
+        assertTrue(((String) designs.get(0).get("error")).contains("forbidden field: app"));
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.readDesign("t1", "p1", "spark.workflow.legacy", null));
+        assertTrue(error.getMessage().contains("forbidden field: app"));
     }
 
     @Test
@@ -257,6 +299,12 @@ class WorkflowDesignServiceTest {
 
         ObjectNode workflow = document.putObject("workflow");
         workflow.putArray("variables");
+        ObjectNode capability = workflow.putArray("capabilities").addObject();
+        capability.put("id", "demo.workflow");
+        capability.put("title", "Demo Workflow");
+        capability.put("scope", "workflow");
+        capability.put("description", "Run demo workflow.");
+        capability.putArray("constraints");
         ObjectNode graph = workflow.putObject("graph");
         ArrayNodeBuilder.addNodes(graph);
         ArrayNodeBuilder.addEdges(graph);
@@ -290,15 +338,26 @@ class WorkflowDesignServiceTest {
             toolData.put("type", "tool");
             toolData.put("title", "ClassModel Tool");
             toolData.put("provider", "class-model");
-            toolData.put("toolName", "spark.demo.run");
-            toolData.putObject("toolParameters");
+            toolData.put("toolName", "demoModule");
+            ObjectNode inputs = toolData.putObject("inputs");
+            inputs.put("prompt", "{{ start.prompt }}");
+            ObjectNode outputs = toolData.putObject("outputs");
+            outputs.put("result", "demo.result");
+            ObjectNode capability = toolData.putArray("capabilities").addObject();
+            capability.put("id", "demo.execute");
+            capability.put("title", "Execute Demo");
+            capability.put("scope", "node");
+            capability.put("description", "Execute demo module.");
+            capability.putArray("constraints");
 
-            ObjectNode end = nodes.addObject();
-            end.put("id", "end");
-            end.put("type", "end");
-            ObjectNode endData = end.putObject("data");
-            endData.put("type", "end");
-            endData.put("title", "End");
+            ObjectNode output = nodes.addObject();
+            output.put("id", "output");
+            output.put("type", "output");
+            ObjectNode outputData = output.putObject("data");
+            outputData.put("type", "output");
+            outputData.put("title", "Output");
+            outputData.putObject("outputs");
+            outputData.putArray("capabilities");
         }
 
         static void addEdges(ObjectNode graph) {
@@ -309,9 +368,9 @@ class WorkflowDesignServiceTest {
             first.put("target", "tool.classModel");
 
             ObjectNode second = edges.addObject();
-            second.put("id", "edge.tool.end");
+            second.put("id", "edge.tool.output");
             second.put("source", "tool.classModel");
-            second.put("target", "end");
+            second.put("target", "output");
         }
     }
 }

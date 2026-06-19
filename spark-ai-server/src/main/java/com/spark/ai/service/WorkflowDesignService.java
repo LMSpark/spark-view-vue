@@ -15,11 +15,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 @Service
@@ -78,7 +81,7 @@ public class WorkflowDesignService {
                 item.put("workflowId", workflowId);
                 item.put("filename", DESIGN_FILENAME);
                 item.put("timestamp", String.valueOf(Files.getLastModifiedTime(designFile).toMillis()));
-                addDesignSummary(item, designFile);
+                addDesignSummary(item, workflowId, designFile);
                 result.add(item);
             }
         } catch (IOException e) {
@@ -240,6 +243,7 @@ public class WorkflowDesignService {
         workflow.put("id", workflowId);
         workflow.put("version", 1);
         workflow.putArray("variables");
+        workflow.putArray("capabilities");
         workflow.set("graph", createDefaultWorkflowGraph(workflowId));
 
         ObjectNode spark = document.putObject("x_spark");
@@ -266,10 +270,10 @@ public class WorkflowDesignService {
         ArrayNode nodes = objectMapper.createArrayNode();
         addStartNode(nodes);
         addClassModelToolNode(nodes);
-        addEndNode(nodes);
+        addOutputNode(nodes);
         ArrayNode edges = objectMapper.createArrayNode();
         addGraphEdge(edges, "edge.start.tool", "start", "tool.classModel", "source", "target");
-        addGraphEdge(edges, "edge.tool.end", "tool.classModel", "end", "source", "target");
+        addGraphEdge(edges, "edge.tool.output", "tool.classModel", "output", "source", "target");
 
         graph.set("nodes", nodes);
         graph.set("edges", edges);
@@ -293,18 +297,19 @@ public class WorkflowDesignService {
         data.put("desc", "Workflow input");
     }
 
-    private void addEndNode(ArrayNode nodes) {
+    private void addOutputNode(ArrayNode nodes) {
         ObjectNode node = nodes.addObject();
-        node.put("id", "end");
-        node.put("type", "end");
+        node.put("id", "output");
+        node.put("type", "output");
         ObjectNode position = node.putObject("position");
         position.put("x", 520);
         position.put("y", 0);
         ObjectNode data = node.putObject("data");
-        data.put("type", "end");
-        data.put("title", "End");
+        data.put("type", "output");
+        data.put("title", "Output");
         data.put("desc", "Workflow output");
-        data.putObject("outputMapping");
+        data.putObject("outputs");
+        data.putArray("capabilities");
     }
 
     private void addClassModelToolNode(ArrayNode nodes) {
@@ -317,11 +322,12 @@ public class WorkflowDesignService {
         ObjectNode data = node.putObject("data");
         data.put("type", "tool");
         data.put("title", "ClassModel Tool");
-        data.put("desc", "Configure provider/toolName/toolParameters before publishing.");
+        data.put("desc", "Configure provider/toolName/inputs/outputs before publishing.");
         data.put("provider", CLASS_MODEL_PROVIDER);
         data.put("toolName", PLACEHOLDER_TOOL_NAME);
-        data.putObject("toolParameters");
-        data.putObject("outputMapping");
+        data.putObject("inputs");
+        data.putObject("outputs");
+        data.putArray("capabilities");
     }
 
     private void addGraphEdge(ArrayNode edges, String id, String source, String target,
@@ -364,6 +370,7 @@ public class WorkflowDesignService {
         JsonNode graph = requiredObject(workflow, "graph");
         JsonNode nodes = requireArray(graph, "nodes");
         requireArray(graph, "edges");
+        validateCapabilities(requireArray(workflow, "capabilities"), "workflow.capabilities");
         requiredObject(graph, "viewport");
         validateWorkflowNodes(nodes, true);
 
@@ -400,6 +407,7 @@ public class WorkflowDesignService {
 
         JsonNode workflow = requiredObject(document, "workflow");
         requireArray(workflow, "variables");
+        validateCapabilities(requireArray(workflow, "capabilities"), "workflow.capabilities");
         JsonNode graph = requiredObject(workflow, "graph");
         JsonNode nodes = requireArray(graph, "nodes");
         JsonNode edges = requireArray(graph, "edges");
@@ -419,7 +427,7 @@ public class WorkflowDesignService {
 
     private void validateWorkflowNodes(JsonNode nodes, boolean allowPlaceholderToolName) {
         boolean hasStart = false;
-        boolean hasEnd = false;
+        boolean hasOutput = false;
         for (JsonNode node : nodes) {
             String id = requireNonBlankText(node, "id");
             String type = requireNonBlankText(node, "type");
@@ -431,27 +439,57 @@ public class WorkflowDesignService {
             rejectLegacyNode(id, data);
             if ("start".equals(type)) {
                 hasStart = true;
-            } else if ("end".equals(type)) {
-                hasEnd = true;
+                validateStartNode(id, data);
+            } else if ("output".equals(type)) {
+                hasOutput = true;
+                validateOutputNode(id, data);
             } else if ("tool".equals(type)) {
                 validateToolNode(id, data, allowPlaceholderToolName);
             } else if ("chatflow".equals(type)) {
                 validateWorkflowRefNode(id, data);
+            } else if ("workflow".equals(type)) {
+                validateWorkflowRefNode(id, data);
+            } else if (!"condition".equals(type) && !"code".equals(type)
+                    && !"llm".equals(type) && !"agent".equals(type)) {
+                throw new IllegalArgumentException("unsupported workflow node type: " + type);
             }
         }
         if (!hasStart) {
             throw new IllegalArgumentException("workflow graph must contain a start node");
         }
-        if (!hasEnd) {
-            throw new IllegalArgumentException("workflow graph must contain an end node");
+        if (!hasOutput) {
+            throw new IllegalArgumentException("workflow graph must contain an output node");
         }
+    }
+
+    private void validateStartNode(String id, JsonNode data) {
+        JsonNode variables = data.get("variables");
+        if (variables != null && !variables.isArray()) {
+            throw new IllegalArgumentException("start node variables must be an array: " + id);
+        }
+        validateOptionalCapabilities(data.get("capabilities"), "node capabilities: " + id);
+    }
+
+    private void validateOutputNode(String id, JsonNode data) {
+        requiredObject(data, "outputs");
+        validateOptionalCapabilities(data.get("capabilities"), "node capabilities: " + id);
     }
 
     private void validateWorkflowEdges(JsonNode nodes, JsonNode edges) {
         List<String> nodeIds = new ArrayList<>();
+        List<String> startIds = new ArrayList<>();
+        Set<String> outputIds = new HashSet<>();
         for (JsonNode node : nodes) {
-            nodeIds.add(requireNonBlankText(node, "id"));
+            String nodeId = requireNonBlankText(node, "id");
+            String nodeType = requireNonBlankText(node, "type");
+            nodeIds.add(nodeId);
+            if ("start".equals(nodeType)) {
+                startIds.add(nodeId);
+            } else if ("output".equals(nodeType)) {
+                outputIds.add(nodeId);
+            }
         }
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
         for (JsonNode edge : edges) {
             String source = requireNonBlankText(edge, "source");
             String target = requireNonBlankText(edge, "target");
@@ -461,13 +499,40 @@ public class WorkflowDesignService {
             if (!nodeIds.contains(target)) {
                 throw new IllegalArgumentException("workflow edge target missing: " + target);
             }
+            adjacency.computeIfAbsent(source, ignored -> new ArrayList<>()).add(target);
         }
+        if (!startIds.isEmpty() && !outputIds.isEmpty() && !canReachAnyOutput(startIds, outputIds, adjacency)) {
+            throw new IllegalArgumentException("workflow graph must contain a path from start to output");
+        }
+    }
+
+    private boolean canReachAnyOutput(List<String> startIds, Set<String> outputIds,
+                                      Map<String, List<String>> adjacency) {
+        Set<String> visited = new HashSet<>();
+        ArrayDeque<String> queue = new ArrayDeque<>(startIds);
+        while (!queue.isEmpty()) {
+            String nodeId = queue.removeFirst();
+            if (!visited.add(nodeId)) {
+                continue;
+            }
+            if (outputIds.contains(nodeId)) {
+                return true;
+            }
+            for (String next : adjacency.getOrDefault(nodeId, List.of())) {
+                if (!visited.contains(next)) {
+                    queue.addLast(next);
+                }
+            }
+        }
+        return false;
     }
 
     private void validateToolNode(String id, JsonNode data, boolean allowPlaceholderToolName) {
         requireText(data, "provider", CLASS_MODEL_PROVIDER);
         requireNonBlankText(data, "toolName");
-        requiredObject(data, "toolParameters");
+        requiredObject(data, "inputs");
+        requiredObject(data, "outputs");
+        validateCapabilities(requireArray(data, "capabilities"), "node capabilities: " + id);
         if (!allowPlaceholderToolName && PLACEHOLDER_TOOL_NAME.equals(data.path("toolName").asText())) {
             throw new IllegalArgumentException("workflow tool node must set a real toolName: " + id);
         }
@@ -476,8 +541,9 @@ public class WorkflowDesignService {
     private void validateWorkflowRefNode(String id, JsonNode data) {
         JsonNode workflowRef = requiredObject(data, "workflowRef");
         requireNonBlankText(workflowRef, "workflowId");
-        requiredObject(data, "inputMapping");
-        requiredObject(data, "outputMapping");
+        requiredObject(data, "inputs");
+        requiredObject(data, "outputs");
+        validateOptionalCapabilities(data.get("capabilities"), "node capabilities: " + id);
         JsonNode definitionPath = workflowRef.get("definitionPath");
         if (definitionPath != null && (!definitionPath.isTextual() || definitionPath.asText().isBlank())) {
             throw new IllegalArgumentException("chatflow node definitionPath must be non-empty when provided: " + id);
@@ -491,6 +557,63 @@ public class WorkflowDesignService {
         if ("process-step".equals(data.path("type").asText())
                 || "process-stage".equals(data.path("x_spark").path("nodeRole").asText())) {
             throw new IllegalArgumentException("legacy process-stage node is not allowed: " + id);
+        }
+        if (data.has("toolParameters") || data.has("inputMapping") || data.has("outputMapping")) {
+            throw new IllegalArgumentException("legacy workflow node fields are not allowed: " + id);
+        }
+        if (data.path("x_spark").has("classModel")) {
+            throw new IllegalArgumentException("legacy classModel node metadata is not allowed: " + id);
+        }
+    }
+
+    private void validateOptionalCapabilities(JsonNode capabilities, String path) {
+        if (capabilities == null) {
+            return;
+        }
+        if (!capabilities.isArray()) {
+            throw new IllegalArgumentException("missing array field: " + path);
+        }
+        validateCapabilities(capabilities, path);
+    }
+
+    private void validateCapabilities(JsonNode capabilities, String path) {
+        if (!capabilities.isArray()) {
+            throw new IllegalArgumentException("missing array field: " + path);
+        }
+        int index = 0;
+        for (JsonNode capability : capabilities) {
+            if (!capability.isObject()) {
+                throw new IllegalArgumentException("workflow capability must be an object: " + path + "[" + index + "]");
+            }
+            requireNonBlankText(capability, "id");
+            requireNonBlankText(capability, "title");
+            requireNonBlankText(capability, "scope");
+            requireNonBlankText(capability, "description");
+            requireOptionalObject(capability, "inputs");
+            requireOptionalObject(capability, "outputs");
+            validateOptionalStringArray(capability.get("constraints"), path + "[" + index + "].constraints");
+            index += 1;
+        }
+    }
+
+    private void requireOptionalObject(JsonNode node, String field) {
+        JsonNode value = node.get(field);
+        if (value != null && !value.isObject()) {
+            throw new IllegalArgumentException("invalid object field: " + field);
+        }
+    }
+
+    private void validateOptionalStringArray(JsonNode value, String path) {
+        if (value == null) {
+            return;
+        }
+        if (!value.isArray()) {
+            throw new IllegalArgumentException("missing array field: " + path);
+        }
+        for (JsonNode item : value) {
+            if (!item.isTextual() || item.asText().isBlank()) {
+                throw new IllegalArgumentException("invalid text field: " + path);
+            }
         }
     }
 
@@ -542,7 +665,14 @@ public class WorkflowDesignService {
         return value.asText();
     }
 
-    private void addDesignSummary(Map<String, Object> item, Path designFile) {
+    private void requireOptionalNonBlankText(JsonNode node, String field) {
+        JsonNode value = node.get(field);
+        if (value != null && (!value.isTextual() || value.asText().isBlank())) {
+            throw new IllegalArgumentException("invalid text field: " + field);
+        }
+    }
+
+    private void addDesignSummary(Map<String, Object> item, String workflowId, Path designFile) {
         try {
             JsonNode document = objectMapper.readTree(designFile.toFile());
             JsonNode workflow = document.path("workflow");
@@ -557,7 +687,8 @@ public class WorkflowDesignService {
             if (draft.path("status").isTextual()) {
                 item.put("status", draft.path("status").asText());
             }
-        } catch (IOException e) {
+            validateDesignDocument(workflowId, document);
+        } catch (IOException | IllegalArgumentException e) {
             item.put("status", "unreadable");
             item.put("error", e.getMessage());
         }

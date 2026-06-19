@@ -34,12 +34,24 @@ describe('app agent workflow business activation', () => {
       projectId: 'demo',
     })
 
-    expect(definition.workflow.graph.nodes.map(node => node.type)).toEqual(['start', 'tool', 'end'])
+    expect(definition.workflow.graph.nodes.map(node => node.type)).toEqual(['start', 'tool', 'output'])
+    expect(definition.workflow.capabilities).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 'page-design.delivery',
+        scope: 'workflow',
+      }),
+    ]))
     expect(definition.workflow.graph.nodes.find(node => node.id === 'tool.pageDesign')).toMatchObject({
       type: 'tool',
       data: {
         provider: 'class-model',
-        toolName: 'model_script',
+        toolName: PAGE_DESIGN_MODULE_ID,
+        inputs: {
+          pageId: '{{ start.pageId }}',
+        },
+        outputs: {
+          result: 'pageDesign.result',
+        },
       },
     })
     expect(host.has(PAGE_DESIGN_MODULE_ID)).toBe(true)
@@ -63,12 +75,24 @@ describe('app agent workflow business activation', () => {
       navigationNodes: [],
     })
 
-    expect(definition.workflow.graph.nodes.map(node => node.type)).toEqual(['start', 'tool', 'end'])
+    expect(definition.workflow.graph.nodes.map(node => node.type)).toEqual(['start', 'tool', 'output'])
+    expect(definition.workflow.capabilities).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 'project-planning.delivery',
+        scope: 'workflow',
+      }),
+    ]))
     expect(definition.workflow.graph.nodes.find(node => node.id === 'tool.projectPlanning')).toMatchObject({
       type: 'tool',
       data: {
         provider: 'class-model',
-        toolName: 'model_script',
+        toolName: PROJECT_PLANNING_MODULE_ID,
+        inputs: {
+          projectId: '{{ start.projectId }}',
+        },
+        outputs: {
+          result: 'projectPlanning.result',
+        },
       },
     })
     expect(host.has(PROJECT_PLANNING_MODULE_ID)).toBe(true)

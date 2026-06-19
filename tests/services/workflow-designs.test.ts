@@ -49,6 +49,15 @@ function createDesign(): WorkflowDesignDocument {
       variables: [
         { name: 'requirement', required: true },
       ],
+      capabilities: [
+        {
+          id: 'demo.workflow',
+          title: 'Demo Workflow',
+          scope: 'workflow',
+          description: 'Run the demo workflow.',
+          constraints: [],
+        },
+      ],
       graph: {
         nodes: [
           {
@@ -63,24 +72,46 @@ function createDesign(): WorkflowDesignDocument {
               type: 'tool',
               title: 'ClassModel Tool',
               provider: 'class-model',
-              toolName: 'spark.demo.run',
-              toolParameters: {
+              toolName: 'demoModule',
+              inputs: {
                 requirement: '{{ start.requirement }}',
               },
-              outputMapping: {
+              outputs: {
                 result: 'tool.result',
               },
+              capabilities: [
+                {
+                  id: 'demo.execute',
+                  title: 'Execute Demo',
+                  scope: 'node',
+                  description: 'Execute the demo module with the supplied requirement.',
+                  inputs: {
+                    requirement: '{{ start.requirement }}',
+                  },
+                  outputs: {
+                    result: 'tool.result',
+                  },
+                  constraints: [],
+                },
+              ],
             },
           },
           {
-            id: 'end',
-            type: 'end',
-            data: { type: 'end', title: 'End' },
+            id: 'output',
+            type: 'output',
+            data: {
+              type: 'output',
+              title: 'Output',
+              outputs: {
+                result: '{{ tool.classModel.result }}',
+              },
+              capabilities: [],
+            },
           },
         ],
         edges: [
           { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
-          { id: 'edge.tool.end', source: 'tool.classModel', target: 'end' },
+          { id: 'edge.tool.output', source: 'tool.classModel', target: 'output' },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
@@ -103,7 +134,7 @@ describe('workflow design helpers', () => {
     const nodes = collectWorkflowDesignNodes(createDesign())
     const tool = nodes.find(node => node.id === 'tool.classModel')
 
-    expect(nodes.map(node => node.id)).toEqual(['start', 'tool.classModel', 'end'])
+    expect(nodes.map(node => node.id)).toEqual(['start', 'tool.classModel', 'output'])
     expect(tool?.isClassModelToolNode).toBe(true)
     expect(tool?.isChatflowNode).toBe(false)
     expect(tool?.depth).toBe(0)
@@ -125,15 +156,15 @@ describe('workflow design helpers', () => {
 
     expect(graphs.map(graph => graph.scopePath)).toEqual(['workflow.graph'])
     expect(graphs[0]?.carrier).toBe('root')
-    expect(edges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.end'])
+    expect(edges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.output'])
   })
 
   it('adds and removes edges in a selected graph', () => {
     const design = createDesign()
     const graph = design.workflow.graph
 
-    const edge = addWorkflowDesignEdge(graph, 'start', 'end')
-    expect(edge.id).toBe('edge.start.end')
+    const edge = addWorkflowDesignEdge(graph, 'start', 'output')
+    expect(edge.id).toBe('edge.start.output')
     expect(graph.edges.some(item => item === edge)).toBe(true)
 
     expect(removeWorkflowDesignEdge(graph, edge)).toBe(true)
@@ -159,7 +190,9 @@ describe('workflow design helpers', () => {
     expect(tool.data).toMatchObject({
       type: 'tool',
       provider: 'class-model',
-      toolParameters: {},
+      inputs: {},
+      outputs: {},
+      capabilities: [],
     })
     expect(chatflow.type).toBe('chatflow')
     expect(chatflow.data).toMatchObject({
@@ -167,8 +200,9 @@ describe('workflow design helpers', () => {
       workflowRef: {
         workflowId: 'chatflow.chatflow.clarify',
       },
-      inputMapping: {},
-      outputMapping: {},
+      inputs: {},
+      outputs: {},
+      capabilities: [],
     })
   })
 
@@ -179,8 +213,8 @@ describe('workflow design helpers', () => {
     const result = removeWorkflowDesignNode(rootGraph, 'tool.classModel')
 
     expect(result.removed).toBe(true)
-    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.end'])
-    expect(rootGraph.nodes.map(node => node.id)).toEqual(['start', 'end'])
+    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.output'])
+    expect(rootGraph.nodes.map(node => node.id)).toEqual(['start', 'output'])
     expect(rootGraph.edges).toEqual([])
   })
 
@@ -191,7 +225,7 @@ describe('workflow design helpers', () => {
 
     updateWorkflowDesignEdge(edge, {
       source: 'tool.classModel',
-      target: 'end',
+      target: 'output',
       sourceHandle: 'next',
       targetHandle: 'entry',
       type: 'custom',
@@ -200,7 +234,7 @@ describe('workflow design helpers', () => {
 
     expect(edge).toEqual(expect.objectContaining({
       source: 'tool.classModel',
-      target: 'end',
+      target: 'output',
       sourceHandle: 'next',
       targetHandle: 'entry',
       type: 'custom',
@@ -226,6 +260,12 @@ describe('workflow design helpers', () => {
         variables: [
           { name: 'requirement', required: true },
         ],
+        capabilities: [
+          expect.objectContaining({
+            id: 'demo.workflow',
+            scope: 'workflow',
+          }),
+        ],
         graph: {
           nodes: [
             expect.objectContaining({ id: 'start', type: 'start' }),
@@ -234,14 +274,20 @@ describe('workflow design helpers', () => {
               type: 'tool',
               data: expect.objectContaining({
                 provider: 'class-model',
-                toolName: 'spark.demo.run',
+                toolName: 'demoModule',
+                inputs: {
+                  requirement: '{{ start.requirement }}',
+                },
+                outputs: {
+                  result: 'tool.result',
+                },
               }),
             }),
-            expect.objectContaining({ id: 'end', type: 'end' }),
+            expect.objectContaining({ id: 'output', type: 'output' }),
           ],
           edges: [
             { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
-            { id: 'edge.tool.end', source: 'tool.classModel', target: 'end' },
+            { id: 'edge.tool.output', source: 'tool.classModel', target: 'output' },
           ],
         },
       },
