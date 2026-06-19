@@ -30,8 +30,9 @@
 - **规则**：单个目录下 `.ts`/`.vue` 文件不得超过 10 个（不含 `index.ts`）；同一级子目录不得超过 7 个。超过必须按领域拆分。
 - **违反后果**：`verify:ai-codegen` 不会自动检测此项（它是代码风格规则），但违反后代码定位困难、AI 和人类都难以导航
 
-### verify:rules 的七项检查
+### 规范文档跨项目移植的三层切分
 
-- **场景**：需要知道验证失败是哪个子检查报的错
-- **规则**：`pnpm run verify:rules` 包含七项检查：`verify:arch` + `verify:deps` + `verify:pages-config` + `verify:ai-codegen` + `verify:docs` + `verify:class-model` + `verify:ai-model`。可单独运行某项定位问题。
-- **违反后果**：只知道 verify:rules 失败但不知道哪一项，排查效率低
+- **场景**：需要把项目内 AI 编码规范抽取为可移植版本，拷贝到其他项目共享
+- **规则**：抽取时做三层切分——①通用层（代码组织层次、命名字典式、函数签名、7 阶段流程）原样保留；②项目特有层（基类如 SparkAIModel、特定 subpath、namespace 类型、特定框架禁导）整段删除，不进入可移植版；③可配置层（验证命令、目录路径、提交 scope）替换为 `{{占位符}}`，并在附录给出多技术栈默认值表。产出物应是独立文件夹（如 `ai-spec/`），可整体拷贝。
+- **违反后果**：直接拷贝会让其他项目继承无关约束（如强制继承 SparkAIModel 协议），或留下硬编码命令（如 `pnpm run verify:rules`）导致新项目流程失效
+- **发现来源**：2026-06 创建 `ai-spec/AGENTS.md` 可移植规范时

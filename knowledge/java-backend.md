@@ -18,6 +18,18 @@
 - **规则**：后端负责 session 的持久化和查询，但不持有 session 的运行时状态。运行时状态（模型实例、工具调用上下文）全部在前端内存中。后端重启不应影响已打开页面的编辑状态。
 - **违反后果**：假设后端持有运行时状态 → 后端重启后前端丢失编辑中的数据
 
+### Posted Turn 是 Agent 主路径
+
+- **场景**：前端 Agent 发起 LLM 调用
+- **规则**：当前主路径是 `POST /api/ai/turns`（Posted Turn），返回 HTTP 202 ACK，结果通过 `llm-frame` SSE 事件推送。帧类型：`message.delta`（流式文本/推理片段）、`message.completed`（最终组装结果）、`done`（终止帧）。同一 `(sessionId, turnId)` + 相同输入 hash 会幂等返回 ACK，不重复执行。
+- **违反后果**：使用旧的非流式 `/api/ai/sessions/{id}/turn` 路径 → 没有 SSE 事件推送，前端无法实时显示
+
+### Host Run 实现前端工具执行
+
+- **场景**：后端需要触发前端环境中的操作
+- **规则**：`POST /api/ai/host-run/request` → 后端向特定 appClientId 推送 `ai-host-run-request` SSE 事件 → 前端执行后通过 `POST /api/ai/host-run/result` 回报结果。这是后端驱动前端操作的唯一机制。
+- **违反后果**：不知道 Host Run 机制 → 在后端实现本应在前端执行的操作
+
 ### Spring Boot 配置约定
 
 - **场景**：修改后端配置
