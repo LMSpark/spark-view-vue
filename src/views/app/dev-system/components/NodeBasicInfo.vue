@@ -69,7 +69,17 @@ function onNodeKindUiChange(value: string): void {
     props.state.applyNestedConfigPagePreset()
     return
   }
-  props.state.handleNodeKindChange(value as NavNodeKind)
+  if (isNavNodeKind(value)) props.state.handleNodeKindChange(value)
+}
+
+function isNavNodeKind(value: string): value is NavNodeKind {
+  return value === 'system-directory'
+    || value === 'module'
+    || value === 'system-page'
+    || value === 'system-action'
+    || value === 'page'
+    || value === 'link'
+    || value === 'ref'
 }
 </script>
 

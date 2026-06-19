@@ -944,12 +944,18 @@ function collectSchemaClassNames(models: Readonly<Record<string, DtsTypeDeclarat
 function readExistingShardSchemaClassNames(outputDir: string, sourcePath: string): ReadonlySet<string> {
   const shardPath = resolve(outputDir, dtsSourcePathToBundleRelativeJson(sourcePath))
   try {
-    const shard = JSON.parse(readFileSync(shardPath, 'utf8')) as { $defs?: unknown }
-    if (shard.$defs === null || typeof shard.$defs !== 'object' || Array.isArray(shard.$defs)) return new Set()
-    return new Set(Object.keys(shard.$defs))
+    const shard: unknown = JSON.parse(readFileSync(shardPath, 'utf8'))
+    if (!isUnknownRecord(shard)) return new Set()
+    const defs = shard['$defs']
+    if (defs === null || typeof defs !== 'object' || Array.isArray(defs)) return new Set()
+    return new Set(Object.keys(defs))
   } catch {
     return new Set()
   }
+}
+
+function isUnknownRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function parseDtsReferenceTitle(title: string): { namespaceName?: string; localName: string } | undefined {

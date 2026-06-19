@@ -29,7 +29,7 @@
 
 ### 怎么记录
 
-每次用AI完成一个任务后，在 `notes/metrics-<YYYY-MM>.md` 中追加一条记录：
+每次用AI完成一个任务后，在 `notes/ai-code-metrics.md` 中追加一条记录：
 
 ```markdown
 ### [日期] [任务名]

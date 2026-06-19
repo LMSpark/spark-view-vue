@@ -140,7 +140,13 @@ function literalTypeNodeToAiJsonSchema(
   const value = literalTypeNodeValue(node, sourceFile)
   if (value === undefined) return true
   if (value === null) return { type: 'null' }
-  return { type: typeof value as 'string' | 'number' | 'boolean', enum: [value] }
+  return { type: jsonSchemaTypeForLiteralValue(value), enum: [value] }
+}
+
+function jsonSchemaTypeForLiteralValue(value: string | number | boolean): 'string' | 'number' | 'boolean' {
+  if (typeof value === 'string') return 'string'
+  if (typeof value === 'number') return 'number'
+  return 'boolean'
 }
 
 function literalTypeNodeValue(

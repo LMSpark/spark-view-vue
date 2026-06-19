@@ -19,9 +19,7 @@ export class PageTextFile {
 
     /** 创建 Page Text File 实例。 */
 constructor(
-    /** 页面 ID，用于标识当前文本资源所属页面。 */
     readonly pageId: string,
-    /** 页面文本资源文件名。 */
     readonly fileName: 'script.js' | 'style.css',
     initialText = '',
   ) {

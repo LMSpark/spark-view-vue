@@ -16,7 +16,7 @@ import { previewAiAgentDiagnosticValue } from './session-diagnostics'
 
 /** 工具调用轨迹条目：单次 function tool 调用的 headless 投影 */
 export type AiAgentRunTraceToolCall = Readonly<{
-  /** 工具名称（如 model_script / editNodeTree） */
+  /** 工具名称（如 model_script / module_action） */
   toolName: string
   /** 调用参数的截断预览文本 */
   argsPreview: string

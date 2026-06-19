@@ -40,8 +40,8 @@ function readBrowserOrigin(): string | undefined {
 }
 
 function readConfiguredOrigin(): string | undefined {
-  const viteOrigin = import.meta.env.VITE_DEV_SERVER_ORIGIN
-  if (typeof viteOrigin === 'string' && viteOrigin.length > 0) return viteOrigin
+  const viteOrigin = readOptionalText(import.meta.env['VITE_DEV_SERVER_ORIGIN'])
+  if (viteOrigin !== undefined) return viteOrigin
 
   const nodeEnv = readProcessEnv('SPARK_FE_ORIGIN') ?? readProcessEnv('VITE_DEV_SERVER_ORIGIN')
   if (nodeEnv !== undefined) return nodeEnv
@@ -49,10 +49,14 @@ function readConfiguredOrigin(): string | undefined {
   return undefined
 }
 
-function readProcessEnv(key: string): string | undefined {
-  if (typeof process === 'undefined') return undefined
-  const value = process.env[key]
+function readOptionalText(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
+}
+
+function readProcessEnv(key: string): string | undefined {
+  if (typeof process === 'undefined') return undefined
+  const value = process.env[key]
+  return readOptionalText(value)
 }

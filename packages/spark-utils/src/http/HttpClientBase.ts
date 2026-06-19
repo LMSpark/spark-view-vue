@@ -69,7 +69,6 @@ protected readonly logger: ReturnType<typeof Logger>
 
     /** 创建 Http Client Base 实例。 */
 constructor(
-    /** 当前 HTTP 客户端实例的默认请求配置。 */
     protected defaults: Partial<RequestConfig> = {},
     loggerName = 'Http',
   ) {

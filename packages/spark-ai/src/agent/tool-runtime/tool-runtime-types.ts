@@ -13,13 +13,9 @@ export type AiAgentToolCheckLevel = 'error' | 'warn' | 'info'
 export class AiAgentToolCheck {
     /** 创建 Ai Agent Tool Check 实例。 */
 public constructor(
-    /** 检查等级：error 会阻断，warn/info 用于提示。 */
     public readonly level: AiAgentToolCheckLevel,
-    /** 稳定检查码，供 UI 和恢复提示识别问题类型。 */
     public readonly code: string,
-    /** 面向用户或日志的检查说明。 */
     public readonly message: string,
-    /** 可选修复提示。 */
     public readonly hint?: string,
   ) {}
 

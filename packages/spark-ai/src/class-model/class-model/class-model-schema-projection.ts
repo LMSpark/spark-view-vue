@@ -229,11 +229,17 @@ function readSchemaDefs(jsonSchema: AiJsonSchemaObject): Readonly<Record<string,
   if (defs === undefined || defs === null || typeof defs !== 'object' || Array.isArray(defs)) return {}
   const result: Record<string, AiJsonSchema> = {}
   for (const [name, schema] of Object.entries(defs)) {
-    if (schema === true || schema === false || (schema !== null && typeof schema === 'object' && !Array.isArray(schema))) {
-      result[name] = schema as AiJsonSchema
+    if (isJsonSchema(schema)) {
+      result[name] = schema
     }
   }
   return result
+}
+
+function isJsonSchema(value: unknown): value is AiJsonSchema {
+  return value === true
+    || value === false
+    || (value !== null && typeof value === 'object' && !Array.isArray(value))
 }
 
 function readObjectDefProperty(

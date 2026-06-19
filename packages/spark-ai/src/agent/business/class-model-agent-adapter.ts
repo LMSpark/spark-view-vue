@@ -5,7 +5,7 @@
  * AI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。
  */
 
-import type { AiJsonParams, AiJsonSchemaObject, AiJsonValue } from '../../json'
+import { coerceJsonValue, type AiJsonParams, type AiJsonSchemaObject, type AiJsonValue } from '../../json'
 import {
   auditClassModelReflectionConnectivity,
   collectClassModelFailureModeRecoveryHints,
@@ -560,16 +560,16 @@ function findDefaultAgentCompleteMethodName(instance: unknown): string | undefin
 function readAgentCompleteMethod(instance: unknown, methodName: string): AgentCompleteMethod | undefined {
   if (!isMethodContainer(instance)) return undefined
   const method = instance[methodName]
-  return typeof method === 'function' ? method as AgentCompleteMethod : undefined
+  return isAgentCompleteMethod(method) ? method : undefined
 }
 
 function callAgentCompleteMethod<T>(
   command: CallAgentCompleteMethodCommand<T>,
 ): unknown {
   if (command.method.length >= 2) {
-    return Reflect.apply(command.method, command.instance as object, [command.context, command.args])
+    return Reflect.apply(command.method, command.instance, [command.context, command.args])
   }
-  return Reflect.apply(command.method, command.instance as object, [{
+  return Reflect.apply(command.method, command.instance, [{
     summary: command.summary,
     moduleId: command.context.moduleId,
     moduleInstanceId: command.context.moduleInstanceId,
@@ -583,7 +583,7 @@ function normalizeAgentCompleteActionResult(
   knowledgeContext: AgentCompleteKnowledgeRecoveryContext,
 ): AiAgentToolResult<AiJsonValue> {
   if (raw instanceof AiAgentToolResult) {
-    if (!raw.ok) return raw as AiAgentToolResult<AiJsonValue>
+    if (!raw.ok) return AiAgentToolResult.passthroughFailure(raw)
     return AiAgentToolResult.ok(
       normalizeAgentCompleteSuccessData(raw.data, fallbackSummary),
       raw.checks,
@@ -652,11 +652,18 @@ function normalizeAgentCompleteSuccessData(raw: unknown, summary: string): AiJso
       summary,
     }
   }
+  const result = coerceJsonValue(raw)
+  if (result === undefined) {
+    return {
+      completed: true,
+      summary,
+    }
+  }
   return {
     completed: true,
     summary,
-    result: raw,
-  } as AiJsonValue
+    result,
+  }
 }
 
 function rejectAgentComplete(input: Readonly<{
@@ -806,6 +813,10 @@ function readAgentCompleteCheck(value: unknown): AiAgentToolCheck | undefined {
 
 function isMethodContainer(value: unknown): value is Record<string, unknown> {
   return value !== null && (typeof value === 'object' || typeof value === 'function')
+}
+
+function isAgentCompleteMethod(value: unknown): value is AgentCompleteMethod {
+  return typeof value === 'function'
 }
 
 function isUnknownRecord(value: unknown): value is Record<string, unknown> {

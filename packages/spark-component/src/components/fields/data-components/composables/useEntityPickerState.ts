@@ -16,6 +16,34 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
+type EntityPickerSelectOption = {
+  label: string
+  value: PageSelectorOption['value']
+  disabled?: boolean
+}
+
+type EntityPickerSelectCommand = {
+  /** 选择器标题。 */
+  title: string
+  /** 选择器展示的实体名称。 */
+  entityName: string
+  /** 搜索框或空值占位文本。 */
+  placeholder: string
+  /** 是否允许多选。 */
+  multiple: boolean
+  /** 是否允许搜索。 */
+  searchable: boolean
+  /** 打开选择器前的当前值。 */
+  currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string
+  /** 当前可选实体集合。 */
+  options: EntityPickerSelectOption[]
+}
+
+type EntityPickerSelectedOption = {
+  label: string
+  value: PageSelectorOption['value']
+}
+
 /** 实体选择字段的运行态输入，负责选择器弹出、值模式转换和清空行为。 */
 type UseEntityPickerStateOptions = {
   /** 可编辑态选择按钮文本。 */
@@ -49,22 +77,7 @@ type UseEntityPickerStateOptions = {
   /** 主按钮执行选择还是只读查看。 */
   primaryAction: ValueRef<'select' | 'view'>
   /** 打开实体选择器并返回用户选择结果。 */
-  selectEntities: (options: {
-    /** 选择器标题。 */
-    title: string
-    /** 选择器展示的实体名称。 */
-    entityName: string
-    /** 搜索框或空值占位文本。 */
-    placeholder: string
-    /** 是否允许多选。 */
-    multiple: boolean
-    /** 是否允许搜索。 */
-    searchable: boolean
-    /** 打开选择器前的当前值。 */
-    currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string
-    /** 当前可选实体集合。 */
-    options: Array<{ label: string; value: PageSelectorOption['value']; disabled?: boolean }>
-  }) => Promise<Array<{ label: string; value: PageSelectorOption['value'] }>>
+  selectEntities: (options: EntityPickerSelectCommand) => Promise<EntityPickerSelectedOption[]>
   /** 将选择结果写回字段值。 */
   updateValue: (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>
 }

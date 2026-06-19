@@ -141,17 +141,6 @@ export type {
 } from './tool-loop/function-call-recovery-enricher'
 
 export type {
-  ClassModelAgentCompleteAccepted,
-  ClassModelAgentCompleteActionOptions,
-  ClassModelAgentCompleteActionResult,
-  ClassModelAgentCompleteCheck,
-  ClassModelAgentCompleteRejected,
-  ClassModelAgentAdapterRegistrationCommand,
-  ClassModelAgentAdapterRegisterCommand,
-  ClassModelAgentAdapterRegisterOptions,
-} from './business/class-model-agent-adapter'
-
-export type {
   AiBusinessInputOptions,
   AiBusinessIdOptions,
   CreateSimpleInputContractOptions,
@@ -350,35 +339,15 @@ export type {
 // ── 10. AG-UI 旁路协议适配 ─────────────────────────────────
 
 export {
-  createSparkAgUiCustomEvent,
-  createSparkAgUiReasoningEndEvent,
-  createSparkAgUiReasoningMessageContentEvent,
-  createSparkAgUiReasoningMessageEndEvent,
-  createSparkAgUiReasoningMessageStartEvent,
-  createSparkAgUiReasoningStartEvent,
-  createSparkAgUiRunErrorEvent,
-  createSparkAgUiRunFinishedEvent,
-  createSparkAgUiRunStartedEvent,
-  createSparkAgUiStreamCustomEvent,
-  createSparkAgUiTextMessageContentEvent,
-  createSparkAgUiTextMessageEndEvent,
-  createSparkAgUiTextMessageStartEvent,
-  createSparkAgUiToolCallEvents,
-  stringifySparkAgUiPayload,
-  toSparkAgUiAssistantMessageId,
-  toSparkAgUiReasoningMessageId,
-  toSparkAgUiTool,
-  toSparkAgUiTools,
+  sparkAgUi,
 } from './ag-ui'
 
 export type {
-  SparkAgUiBaseEvent,
+  AGUIEvent,
+  RunAgentInput,
+  SparkAgUiAdapter,
   SparkAgUiCustomEventName,
-  SparkAgUiEvent,
   SparkAgUiEventMetadata,
-  SparkAgUiMessage,
-  SparkAgUiRunInput,
   SparkAgUiRunRef,
   SparkAgUiTextMessageRole,
-  SparkAgUiTool,
 } from './ag-ui'

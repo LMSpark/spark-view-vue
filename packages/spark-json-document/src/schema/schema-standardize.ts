@@ -111,7 +111,7 @@ export function standardizeJsonSchema(value: unknown): StandardJsonSchema {
   const literalOnly = normalizeLiteralOnlySchema(value)
   if (literalOnly !== undefined) return literalOnly
 
-  if ((value as Readonly<Record<string, unknown>>)['type'] === 'function') return true
+  if (hasLegacyFunctionSchemaType(value)) return true
 
   const nullableUnion = tryStandardizeNullableUnion(value)
   if (nullableUnion !== undefined) return nullableUnion
@@ -450,4 +450,9 @@ function sortSchemaKeys(schema: StandardJsonSchemaObject): StandardJsonSchemaObj
 
 function isPlainObject(value: unknown): value is StandardJsonSchemaObject {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function hasLegacyFunctionSchemaType(value: StandardJsonSchemaObject): boolean {
+  const record: Readonly<Record<string, unknown>> = value
+  return record['type'] === 'function'
 }

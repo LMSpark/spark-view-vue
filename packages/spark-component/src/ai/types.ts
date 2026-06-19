@@ -11,16 +11,11 @@
  * 等流展示类型只在这里定义。UI 组件只消费外部传入的展示投影。
  */
 
-import type {
-  AiAgentSessionSummary,
-  AiAgentSessionTranscriptEntry,
-} from '@spark-appworks/spark-ai/agent'
-
 // ── 流展示条目 ──
 
 /** 工具调用展示条目：单次 function tool 调用在 UI 流视图中的投影 */
 export type ToolCallDisplayItem = Readonly<{
-  /** 工具名称（如 model_script / editNodeTree） */
+  /** 工具名称（如 model_script / module_action） */
   toolName: string
   /** 调用参数的截断预览文本，用于 UI 展示而非完整参数还原 */
   argsPreview: string
@@ -87,15 +82,42 @@ export type SessionDiagnosticIssue = Readonly<{
   hint?: string
 }>
 
+/** 会话摘要展示投影；组件包不依赖 spark-ai 内部 session 类型。 */
+export type SessionSummaryDisplayData = Readonly<{
+  status: string | null
+  historyCount: number
+  messageCount: number
+  toolCallCount: number
+  failedToolCallCount: number
+  functionNames: readonly string[]
+  lastAssistantText: string
+}>
+
+/** 会话转写展示投影；只保留诊断面板实际展示需要的字段。 */
+export type SessionTranscriptDisplayEntry = Readonly<{
+  seq: number | null
+  id: string
+  timestamp: string | null
+  kind: 'message' | 'functionCall' | 'unknown'
+  direction: string
+  role?: string
+  source?: string
+  toolName?: string
+  status?: string
+  content?: string
+  args?: string
+  result?: string
+}>
+
 /**
  * 诊断数据——永远有值（非 null）。
  * 由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。
  */
 export type SessionDiagnosticsData = Readonly<{
   /** 会话摘要（含状态、开始/结束时间等） */
-  summary: AiAgentSessionSummary
+  summary: SessionSummaryDisplayData
   /** 完整的会话交互记录列表 */
-  transcript: readonly AiAgentSessionTranscriptEntry[]
+  transcript: readonly SessionTranscriptDisplayEntry[]
   /** 诊断问题列表，由 runtime inspect 产出 */
   issues: readonly SessionDiagnosticIssue[]
 }>

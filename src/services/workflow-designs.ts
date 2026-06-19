@@ -7,15 +7,8 @@
 import {
   assertAgentWorkflowDefinition,
   createAgentWorkflowDefinitionValidation,
-  type AgentWorkflowCapability,
-  type AgentWorkflowDefinition,
-  type AgentWorkflowDefinitionValidationIssue,
-  type AgentWorkflowGraphEdge,
-  type AgentWorkflowGraphNode,
-  type AgentWorkflowGraphNodeType,
-  type AgentWorkflowJsonRecord,
-  type AgentWorkflowVariable,
 } from '@spark-appworks/spark-ai/agent'
+import type * as SparkAgent from '@spark-appworks/spark-ai/agent'
 import { http } from './http'
 import { getWorkflowDesignApi } from './api-paths'
 
@@ -50,7 +43,7 @@ export type WorkflowDefinitionReadResult = {
   workflowId: string
   filename: string
   timestamp: string
-  definition?: AgentWorkflowDefinition
+  definition?: SparkAgent.AgentWorkflowDefinition
   notModified?: boolean
 }
 
@@ -266,6 +259,23 @@ type CollectWorkflowDesignNodeCommand = Readonly<{
   ancestry: string[]
 }>
 
+type CollectWorkflowDesignNestedNodeCommand = Readonly<{
+  node: WorkflowDesignGraphNode
+  scopePath: string
+  depth: number
+  ancestry: string[]
+}>
+
+type CreateWorkflowDefinitionNodeCommand<
+  TType extends SparkAgent.AgentWorkflowGraphNodeType,
+  TData extends SparkAgent.AgentWorkflowJsonRecord,
+> = Readonly<{
+  id: string
+  type: TType
+  data: TData
+  position: WorkflowDesignGraphNode['position']
+}>
+
 const PLACEHOLDER_CLASS_MODEL_TOOL_NAME = 'spark.placeholder.tool'
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
@@ -308,7 +318,7 @@ export async function readWorkflowDefinition(
 
 export async function saveWorkflowDefinition(
   workflowId: string,
-  definition: AgentWorkflowDefinition,
+  definition: SparkAgent.AgentWorkflowDefinition,
 ): Promise<WorkflowDesignWriteResult> {
   try {
     return await http.put<WorkflowDesignWriteResult>(workflowDefinitionDocumentUrl(workflowId), definition)
@@ -320,7 +330,7 @@ export async function saveWorkflowDefinition(
 
 export async function publishWorkflowDefinition(
   workflowId: string,
-  definition: AgentWorkflowDefinition,
+  definition: SparkAgent.AgentWorkflowDefinition,
 ): Promise<WorkflowDesignWriteResult> {
   return http.post<WorkflowDesignWriteResult>(workflowDefinitionPublishUrl(workflowId), definition)
 }
@@ -332,7 +342,7 @@ export async function deleteWorkflowDesign(workflowId: string): Promise<Workflow
 export function createAgentWorkflowDefinitionFromDesign(
   document: WorkflowDesignDocument,
   options: CreateAgentWorkflowDefinitionFromDesignOptions = {},
-): AgentWorkflowDefinition {
+): SparkAgent.AgentWorkflowDefinition {
   const issues = collectDefinitionPublishIssues(document)
   const validation = createAgentWorkflowDefinitionValidation(issues)
   const workflowExtras = normalizeDefinitionWorkflowExtras(document.workflow)
@@ -362,7 +372,7 @@ export function createAgentWorkflowDefinitionFromDesign(
   }
 }
 
-export function parseAgentWorkflowDefinitionJson(text: string): AgentWorkflowDefinition {
+export function parseAgentWorkflowDefinitionJson(text: string): SparkAgent.AgentWorkflowDefinition {
   const parsed: unknown = JSON.parse(text)
   assertAgentWorkflowDefinition(parsed)
   return parsed
@@ -535,9 +545,9 @@ function workflowDefinitionDocumentUrl(workflowId: string): string {
   return `${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}/definition.json`
 }
 
-function collectDefinitionPublishIssues(document: WorkflowDesignDocument): AgentWorkflowDefinitionValidationIssue[] {
-  const issues: AgentWorkflowDefinitionValidationIssue[] = []
-  const record = document as JsonRecord
+function collectDefinitionPublishIssues(document: WorkflowDesignDocument): SparkAgent.AgentWorkflowDefinitionValidationIssue[] {
+  const issues: SparkAgent.AgentWorkflowDefinitionValidationIssue[] = []
+  const record: JsonRecord = document
   for (const field of ['app', 'factory', 'process'] as const) {
     if (Object.prototype.hasOwnProperty.call(record, field)) {
       issues.push({
@@ -602,11 +612,11 @@ function normalizeDefinitionWorkflowExtras(workflow: WorkflowDesignDocument['wor
   return extras
 }
 
-function normalizeDefinitionVariables(value: WorkflowDesignVariable[] | undefined): readonly AgentWorkflowVariable[] {
+function normalizeDefinitionVariables(value: WorkflowDesignVariable[] | undefined): readonly SparkAgent.AgentWorkflowVariable[] {
   if (!Array.isArray(value)) return []
   return value
     .filter(variable => typeof variable.name === 'string' && variable.name.trim().length > 0)
-    .map((variable): AgentWorkflowVariable => ({
+    .map((variable): SparkAgent.AgentWorkflowVariable => ({
       name: variable.name.trim(),
       ...(typeof variable.title === 'string' && variable.title.trim().length > 0
         ? { title: variable.title.trim() }
@@ -617,27 +627,61 @@ function normalizeDefinitionVariables(value: WorkflowDesignVariable[] | undefine
     }))
 }
 
-function normalizeDefinitionCapabilities(value: WorkflowDesignCapability[] | undefined): readonly AgentWorkflowCapability[] {
+function normalizeDefinitionCapabilities(value: WorkflowDesignCapability[] | undefined): readonly SparkAgent.AgentWorkflowCapability[] {
   return normalizeCapabilities(value, 'workflow')
 }
 
-function toDefinitionNode(node: WorkflowDesignGraphNode): AgentWorkflowGraphNode {
+function toDefinitionNode(node: WorkflowDesignGraphNode): SparkAgent.AgentWorkflowGraphNode {
   const type = resolveDefinitionNodeType(node)
-  const data = normalizeNodeDataForDefinition(type, node.data)
-  const position = node.position
-  const x = position?.x
-  const y = position?.y
-  return {
+  if (type === 'start') {
+    return createWorkflowDefinitionNode({
+      id: node.id,
+      type,
+      data: normalizeNodeDataForDefinition(type, node.data),
+      position: node.position,
+    })
+  }
+  if (type === 'tool') {
+    return createWorkflowDefinitionNode({
+      id: node.id,
+      type,
+      data: normalizeNodeDataForDefinition(type, node.data),
+      position: node.position,
+    })
+  }
+  if (type === 'chatflow') {
+    return createWorkflowDefinitionNode({
+      id: node.id,
+      type,
+      data: normalizeNodeDataForDefinition(type, node.data),
+      position: node.position,
+    })
+  }
+  if (type === 'workflow') {
+    return createWorkflowDefinitionNode({
+      id: node.id,
+      type,
+      data: normalizeNodeDataForDefinition(type, node.data),
+      position: node.position,
+    })
+  }
+  if (type === 'output') {
+    return createWorkflowDefinitionNode({
+      id: node.id,
+      type,
+      data: normalizeNodeDataForDefinition(type, node.data),
+      position: node.position,
+    })
+  }
+  return createWorkflowDefinitionNode({
     id: node.id,
     type,
-    data,
-    ...(x === undefined || y === undefined
-      ? {}
-      : { position: { x, y } }),
-  } as AgentWorkflowGraphNode
+    data: normalizeNodeDataForDefinition(type, node.data),
+    position: node.position,
+  })
 }
 
-function toDefinitionEdge(edge: WorkflowDesignGraphEdge): AgentWorkflowGraphEdge {
+function toDefinitionEdge(edge: WorkflowDesignGraphEdge): SparkAgent.AgentWorkflowGraphEdge {
   return {
     id: edge.id ?? `${edge.source}-${edge.target}`,
     source: edge.source,
@@ -648,10 +692,65 @@ function toDefinitionEdge(edge: WorkflowDesignGraphEdge): AgentWorkflowGraphEdge
   }
 }
 
+function normalizeDefinitionNodePosition(
+  position: WorkflowDesignGraphNode['position'],
+): SparkAgent.AgentWorkflowNodePosition | undefined {
+  const x = position?.x
+  const y = position?.y
+  if (typeof x !== 'number' || typeof y !== 'number') return undefined
+  return { x, y }
+}
+
+function createWorkflowDefinitionNode<
+  TType extends SparkAgent.AgentWorkflowGraphNodeType,
+  TData extends SparkAgent.AgentWorkflowJsonRecord,
+>(
+  command: CreateWorkflowDefinitionNodeCommand<TType, TData>,
+): SparkAgent.AgentWorkflowGraphNodeBase<TType, TData> {
+  const position = normalizeDefinitionNodePosition(command.position)
+  if (position === undefined) {
+    return {
+      id: command.id,
+      type: command.type,
+      data: command.data,
+    }
+  }
+  return {
+    id: command.id,
+    type: command.type,
+    data: command.data,
+    position,
+  }
+}
+
 function normalizeNodeDataForDefinition(
-  type: AgentWorkflowGraphNodeType,
+  type: 'start',
   value: WorkflowDesignNodeData | undefined,
-): AgentWorkflowJsonRecord {
+): SparkAgent.AgentWorkflowStartNodeData
+function normalizeNodeDataForDefinition(
+  type: 'tool',
+  value: WorkflowDesignNodeData | undefined,
+): SparkAgent.AgentWorkflowToolNodeData
+function normalizeNodeDataForDefinition(
+  type: 'chatflow',
+  value: WorkflowDesignNodeData | undefined,
+): SparkAgent.AgentWorkflowChatflowNodeData
+function normalizeNodeDataForDefinition(
+  type: 'workflow',
+  value: WorkflowDesignNodeData | undefined,
+): SparkAgent.AgentWorkflowSubWorkflowNodeData
+function normalizeNodeDataForDefinition(
+  type: 'output',
+  value: WorkflowDesignNodeData | undefined,
+): SparkAgent.AgentWorkflowOutputNodeData
+function normalizeNodeDataForDefinition(
+  type: 'condition' | 'code' | 'llm' | 'agent',
+  value: WorkflowDesignNodeData | undefined,
+): SparkAgent.AgentWorkflowGenericNodeData
+function normalizeNodeDataForDefinition(
+  type: SparkAgent.AgentWorkflowGraphNodeType,
+  value: WorkflowDesignNodeData | undefined,
+): SparkAgent.AgentWorkflowGraphNode['data'] {
   const data = value === undefined ? {} : { ...value }
   delete data.loop
   delete data.iteration
@@ -659,14 +758,17 @@ function normalizeNodeDataForDefinition(
   delete data['inputMapping']
   delete data['outputMapping']
   delete data.x_spark
-  const normalized: JsonRecord = {
-    ...data,
-    type,
-    title: readTitle(data, defaultNodeTitleForType(type)),
+  const title = readTitle(data, defaultNodeTitleForType(type))
+  const optionalCapabilities = normalizeOptionalCapabilities(data['capabilities'], 'node')
+  if (type === 'start') {
+    return {
+      title,
+      ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
+    }
   }
   if (type === 'tool') {
     return {
-      ...normalized,
+      title,
       provider: readNonBlankText(data['provider']) ?? 'class-model',
       toolName: readNonBlankText(data['toolName']) ?? PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
       inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
@@ -676,24 +778,39 @@ function normalizeNodeDataForDefinition(
   }
   if (type === 'chatflow' || type === 'workflow') {
     return {
-      ...normalized,
-      workflowRef: isWorkflowReference(data['workflowRef']) ? data['workflowRef'] : { workflowId: '', version: 1 },
+      title,
+      workflowRef: normalizeDefinitionWorkflowReference(data['workflowRef']),
       inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
       outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
-      capabilities: normalizeCapabilities(data['capabilities'], 'node'),
+      ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
     }
   }
   if (type === 'output') {
     return {
-      ...normalized,
+      title,
       outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
-      capabilities: normalizeOptionalCapabilities(data['capabilities'], 'node'),
+      ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
     }
   }
-  return normalized
+  return {
+    ...data,
+    type,
+    title,
+    ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
+  }
 }
 
-function resolveDefinitionNodeType(node: WorkflowDesignGraphNode): AgentWorkflowGraphNodeType {
+function normalizeDefinitionWorkflowReference(value: unknown): SparkAgent.AgentWorkflowReference {
+  if (!isWorkflowReference(value)) return { workflowId: '', version: 1 }
+  const definitionPath = readNonBlankText(value.definitionPath)
+  return {
+    workflowId: value.workflowId.trim(),
+    ...(typeof value.version === 'number' ? { version: value.version } : {}),
+    ...(definitionPath === undefined ? {} : { definitionPath }),
+  }
+}
+
+function resolveDefinitionNodeType(node: WorkflowDesignGraphNode): SparkAgent.AgentWorkflowGraphNodeType {
   const dataType = node.data?.type
   if (isDefinitionNodeType(dataType)) return dataType
   if (isDefinitionNodeType(node.type)) return node.type
@@ -777,17 +894,13 @@ function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowD
       isProcessStageNode: false,
     }
     result.push(view)
-    result.push(...collectNestedNodes(node, scopePath, depth, ancestry))
+    result.push(...collectNestedNodes({ node, scopePath, depth, ancestry }))
   }
   return result
 }
 
-function collectNestedNodes(
-  node: WorkflowDesignGraphNode,
-  scopePath: string,
-  depth: number,
-  ancestry: string[],
-): WorkflowDesignNodeView[] {
+function collectNestedNodes(command: CollectWorkflowDesignNestedNodeCommand): WorkflowDesignNodeView[] {
+  const { node, scopePath, depth, ancestry } = command
   const result: WorkflowDesignNodeView[] = []
   const nextAncestry = [...ancestry, node.id]
   const loopGraph = node.data?.loop?.subGraph
@@ -974,7 +1087,7 @@ function defaultNodeTitle(kind: WorkflowDesignNodeCreateKind): string {
   }
 }
 
-function defaultNodeTitleForType(type: AgentWorkflowGraphNodeType): string {
+function defaultNodeTitleForType(type: SparkAgent.AgentWorkflowGraphNodeType): string {
   if (type === 'tool') return 'ClassModel Tool'
   if (type === 'chatflow') return 'Chatflow'
   if (type === 'workflow') return 'Workflow'
@@ -1007,16 +1120,16 @@ function readTitle(data: JsonRecord, fallback: string): string {
   return title ?? fallback
 }
 
-function normalizeOptionalCapabilities(value: unknown, fallbackScope: string): readonly AgentWorkflowCapability[] | undefined {
+function normalizeOptionalCapabilities(value: unknown, fallbackScope: string): readonly SparkAgent.AgentWorkflowCapability[] | undefined {
   if (value === undefined) return undefined
   return normalizeCapabilities(value, fallbackScope)
 }
 
-function normalizeCapabilities(value: unknown, fallbackScope: string): readonly AgentWorkflowCapability[] {
+function normalizeCapabilities(value: unknown, fallbackScope: string): readonly SparkAgent.AgentWorkflowCapability[] {
   if (!Array.isArray(value)) return []
   return value
     .filter(isJsonRecord)
-    .map((capability): AgentWorkflowCapability | null => {
+    .map((capability): SparkAgent.AgentWorkflowCapability | null => {
       const id = readNonBlankText(capability['id'])
       const title = readNonBlankText(capability['title'])
       const description = readNonBlankText(capability['description'])
@@ -1034,7 +1147,7 @@ function normalizeCapabilities(value: unknown, fallbackScope: string): readonly 
           : {}),
       }
     })
-    .filter((capability): capability is AgentWorkflowCapability => capability !== null)
+    .filter((capability): capability is SparkAgent.AgentWorkflowCapability => capability !== null)
 }
 
 function readNonBlankText(value: unknown): string | undefined {
@@ -1043,7 +1156,7 @@ function readNonBlankText(value: unknown): string | undefined {
   return normalized.length > 0 ? normalized : undefined
 }
 
-function isDefinitionNodeType(value: unknown): value is AgentWorkflowGraphNodeType {
+function isDefinitionNodeType(value: unknown): value is SparkAgent.AgentWorkflowGraphNodeType {
   return value === 'start'
     || value === 'tool'
     || value === 'chatflow'

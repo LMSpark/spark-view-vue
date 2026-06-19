@@ -693,6 +693,15 @@ type WorkflowFlowEdgeData = {
 type WorkflowFlowNode = Node<WorkflowFlowNodeData, Record<string, never>, 'workflow'>
 type WorkflowFlowEdge = Edge<WorkflowFlowEdgeData>
 
+type EdgeEndpointPatchValidationCommand = Readonly<{
+  edge: WorkflowDesignEdgeView
+  source: string
+  target: string
+  options: {
+    silent?: boolean
+  }
+}>
+
 type NodeCreateForm = {
   graphKey: string
   nodeKind: WorkflowDesignNodeCreateKind
@@ -1217,7 +1226,8 @@ function graphPanelTitle(panel: GraphSplitPanel): string {
 
 function startGraphSplitResize(event: PointerEvent): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
-  const shell = (event.currentTarget as HTMLElement | null)?.closest('.graph-split')
+  const currentTarget = event.currentTarget
+  const shell = currentTarget instanceof HTMLElement ? currentTarget.closest('.graph-split') : null
   const rect = shell instanceof HTMLElement ? shell.getBoundingClientRect() : null
   graphSplitResizeState.value = {
     containerTop: rect?.top ?? 0,
@@ -1278,7 +1288,8 @@ function loadGraphSplitState(workflowId: string): void {
     return
   }
   try {
-    const value = JSON.parse(raw) as Record<string, unknown>
+    const value: unknown = JSON.parse(raw)
+    if (!isJsonRecord(value)) throw new Error('Graph split state must be an object.')
     const ratio = value['ratio']
     graphSplitRatio.value = typeof ratio === 'number' && Number.isFinite(ratio)
       ? Math.min(GRAPH_SPLIT_MAX_RATIO, Math.max(GRAPH_SPLIT_MIN_RATIO, Math.round(ratio)))
@@ -1301,6 +1312,24 @@ function saveGraphSplitState(): void {
 
 function graphSplitStorageKey(workflowId: string): string {
   return `${GRAPH_SPLIT_STORAGE_PREFIX}${workflowId}`
+}
+
+function isWorkflowFlowNodeData(value: unknown): value is WorkflowFlowNodeData {
+  return isJsonRecord(value)
+    && typeof value['viewKey'] === 'string'
+    && typeof value['title'] === 'string'
+    && typeof value['nodeType'] === 'string'
+    && typeof value['scopePath'] === 'string'
+    && typeof value['isClassModelToolNode'] === 'boolean'
+    && typeof value['isChatflowNode'] === 'boolean'
+}
+
+function isWorkflowFlowEdgeData(value: unknown): value is WorkflowFlowEdgeData {
+  return isJsonRecord(value) && typeof value['edgeKey'] === 'string'
+}
+
+function isJsonRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function selectNode(key: string): void {
@@ -1437,7 +1466,8 @@ function handleFlowViewportChangeEnd(viewport: ViewportTransform, graphView: Wor
 }
 
 function handleFlowNodeDragStop(event: NodeDragEvent): void {
-  const data = event.node.data as WorkflowFlowNodeData
+  const data = event.node.data
+  if (!isWorkflowFlowNodeData(data)) return
   const view = allNodes.value.find(node => node.key === data.viewKey)
   const document = currentDocument.value
   if (view === undefined || document === null) return
@@ -1482,13 +1512,14 @@ function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGrap
 function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView): void {
   const document = currentDocument.value
   if (document === null) return
-  const data = event.edge.data as WorkflowFlowEdgeData
+  const data = event.edge.data
+  if (!isWorkflowFlowEdgeData(data)) return
   const edge = edgeViews.value.find(item => item.key === data.edgeKey)
   if (edge === undefined || edge.graph !== graphView.graph) return
 
   const source = event.connection.source.trim()
   const target = event.connection.target.trim()
-  if (!validateEdgeEndpointPatch(edge, source, target, { silent: false })) return
+  if (!validateEdgeEndpointPatch({ edge, source, target, options: { silent: false } })) return
 
   updateWorkflowDesignEdge(edge.edge, {
     source,
@@ -1512,12 +1543,8 @@ function deleteSelectedEdge(): void {
   ElMessage.success('连线已删除')
 }
 
-function validateEdgeEndpointPatch(
-  edge: WorkflowDesignEdgeView,
-  source: string,
-  target: string,
-  options: { silent?: boolean } = {},
-): boolean {
+function validateEdgeEndpointPatch(command: EdgeEndpointPatchValidationCommand): boolean {
+  const { edge, source, target, options } = command
   const nodeIds = new Set(allNodes.value.filter(node => node.graph === edge.graph).map(node => node.id))
   if (source.length === 0 || target.length === 0) {
     if (options.silent !== true) ElMessage.warning('连线必须填写 Source 和 Target')
@@ -1546,7 +1573,7 @@ function applyEdgeEditorToSelected(options: { silent?: boolean } = {}): boolean 
 
   const source = edgeSourceText.value.trim()
   const target = edgeTargetText.value.trim()
-  if (!validateEdgeEndpointPatch(edge, source, target, options)) return false
+  if (!validateEdgeEndpointPatch({ edge, source, target, options })) return false
 
   updateWorkflowDesignEdge(edge.edge, {
     source,

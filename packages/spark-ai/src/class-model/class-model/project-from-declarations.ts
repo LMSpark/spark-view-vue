@@ -1191,11 +1191,45 @@ function dtsReferenceTypeMetaFromTypeReferenceNode(
 function isLocalTypeParameterName(node: ts.Node, typeName: string): boolean {
   if (typeName.includes('.')) return false
   for (let current: ts.Node = node; !ts.isSourceFile(current); current = current.parent) {
-    const typeParameters = (current as ts.Node & { typeParameters?: readonly ts.TypeParameterDeclaration[] }).typeParameters
+    const typeParameters = readNodeTypeParameters(current)
     if (typeParameters?.some(parameter => parameter.name.text === typeName) === true) return true
   }
   return false
 }
+
+function readNodeTypeParameters(node: ts.Node): readonly ts.TypeParameterDeclaration[] | undefined {
+  if (
+    ts.isClassDeclaration(node)
+    || ts.isInterfaceDeclaration(node)
+    || ts.isTypeAliasDeclaration(node)
+    || ts.isFunctionDeclaration(node)
+    || ts.isFunctionExpression(node)
+    || ts.isArrowFunction(node)
+    || ts.isMethodDeclaration(node)
+    || ts.isMethodSignature(node)
+    || ts.isCallSignatureDeclaration(node)
+    || ts.isConstructSignatureDeclaration(node)
+    || ts.isFunctionTypeNode(node)
+    || ts.isConstructorTypeNode(node)
+  ) {
+    return node.typeParameters
+  }
+  return undefined
+}
+
+type DtsImportLookupCommand = Readonly<{
+  repoRoot: string
+  sourceFile: ts.SourceFile
+  currentEmitSourcePath: string
+}>
+
+type DtsImportLocalNameLookupCommand = DtsImportLookupCommand & Readonly<{
+  localName: string
+}>
+
+type DtsImportNamespaceLookupCommand = DtsImportLookupCommand & Readonly<{
+  namespaceName: string
+}>
 
 function dtsReferenceSourceTarget(
   repoRoot: string,
@@ -1206,7 +1240,12 @@ function dtsReferenceSourceTarget(
   const currentSourcePath = sourceFileFromEmitPath(currentEmitSourcePath)
   if (ts.isIdentifier(typeName)) {
     const localName = typeName.text
-    const imported = dtsImportTargetForLocalName(repoRoot, sourceFile, currentEmitSourcePath, localName)
+    const imported = dtsImportTargetForLocalName({
+      repoRoot,
+      sourceFile,
+      currentEmitSourcePath,
+      localName,
+    })
     if (imported !== undefined) return imported
     return sourceFileHasTopLevelDeclaration(sourceFile, localName)
       ? { targetName: localName, sourcePath: currentSourcePath }
@@ -1215,18 +1254,21 @@ function dtsReferenceSourceTarget(
 
   const namespaceName = typeName.left.getText(sourceFile)
   const memberName = typeName.right.text
-  const namespaceSourcePath = dtsImportSourcePathForNamespace(repoRoot, sourceFile, currentEmitSourcePath, namespaceName)
+  const namespaceSourcePath = dtsImportSourcePathForNamespace({
+    repoRoot,
+    sourceFile,
+    currentEmitSourcePath,
+    namespaceName,
+  })
   return namespaceSourcePath === undefined
     ? undefined
     : { targetName: memberName, sourcePath: namespaceSourcePath }
 }
 
 function dtsImportTargetForLocalName(
-  repoRoot: string,
-  sourceFile: ts.SourceFile,
-  currentEmitSourcePath: string,
-  localName: string,
+  command: DtsImportLocalNameLookupCommand,
 ): { targetName: string; sourcePath: string } | undefined {
+  const { repoRoot, sourceFile, currentEmitSourcePath, localName } = command
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement)) continue
     if (!ts.isStringLiteral(statement.moduleSpecifier)) continue
@@ -1248,12 +1290,8 @@ function dtsImportTargetForLocalName(
   return undefined
 }
 
-function dtsImportSourcePathForNamespace(
-  repoRoot: string,
-  sourceFile: ts.SourceFile,
-  currentEmitSourcePath: string,
-  namespaceName: string,
-): string | undefined {
+function dtsImportSourcePathForNamespace(command: DtsImportNamespaceLookupCommand): string | undefined {
+  const { repoRoot, sourceFile, currentEmitSourcePath, namespaceName } = command
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement)) continue
     if (!ts.isStringLiteral(statement.moduleSpecifier)) continue

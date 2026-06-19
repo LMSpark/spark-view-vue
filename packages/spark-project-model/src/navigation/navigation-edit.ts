@@ -271,7 +271,7 @@ export function createNavigationNodePatch(input: NavigationNodeDraft): Navigatio
   const nodeDto = { ...input.node }
   const warnings: string[] = []
 
-  if ((nodeDto.nodeKind as string) === 'sub-page' || isNestedConfigPageNode(nodeDto)) {
+  if (isNestedConfigPageNode(nodeDto)) {
     nodeDto.nodeKind = 'page'
     nodeDto.hidden = true
     nodeDto.path = ''

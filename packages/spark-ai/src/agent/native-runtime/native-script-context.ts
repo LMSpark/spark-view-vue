@@ -244,9 +244,7 @@ function wrapRawActionResult(raw: unknown): AiAgentToolResult<unknown> {
 export class AiApiScriptActionFailure extends Error {
     /** 创建 Ai Api Script Action Failure 实例。 */
 public constructor(
-    /** 执行失败的 API action 名称。 */
     public readonly actionName: string,
-    /** action 返回的失败工具结果。 */
     public readonly result: AiAgentToolResult<unknown>,
   ) {
     const first = result.checks?.[0]

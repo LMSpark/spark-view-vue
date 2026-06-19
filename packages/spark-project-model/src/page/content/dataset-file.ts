@@ -22,7 +22,6 @@ value: DataSet
 
     /** 创建 Page Data Set File 实例。 */
 constructor(
-    /** 页面 ID，用作 DataSet 名称和 pagedata.json 解析上下文。 */
     readonly pageId: string,
   ) {
     this.value = DataSet.fromJson({ dataSetName: pageId, tables: {} })

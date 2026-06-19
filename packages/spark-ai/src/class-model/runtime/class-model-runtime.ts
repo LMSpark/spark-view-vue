@@ -303,10 +303,10 @@ function optionalComponentLevelProperty(
 ): { componentLevel?: ComponentClassModelLevel } {
   const value = optionalString(args, key)
   if (value === undefined) return {}
-  if (!COMPONENT_LEVELS.has(value as ComponentClassModelLevel)) {
+  if (!isComponentClassModelLevel(value)) {
     throw new ClassModelToolArgsError(`参数 "${key}" 必须是组件层级之一: ${[...COMPONENT_LEVELS].join(', ')}。`)
   }
-  return { componentLevel: value as ComponentClassModelLevel }
+  return { componentLevel: value }
 }
 
 function optionalComponentLayerProperty(
@@ -315,10 +315,18 @@ function optionalComponentLayerProperty(
 ): { componentLayer?: ComponentClassModelLayer } {
   const value = optionalString(args, key)
   if (value === undefined) return {}
-  if (!COMPONENT_LAYERS.has(value as ComponentClassModelLayer)) {
+  if (!isComponentClassModelLayer(value)) {
     throw new ClassModelToolArgsError(`参数 "${key}" 必须是组件分层之一: ${[...COMPONENT_LAYERS].join(', ')}。`)
   }
-  return { componentLayer: value as ComponentClassModelLayer }
+  return { componentLayer: value }
+}
+
+function isComponentClassModelLevel(value: string): value is ComponentClassModelLevel {
+  return [...COMPONENT_LEVELS].some(level => level === value)
+}
+
+function isComponentClassModelLayer(value: string): value is ComponentClassModelLayer {
+  return [...COMPONENT_LAYERS].some(layer => layer === value)
 }
 
 function optionalStringArrayProperty(args: ClassModelToolArgs, key: string): Record<string, readonly string[]> {

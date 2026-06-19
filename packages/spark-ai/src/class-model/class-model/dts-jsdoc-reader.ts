@@ -29,7 +29,7 @@ export function readJsDoc(node: ts.Node, sourceFile?: ts.SourceFile): string {
 }
 
 function readJsDocNodes(node: ts.Node): readonly ts.JSDoc[] {
-  return (node as ts.Node & { jsDoc?: readonly ts.JSDoc[] }).jsDoc ?? []
+  return ts.getJSDocCommentsAndTags(node).filter(isJsDocNode)
 }
 
 function renderJsDocNode(node: ts.JSDoc, sourceFile: ts.SourceFile | undefined): string {
@@ -49,8 +49,24 @@ function renderJsDocTag(tag: ts.JSDocTag, sourceFile: ts.SourceFile | undefined)
 }
 
 function readJsDocTagName(tag: ts.JSDocTag, sourceFile: ts.SourceFile | undefined): string {
-  const named = tag as ts.JSDocTag & { name?: ts.EntityName | ts.Identifier }
-  return named.name?.getText(sourceFile) ?? ''
+  if (isNamedJsDocTag(tag)) {
+    const name = tag.name
+    return name === undefined ? '' : name.getText(sourceFile)
+  }
+  return ''
+}
+
+function isJsDocNode(node: ts.JSDoc | ts.JSDocTag): node is ts.JSDoc {
+  return node.kind === ts.SyntaxKind.JSDocComment
+}
+
+function isNamedJsDocTag(
+  tag: ts.JSDocTag,
+): tag is ts.JSDocParameterTag | ts.JSDocPropertyTag | ts.JSDocTypedefTag | ts.JSDocCallbackTag {
+  return ts.isJSDocParameterTag(tag)
+    || ts.isJSDocPropertyTag(tag)
+    || ts.isJSDocTypedefTag(tag)
+    || ts.isJSDocCallbackTag(tag)
 }
 
 function normalizeJsDocComment(

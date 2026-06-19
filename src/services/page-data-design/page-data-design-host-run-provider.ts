@@ -151,10 +151,14 @@ function clearPageDataDesignRunContext(pageId: string): void {
 }
 
 function readJsonObjectArgs(args: unknown): Record<string, unknown> {
-  if (args === null || typeof args !== 'object' || Array.isArray(args)) {
+  if (!isJsonRecord(args)) {
     throw new Error('pageDataDesign args must be a JSON object.')
   }
-  return args as Record<string, unknown>
+  return args
+}
+
+function isJsonRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function readPageDataDesignPageId(args: Record<string, unknown>): string | null {

@@ -16,6 +16,30 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
+type BrowseFilesCommand = {
+  /** 文件选择窗口标题。 */
+  title: string
+  /** 文件过滤规则。 */
+  accept: string
+  /** 是否允许多选。 */
+  multiple: boolean
+  /** 打开对话框前字段中的当前值。 */
+  currentValue: string
+}
+
+type UploadFilesCommand = {
+  /** 上传动作地址或上传能力标识。 */
+  action: NonNullable<SparkFileUploadActionProps['action']>
+  /** 文件过滤规则。 */
+  accept: string
+  /** 是否允许多文件上传。 */
+  multiple: boolean
+  /** 上传表单字段名。 */
+  fieldName: string
+  /** 上传前字段中的当前值。 */
+  currentValue: string
+}
+
 /** 同时支持本地浏览和远端上传的文件字段运行态输入。 */
 type UploadBrowseFieldStateOptions = {
   /** 文件字段展示标题，用作文件选择对话框标题。 */
@@ -47,29 +71,9 @@ type UploadBrowseFieldStateOptions = {
   /** 多文件值写回字段时使用的分隔符。 */
   separator: ValueRef<NonNullable<SparkFileFieldProps['separator']>>
   /** 打开文件浏览器并返回用户选择的文件。 */
-  browseFiles: (options: {
-    /** 文件选择窗口标题。 */
-    title: string
-    /** 文件过滤规则。 */
-    accept: string
-    /** 是否允许多选。 */
-    multiple: boolean
-    /** 打开对话框前字段中的当前值。 */
-    currentValue: string
-  }) => Promise<PageSelectedFile[]>
+  browseFiles: (options: BrowseFilesCommand) => Promise<PageSelectedFile[]>
   /** 上传用户选择的文件并返回上传结果。 */
-  uploadFiles: (options: {
-    /** 上传动作地址或上传能力标识。 */
-    action: NonNullable<SparkFileUploadActionProps['action']>
-    /** 文件过滤规则。 */
-    accept: string
-    /** 是否允许多文件上传。 */
-    multiple: boolean
-    /** 上传表单字段名。 */
-    fieldName: string
-    /** 上传前字段中的当前值。 */
-    currentValue: string
-  }) => Promise<PageUploadedFile[]>
+  uploadFiles: (options: UploadFilesCommand) => Promise<PageUploadedFile[]>
   /** 将浏览或上传后的字符串值写回字段。 */
   updateValue: (value: string) => void | Promise<void>
   /** 浏览文件后是否把选择结果写回字段值。 */
@@ -99,16 +103,7 @@ type FileBrowserFieldStateOptions = {
   /** 是否允许清空字段值。 */
   canClear: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
   /** 打开文件浏览器并返回用户选择的文件。 */
-  browseFiles: (options: {
-    /** 文件选择窗口标题。 */
-    title: string
-    /** 文件过滤规则。 */
-    accept: string
-    /** 是否允许多选。 */
-    multiple: boolean
-    /** 打开对话框前字段中的当前值。 */
-    currentValue: string
-  }) => Promise<PageSelectedFile[]>
+  browseFiles: (options: BrowseFilesCommand) => Promise<PageSelectedFile[]>
   /** 将浏览后的文件名字符串写回字段。 */
   updateValue: (value: string) => void | Promise<void>
 }

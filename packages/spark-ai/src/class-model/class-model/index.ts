@@ -87,12 +87,6 @@ export {
 
 export type {
   DtsClassModelBundleManifest,
-  DtsClassModelBundleFileEntry,
-  DtsClassModelSemanticGap,
-  DtsClassModelSemanticGapKind,
-  DtsClassModelSemanticGapReport,
-  DtsFileModuleJsDocSource,
-  DtsFileModuleSemanticMeta,
   DtsFileProjectionDocument,
 } from './dts-bundle-types'
 
@@ -113,16 +107,7 @@ export {
 } from './dts-type-meta-ops'
 
 export {
-  renderAttributeDeclarationLine,
-  renderAttributeTypeText,
-  renderConstructorSignature,
-  renderDtsTypeMeta,
-  renderMethodDeclarationLine,
-  renderMethodParameter,
-  renderMethodParamsText,
-  renderMethodReturnTypeLabel,
   renderMethodSignature,
-  renderMethodSignatureFromMeta,
 } from './signature-renderer'
 
 export {

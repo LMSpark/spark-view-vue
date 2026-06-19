@@ -20,10 +20,11 @@ import type {
 import type { AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
-import type {
-  PageNodeFileName,
-  ProjectActivePageProjection,
-  ProjectWorkspace,
+import {
+  PAGE_NODE_FILE_NAMES,
+  type PageNodeFileName,
+  type ProjectActivePageProjection,
+  type ProjectWorkspace,
 } from '@spark-appworks/spark-project-model'
 import {
   PAGE_DESIGN_MODULE_ID,
@@ -182,7 +183,8 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   }
   const savedDirtyFileNames = deliveryResult.artifacts
     .filter(artifact => artifact.kind === 'page-file' && artifact.status === 'saved')
-    .map(artifact => artifact.name as PageNodeFileName)
+    .map(artifact => artifact.name)
+    .filter(isPageNodeFileName)
 
   return {
     sawToolCall,
@@ -190,6 +192,10 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     dirtyFileNames: readDirtyFileNames(command.editor),
     savedDirtyFileNames,
   }
+}
+
+function isPageNodeFileName(value: string): value is PageNodeFileName {
+  return PAGE_NODE_FILE_NAMES.some(fileName => fileName === value)
 }
 
 type CreatePageDesignTraceSinkOptions = Readonly<{

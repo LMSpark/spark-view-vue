@@ -1,6 +1,7 @@
 import { createReadStream, cpSync, existsSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, normalize, resolve } from 'node:path'
+import { Writable } from 'node:stream'
 import type { Plugin } from 'vite'
 
 const requireModule = createRequire(import.meta.url)
@@ -80,7 +81,11 @@ function createClassModelStaticMiddleware(sourceDir: string, httpPrefix: string)
     }
 
     res.setHeader('Content-Type', contentTypeForPath(filePath))
-    createReadStream(filePath).on('error', next).pipe(res as import('node:stream').Writable)
+    if (!(res instanceof Writable)) {
+      next(new Error('ClassModel static middleware response is not writable.'))
+      return
+    }
+    createReadStream(filePath).on('error', next).pipe(res)
   }
 }
 

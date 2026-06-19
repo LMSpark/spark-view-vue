@@ -20,7 +20,6 @@ tree: SparkNodeTreeModel = SparkNodeTree.fromPageChildren([])
 
     /** 创建 Page Rule File 实例。 */
 constructor(
-    /** 页面 ID，用于标识当前 rule.json 所属页面。 */
     readonly pageId: string,
   ) {}
 

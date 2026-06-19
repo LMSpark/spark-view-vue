@@ -26,9 +26,7 @@ import type {
 export class AiAgentTarget {
     /** 创建 Ai Agent Target 实例。 */
 public constructor(
-    /** 业务注册 ID，对应 BusinessRegistry 中的顶层注册项。 */
     public readonly businessRegistrationId: string,
-    /** 业务实例 ID，用于定位同一注册项下的具体实例。 */
     public readonly businessInstanceId: string,
   ) {}
 }
@@ -57,9 +55,7 @@ export class AiAgentScope extends AiAgentTarget {
 public constructor(
     businessRegistrationId: string,
     businessInstanceId: string,
-    /** 顶层实例 ID，参与生成后端 sessionId。 */
     public readonly instanceId: string,
-    /** 工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。 */
     public readonly runtimeInstanceId: string,
   ) {
     super(businessRegistrationId, businessInstanceId)
@@ -90,11 +86,8 @@ public constructor(
 export class AiAgentRuntimeContext {
     /** 创建 Ai Agent Runtime Context 实例。 */
 public constructor(
-    /** 业务模块 ID，对应 registration.moduleId。 */
     public readonly moduleId: string,
-    /** 顶层模块实例 ID，例如 pageId 或业务草稿 ID。 */
     public readonly moduleInstanceId: string,
-    /** 顶层实例 ID，参与生成后端 sessionId。 */
     public readonly instanceId: string,
   ) {}
 }

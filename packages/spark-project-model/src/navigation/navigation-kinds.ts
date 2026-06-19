@@ -8,8 +8,12 @@ import { ProjectNode, type ProjectNodeModelOptions } from './project-node'
 
 export function instantiateNavigationKindNode(options: ProjectNodeModelOptions): ProjectNode {
   const kind = options.node.nodeKind ?? 'page'
-  if (kind === 'page' || (kind as string) === 'sub-page') {
+  if (kind === 'page' || isLegacySubPageKind(kind)) {
     throw new Error(`instantiateNavigationKindNode does not handle config page kind: ${kind}`)
   }
   return new ProjectNode(options)
+}
+
+function isLegacySubPageKind(kind: unknown): boolean {
+  return kind === 'sub-page'
 }

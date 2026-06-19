@@ -25,6 +25,14 @@ export type PageDesignAllowedOperations = Readonly<{
   navigation?: boolean
 }>
 
+const PAGE_DESIGN_OPERATION_KEYS: ReadonlyArray<keyof PageDesignAllowedOperations> = [
+  'nodeTree',
+  'dataSet',
+  'script',
+  'style',
+  'navigation',
+]
+
 /** 页面设计运行上下文：绑定到 pageId，控制本次 run 的操作域与输出约束 */
 export type PageDesignRunContext = Readonly<{
   /** 操作域白名单，非空时 model_script 中的 API 调用受 marker 硬拦截 */
@@ -91,19 +99,23 @@ function readAllowedOperationsFromHostArgs(
   args: Record<string, unknown>,
 ): PageDesignAllowedOperations | undefined {
   const value = args['allowedOperations']
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined
-  const record = value as Record<string, unknown>
+  if (!isJsonRecord(value)) return undefined
+  const record = value
   const allowedOperations: {
     -readonly [K in keyof PageDesignAllowedOperations]?: boolean
   } = {}
   let hasExplicitField = false
-  for (const key of ['nodeTree', 'dataSet', 'script', 'style', 'navigation'] as const) {
+  for (const key of PAGE_DESIGN_OPERATION_KEYS) {
     const field = record[key]
     if (typeof field !== 'boolean') continue
     hasExplicitField = true
     allowedOperations[key] = field
   }
   return hasExplicitField ? allowedOperations : undefined
+}
+
+function isJsonRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function readDeliverySaveFileNamesFromHostArgs(
@@ -325,7 +337,7 @@ function findForbiddenScriptMarker(
   script: string,
   allowedOperations: PageDesignAllowedOperations,
 ): string | undefined {
-  for (const operation of Object.keys(OPERATION_FALSE_SCRIPT_MARKERS) as Array<keyof PageDesignAllowedOperations>) {
+  for (const operation of PAGE_DESIGN_OPERATION_KEYS) {
     if (allowedOperations[operation] !== false) continue
     for (const marker of OPERATION_FALSE_SCRIPT_MARKERS[operation]) {
       if (script.includes(marker)) return marker

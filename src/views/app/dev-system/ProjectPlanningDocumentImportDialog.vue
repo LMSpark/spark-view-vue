@@ -113,7 +113,8 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
 
 function handleFileChange(event: Event): void {
-  const input = event.target as HTMLInputElement
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
   const file = input.files?.[0]
   if (file) {
     void props.state.handleProjectPlanningDocumentFileSelected(file)

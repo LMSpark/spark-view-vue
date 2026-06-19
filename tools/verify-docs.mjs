@@ -14,6 +14,7 @@ import {
 const docExtensions = new Set(['.md', '.dm'])
 
 const standardMarkdownNames = new Set([
+  'AGENTS.md',
   'API.md',
   'ARCHITECTURE.md',
   'CHANGELOG.md',
@@ -85,8 +86,11 @@ const domainModelStatuses = new Set([
 ])
 
 const registeredDocPrefixes = [
+  'ai-spec/',
   'config/',
   'docs/',
+  'knowledge/',
+  'notes/',
   'packages/',
   'plans/',
   'public/',

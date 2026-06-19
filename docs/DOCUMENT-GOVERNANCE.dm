@@ -95,6 +95,7 @@ section DocumentKinds {
     extension: ".md"
     purpose: "目录入口、包入口、变更记录和公共约定。"
     allowed_names: [
+      "AGENTS.md",
       "README.md",
       "CHANGELOG.md",
       "CONTRIBUTING.md",
@@ -298,8 +299,17 @@ section DirectoryRegistry {
     owner: "repo"
     purpose: "仓库入口和顶层约定。"
     index: "README.md"
-    allowed_files: ["README.md", "CONTRIBUTING.md", "CHANGELOG.md"]
+    allowed_files: ["README.md", "CONTRIBUTING.md", "CHANGELOG.md", "AGENTS.md"]
     new_file_rule: "不再新增普通专题文档到根目录。"
+  }
+
+  entry ai_spec {
+    path: "ai-spec/"
+    owner: "docs"
+    purpose: "可移植 AI 编码标准模板。"
+    index: "ai-spec/AGENTS.md"
+    allowed_files: ["AGENTS.md"]
+    new_file_rule: "只维护可移植标准入口；项目特有规范留在 docs/ai/ 或 AGENTS.md。"
   }
 
   entry config {
@@ -342,6 +352,24 @@ section DirectoryRegistry {
     purpose: "当前可执行的用户指南、接入指南和操作教程。"
     index: "docs/guides/README.md"
     allowed_files: ["README.md", "kebab-case.md", "legacy UPPER_SNAKE allowlist"]
+  }
+
+  entry knowledge {
+    path: "knowledge/"
+    owner: "ai"
+    purpose: "AI 编码助手的长期踩坑记录和领域知识索引。"
+    index: "knowledge/README.md"
+    allowed_files: ["README.md", "kebab-case.md"]
+    new_file_rule: "只沉淀可复用规则；一次性任务记录放 notes/。"
+  }
+
+  entry notes {
+    path: "notes/"
+    owner: "ai"
+    purpose: "AI 代码修改协议的持久层工作记录、方案和度量日志。"
+    index: null
+    allowed_files: ["kebab-case.md"]
+    new_file_rule: "文件名不带日期；日期写入正文或元数据。"
   }
 
   entry packages {

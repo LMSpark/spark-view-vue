@@ -8,17 +8,7 @@
  * 编译期 API 见 `./class-model/build-index.ts`。
  */
 export type {
-  AttributeMeta,
-  DtsTypeDeclarationModel,
-  ClassModelDeclarationRelation,
-  ClassModelDeclarationRelationKind,
   ClassModelDocument,
-  ComponentClassModelLayer,
-  ComponentClassModelLevel,
-  ConstructorMeta,
-  JsDocMeta,
-  MethodMeta,
-  SourceProvenanceMeta,
 } from './class-model/types'
 
 export {

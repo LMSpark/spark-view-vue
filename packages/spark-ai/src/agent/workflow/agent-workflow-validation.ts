@@ -33,6 +33,40 @@ type AgentWorkflowRequiredFieldCommand = Readonly<{
   issues: AgentWorkflowValidationIssueSink
 }>
 
+type AgentWorkflowValidationPathContext = Readonly<{
+  path: string
+  nodeId: string | undefined
+  issues: AgentWorkflowValidationIssueSink
+}>
+
+type AgentWorkflowNodeDataValidationCommand = Readonly<{
+  type: string
+  data: Readonly<Record<string, unknown>>
+  context: AgentWorkflowValidationPathContext
+  options: ValidateAgentWorkflowDefinitionOptions
+}>
+
+type AgentWorkflowNodeFieldValidationCommand = Readonly<{
+  data: Readonly<Record<string, unknown>>
+  context: AgentWorkflowValidationPathContext
+}>
+
+type AgentWorkflowCapabilitiesValidationCommand = Readonly<{
+  value: unknown
+  context: AgentWorkflowValidationPathContext
+}>
+
+type AgentWorkflowOptionalObjectValidationCommand = Readonly<{
+  record: Readonly<Record<string, unknown>>
+  field: string
+  context: AgentWorkflowValidationPathContext
+}>
+
+type AgentWorkflowErrorIssueDetail = Readonly<{
+  code: string
+  message: string
+}>
+
 export type ValidateAgentWorkflowDefinitionOptions = Readonly<{
   loadWorkflowDefinition?: (ref: AgentWorkflowReference) => unknown
   validateReferencedWorkflows?: boolean
@@ -57,8 +91,10 @@ export function validateAgentWorkflowDefinition(
   const issues: AgentWorkflowDefinitionValidationIssue[] = []
   if (!isJsonRecord(candidate)) {
     return createAgentWorkflowDefinitionValidation([errorIssue(
-      'AGENT_WORKFLOW_DEFINITION_NOT_OBJECT',
-      'Agent workflow definition must be a JSON object.',
+      {
+        code: 'AGENT_WORKFLOW_DEFINITION_NOT_OBJECT',
+        message: 'Agent workflow definition must be a JSON object.',
+      },
       'definition',
     )])
   }
@@ -121,8 +157,10 @@ function validateForbiddenTopLevelFields(
   for (const field of ['app', 'factory', 'process'] as const) {
     if (Object.prototype.hasOwnProperty.call(record, field)) {
       issues.push(errorIssue(
-        'AGENT_WORKFLOW_FORBIDDEN_FIELD',
-        `definition.${field} is not allowed in workflow definition.`,
+        {
+          code: 'AGENT_WORKFLOW_FORBIDDEN_FIELD',
+          message: `definition.${field} is not allowed in workflow definition.`,
+        },
         `definition.${field}`,
       ))
     }
@@ -156,8 +194,10 @@ function validateSource(
   })
   if (workflowId !== undefined && designId !== undefined && designId !== workflowId) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_SOURCE_ID_MISMATCH',
-      `source.designId "${designId}" must equal workflowId "${workflowId}".`,
+      {
+        code: 'AGENT_WORKFLOW_SOURCE_ID_MISMATCH',
+        message: `source.designId "${designId}" must equal workflowId "${workflowId}".`,
+      },
       'definition.source.designId',
     ))
   }
@@ -191,13 +231,18 @@ function validateWorkflow(
   const variables = workflow['variables']
   if (!Array.isArray(variables)) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_VARIABLES_NOT_ARRAY',
-      'definition.workflow.variables must be an array.',
+      {
+        code: 'AGENT_WORKFLOW_VARIABLES_NOT_ARRAY',
+        message: 'definition.workflow.variables must be an array.',
+      },
       'definition.workflow.variables',
     ))
   }
   const capabilities = workflow['capabilities']
-  validateCapabilities(capabilities, 'definition.workflow.capabilities', undefined, issues)
+  validateCapabilities({
+    value: capabilities,
+    context: { path: 'definition.workflow.capabilities', nodeId: undefined, issues },
+  })
 
   const graph = expectObject({ record: workflow, field: 'graph', path: 'definition.workflow.graph', issues })
   if (graph === undefined) return
@@ -213,16 +258,20 @@ function validateGraph(
   const edgesValue = graph['edges']
   if (!Array.isArray(nodesValue)) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_NODES_NOT_ARRAY',
-      'definition.workflow.graph.nodes must be an array.',
+      {
+        code: 'AGENT_WORKFLOW_NODES_NOT_ARRAY',
+        message: 'definition.workflow.graph.nodes must be an array.',
+      },
       'definition.workflow.graph.nodes',
     ))
     return
   }
   if (!Array.isArray(edgesValue)) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_EDGES_NOT_ARRAY',
-      'definition.workflow.graph.edges must be an array.',
+      {
+        code: 'AGENT_WORKFLOW_EDGES_NOT_ARRAY',
+        message: 'definition.workflow.graph.edges must be an array.',
+      },
       'definition.workflow.graph.edges',
     ))
     return
@@ -234,21 +283,27 @@ function validateGraph(
   nodesValue.forEach((node, index) => {
     const path = `definition.workflow.graph.nodes[${index}]`
     if (!isJsonRecord(node)) {
-      issues.push(errorIssue('AGENT_WORKFLOW_NODE_NOT_OBJECT', `${path} must be an object.`, path))
+      issues.push(errorIssue({ code: 'AGENT_WORKFLOW_NODE_NOT_OBJECT', message: `${path} must be an object.` }, path))
       return
     }
     const nodeId = expectNonBlankString({ record: node, field: 'id', path: `${path}.id`, issues })
     const type = expectNonBlankString({ record: node, field: 'type', path: `${path}.type`, issues })
     if (nodeId !== undefined) {
       if (nodeIds.has(nodeId)) {
-        issues.push(errorIssue('AGENT_WORKFLOW_DUPLICATE_NODE_ID', `Duplicate node id "${nodeId}".`, `${path}.id`, nodeId))
+        issues.push(errorIssue(
+          { code: 'AGENT_WORKFLOW_DUPLICATE_NODE_ID', message: `Duplicate node id "${nodeId}".` },
+          `${path}.id`,
+          nodeId,
+        ))
       }
       nodeIds.add(nodeId)
     }
     if (type !== undefined && !isAllowedNodeType(type)) {
       issues.push(errorIssue(
-        'AGENT_WORKFLOW_UNKNOWN_NODE_TYPE',
-        `Node type "${type}" is not supported by workflow definition.`,
+        {
+          code: 'AGENT_WORKFLOW_UNKNOWN_NODE_TYPE',
+          message: `Node type "${type}" is not supported by workflow definition.`,
+        },
         `${path}.type`,
         nodeId,
       ))
@@ -258,31 +313,54 @@ function validateGraph(
     if (type === 'start' && nodeId !== undefined) startIds.push(nodeId)
     if (type === 'output' && nodeId !== undefined) outputIds.add(nodeId)
     if (data === undefined || type === undefined) return
-    validateNodeData(type, data, `${path}.data`, nodeId, issues, options)
+    validateNodeData({
+      type,
+      data,
+      context: { path: `${path}.data`, nodeId, issues },
+      options,
+    })
   })
 
   if (startIds.length === 0) {
-    issues.push(errorIssue('AGENT_WORKFLOW_START_NODE_MISSING', 'Workflow graph must contain at least one start node.', 'definition.workflow.graph.nodes'))
+    issues.push(errorIssue(
+      {
+        code: 'AGENT_WORKFLOW_START_NODE_MISSING',
+        message: 'Workflow graph must contain at least one start node.',
+      },
+      'definition.workflow.graph.nodes',
+    ))
   }
   if (outputIds.size === 0) {
-    issues.push(errorIssue('AGENT_WORKFLOW_OUTPUT_NODE_MISSING', 'Workflow graph must contain at least one output node.', 'definition.workflow.graph.nodes'))
+    issues.push(errorIssue(
+      {
+        code: 'AGENT_WORKFLOW_OUTPUT_NODE_MISSING',
+        message: 'Workflow graph must contain at least one output node.',
+      },
+      'definition.workflow.graph.nodes',
+    ))
   }
 
   const adjacency = new Map<string, string[]>()
   edgesValue.forEach((edge, index) => {
     const path = `definition.workflow.graph.edges[${index}]`
     if (!isJsonRecord(edge)) {
-      issues.push(errorIssue('AGENT_WORKFLOW_EDGE_NOT_OBJECT', `${path} must be an object.`, path))
+      issues.push(errorIssue({ code: 'AGENT_WORKFLOW_EDGE_NOT_OBJECT', message: `${path} must be an object.` }, path))
       return
     }
     expectNonBlankString({ record: edge, field: 'id', path: `${path}.id`, issues })
     const source = expectNonBlankString({ record: edge, field: 'source', path: `${path}.source`, issues })
     const target = expectNonBlankString({ record: edge, field: 'target', path: `${path}.target`, issues })
     if (source !== undefined && !nodeIds.has(source)) {
-      issues.push(errorIssue('AGENT_WORKFLOW_EDGE_SOURCE_MISSING', `Edge source "${source}" does not exist.`, `${path}.source`))
+      issues.push(errorIssue(
+        { code: 'AGENT_WORKFLOW_EDGE_SOURCE_MISSING', message: `Edge source "${source}" does not exist.` },
+        `${path}.source`,
+      ))
     }
     if (target !== undefined && !nodeIds.has(target)) {
-      issues.push(errorIssue('AGENT_WORKFLOW_EDGE_TARGET_MISSING', `Edge target "${target}" does not exist.`, `${path}.target`))
+      issues.push(errorIssue(
+        { code: 'AGENT_WORKFLOW_EDGE_TARGET_MISSING', message: `Edge target "${target}" does not exist.` },
+        `${path}.target`,
+      ))
     }
     if (source === undefined || target === undefined) return
     const targets = adjacency.get(source) ?? []
@@ -292,77 +370,72 @@ function validateGraph(
 
   if (startIds.length > 0 && outputIds.size > 0 && !canReachOutput(startIds, outputIds, adjacency)) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_OUTPUT_NOT_REACHABLE',
-      'Workflow graph must contain a path from start to output.',
+      {
+        code: 'AGENT_WORKFLOW_OUTPUT_NOT_REACHABLE',
+        message: 'Workflow graph must contain a path from start to output.',
+      },
       'definition.workflow.graph.edges',
     ))
   }
 }
 
-function validateNodeData(
-  type: string,
-  data: Readonly<Record<string, unknown>>,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-  options: ValidateAgentWorkflowDefinitionOptions,
-): void {
-  validateForbiddenNodeDataFields(data, path, nodeId, issues)
+function validateNodeData(command: AgentWorkflowNodeDataValidationCommand): void {
+  const { type, data, context, options } = command
+  const { path, nodeId, issues } = context
+  validateForbiddenNodeDataFields({ data, context })
   if (Object.prototype.hasOwnProperty.call(data, 'tool_name') || data['toolName'] === 'single_model_edit') {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_LEGACY_TOOL_NODE',
-      'single_model_edit and tool_name are not allowed in workflow definition.',
+      {
+        code: 'AGENT_WORKFLOW_LEGACY_TOOL_NODE',
+        message: 'single_model_edit and tool_name are not allowed in workflow definition.',
+      },
       path,
       nodeId,
     ))
   }
   if (type === 'tool') {
-    validateToolNodeData(data, path, nodeId, issues)
+    validateToolNodeData({ data, context })
   }
   if (type === 'chatflow') {
-    validateChatflowNodeData(data, path, nodeId, issues, options)
+    validateChatflowNodeData({ type, data, context, options })
   }
   if (type === 'workflow') {
-    validateWorkflowRefNodeData(data, path, nodeId, issues)
+    validateWorkflowRefNodeData({ data, context })
   }
   if (type === 'output') {
-    validateOutputNodeData(data, path, nodeId, issues)
+    validateOutputNodeData({ data, context })
   }
 }
 
-function validateToolNodeData(
-  data: Readonly<Record<string, unknown>>,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateToolNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
+  const { data, context } = command
+  const { path, nodeId, issues } = context
   expectNonBlankString({ record: data, field: 'provider', path: `${path}.provider`, issues })
   expectNonBlankString({ record: data, field: 'toolName', path: `${path}.toolName`, issues })
   expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
-  validateCapabilities(data['capabilities'], `${path}.capabilities`, nodeId, issues)
+  validateCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
 }
 
-function validateChatflowNodeData(
-  data: Readonly<Record<string, unknown>>,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-  options: ValidateAgentWorkflowDefinitionOptions,
-): void {
+function validateChatflowNodeData(command: AgentWorkflowNodeDataValidationCommand): void {
+  const { data, context, options } = command
+  const { path, nodeId, issues } = context
   const workflowRef = expectObject({ record: data, field: 'workflowRef', path: `${path}.workflowRef`, issues })
   expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
-  validateOptionalCapabilities(data['capabilities'], `${path}.capabilities`, nodeId, issues)
+  validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
   if (workflowRef === undefined) return
-  validateWorkflowReference(workflowRef, `${path}.workflowRef`, issues)
+  const reference = validateWorkflowReference(workflowRef, `${path}.workflowRef`, issues)
+  if (reference === undefined) return
   const shouldValidateReference = options.validateReferencedWorkflows ?? true
   if (!shouldValidateReference || options.loadWorkflowDefinition === undefined) return
-  const loaded = options.loadWorkflowDefinition(workflowRef as AgentWorkflowReference)
+  const loaded = options.loadWorkflowDefinition(reference)
   if (loaded === undefined) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_CHATFLOW_DEFINITION_NOT_FOUND',
-      'Chatflow node must reference a loadable workflow definition.',
+      {
+        code: 'AGENT_WORKFLOW_CHATFLOW_DEFINITION_NOT_FOUND',
+        message: 'Chatflow node must reference a loadable workflow definition.',
+      },
       `${path}.workflowRef`,
       nodeId,
     ))
@@ -381,42 +454,35 @@ function validateChatflowNodeData(
   }
 }
 
-function validateWorkflowRefNodeData(
-  data: Readonly<Record<string, unknown>>,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateWorkflowRefNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
+  const { data, context } = command
+  const { path, nodeId, issues } = context
   const workflowRef = expectObject({ record: data, field: 'workflowRef', path: `${path}.workflowRef`, issues })
   expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
-  validateOptionalCapabilities(data['capabilities'], `${path}.capabilities`, nodeId, issues)
+  validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
   if (workflowRef !== undefined) {
     validateWorkflowReference(workflowRef, `${path}.workflowRef`, issues)
   }
 }
 
-function validateOutputNodeData(
-  data: Readonly<Record<string, unknown>>,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateOutputNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
+  const { data, context } = command
+  const { path, nodeId, issues } = context
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
-  validateOptionalCapabilities(data['capabilities'], `${path}.capabilities`, nodeId, issues)
+  validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
 }
 
-function validateForbiddenNodeDataFields(
-  data: Readonly<Record<string, unknown>>,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateForbiddenNodeDataFields(command: AgentWorkflowNodeFieldValidationCommand): void {
+  const { data, context } = command
+  const { path, nodeId, issues } = context
   for (const field of ['inputMapping', 'outputMapping', 'toolParameters'] as const) {
     if (Object.prototype.hasOwnProperty.call(data, field)) {
       issues.push(errorIssue(
-        'AGENT_WORKFLOW_LEGACY_NODE_FIELD',
-        `${path}.${field} is not allowed in workflow definition.`,
+        {
+          code: 'AGENT_WORKFLOW_LEGACY_NODE_FIELD',
+          message: `${path}.${field} is not allowed in workflow definition.`,
+        },
         `${path}.${field}`,
         nodeId,
       ))
@@ -425,34 +491,31 @@ function validateForbiddenNodeDataFields(
   const spark = data['x_spark']
   if (isJsonRecord(spark) && Object.prototype.hasOwnProperty.call(spark, 'classModel')) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_LEGACY_CLASS_MODEL_META',
-      `${path}.x_spark.classModel is not allowed in workflow definition.`,
+      {
+        code: 'AGENT_WORKFLOW_LEGACY_CLASS_MODEL_META',
+        message: `${path}.x_spark.classModel is not allowed in workflow definition.`,
+      },
       `${path}.x_spark.classModel`,
       nodeId,
     ))
   }
 }
 
-function validateOptionalCapabilities(
-  value: unknown,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateOptionalCapabilities(command: AgentWorkflowCapabilitiesValidationCommand): void {
+  const { value } = command
   if (value === undefined) return
-  validateCapabilities(value, path, nodeId, issues)
+  validateCapabilities(command)
 }
 
-function validateCapabilities(
-  value: unknown,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateCapabilities(command: AgentWorkflowCapabilitiesValidationCommand): void {
+  const { value, context } = command
+  const { path, nodeId, issues } = context
   if (!Array.isArray(value)) {
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_CAPABILITIES_NOT_ARRAY',
-      `${path} must be an array.`,
+      {
+        code: 'AGENT_WORKFLOW_CAPABILITIES_NOT_ARRAY',
+        message: `${path} must be an array.`,
+      },
       path,
       nodeId,
     ))
@@ -463,8 +526,10 @@ function validateCapabilities(
     const capabilityPath = `${path}[${index}]`
     if (!isJsonRecord(capability)) {
       issues.push(errorIssue(
-        'AGENT_WORKFLOW_CAPABILITY_NOT_OBJECT',
-        `${capabilityPath} must be an object.`,
+        {
+          code: 'AGENT_WORKFLOW_CAPABILITY_NOT_OBJECT',
+          message: `${capabilityPath} must be an object.`,
+        },
         capabilityPath,
         nodeId,
       ))
@@ -474,42 +539,45 @@ function validateCapabilities(
     expectNonBlankString({ record: capability, field: 'title', path: `${capabilityPath}.title`, issues })
     expectNonBlankString({ record: capability, field: 'scope', path: `${capabilityPath}.scope`, issues })
     expectNonBlankString({ record: capability, field: 'description', path: `${capabilityPath}.description`, issues })
-    validateOptionalObject(capability, 'inputs', `${capabilityPath}.inputs`, nodeId, issues)
-    validateOptionalObject(capability, 'outputs', `${capabilityPath}.outputs`, nodeId, issues)
-    validateOptionalStringArray(capability['constraints'], `${capabilityPath}.constraints`, nodeId, issues)
+    validateOptionalObject({ record: capability, field: 'inputs', context: { path: `${capabilityPath}.inputs`, nodeId, issues } })
+    validateOptionalObject({ record: capability, field: 'outputs', context: { path: `${capabilityPath}.outputs`, nodeId, issues } })
+    validateOptionalStringArray({ value: capability['constraints'], context: { path: `${capabilityPath}.constraints`, nodeId, issues } })
   })
 }
 
-function validateOptionalObject(
-  record: Readonly<Record<string, unknown>>,
-  field: string,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateOptionalObject(command: AgentWorkflowOptionalObjectValidationCommand): void {
+  const { record, field, context } = command
+  const { path, nodeId, issues } = context
   const value = record[field]
   if (value === undefined) return
   if (!isJsonRecord(value)) {
-    issues.push(errorIssue('AGENT_WORKFLOW_OPTIONAL_OBJECT_INVALID', `${path} must be an object when provided.`, path, nodeId))
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_OPTIONAL_OBJECT_INVALID', message: `${path} must be an object when provided.` },
+      path,
+      nodeId,
+    ))
   }
 }
 
-function validateOptionalStringArray(
-  value: unknown,
-  path: string,
-  nodeId: string | undefined,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
+function validateOptionalStringArray(command: AgentWorkflowCapabilitiesValidationCommand): void {
+  const { value, context } = command
+  const { path, nodeId, issues } = context
   if (value === undefined) return
   if (!Array.isArray(value)) {
-    issues.push(errorIssue('AGENT_WORKFLOW_CONSTRAINTS_NOT_ARRAY', `${path} must be an array when provided.`, path, nodeId))
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_CONSTRAINTS_NOT_ARRAY', message: `${path} must be an array when provided.` },
+      path,
+      nodeId,
+    ))
     return
   }
   value.forEach((item, index) => {
     if (typeof item !== 'string' || item.trim().length === 0) {
       issues.push(errorIssue(
-        'AGENT_WORKFLOW_CONSTRAINT_INVALID',
-        `${path}[${index}] must be a non-empty string.`,
+        {
+          code: 'AGENT_WORKFLOW_CONSTRAINT_INVALID',
+          message: `${path}[${index}] must be a non-empty string.`,
+        },
         `${path}[${index}]`,
         nodeId,
       ))
@@ -521,19 +589,35 @@ function validateWorkflowReference(
   workflowRef: Readonly<Record<string, unknown>>,
   path: string,
   issues: AgentWorkflowDefinitionValidationIssue[],
-): void {
-  expectNonBlankString({ record: workflowRef, field: 'workflowId', path: `${path}.workflowId`, issues })
+): AgentWorkflowReference | undefined {
+  const workflowId = expectNonBlankString({ record: workflowRef, field: 'workflowId', path: `${path}.workflowId`, issues })
+  let referenceValid = workflowId !== undefined
   const version = workflowRef['version']
   if (version !== undefined && typeof version !== 'number') {
-    issues.push(errorIssue('AGENT_WORKFLOW_REFERENCE_VERSION_INVALID', `${path}.version must be a number.`, `${path}.version`))
+    referenceValid = false
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_REFERENCE_VERSION_INVALID', message: `${path}.version must be a number.` },
+      `${path}.version`,
+    ))
   }
   const definitionPath = workflowRef['definitionPath']
   if (definitionPath !== undefined && (typeof definitionPath !== 'string' || definitionPath.trim().length === 0)) {
+    referenceValid = false
     issues.push(errorIssue(
-      'AGENT_WORKFLOW_REFERENCE_PATH_INVALID',
-      `${path}.definitionPath must be a non-empty string when provided.`,
+      {
+        code: 'AGENT_WORKFLOW_REFERENCE_PATH_INVALID',
+        message: `${path}.definitionPath must be a non-empty string when provided.`,
+      },
       `${path}.definitionPath`,
     ))
+  }
+  if (!referenceValid || workflowId === undefined) return undefined
+  return {
+    workflowId,
+    ...(typeof version === 'number' ? { version } : {}),
+    ...(typeof definitionPath === 'string' && definitionPath.trim().length > 0
+      ? { definitionPath: definitionPath.trim() }
+      : {}),
   }
 }
 
@@ -560,7 +644,7 @@ function expectObject(command: AgentWorkflowRequiredFieldCommand): Readonly<Reco
   const { record, field, path, issues } = command
   const value = record[field]
   if (!isJsonRecord(value)) {
-    issues.push(errorIssue('AGENT_WORKFLOW_REQUIRED_OBJECT_MISSING', `${path} must be an object.`, path))
+    issues.push(errorIssue({ code: 'AGENT_WORKFLOW_REQUIRED_OBJECT_MISSING', message: `${path} must be an object.` }, path))
     return undefined
   }
   return value
@@ -570,7 +654,7 @@ function expectString(command: AgentWorkflowExpectedFieldCommand<string>): void 
   const { record, field, expected, path, issues } = command
   const value = record[field]
   if (value !== expected) {
-    issues.push(errorIssue('AGENT_WORKFLOW_FIELD_MISMATCH', `${path} must be "${expected}".`, path))
+    issues.push(errorIssue({ code: 'AGENT_WORKFLOW_FIELD_MISMATCH', message: `${path} must be "${expected}".` }, path))
   }
 }
 
@@ -578,7 +662,7 @@ function expectNumber(command: AgentWorkflowExpectedFieldCommand<number>): void 
   const { record, field, expected, path, issues } = command
   const value = record[field]
   if (value !== expected) {
-    issues.push(errorIssue('AGENT_WORKFLOW_FIELD_MISMATCH', `${path} must be ${expected}.`, path))
+    issues.push(errorIssue({ code: 'AGENT_WORKFLOW_FIELD_MISMATCH', message: `${path} must be ${expected}.` }, path))
   }
 }
 
@@ -586,22 +670,21 @@ function expectNonBlankString(command: AgentWorkflowRequiredFieldCommand): strin
   const { record, field, path, issues } = command
   const value = record[field]
   if (typeof value !== 'string' || value.trim().length === 0) {
-    issues.push(errorIssue('AGENT_WORKFLOW_REQUIRED_TEXT_MISSING', `${path} must be a non-empty string.`, path))
+    issues.push(errorIssue({ code: 'AGENT_WORKFLOW_REQUIRED_TEXT_MISSING', message: `${path} must be a non-empty string.` }, path))
     return undefined
   }
   return value
 }
 
 function errorIssue(
-  code: string,
-  message: string,
+  detail: AgentWorkflowErrorIssueDetail,
   path: string,
   nodeId?: string,
 ): AgentWorkflowDefinitionValidationIssue {
   return {
     severity: 'error',
-    code,
-    message,
+    code: detail.code,
+    message: detail.message,
     ...(nodeId === undefined ? {} : { nodeId }),
     path,
   }

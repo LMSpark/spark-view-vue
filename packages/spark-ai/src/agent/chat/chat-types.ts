@@ -109,7 +109,7 @@ export type AiAgentStreamEvent = Readonly<{
  * 将本记录传给业务方。
  */
 export type AiAgentToolCallRecord = Readonly<{
-  /** 工具名称（如 model_script / editNodeTree） */
+  /** 工具名称（如 model_script / module_action） */
   toolName: string
   /** 工具调用参数（原始值，未截断） */
   args: unknown

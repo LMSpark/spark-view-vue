@@ -6,35 +6,18 @@
  */
 
 export {
-  createSparkAgUiCustomEvent,
-  createSparkAgUiReasoningEndEvent,
-  createSparkAgUiReasoningMessageContentEvent,
-  createSparkAgUiReasoningMessageEndEvent,
-  createSparkAgUiReasoningMessageStartEvent,
-  createSparkAgUiReasoningStartEvent,
-  createSparkAgUiRunErrorEvent,
-  createSparkAgUiRunFinishedEvent,
-  createSparkAgUiRunStartedEvent,
-  createSparkAgUiStreamCustomEvent,
-  createSparkAgUiTextMessageContentEvent,
-  createSparkAgUiTextMessageEndEvent,
-  createSparkAgUiTextMessageStartEvent,
-  createSparkAgUiToolCallEvents,
-  stringifySparkAgUiPayload,
-  toSparkAgUiAssistantMessageId,
-  toSparkAgUiReasoningMessageId,
-  toSparkAgUiTool,
-  toSparkAgUiTools,
+  sparkAgUi,
 } from './ag-ui-mapper'
 
 export type {
-  SparkAgUiBaseEvent,
+  SparkAgUiAdapter,
+} from './ag-ui-mapper'
+
+export type {
+  AGUIEvent,
+  RunAgentInput,
   SparkAgUiCustomEventName,
-  SparkAgUiEvent,
   SparkAgUiEventMetadata,
-  SparkAgUiMessage,
-  SparkAgUiRunInput,
   SparkAgUiRunRef,
   SparkAgUiTextMessageRole,
-  SparkAgUiTool,
 } from './ag-ui-types'

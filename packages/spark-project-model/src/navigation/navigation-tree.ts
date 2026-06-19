@@ -31,10 +31,10 @@ export function isConfigNodeKind(kind: string | undefined | null): boolean {
 
 /** 嵌套配置页：无独立路由（legacy `sub-page` 在 normalize 时迁移为 page + hidden）。 */
 export function isNestedConfigPageNode(
-  node: Pick<ProjectNodeData, 'nodeKind' | 'path' | 'hidden'>,
+  node: Pick<ProjectNodeData, 'path' | 'hidden'> & Readonly<{ nodeKind?: string | null | undefined }>,
 ): boolean {
   const kind = node.nodeKind ?? 'page'
-  if ((kind as string) === 'sub-page') return true
+  if (isLegacySubPageKind(kind)) return true
   return kind === 'page' && node.hidden === true && normalizePageIdFromPath(node.path) === ''
 }
 
@@ -64,7 +64,7 @@ function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavN
 export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?: string): ProjectNodeData {
   const cloned = deepClone(node)
   cloned.nodeKind = inferNavNodeKind(cloned, parentPlacement)
-  if ((cloned.nodeKind as string) === 'sub-page') {
+  if (isLegacySubPageKind(cloned.nodeKind)) {
     cloned.nodeKind = 'page'
     cloned.hidden = true
     delete cloned.path
@@ -79,8 +79,12 @@ export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?
   if (Array.isArray(cloned.children)) {
     cloned.children = cloned.children.map(child => normalizeProjectNodeData(child, cloned.childPlacement))
   }
-  delete (cloned as Record<string, unknown>)['planningStatus']
+  Reflect.deleteProperty(cloned, 'planningStatus')
   return cloned
+}
+
+function isLegacySubPageKind(kind: unknown): boolean {
+  return kind === 'sub-page'
 }
 
 function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {

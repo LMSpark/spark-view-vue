@@ -173,7 +173,7 @@
 - 向用户展示发现清单，询问每一条是否沉淀到 `knowledge/` 目录
 - 用户确认的条目立即写入对应领域的知识文件（遵循 `knowledge/README.md` 的写入规则）
 - 未确认的条目不丢弃，保留在方案计划书的备注中
-- **追加度量记录**：在 `notes/metrics-<YYYY-MM>.md` 中追加一条记录（格式见 `knowledge/ai-metrics.md`），30天后回填"30天存活"字段
+- **追加度量记录**：在 `notes/ai-code-metrics.md` 中追加一条记录（格式见 `knowledge/ai-metrics.md`），30天后回填"30天存活"字段
 
 #### 沉淀判断标准
 

@@ -68,8 +68,8 @@ function collectLocalDefRefs(
   includeDefs: boolean,
 ): void {
   if (typeof value === 'boolean') return
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return
-  const record = value as Record<string, unknown>
+  if (!isUnknownRecord(value)) return
+  const record = value
 
   const ref = record['$ref']
   if (typeof ref === 'string' && ref.startsWith('#/$defs/')) {
@@ -81,6 +81,10 @@ function collectLocalDefRefs(
     if (key === '$schema') continue
     collectLocalDefRefs(child, refs, includeDefs)
   }
+}
+
+function isUnknownRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function collectReferencedDefs(

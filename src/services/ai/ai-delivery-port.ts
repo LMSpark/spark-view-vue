@@ -30,7 +30,7 @@ export type AiDeliveryResult = Readonly<{
 }>
 
 /** 应用层交付端口：负责 save、trace 与 rollback 三阶段契约。 */
-export interface AiDeliveryPort<TContext> {
+export type AiDeliveryPort<TContext> = Readonly<{
   /** 交付模式（manual 需人工确认，auto 自动落盘）。 */
   readonly mode: AiDeliveryMode
   /** 执行交付落盘并返回回执。 */
@@ -39,7 +39,7 @@ export interface AiDeliveryPort<TContext> {
   trace(context: TContext, result: AiDeliveryResult): Promise<void>
   /** 交付失败时执行回滚并返回回执。 */
   rollback(context: TContext, error: Error): Promise<AiDeliveryResult>
-}
+}>
 
 /** 附加在 Error 上的交付回执扩展字段。 */
 export type AiDeliveryResultExtras = Readonly<{
@@ -81,8 +81,12 @@ export function createAiDeliveryResultExtras(result: AiDeliveryResult): AiDelive
 
 export function attachAiDeliveryResult(error: unknown, result: AiDeliveryResult): Error {
   const normalized = toError(error)
-  const carrier = normalized as AiDeliveryErrorCarrier
-  carrier[AI_DELIVERY_ERROR_EXTRAS_KEY] = createAiDeliveryResultExtras(result)
+  Object.defineProperty(normalized, AI_DELIVERY_ERROR_EXTRAS_KEY, {
+    value: createAiDeliveryResultExtras(result),
+    configurable: true,
+    enumerable: false,
+    writable: true,
+  })
   return normalized
 }
 
@@ -92,10 +96,13 @@ export function createAiDeliveryFailureError(message: string, result: AiDelivery
 
 export function readAiDeliveryErrorExtras(error: unknown): AiDeliveryResultExtras | undefined {
   if (!(error instanceof Error)) return undefined
-  const carrier = error as AiDeliveryErrorCarrier
-  return carrier[AI_DELIVERY_ERROR_EXTRAS_KEY]
+  return isAiDeliveryErrorCarrier(error) ? error[AI_DELIVERY_ERROR_EXTRAS_KEY] : undefined
 }
 
 export function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error))
+}
+
+function isAiDeliveryErrorCarrier(error: Error): error is AiDeliveryErrorCarrier {
+  return AI_DELIVERY_ERROR_EXTRAS_KEY in error
 }

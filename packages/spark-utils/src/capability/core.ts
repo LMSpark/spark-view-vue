@@ -24,7 +24,6 @@ readonly token: symbol
 
     /** 创建 Capability Key 实例。 */
 constructor(
-    /** 能力键的全局唯一名称，会用于 Symbol.for(name)。 */
     readonly name: string,
     private readonly reader: CapabilityReader<T>,
   ) {

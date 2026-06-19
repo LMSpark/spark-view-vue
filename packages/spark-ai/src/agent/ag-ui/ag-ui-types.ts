@@ -1,32 +1,17 @@
 /**
  * @module @spark-appworks/spark-ai:agent/ag-ui/ag-ui-types
- * 职责：收拢 SPARK 首版 AG-UI adapter 暴露的官方 core 类型别名。
+ * 职责：收拢 SPARK 首版 AG-UI adapter 的自有类型，并转出官方 AG-UI core 类型。
  * 边界：只定义协议类型别名，不执行 agent、不访问 transport，也不渲染 UI。
  * AI用途：需要对齐 AG-UI 事件、tool、message 或 run input 时，从本模块确认公开类型。
  */
 
-import type {
+export type {
   AGUIEvent,
   BaseEvent,
   Message,
   RunAgentInput,
   Tool,
 } from '@ag-ui/core'
-
-/** AG-UI run 输入的 SPARK 公开别名，供 adapter 接收标准 thread/run/message/tool 配置。 */
-export type SparkAgUiRunInput = RunAgentInput
-
-/** AG-UI 事件联合类型的 SPARK 公开别名，用于事件流投影和外部 client 消费。 */
-export type SparkAgUiEvent = AGUIEvent
-
-/** AG-UI 基础事件类型的 SPARK 公开别名，用于只读 timeline 和调试视图。 */
-export type SparkAgUiBaseEvent = BaseEvent
-
-/** AG-UI tool 描述的 SPARK 公开别名，用于从 transport tool spec 映射标准工具定义。 */
-export type SparkAgUiTool = Tool
-
-/** AG-UI message 类型的 SPARK 公开别名，用于后续 generative UI 或消息投影扩展。 */
-export type SparkAgUiMessage = Message
 
 /** SPARK run 在 AG-UI 事件中的稳定定位信息。 */
 export type SparkAgUiRunRef = Readonly<{

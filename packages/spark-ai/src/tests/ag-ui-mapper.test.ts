@@ -1,16 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AiAgentToolCallRecord, AiAgentStreamEvent } from '../agent'
 import {
-  createSparkAgUiCustomEvent,
-  createSparkAgUiRunErrorEvent,
-  createSparkAgUiRunFinishedEvent,
-  createSparkAgUiRunStartedEvent,
-  createSparkAgUiStreamCustomEvent,
-  createSparkAgUiTextMessageContentEvent,
-  createSparkAgUiTextMessageEndEvent,
-  createSparkAgUiTextMessageStartEvent,
-  createSparkAgUiToolCallEvents,
-  toSparkAgUiTool,
+  sparkAgUi,
 } from '../agent'
 import type { AiAgentTransportToolSpec } from '../agent/transport/transport-types'
 
@@ -63,7 +54,7 @@ function createStreamEvent(): AiAgentStreamEvent {
 
 describe('spark AG-UI mapper', () => {
   it('maps transport tools into AG-UI tools without losing schema fields', () => {
-    const mapped = toSparkAgUiTool(createTool())
+    const mapped = sparkAgUi.toSparkAgUiTool(createTool())
 
     expect(mapped.name).toBe('inspectPage')
     expect(mapped.description).toBe('Inspect a page.')
@@ -76,7 +67,7 @@ describe('spark AG-UI mapper', () => {
   })
 
   it('creates stable run and text events', () => {
-    expect(createSparkAgUiRunStartedEvent({
+    expect(sparkAgUi.createSparkAgUiRunStartedEvent({
       threadId: 'thread-1',
       runId: 'run-1',
       timestamp: 1,
@@ -87,12 +78,12 @@ describe('spark AG-UI mapper', () => {
       timestamp: 1,
     })
 
-    expect(createSparkAgUiTextMessageStartEvent({ messageId: 'message-1' })).toMatchObject({
+    expect(sparkAgUi.createSparkAgUiTextMessageStartEvent({ messageId: 'message-1' })).toMatchObject({
       type: 'TEXT_MESSAGE_START',
       messageId: 'message-1',
       role: 'assistant',
     })
-    expect(createSparkAgUiTextMessageContentEvent({
+    expect(sparkAgUi.createSparkAgUiTextMessageContentEvent({
       messageId: 'message-1',
       delta: 'hello',
     })).toMatchObject({
@@ -100,14 +91,14 @@ describe('spark AG-UI mapper', () => {
       messageId: 'message-1',
       delta: 'hello',
     })
-    expect(createSparkAgUiTextMessageEndEvent({ messageId: 'message-1' })).toMatchObject({
+    expect(sparkAgUi.createSparkAgUiTextMessageEndEvent({ messageId: 'message-1' })).toMatchObject({
       type: 'TEXT_MESSAGE_END',
       messageId: 'message-1',
     })
   })
 
   it('creates tool lifecycle events from a completed tool call record', () => {
-    const events = createSparkAgUiToolCallEvents(createToolCallRecord(), { timestamp: 2 })
+    const events = sparkAgUi.createSparkAgUiToolCallEvents(createToolCallRecord(), { timestamp: 2 })
 
     expect(events.map((event) => event.type)).toEqual([
       'TOOL_CALL_START',
@@ -134,7 +125,7 @@ describe('spark AG-UI mapper', () => {
   })
 
   it('creates custom stream, error, and finished events', () => {
-    expect(createSparkAgUiStreamCustomEvent(createStreamEvent())).toMatchObject({
+    expect(sparkAgUi.createSparkAgUiStreamCustomEvent(createStreamEvent())).toMatchObject({
       type: 'CUSTOM',
       name: 'spark.stream.event',
       value: {
@@ -143,17 +134,17 @@ describe('spark AG-UI mapper', () => {
         scope: expect.objectContaining({ turnId: 'turn-1' }),
       },
     })
-    expect(createSparkAgUiCustomEvent('spark.toolApproval.requested', { id: 'approval-1' })).toMatchObject({
+    expect(sparkAgUi.createSparkAgUiCustomEvent('spark.toolApproval.requested', { id: 'approval-1' })).toMatchObject({
       type: 'CUSTOM',
       name: 'spark.toolApproval.requested',
       value: { id: 'approval-1' },
     })
-    expect(createSparkAgUiRunErrorEvent({ message: 'failed', code: 'X' })).toMatchObject({
+    expect(sparkAgUi.createSparkAgUiRunErrorEvent({ message: 'failed', code: 'X' })).toMatchObject({
       type: 'RUN_ERROR',
       message: 'failed',
       code: 'X',
     })
-    expect(createSparkAgUiRunFinishedEvent({
+    expect(sparkAgUi.createSparkAgUiRunFinishedEvent({
       threadId: 'thread-1',
       runId: 'run-1',
     })).toMatchObject({
