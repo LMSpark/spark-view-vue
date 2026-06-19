@@ -1,8 +1,8 @@
 <!--
 @module app:views/app/WorkflowDesigns
-职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与节点级单模型编辑。
+职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与 workflow definition 发布。
 边界：只处理设计态 JSON，不执行 Agent workflow 运行时。
-AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edit 工具节点映射到 UI 时，用本页面定位。
+AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 Chatflow Node 时，用本页面定位。
 -->
 <template>
   <div class="workflow-design-page">
@@ -78,7 +78,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
       <main class="workflow-design-canvas">
         <div v-if="currentDocument" class="canvas-toolbar">
           <div class="document-title">
-            <span>{{ currentDocument.app.name }}</span>
+            <span>{{ currentDocument.workflow.id }}</span>
             <el-tag size="small">{{ currentDocument.kind }}</el-tag>
             <el-tag size="small" :type="hasUnsavedChanges ? 'warning' : 'success'">
               {{ hasUnsavedChanges ? '未保存' : '已保存' }}
@@ -86,8 +86,8 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
           </div>
           <div class="document-stats">
             <span>节点 {{ allNodes.length }}</span>
-            <span>工艺 {{ processStageNodes.length }}</span>
-            <span>工具 {{ singleModelNodes.length }}</span>
+            <span>工具 {{ classModelToolNodes.length }}</span>
+            <span>Chatflow {{ chatflowNodes.length }}</span>
             <span v-if="currentTimestamp">ts {{ currentTimestamp }}</span>
           </div>
         </div>
@@ -160,7 +160,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                         link
                         size="small"
                         :icon="DocumentAdd"
-                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'tool')"
+                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'class-model-tool')"
                       >
                         加工具
                       </el-button>
@@ -168,9 +168,9 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                         link
                         size="small"
                         :icon="DocumentAdd"
-                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'loop')"
+                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'chatflow')"
                       >
-                        加循环
+                        加 Chatflow
                       </el-button>
                       <el-button
                         link
@@ -225,10 +225,9 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                         <template #node-workflow="{ data, selected, id }">
                           <div class="workflow-node" :class="{
                             'is-selected': selected || selectedNodeKey === data.viewKey,
-                            'is-tool': data.isSingleModelEditTool,
-                            'is-process': data.isProcessStageNode,
+                            'is-tool': data.isClassModelToolNode,
+                            'is-chatflow': data.isChatflowNode,
                             'is-loop': data.nodeType === 'loop',
-                            'is-exit': data.nodeType === 'exit-loop',
                           }">
                             <Handle
                               id="target"
@@ -242,11 +241,11 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                               :position="Position.Right"
                               :title="`从 ${data.title} 连线`"
                             />
-                            <span class="node-kind">{{ data.stageId || data.phaseId || data.nodeType }}</span>
+                            <span class="node-kind">{{ data.nodeType }}</span>
                             <strong>{{ data.title }}</strong>
-                            <small>{{ data.sectionPath || data.stageId || id }}</small>
-                            <span v-if="data.isProcessStageNode" class="tool-name">process-stage</span>
-                            <span v-if="data.isSingleModelEditTool" class="tool-name">single_model_edit</span>
+                            <small>{{ data.scopePath }} / {{ id }}</small>
+                            <span v-if="data.isClassModelToolNode" class="tool-name">ClassModel Tool</span>
+                            <span v-if="data.isChatflowNode" class="tool-name">Chatflow</span>
                           </div>
                         </template>
                       </VueFlow>
@@ -303,7 +302,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
           <el-tag
             v-else-if="selectedNode"
             size="small"
-            :type="selectedNode.isSingleModelEditTool ? 'success' : selectedNode.isProcessStageNode ? 'warning' : 'info'"
+            :type="selectedNode.isClassModelToolNode ? 'success' : selectedNode.isChatflowNode ? 'warning' : 'info'"
           >
             {{ selectedNode.nodeType }}
           </el-tag>
@@ -382,10 +381,6 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
                 <el-descriptions :column="1" size="small" border>
                   <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
                   <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
-                  <el-descriptions-item v-if="selectedNode.stageId" label="Stage">{{ selectedNode.stageId }}</el-descriptions-item>
-                  <el-descriptions-item v-if="selectedNode.phaseId" label="Phase">{{ selectedNode.phaseId }}</el-descriptions-item>
-                  <el-descriptions-item v-if="selectedNode.sectionPath" label="Section">{{ selectedNode.sectionPath }}</el-descriptions-item>
-                  <el-descriptions-item v-if="selectedNode.publishPath" label="Publish">{{ selectedNode.publishPath }}</el-descriptions-item>
               </el-descriptions>
             </div>
           </details>
@@ -462,11 +457,15 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
             </div>
           </details>
 
-          <details v-if="selectedNode.isSingleModelEditTool" class="editor-section collapsible-section" open>
-            <summary>single_model_edit 工具</summary>
+          <details
+            v-if="selectedNode.isClassModelToolNode || selectedNode.isChatflowNode || selectedNode.isWorkflowNode"
+            class="editor-section collapsible-section"
+            open
+          >
+            <summary>节点配置 JSON</summary>
             <div class="collapsible-body node-editor-form">
               <el-form label-position="top">
-                <el-form-item label="Model JSON">
+                <el-form-item label="data JSON">
                   <el-input
                     v-model="modelJsonText"
                     class="model-json-input"
@@ -479,7 +478,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
               </el-form>
               <el-alert v-if="modelJsonError" :title="modelJsonError" type="error" :closable="false" />
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applyEditorToSelected">应用工具节点</el-button>
+                <el-button :icon="CircleCheck" @click="applyEditorToSelected">应用节点配置</el-button>
               </div>
             </div>
           </details>
@@ -516,11 +515,11 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         </el-form-item>
         <el-form-item label="节点类型">
           <select v-model="nodeCreateForm.nodeKind" class="native-select" @change="syncNodeCreateKindDefaults">
-            <option value="tool">single_model_edit 工具</option>
-            <option value="loop">循环分组</option>
+            <option value="class-model-tool">ClassModel Tool</option>
+            <option value="chatflow">Chatflow</option>
+            <option value="workflow">Workflow</option>
             <option value="start">Start</option>
             <option value="end">End</option>
-            <option value="exit-loop">Exit Loop</option>
             <option value="custom">Custom</option>
           </select>
         </el-form-item>
@@ -533,20 +532,6 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
         <el-form-item label="描述">
           <el-input v-model="nodeCreateForm.desc" type="textarea" :rows="2" />
         </el-form-item>
-        <template v-if="nodeCreateForm.nodeKind === 'tool'">
-          <el-row :gutter="8">
-            <el-col :span="12">
-              <el-form-item label="Phase ID">
-                <el-input v-model="nodeCreateForm.phaseId" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="Section Path">
-                <el-input v-model="nodeCreateForm.sectionPath" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
       </el-form>
       <template #footer>
         <el-button @click="nodeCreateDialogVisible = false">取消</el-button>
@@ -594,8 +579,7 @@ AI用途：需要验证业务工厂 workflow 编辑器如何把 single_model_edi
 
 <script setup lang="ts">
 /**
- * @description 工作流设计稿可视化编辑页。将 Dify-like graph 中的 single_model_edit tool node 映射成节点编辑器，并通过后端文件 API 保存 design.json。
- * 同时支持页面设计工厂 process-stage 工艺流程图节点。
+ * @description 工作流设计稿可视化编辑页。编辑 Dify-like graph 中的 ClassModel Tool / Chatflow 节点，并通过后端文件 API 保存 design.json。
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -646,7 +630,6 @@ import {
   createWorkflowDesignNode,
   deleteWorkflowDesign,
   formatJson,
-  getSingleModelEditValue,
   isWorkflowDefinitionNotFoundError,
   listWorkflowDesigns,
   markWorkflowDesignDirty,
@@ -659,7 +642,6 @@ import {
   removeWorkflowDesignNode,
   saveWorkflowDefinition,
   saveWorkflowDesign,
-  setSingleModelEditValue,
   updateWorkflowDesignEdge,
   type WorkflowDesignDocument,
   type WorkflowDesignEdgeView,
@@ -696,11 +678,8 @@ type WorkflowFlowNodeData = {
   title: string
   nodeType: string
   scopePath: string
-  stageId?: string
-  phaseId?: string
-  sectionPath?: string
-  isSingleModelEditTool: boolean
-  isProcessStageNode: boolean
+  isClassModelToolNode: boolean
+  isChatflowNode: boolean
 }
 
 type WorkflowFlowEdgeData = {
@@ -716,8 +695,6 @@ type NodeCreateForm = {
   id: string
   title: string
   desc: string
-  phaseId: string
-  sectionPath: string
 }
 
 const MIN_LEFT_PANEL_WIDTH = 220
@@ -789,20 +766,17 @@ const createForm = ref({
 
 const nodeCreateForm = ref<NodeCreateForm>({
   graphKey: '',
-  nodeKind: 'tool',
+  nodeKind: 'class-model-tool',
   id: '',
   title: '',
   desc: '',
-  phaseId: '',
-  sectionPath: '',
 })
 
 const allNodes = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignNodes(currentDocument.value))
 const graphViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignGraphs(currentDocument.value))
 const edgeViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignEdges(currentDocument.value))
-const singleModelNodes = computed(() => allNodes.value.filter(node => node.isSingleModelEditTool))
-const processStageNodes = computed(() => allNodes.value.filter(node => node.isProcessStageNode))
-const definitionBackedNodes = computed(() => singleModelNodes.value.length + processStageNodes.value.length)
+const classModelToolNodes = computed(() => allNodes.value.filter(node => node.isClassModelToolNode))
+const chatflowNodes = computed(() => allNodes.value.filter(node => node.isChatflowNode))
 const selectedNode = computed(() => allNodes.value.find(node => node.key === selectedNodeKey.value) ?? null)
 const selectedEdge = computed(() => edgeViews.value.find(edge => edge.key === selectedEdgeKey.value) ?? null)
 const selectedEdgeGraphNodes = computed(() => {
@@ -958,8 +932,8 @@ async function openDesign(workflowId: string): Promise<void> {
     currentChildGraphKey.value = ''
     loadGraphSplitState(normalizedWorkflowId)
     const nodes = collectWorkflowDesignNodes(result.document)
-    selectedNodeKey.value = nodes.find(node => node.isProcessStageNode)?.key
-      ?? nodes.find(node => node.isSingleModelEditTool)?.key
+    selectedNodeKey.value = nodes.find(node => node.isClassModelToolNode)?.key
+      ?? nodes.find(node => node.isChatflowNode)?.key
       ?? nodes[0]?.key
       ?? ''
   } catch (error: unknown) {
@@ -1026,43 +1000,37 @@ async function deleteDesign(workflowId: string): Promise<void> {
 
 function openNodeCreateDialog(graphView: WorkflowDesignGraphView, nodeKind: WorkflowDesignNodeCreateKind): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
-  const phaseIndex = singleModelNodes.value.length
   nodeCreateForm.value = {
     graphKey: graphView.key,
     nodeKind,
-    id: defaultCreateNodeId(nodeKind, phaseIndex),
-    title: defaultCreateNodeTitle(nodeKind, phaseIndex),
+    id: defaultCreateNodeId(nodeKind),
+    title: defaultCreateNodeTitle(nodeKind),
     desc: '',
-    phaseId: nodeKind === 'tool' ? `F${phaseIndex}` : '',
-    sectionPath: nodeKind === 'tool' ? `factory.custom${phaseIndex}` : '',
   }
   nodeCreateDialogVisible.value = true
 }
 
 function syncNodeCreateKindDefaults(): void {
-  const phaseIndex = singleModelNodes.value.length
   const form = nodeCreateForm.value
-  form.id = defaultCreateNodeId(form.nodeKind, phaseIndex)
-  form.title = defaultCreateNodeTitle(form.nodeKind, phaseIndex)
-  form.phaseId = form.nodeKind === 'tool' ? `F${phaseIndex}` : ''
-  form.sectionPath = form.nodeKind === 'tool' ? `factory.custom${phaseIndex}` : ''
+  form.id = defaultCreateNodeId(form.nodeKind)
+  form.title = defaultCreateNodeTitle(form.nodeKind)
 }
 
-function defaultCreateNodeId(nodeKind: WorkflowDesignNodeCreateKind, phaseIndex: number): string {
-  if (nodeKind === 'tool') return `phase.F${phaseIndex}`
-  if (nodeKind === 'loop') return 'loop.group'
+function defaultCreateNodeId(nodeKind: WorkflowDesignNodeCreateKind): string {
+  if (nodeKind === 'class-model-tool') return 'tool.classModel'
+  if (nodeKind === 'chatflow') return 'chatflow.clarify'
+  if (nodeKind === 'workflow') return 'workflow.call'
   if (nodeKind === 'start') return 'start'
   if (nodeKind === 'end') return 'end'
-  if (nodeKind === 'exit-loop') return 'loop.exit'
   return 'node.custom'
 }
 
-function defaultCreateNodeTitle(nodeKind: WorkflowDesignNodeCreateKind, phaseIndex: number): string {
-  if (nodeKind === 'tool') return `Single Model Edit F${phaseIndex}`
-  if (nodeKind === 'loop') return 'Loop Group'
+function defaultCreateNodeTitle(nodeKind: WorkflowDesignNodeCreateKind): string {
+  if (nodeKind === 'class-model-tool') return 'ClassModel Tool'
+  if (nodeKind === 'chatflow') return 'Chatflow'
+  if (nodeKind === 'workflow') return 'Workflow'
   if (nodeKind === 'start') return 'Start'
   if (nodeKind === 'end') return 'End'
-  if (nodeKind === 'exit-loop') return 'Exit Loop'
   return 'Custom Node'
 }
 
@@ -1081,8 +1049,6 @@ function createNodeInSelectedGraph(): void {
     id: form.id.trim(),
     title: form.title.trim(),
     desc: form.desc.trim(),
-    phaseId: form.phaseId.trim(),
-    sectionPath: form.sectionPath.trim(),
   })
   markWorkflowDesignDirty(document, `${graphView.scopePath}.nodes`)
   nodeCreateDialogVisible.value = false
@@ -1095,8 +1061,8 @@ async function deleteSelectedNode(): Promise<void> {
   const view = selectedNode.value
   const document = currentDocument.value
   if (view === null || document === null) return
-  if ((view.isSingleModelEditTool || view.isProcessStageNode) && definitionBackedNodes.value <= 1) {
-    ElMessage.warning('至少保留一个工艺阶段或 single_model_edit 工具节点')
+  if ((view.nodeType === 'start' || view.nodeType === 'end') && allNodes.value.filter(node => node.nodeType === view.nodeType).length <= 1) {
+    ElMessage.warning('至少保留一个 start 和 end 节点')
     return
   }
 
@@ -1339,11 +1305,8 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
         title: view.title,
         nodeType: view.nodeType,
         scopePath: view.scopePath,
-        isSingleModelEditTool: view.isSingleModelEditTool,
-        isProcessStageNode: view.isProcessStageNode,
-        ...(view.stageId !== undefined ? { stageId: view.stageId } : {}),
-        ...(view.phaseId !== undefined ? { phaseId: view.phaseId } : {}),
-        ...(view.sectionPath !== undefined ? { sectionPath: view.sectionPath } : {}),
+        isClassModelToolNode: view.isClassModelToolNode,
+        isChatflowNode: view.isChatflowNode,
       },
     }
   })
@@ -1585,7 +1548,7 @@ function syncEditorFromSelected(): void {
   nodeTypeText.value = view.nodeType
   nodeTitleText.value = view.title
   nodeDescText.value = typeof view.node.data?.desc === 'string' ? view.node.data.desc : ''
-  modelJsonText.value = view.isSingleModelEditTool ? formatJson(getSingleModelEditValue(view.node)) : '{}'
+  modelJsonText.value = shouldEditNodeConfig(view) ? formatJson(view.node.data ?? {}) : '{}'
   const loop = view.node.data?.loop
   loopModeText.value = typeof loop?.mode === 'string' && loop.mode.length > 0 ? loop.mode : 'progressive'
   loopMaxCountValue.value = typeof loop?.maxLoopCount === 'number' && Number.isFinite(loop.maxLoopCount) ? loop.maxLoopCount : 1
@@ -1637,10 +1600,14 @@ function applyNodeBasicEditorToSelected(): boolean {
   return true
 }
 
+function shouldEditNodeConfig(view: WorkflowDesignNodeView): boolean {
+  return view.isClassModelToolNode || view.isChatflowNode || view.isWorkflowNode
+}
+
 function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
   const view = selectedNode.value
   const document = currentDocument.value
-  if (view === null || document === null || !view.isSingleModelEditTool) return true
+  if (view === null || document === null || !shouldEditNodeConfig(view)) return true
 
   let parsed: unknown
   try {
@@ -1652,14 +1619,18 @@ function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
   }
 
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    modelJsonError.value = 'Model JSON 必须是对象'
+    modelJsonError.value = '节点配置 JSON 必须是对象'
     if (options.silent !== true) ElMessage.warning(modelJsonError.value)
     return false
   }
 
   applyNodeBasicEditorToSelected()
-  setSingleModelEditValue(view.node, parsed)
-  markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data.model.value`)
+  view.node.data ??= {}
+  Object.assign(view.node.data, parsed)
+  view.node.data.type = nodeTypeText.value.trim() || view.nodeType || view.node.type || 'custom'
+  view.node.data.title = nodeTitleText.value.trim() || view.id
+  view.node.data.desc = nodeDescText.value.trim()
+  markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
   editorDirty.value = false
   modelJsonError.value = ''
   if (options.silent !== true) ElMessage.success('已应用到节点')
@@ -1691,7 +1662,7 @@ function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
     editorDirty.value = false
     return true
   }
-  if (view.isSingleModelEditTool) return applyEditorToSelected(options)
+  if (shouldEditNodeConfig(view)) return applyEditorToSelected(options)
   if (view.nodeType === 'loop') return applyLoopEditorToSelected(options)
   applyNodeBasicEditorToSelected()
   editorDirty.value = false
@@ -2229,17 +2200,8 @@ function errorMessage(error: unknown): string {
   background: #f4fbf9;
 }
 
-.workflow-node.is-process {
-  border-color: #99d7cf;
-  background: #f4fbf9;
-}
-
 .workflow-node.is-loop {
   background: #fff7ed;
-}
-
-.workflow-node.is-exit {
-  background: #f8fafc;
 }
 
 .node-kind,

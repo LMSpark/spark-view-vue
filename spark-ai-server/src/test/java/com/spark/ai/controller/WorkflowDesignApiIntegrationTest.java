@@ -2,6 +2,7 @@ package com.spark.ai.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.spark.ai.config.WorkflowDesignProperties;
 import com.spark.ai.security.AccessGuardService;
@@ -99,18 +100,17 @@ class WorkflowDesignApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.document.kind").value("agent.workflow.design"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.nodes[0].data.type").value("start"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("process-step"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.x_spark.nodeRole")
-                        .value("process-stage"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[8].data.type").value("end"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.edges.length()").value(8))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("tool"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.provider").value("class-model"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[2].data.type").value("end"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.edges.length()").value(2))
                 .andReturn();
 
         ObjectNode document = readDocumentFromEnvelope(readResult);
-        ((ObjectNode) document.get("app")).put("name", "API Workflow Saved");
-        JsonNode processNodes = document.at("/workflow/graph/nodes");
-        ObjectNode firstProcessData = (ObjectNode) processNodes.get(1).get("data");
-        firstProcessData.put("title", "updated-from-api");
+        ((ObjectNode) document.path("x_spark").path("designer")).put("title", "API Workflow Saved");
+        JsonNode graphNodes = document.at("/workflow/graph/nodes");
+        ObjectNode toolData = (ObjectNode) graphNodes.get(1).get("data");
+        toolData.put("title", "updated-from-api");
 
         mockMvc.perform(put("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/design.json", workflowId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,7 +119,7 @@ class WorkflowDesignApiIntegrationTest {
                 .andExpect(jsonPath("$.data.ok").value(true));
 
         JsonNode saved = objectMapper.readTree(designFile.toFile());
-        assertEquals("API Workflow Saved", saved.path("app").path("name").asText());
+        assertEquals("API Workflow Saved", saved.path("x_spark").path("designer").path("title").asText());
         assertEquals("updated-from-api", saved.at("/workflow/graph/nodes/1/data/title").asText());
 
         mockMvc.perform(post("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/__publish", workflowId)
@@ -141,8 +141,8 @@ class WorkflowDesignApiIntegrationTest {
                 .andReturn();
 
         ObjectNode definitionDocument = readDefinitionFromEnvelope(definitionResult);
-        ObjectNode identityValue = (ObjectNode) definitionDocument.path("factory").path("identity").path("value");
-        identityValue.put("alias", "edited-definition");
+        ObjectNode toolParameters = (ObjectNode) definitionDocument.at("/workflow/graph/nodes/1/data/toolParameters");
+        toolParameters.put("prompt", "edited-definition");
 
         mockMvc.perform(put("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/definition.json", workflowId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -151,7 +151,7 @@ class WorkflowDesignApiIntegrationTest {
                 .andExpect(jsonPath("$.data.ok").value(true));
 
         JsonNode editedDefinition = objectMapper.readTree(definitionFile.toFile());
-        assertEquals("edited-definition", editedDefinition.at("/factory/identity/value/alias").asText());
+        assertEquals("edited-definition", editedDefinition.at("/workflow/graph/nodes/1/data/toolParameters/prompt").asText());
 
         mockMvc.perform(get("/api/tenants/t1/projects/p1/workflow-designs/__list"))
                 .andExpect(status().isOk())
@@ -185,17 +185,23 @@ class WorkflowDesignApiIntegrationTest {
         source.put("designId", workflowId);
         source.put("designVersion", 1);
 
-        ObjectNode factory = document.putObject("factory");
-        addDefinitionSection(factory, "identity", "F0", "factory.identity", "workflow.factory.identity");
-        addDefinitionSection(factory, "materials", "F1", "factory.materials", "workflow.factory.materials");
-        addDefinitionSection(factory, "knowledge", "F2", "factory.knowledge", "workflow.factory.knowledge");
-        addDefinitionSection(factory, "contract", "F3", "factory.contract", "workflow.factory.contract");
-        addDefinitionSection(factory, "runtime", "F4", "factory.runtime", "workflow.factory.runtime");
-        addDefinitionSection(factory, "governance", "F5", "factory.governance", "workflow.factory.governance");
-        addDefinitionSection(factory, "acceptance", "F6", "factory.acceptance", "workflow.factory.acceptance");
-        addDefinitionSection(factory, "activation", "F7", "factory.activation", "workflow.factory.activation");
-        addDefinitionSection(factory, "workOrder", "F8", "factory.workOrder", "workflow.factory.workOrder");
-        addDefinitionSection(factory, "delivery", "F9", "factory.delivery", "workflow.factory.delivery");
+        ObjectNode workflow = document.putObject("workflow");
+        workflow.putArray("variables");
+        ObjectNode graph = workflow.putObject("graph");
+        ArrayNode nodes = graph.putArray("nodes");
+        addDefinitionNode(nodes, "start", "start", "Start");
+        ObjectNode tool = addDefinitionNode(nodes, "tool.classModel", "tool", "ClassModel Tool");
+        ObjectNode toolData = (ObjectNode) tool.path("data");
+        toolData.put("provider", "class-model");
+        toolData.put("toolName", "model_script");
+        ObjectNode toolParameters = toolData.putObject("toolParameters");
+        toolParameters.put("prompt", "${workflow.input.prompt}");
+        toolData.putObject("outputMapping");
+        addDefinitionNode(nodes, "end", "end", "End");
+
+        ArrayNode edges = graph.putArray("edges");
+        addDefinitionEdge(edges, "edge.start.tool", "start", "tool.classModel");
+        addDefinitionEdge(edges, "edge.tool.end", "tool.classModel", "end");
 
         ObjectNode spark = document.putObject("x_spark");
         spark.put("schema", "spark.agent.workflow.definition.v1");
@@ -206,17 +212,21 @@ class WorkflowDesignApiIntegrationTest {
         return document;
     }
 
-    private void addDefinitionSection(ObjectNode factory,
-                                      String phase,
-                                      String phaseId,
-                                      String sectionPath,
-                                      String publishPath) {
-        ObjectNode section = factory.putObject(phase);
-        section.put("phaseId", phaseId);
-        section.put("phase", phase);
-        section.put("sectionPath", sectionPath);
-        section.put("publishPath", publishPath);
-        section.putObject("value");
+    private ObjectNode addDefinitionNode(ArrayNode nodes, String id, String type, String title) {
+        ObjectNode node = nodes.addObject();
+        node.put("id", id);
+        node.put("type", type);
+        ObjectNode data = node.putObject("data");
+        data.put("type", type);
+        data.put("title", title);
+        return node;
+    }
+
+    private void addDefinitionEdge(ArrayNode edges, String id, String source, String target) {
+        ObjectNode edge = edges.addObject();
+        edge.put("id", id);
+        edge.put("source", source);
+        edge.put("target", target);
     }
 
     private static Path createTempDirectory() {

@@ -39,21 +39,18 @@ class WorkflowDesignServiceTest {
         JsonNode document = objectMapper.readTree(file.toFile());
         assertEquals("agent.workflow.design", document.path("kind").asText());
         assertEquals("spark.workflow.demo", document.path("id").asText());
+        assertFalse(document.has("app"));
+        assertFalse(document.has("factory"));
         assertEquals("spark.workflow.demo", document.path("workflow").path("id").asText());
-        assertEquals("Demo Workflow", document.path("app").path("name").asText());
+        assertEquals("Demo Workflow", document.path("x_spark").path("designer").path("title").asText());
         JsonNode nodes = document.path("workflow").path("graph").path("nodes");
-        assertEquals(9, nodes.size());
-        assertEquals("start", nodes.get(0).path("data").path("type").asText());
-        assertEquals("end", nodes.get(8).path("data").path("type").asText());
-        assertEquals(8, document.path("workflow").path("graph").path("edges").size());
-        assertEquals("process.PD1.scope-inventory",
-                document.path("workflow").path("graph").path("edges").get(0).path("target").asText());
-        JsonNode processNode = nodes.get(1);
-        assertEquals("process-step", processNode.path("data").path("type").asText());
-        assertEquals("process-stage", processNode.path("data").path("x_spark").path("nodeRole").asText());
-        assertEquals("PD1.scope-inventory", processNode.path("data").path("x_spark").path("stageId").asText());
-        assertEquals(7, document.path("x_spark").path("process").path("stages").size());
-        assertEquals("F0-F9-considerations", document.path("x_spark").path("phaseModel").asText());
+        assertEquals(3, nodes.size());
+        assertEquals("start", nodes.get(0).path("type").asText());
+        assertEquals("tool", nodes.get(1).path("type").asText());
+        assertEquals("class-model", nodes.get(1).path("data").path("provider").asText());
+        assertEquals("spark.placeholder.tool", nodes.get(1).path("data").path("toolName").asText());
+        assertEquals("end", nodes.get(2).path("type").asText());
+        assertEquals(2, document.path("workflow").path("graph").path("edges").size());
     }
 
     @Test
@@ -95,13 +92,27 @@ class WorkflowDesignServiceTest {
         service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
         JsonNode document = (JsonNode) service.readDesign("t1", "p1", "spark.workflow.demo", null).get("document");
         ObjectNode copy = document.deepCopy();
-        ObjectNode app = (ObjectNode) copy.path("app");
-        app.put("name", "Updated Workflow");
+        ObjectNode designer = (ObjectNode) copy.path("x_spark").path("designer");
+        designer.put("title", "Updated Workflow");
 
         service.writeDesign("t1", "p1", "spark.workflow.demo", copy);
 
         JsonNode saved = objectMapper.readTree(tempDir.resolve("t1/p1/spark.workflow.demo/design.json").toFile());
-        assertEquals("Updated Workflow", saved.path("app").path("name").asText());
+        assertEquals("Updated Workflow", saved.path("x_spark").path("designer").path("title").asText());
+    }
+
+    @Test
+    void writeDesign_rejectsLegacyAppField() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+        JsonNode document = (JsonNode) service.readDesign("t1", "p1", "spark.workflow.demo", null).get("document");
+        ObjectNode copy = document.deepCopy();
+        copy.putObject("app").put("mode", "workflow");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.writeDesign("t1", "p1", "spark.workflow.demo", copy));
+
+        assertTrue(error.getMessage().contains("forbidden field: app"));
     }
 
     @Test
@@ -119,8 +130,9 @@ class WorkflowDesignServiceTest {
         JsonNode saved = objectMapper.readTree(file.toFile());
         assertEquals("agent.workflow", saved.path("kind").asText());
         assertEquals("spark.workflow.demo", saved.path("workflowId").asText());
-        assertEquals("workflow.factory.activation",
-                saved.path("factory").path("activation").path("publishPath").asText());
+        assertEquals("spark.demo.run",
+                saved.at("/workflow/graph/nodes/1/data/toolName").asText());
+        assertFalse(saved.has("factory"));
     }
 
     @Test
@@ -150,15 +162,15 @@ class WorkflowDesignServiceTest {
         WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
         service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
         ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
-        ObjectNode identityValue = (ObjectNode) definition.path("factory").path("identity").path("value");
-        identityValue.put("alias", "updated-definition");
+        ObjectNode toolData = (ObjectNode) definition.at("/workflow/graph/nodes/1/data");
+        toolData.put("toolName", "spark.demo.updated");
 
         Map<String, Object> result = service.writeDefinition("t1", "p1", "spark.workflow.demo", definition);
 
         assertEquals(true, result.get("ok"));
         assertEquals("definition.json", result.get("filename"));
         JsonNode saved = objectMapper.readTree(tempDir.resolve("t1/p1/spark.workflow.demo/definition.json").toFile());
-        assertEquals("updated-definition", saved.at("/factory/identity/value/alias").asText());
+        assertEquals("spark.demo.updated", saved.at("/workflow/graph/nodes/1/data/toolName").asText());
     }
 
     @Test
@@ -183,6 +195,20 @@ class WorkflowDesignServiceTest {
                         "t1", "p1", "spark.workflow.demo", createDefinition("spark.workflow.demo", "invalid")));
 
         assertTrue(error.getMessage().contains("validation status"));
+    }
+
+    @Test
+    void publishDefinition_rejectsPlaceholderToolName() throws Exception {
+        WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
+        service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
+        ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
+        ObjectNode toolData = (ObjectNode) definition.at("/workflow/graph/nodes/1/data");
+        toolData.put("toolName", "spark.placeholder.tool");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.publishDefinition("t1", "p1", "spark.workflow.demo", definition));
+
+        assertTrue(error.getMessage().contains("real toolName"));
     }
 
     @Test
@@ -229,17 +255,11 @@ class WorkflowDesignServiceTest {
         source.put("designId", workflowId);
         source.put("designVersion", 1);
 
-        ObjectNode factory = document.putObject("factory");
-        addDefinitionSection(factory, "identity", "F0", "factory.identity", "workflow.factory.identity");
-        addDefinitionSection(factory, "materials", "F1", "factory.materials", "workflow.factory.materials");
-        addDefinitionSection(factory, "knowledge", "F2", "factory.knowledge", "workflow.factory.knowledge");
-        addDefinitionSection(factory, "contract", "F3", "factory.contract", "workflow.factory.contract");
-        addDefinitionSection(factory, "runtime", "F4", "factory.runtime", "workflow.factory.runtime");
-        addDefinitionSection(factory, "governance", "F5", "factory.governance", "workflow.factory.governance");
-        addDefinitionSection(factory, "acceptance", "F6", "factory.acceptance", "workflow.factory.acceptance");
-        addDefinitionSection(factory, "activation", "F7", "factory.activation", "workflow.factory.activation");
-        addDefinitionSection(factory, "workOrder", "F8", "factory.workOrder", "workflow.factory.workOrder");
-        addDefinitionSection(factory, "delivery", "F9", "factory.delivery", "workflow.factory.delivery");
+        ObjectNode workflow = document.putObject("workflow");
+        workflow.putArray("variables");
+        ObjectNode graph = workflow.putObject("graph");
+        ArrayNodeBuilder.addNodes(graph);
+        ArrayNodeBuilder.addEdges(graph);
 
         ObjectNode spark = document.putObject("x_spark");
         spark.put("schema", "spark.agent.workflow.definition.v1");
@@ -250,16 +270,48 @@ class WorkflowDesignServiceTest {
         return document;
     }
 
-    private void addDefinitionSection(ObjectNode factory,
-                                      String phase,
-                                      String phaseId,
-                                      String sectionPath,
-                                      String publishPath) {
-        ObjectNode section = factory.putObject(phase);
-        section.put("phaseId", phaseId);
-        section.put("phase", phase);
-        section.put("sectionPath", sectionPath);
-        section.put("publishPath", publishPath);
-        section.putObject("value");
+    private static final class ArrayNodeBuilder {
+        private ArrayNodeBuilder() {
+        }
+
+        static void addNodes(ObjectNode graph) {
+            var nodes = graph.putArray("nodes");
+            ObjectNode start = nodes.addObject();
+            start.put("id", "start");
+            start.put("type", "start");
+            ObjectNode startData = start.putObject("data");
+            startData.put("type", "start");
+            startData.put("title", "Start");
+
+            ObjectNode tool = nodes.addObject();
+            tool.put("id", "tool.classModel");
+            tool.put("type", "tool");
+            ObjectNode toolData = tool.putObject("data");
+            toolData.put("type", "tool");
+            toolData.put("title", "ClassModel Tool");
+            toolData.put("provider", "class-model");
+            toolData.put("toolName", "spark.demo.run");
+            toolData.putObject("toolParameters");
+
+            ObjectNode end = nodes.addObject();
+            end.put("id", "end");
+            end.put("type", "end");
+            ObjectNode endData = end.putObject("data");
+            endData.put("type", "end");
+            endData.put("title", "End");
+        }
+
+        static void addEdges(ObjectNode graph) {
+            var edges = graph.putArray("edges");
+            ObjectNode first = edges.addObject();
+            first.put("id", "edge.start.tool");
+            first.put("source", "start");
+            first.put("target", "tool.classModel");
+
+            ObjectNode second = edges.addObject();
+            second.put("id", "edge.tool.end");
+            second.put("source", "tool.classModel");
+            second.put("target", "end");
+        }
     }
 }

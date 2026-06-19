@@ -1,31 +1,19 @@
 /**
  * @module app:services/workflow-designs
- * 职责：提供工作流设计稿的 JSON 文件读写与 Dify-like graph 节点解析能力。
+ * 职责：提供 workflow 设计稿的 JSON 文件读写与 Dify-like graph 节点解析能力。
  * 边界：只处理编辑态 workflow design，不执行 Agent workflow 运行时。
- * AI用途：排查业务工厂 workflow 设计稿、loop 子图或 single_model_edit 工具节点时，用本模块确认前端接线。
+ * AI用途：排查 workflow design、ClassModel Tool Node 或 Chatflow Node 时，用本模块确认前端接线。
  */
 import {
-  AGENT_WORKFLOW_FACTORY_PHASES,
   assertAgentWorkflowDefinition,
   createAgentWorkflowDefinitionValidation,
   type AgentWorkflowDefinition,
   type AgentWorkflowDefinitionValidationIssue,
-  type AgentWorkflowFactoryPhaseDescriptor,
-  type AgentWorkflowFactorySection,
-  type AgentWorkflowFactorySections,
-  type AgentWorkflowProcess,
-  type AgentWorkflowProcessKnowledgeRef,
-  type AgentWorkflowProcessKnowledgeSourceKind,
-  type AgentWorkflowProcessStageCompletion,
-  type AgentWorkflowProcessStageLlmTask,
-  type AgentWorkflowProcessStage,
-  type AgentWorkflowProcessStageConsideration,
-  type AgentWorkflowProcessStageMetric,
-  type AgentWorkflowProcessStageModelSelection,
-  type AgentWorkflowProcessStageParameterSource,
-  type AgentWorkflowProcessStagePrerequisite,
-  type AgentWorkflowProcessStageVerification,
-  type AgentWorkflowProcessStep,
+  type AgentWorkflowGraphEdge,
+  type AgentWorkflowGraphNode,
+  type AgentWorkflowGraphNodeType,
+  type AgentWorkflowJsonRecord,
+  type AgentWorkflowVariable,
 } from '@spark-appworks/spark-ai/agent'
 import { http } from './http'
 import { getWorkflowDesignApi } from './api-paths'
@@ -75,30 +63,30 @@ export type WorkflowDesignDocument = {
   kind: 'agent.workflow.design'
   version: number
   id: string
-  app: {
-    id: string
-    name: string
-    mode: string
-    description?: string
-    icon?: string
-    icon_background?: string
-    [key: string]: unknown
-  }
   workflow: {
     id: string
     version: number
+    variables?: WorkflowDesignVariable[]
     graph: WorkflowDesignGraph
     [key: string]: unknown
   }
   x_spark: {
     schema?: string
-    businessFactory?: boolean
-    phaseModel?: string
+    designer?: JsonRecord
     draft?: JsonRecord
     validation?: JsonRecord
     history?: JsonRecord
     [key: string]: unknown
   }
+  [key: string]: unknown
+}
+
+export type WorkflowDesignVariable = {
+  name: string
+  title?: string
+  required?: boolean
+  schema?: JsonRecord
+  defaultValue?: unknown
   [key: string]: unknown
 }
 
@@ -142,17 +130,24 @@ export type WorkflowDesignNodeData = {
   type?: string
   title?: string
   desc?: string
-  provider_id?: string
-  provider_type?: string
-  tool_name?: string
-  tool_label?: string
-  tool_config?: JsonRecord
-  tool_parameters?: JsonRecord
+  provider?: string
+  toolName?: string
+  toolParameters?: JsonRecord
+  workflowRef?: WorkflowDesignWorkflowReference
+  inputMapping?: JsonRecord
+  outputMapping?: JsonRecord
   outputs?: JsonRecord
   model?: JsonRecord
   loop?: WorkflowDesignNestedGraphCarrier
   iteration?: WorkflowDesignNestedGraphCarrier
   x_spark?: WorkflowDesignSparkNodeMeta
+  [key: string]: unknown
+}
+
+export type WorkflowDesignWorkflowReference = {
+  workflowId: string
+  version?: number
+  definitionPath?: string
   [key: string]: unknown
 }
 
@@ -166,11 +161,6 @@ export type WorkflowDesignNestedGraphCarrier = {
 
 export type WorkflowDesignSparkNodeMeta = {
   nodeRole?: string
-  stageId?: string
-  phaseId?: string
-  sectionPath?: string
-  modelPath?: string
-  publishPath?: string
   [key: string]: unknown
 }
 
@@ -184,12 +174,11 @@ export type WorkflowDesignNodeView = {
   ancestry: string[]
   node: WorkflowDesignGraphNode
   graph: WorkflowDesignGraph
+  isClassModelToolNode: boolean
+  isChatflowNode: boolean
+  isWorkflowNode: boolean
   isSingleModelEditTool: boolean
   isProcessStageNode: boolean
-  stageId?: string
-  phaseId?: string
-  sectionPath?: string
-  publishPath?: string
 }
 
 export type WorkflowDesignGraphView = {
@@ -217,16 +206,23 @@ export type WorkflowDesignEdgeView = {
   targetNode?: WorkflowDesignGraphNode
 }
 
-export type WorkflowDesignNodeCreateKind = 'tool' | 'loop' | 'start' | 'end' | 'exit-loop' | 'custom'
+export type WorkflowDesignNodeCreateKind =
+  | 'class-model-tool'
+  | 'chatflow'
+  | 'workflow'
+  | 'start'
+  | 'end'
+  | 'condition'
+  | 'code'
+  | 'llm'
+  | 'agent'
+  | 'custom'
 
 export type WorkflowDesignNodeCreateInput = {
   nodeKind: WorkflowDesignNodeCreateKind
   id?: string
   title?: string
   desc?: string
-  phaseId?: string
-  sectionPath?: string
-  publishPath?: string
   position?: {
     x?: number
     y?: number
@@ -258,7 +254,7 @@ type CollectWorkflowDesignNodeCommand = Readonly<{
   ancestry: string[]
 }>
 
-const SINGLE_MODEL_EDIT_TOOL_NAME = 'single_model_edit'
+const PLACEHOLDER_CLASS_MODEL_TOOL_NAME = 'spark.placeholder.tool'
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
   return http.get<WorkflowDesignSummary[]>(`${getWorkflowDesignApi()}/__list`)
@@ -325,107 +321,8 @@ export function createAgentWorkflowDefinitionFromDesign(
   document: WorkflowDesignDocument,
   options: CreateAgentWorkflowDefinitionFromDesignOptions = {},
 ): AgentWorkflowDefinition {
-  const issues: AgentWorkflowDefinitionValidationIssue[] = []
-  const sectionByPhase = new Map<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>()
-  const publishPathByNode = new Map<string, WorkflowDesignNodeView>()
-  const descriptorByPublishPath = new Map(
-    AGENT_WORKFLOW_FACTORY_PHASES.map(descriptor => [descriptor.publishPath, descriptor] as const),
-  )
-
-  seedFactorySectionsFromSpark(document.x_spark['factory'], sectionByPhase)
-
-  for (const node of collectWorkflowDesignNodes(document)) {
-    if (!node.isSingleModelEditTool) continue
-    const publishPath = node.publishPath?.trim()
-    if (publishPath === undefined || publishPath.length === 0) {
-      issues.push({
-        severity: 'warning',
-        code: 'AGENT_WORKFLOW_TOOL_WITHOUT_PUBLISH_PATH',
-        message: `single_model_edit node "${node.id}" has no publishPath and will not be published.`,
-        nodeId: node.id,
-        path: `${node.scopePath}.${node.id}.data.x_spark.publishPath`,
-      })
-      continue
-    }
-
-    const descriptor = descriptorByPublishPath.get(publishPath)
-    if (descriptor === undefined) continue
-    const duplicate = publishPathByNode.get(publishPath)
-    if (duplicate !== undefined) {
-      issues.push({
-        severity: 'error',
-        code: 'AGENT_WORKFLOW_DUPLICATE_PUBLISH_PATH',
-        message: `publishPath "${publishPath}" is used by both "${duplicate.id}" and "${node.id}".`,
-        phaseId: descriptor.phaseId,
-        publishPath,
-        nodeId: node.id,
-        path: `${node.scopePath}.${node.id}`,
-      })
-      continue
-    }
-    publishPathByNode.set(publishPath, node)
-
-    if (node.phaseId !== undefined && node.phaseId !== descriptor.phaseId) {
-      issues.push({
-        severity: 'error',
-        code: 'AGENT_WORKFLOW_PHASE_ID_MISMATCH',
-        message: `node "${node.id}" phaseId "${node.phaseId}" does not match ${descriptor.phaseId}.`,
-        phaseId: descriptor.phaseId,
-        publishPath,
-        nodeId: node.id,
-        path: `${node.scopePath}.${node.id}.data.x_spark.phaseId`,
-      })
-    }
-    if (node.sectionPath !== undefined && node.sectionPath !== descriptor.sectionPath) {
-      issues.push({
-        severity: 'error',
-        code: 'AGENT_WORKFLOW_SECTION_PATH_MISMATCH',
-        message: `node "${node.id}" sectionPath "${node.sectionPath}" does not match ${descriptor.sectionPath}.`,
-        phaseId: descriptor.phaseId,
-        publishPath,
-        nodeId: node.id,
-        path: `${node.scopePath}.${node.id}.data.x_spark.sectionPath`,
-      })
-    }
-
-    const value = readSingleModelEditObjectValue(node, descriptor, issues)
-    if (Object.keys(value).length === 0) {
-      issues.push({
-        severity: 'warning',
-        code: 'AGENT_WORKFLOW_EMPTY_SECTION_VALUE',
-        message: `${descriptor.phaseId} ${descriptor.phase} section value is empty.`,
-        phaseId: descriptor.phaseId,
-        publishPath,
-        nodeId: node.id,
-        path: `${node.scopePath}.${node.id}.data.model.value`,
-      })
-    }
-    sectionByPhase.set(descriptor.phase, {
-      phaseId: descriptor.phaseId,
-      phase: descriptor.phase,
-      sectionPath: descriptor.sectionPath,
-      publishPath: descriptor.publishPath,
-      nodeId: node.id,
-      scopePath: node.scopePath,
-      value,
-    })
-  }
-
-  for (const descriptor of AGENT_WORKFLOW_FACTORY_PHASES) {
-    if (sectionByPhase.has(descriptor.phase)) continue
-    issues.push({
-      severity: 'error',
-      code: 'AGENT_WORKFLOW_FACTORY_PHASE_MISSING',
-      message: `${descriptor.phaseId} ${descriptor.phase} section is missing from workflow design.`,
-      phaseId: descriptor.phaseId,
-      publishPath: descriptor.publishPath,
-      path: `workflow.factory.${descriptor.phase}`,
-    })
-    sectionByPhase.set(descriptor.phase, createEmptyAgentWorkflowSection(descriptor))
-  }
-
+  const issues = collectDefinitionPublishIssues(document)
   const validation = createAgentWorkflowDefinitionValidation(issues)
-  const process = readAgentWorkflowProcess(document.x_spark['process'])
   return {
     kind: 'agent.workflow',
     version: 1,
@@ -435,8 +332,13 @@ export function createAgentWorkflowDefinitionFromDesign(
       designId: document.id,
       designVersion: document.version,
     },
-    ...(process === undefined ? {} : { process }),
-    factory: createAgentWorkflowFactorySections(sectionByPhase),
+    workflow: {
+      variables: normalizeDefinitionVariables(document.workflow.variables),
+      graph: {
+        nodes: document.workflow.graph.nodes.map(toDefinitionNode),
+        edges: document.workflow.graph.edges.map(toDefinitionEdge),
+      },
+    },
     x_spark: {
       schema: 'spark.agent.workflow.definition.v1',
       publishedAt: options.publishedAt ?? new Date().toISOString(),
@@ -489,25 +391,21 @@ export function collectWorkflowDesignEdges(document: WorkflowDesignDocument): Wo
   return collectWorkflowDesignGraphs(document).flatMap(view => collectGraphEdges(view))
 }
 
-export function isSingleModelEditToolNode(node: WorkflowDesignGraphNode): boolean {
-  const data = node.data
-  return data?.type === 'tool' && data.tool_name === SINGLE_MODEL_EDIT_TOOL_NAME
+export function isSingleModelEditToolNode(_node: WorkflowDesignGraphNode): boolean {
+  return false
 }
 
-export function isProcessStageNode(node: WorkflowDesignGraphNode): boolean {
-  const data = node.data
-  return data?.type === 'process-step' || data?.x_spark?.nodeRole === 'process-stage'
+export function isProcessStageNode(_node: WorkflowDesignGraphNode): boolean {
+  return false
 }
 
 export function getSingleModelEditValue(node: WorkflowDesignGraphNode): unknown {
-  const model = node.data?.model
-  return model !== undefined && Object.prototype.hasOwnProperty.call(model, 'value') ? model['value'] : {}
+  return node.data?.toolParameters ?? {}
 }
 
 export function setSingleModelEditValue(node: WorkflowDesignGraphNode, value: unknown): void {
   const data = ensureNodeData(node)
-  const model = ensureRecord(data, 'model')
-  model['value'] = value
+  data.toolParameters = isJsonRecord(value) ? value : {}
 }
 
 export function ensureWorkflowDraft(document: WorkflowDesignDocument): JsonRecord {
@@ -518,7 +416,7 @@ export function ensureWorkflowDraft(document: WorkflowDesignDocument): JsonRecor
 export function markWorkflowDesignDirty(document: WorkflowDesignDocument, dirtyPath: string): void {
   const draft = ensureWorkflowDraft(document)
   draft['status'] = 'dirty'
-  const dirtyPaths = Array.isArray(draft['dirtyPaths']) ? draft['dirtyPaths'] : []
+  const dirtyPaths = Array.isArray(draft['dirtyPaths']) ? dirtyPathsFromDraft(draft) : []
   if (!dirtyPaths.includes(dirtyPath)) {
     dirtyPaths.push(dirtyPath)
   }
@@ -556,11 +454,11 @@ export function createWorkflowDesignNode(
   graph: WorkflowDesignGraph,
   input: WorkflowDesignNodeCreateInput,
 ): WorkflowDesignGraphNode {
-  const nodeId = nextNodeId(graph, input.id ?? defaultNodeId(input.nodeKind, input.phaseId))
+  const nodeId = nextNodeId(graph, input.id ?? defaultNodeId(input.nodeKind))
   const position = normalizePosition(input.position, graph.nodes.length)
   const node: WorkflowDesignGraphNode = {
     id: nodeId,
-    type: 'custom',
+    type: resolveCreatedGraphNodeType(input.nodeKind),
     position,
     data: createNodeData(nodeId, input),
   }
@@ -622,570 +520,163 @@ function workflowDefinitionDocumentUrl(workflowId: string): string {
   return `${getWorkflowDesignApi()}/${encodeURIComponent(workflowId)}/definition.json`
 }
 
-function readErrorStatus(error: unknown): number | null {
-  if (!isJsonRecord(error)) return null
-  const status = error['status']
-  if (typeof status === 'number') return status
-  const response = error['response']
-  if (!isJsonRecord(response)) return null
-  const responseStatus = response['status']
-  return typeof responseStatus === 'number' ? responseStatus : null
+function collectDefinitionPublishIssues(document: WorkflowDesignDocument): AgentWorkflowDefinitionValidationIssue[] {
+  const issues: AgentWorkflowDefinitionValidationIssue[] = []
+  const record = document as JsonRecord
+  for (const field of ['app', 'factory', 'process'] as const) {
+    if (Object.prototype.hasOwnProperty.call(record, field)) {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_DESIGN_FIELD',
+        message: `design.${field} is not allowed in workflow design.`,
+        path: `design.${field}`,
+      })
+    }
+  }
+  for (const view of collectWorkflowDesignNodes(document)) {
+    const data = view.node.data
+    if (data === undefined) continue
+    if (Object.prototype.hasOwnProperty.call(data, 'tool_name') || data['toolName'] === 'single_model_edit') {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_NODE',
+        message: `Legacy single_model_edit node "${view.id}" is not allowed.`,
+        nodeId: view.id,
+        path: `${view.scopePath}.${view.id}.data`,
+      })
+    }
+    if (data.type === 'process-step' || data.x_spark?.nodeRole === 'process-stage') {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_NODE',
+        message: `Legacy process-stage node "${view.id}" is not allowed.`,
+        nodeId: view.id,
+        path: `${view.scopePath}.${view.id}.data`,
+      })
+    }
+  }
+  return issues
 }
 
-function readAgentWorkflowProcess(value: unknown): AgentWorkflowProcess | undefined {
-  if (!isRecordValue(value)) return undefined
-  const processId = readProcessText(value, 'processId')
-  const title = readProcessText(value, 'title')
-  const sourceRef = readProcessText(value, 'sourceRef')
-  const principle = readProcessText(value, 'principle')
-  const stagesValue = value['stages']
-  if (
-    processId === undefined
-    || title === undefined
-    || sourceRef === undefined
-    || principle === undefined
-    || !Array.isArray(stagesValue)
-  ) {
-    return undefined
-  }
-  const stages = stagesValue
-    .map(readAgentWorkflowProcessStage)
-    .filter((stage): stage is AgentWorkflowProcessStage => stage !== undefined)
-  if (stages.length !== stagesValue.length) return undefined
-  const knowledgeSources = readAgentWorkflowProcessKnowledgeRefs(value['knowledgeSources'])
+function normalizeDefinitionVariables(value: WorkflowDesignVariable[] | undefined): readonly AgentWorkflowVariable[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(variable => typeof variable.name === 'string' && variable.name.trim().length > 0)
+    .map((variable): AgentWorkflowVariable => ({
+      name: variable.name.trim(),
+      ...(typeof variable.title === 'string' && variable.title.trim().length > 0
+        ? { title: variable.title.trim() }
+        : {}),
+      ...(typeof variable.required === 'boolean' ? { required: variable.required } : {}),
+      ...(isJsonRecord(variable.schema) ? { schema: variable.schema } : {}),
+      ...(Object.prototype.hasOwnProperty.call(variable, 'defaultValue') ? { defaultValue: variable.defaultValue } : {}),
+    }))
+}
+
+function toDefinitionNode(node: WorkflowDesignGraphNode): AgentWorkflowGraphNode {
+  const type = resolveDefinitionNodeType(node)
+  const data = normalizeNodeDataForDefinition(type, node.data)
+  const position = node.position
+  const x = position?.x
+  const y = position?.y
   return {
-    processId,
+    id: node.id,
+    type,
+    data,
+    ...(x === undefined || y === undefined
+      ? {}
+      : { position: { x, y } }),
+  } as AgentWorkflowGraphNode
+}
+
+function toDefinitionEdge(edge: WorkflowDesignGraphEdge): AgentWorkflowGraphEdge {
+  return {
+    id: edge.id ?? `${edge.source}-${edge.target}`,
+    source: edge.source,
+    target: edge.target,
+    ...(edge.sourceHandle === undefined ? {} : { sourceHandle: edge.sourceHandle }),
+    ...(edge.targetHandle === undefined ? {} : { targetHandle: edge.targetHandle }),
+    ...(edge.data === undefined ? {} : { data: edge.data }),
+  }
+}
+
+function normalizeNodeDataForDefinition(
+  type: AgentWorkflowGraphNodeType,
+  value: WorkflowDesignNodeData | undefined,
+): AgentWorkflowJsonRecord {
+  const data = value === undefined ? {} : { ...value }
+  delete data.loop
+  delete data.iteration
+  if (type === 'tool') {
+    return {
+      title: readTitle(data, 'ClassModel Tool'),
+      provider: readNonBlankText(data['provider']) ?? 'class-model',
+      toolName: readNonBlankText(data['toolName']) ?? PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
+      toolParameters: isJsonRecord(data['toolParameters']) ? data['toolParameters'] : {},
+      ...(isJsonRecord(data['outputMapping']) ? { outputMapping: data['outputMapping'] } : {}),
+    }
+  }
+  if (type === 'chatflow' || type === 'workflow') {
+    return {
+      title: readTitle(data, type === 'chatflow' ? 'Chatflow' : 'Workflow'),
+      workflowRef: isWorkflowReference(data['workflowRef']) ? data['workflowRef'] : { workflowId: '', version: 1 },
+      inputMapping: isJsonRecord(data['inputMapping']) ? data['inputMapping'] : {},
+      outputMapping: isJsonRecord(data['outputMapping']) ? data['outputMapping'] : {},
+    }
+  }
+  return {
+    title: readTitle(data, type),
+    ...(isJsonRecord(data['inputMapping']) ? { inputMapping: data['inputMapping'] } : {}),
+    ...(isJsonRecord(data['outputMapping']) ? { outputMapping: data['outputMapping'] } : {}),
+  }
+}
+
+function resolveDefinitionNodeType(node: WorkflowDesignGraphNode): AgentWorkflowGraphNodeType {
+  const dataType = node.data?.type
+  if (isDefinitionNodeType(dataType)) return dataType
+  if (isDefinitionNodeType(node.type)) return node.type
+  return 'tool'
+}
+
+function resolveCreatedGraphNodeType(kind: WorkflowDesignNodeCreateKind): string {
+  return kind === 'class-model-tool' ? 'tool' : kind
+}
+
+function createNodeData(nodeId: string, input: WorkflowDesignNodeCreateInput): WorkflowDesignNodeData {
+  const normalizedTitle = input.title?.trim()
+  const title = normalizedTitle === undefined || normalizedTitle.length === 0
+    ? defaultNodeTitle(input.nodeKind)
+    : normalizedTitle
+  const desc = input.desc?.trim()
+  if (input.nodeKind === 'class-model-tool') {
+    return {
+      type: 'tool',
+      title,
+      ...(desc === undefined || desc.length === 0 ? {} : { desc }),
+      provider: 'class-model',
+      toolName: PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
+      toolParameters: {},
+      outputMapping: {},
+    }
+  }
+  if (input.nodeKind === 'chatflow' || input.nodeKind === 'workflow') {
+    return {
+      type: input.nodeKind,
+      title,
+      ...(desc === undefined || desc.length === 0 ? {} : { desc }),
+      workflowRef: {
+        workflowId: `${input.nodeKind}.${nodeId}`,
+        version: 1,
+        definitionPath: '',
+      },
+      inputMapping: {},
+      outputMapping: {},
+    }
+  }
+  return {
+    type: input.nodeKind,
     title,
-    sourceRef,
-    principle,
-    ...(knowledgeSources === undefined ? {} : { knowledgeSources }),
-    stages,
-  }
-}
-
-function readAgentWorkflowProcessStage(value: unknown): AgentWorkflowProcessStage | undefined {
-  if (!isRecordValue(value)) return undefined
-  const stageId = readProcessText(value, 'stageId')
-  const title = readProcessText(value, 'title')
-  const sourceSteps = readProcessText(value, 'sourceSteps')
-  const goal = readProcessText(value, 'goal')
-  const stepsValue = value['steps']
-  if (
-    stageId === undefined
-    || title === undefined
-    || sourceSteps === undefined
-    || goal === undefined
-    || !Array.isArray(stepsValue)
-  ) {
-    return undefined
-  }
-  const steps = stepsValue
-    .map(readAgentWorkflowProcessStep)
-    .filter((step): step is AgentWorkflowProcessStep => step !== undefined)
-  if (steps.length !== stepsValue.length) return undefined
-  const considerations = readAgentWorkflowProcessStageConsiderations(value['considerations'])
-  const prerequisites = readAgentWorkflowProcessStagePrerequisites(value['prerequisites'])
-  const model = readAgentWorkflowProcessStageModel(value['model'])
-  const parameterSources = readAgentWorkflowProcessStageParameterSources(value['parameterSources'])
-  const llmTask = readAgentWorkflowProcessStageLlmTask(value['llmTask'])
-  const verification = readAgentWorkflowProcessStageVerificationList(value['verification'])
-  const completion = readAgentWorkflowProcessStageCompletion(value['completion'])
-  const knowledgeRefs = readAgentWorkflowProcessKnowledgeRefs(value['knowledgeRefs'])
-  return {
-    stageId,
-    title,
-    sourceSteps,
-    goal,
-    steps,
-    ...(knowledgeRefs === undefined ? {} : { knowledgeRefs }),
-    ...(considerations === undefined ? {} : { considerations }),
-    ...(prerequisites === undefined ? {} : { prerequisites }),
-    ...(model === undefined ? {} : { model }),
-    ...(parameterSources === undefined ? {} : { parameterSources }),
-    ...(llmTask === undefined ? {} : { llmTask }),
-    ...(verification === undefined ? {} : { verification }),
-    ...(completion === undefined ? {} : { completion }),
-  }
-}
-
-function readAgentWorkflowProcessKnowledgeRefs(
-  value: unknown,
-): readonly AgentWorkflowProcessKnowledgeRef[] | undefined {
-  if (value === undefined) return undefined
-  if (!Array.isArray(value)) return undefined
-  const refs = value
-    .map(readAgentWorkflowProcessKnowledgeRef)
-    .filter((ref): ref is AgentWorkflowProcessKnowledgeRef => ref !== undefined)
-  return refs.length === value.length ? refs : undefined
-}
-
-function readAgentWorkflowProcessKnowledgeRef(value: unknown): AgentWorkflowProcessKnowledgeRef | undefined {
-  if (!isRecordValue(value)) return undefined
-  const refId = readProcessText(value, 'refId')
-  const title = readProcessText(value, 'title')
-  const source = readAgentWorkflowProcessKnowledgeSourceKind(value['source'])
-  const path = readProcessText(value, 'path')
-  const symbols = readOptionalTextList(value['symbols'])
-  const usage = readProcessText(value, 'usage')
-  if (
-    refId === undefined
-    || title === undefined
-    || source === undefined
-    || path === undefined
-    || usage === undefined
-  ) {
-    return undefined
-  }
-  return {
-    refId,
-    title,
-    source,
-    path,
-    ...(symbols === undefined ? {} : { symbols }),
-    usage,
-  }
-}
-
-function readAgentWorkflowProcessKnowledgeSourceKind(
-  value: unknown,
-): AgentWorkflowProcessKnowledgeSourceKind | undefined {
-  return value === 'document' || value === 'generated-dts-class-model' ? value : undefined
-}
-
-function readAgentWorkflowProcessStagePrerequisites(
-  value: unknown,
-): readonly AgentWorkflowProcessStagePrerequisite[] | undefined {
-  if (value === undefined) return undefined
-  if (!Array.isArray(value)) return undefined
-  const prerequisites = value
-    .map(readAgentWorkflowProcessStagePrerequisite)
-    .filter((item): item is AgentWorkflowProcessStagePrerequisite => item !== undefined)
-  return prerequisites.length === value.length ? prerequisites : undefined
-}
-
-function readAgentWorkflowProcessStagePrerequisite(
-  value: unknown,
-): AgentWorkflowProcessStagePrerequisite | undefined {
-  if (!isRecordValue(value)) return undefined
-  const prerequisiteId = readProcessText(value, 'prerequisiteId')
-  const title = readProcessText(value, 'title')
-  const source = readProcessText(value, 'source')
-  const metrics = readAgentWorkflowProcessStageMetrics(value['metrics'])
-  if (
-    prerequisiteId === undefined
-    || title === undefined
-    || source === undefined
-    || metrics === undefined
-  ) {
-    return undefined
-  }
-  return { prerequisiteId, title, source, metrics }
-}
-
-function readAgentWorkflowProcessStageModel(value: unknown): AgentWorkflowProcessStageModelSelection | undefined {
-  if (value === undefined) return undefined
-  if (!isRecordValue(value)) return undefined
-  const modelRole = readProcessText(value, 'modelRole')
-  const modelRef = readProcessText(value, 'modelRef')
-  const selectionReason = readProcessText(value, 'selectionReason')
-  const fallbackModelRefs = readOptionalTextList(value['fallbackModelRefs'])
-  if (modelRole === undefined || modelRef === undefined || selectionReason === undefined) return undefined
-  return {
-    modelRole,
-    modelRef,
-    selectionReason,
-    ...(fallbackModelRefs === undefined ? {} : { fallbackModelRefs }),
-  }
-}
-
-function readAgentWorkflowProcessStageParameterSources(
-  value: unknown,
-): readonly AgentWorkflowProcessStageParameterSource[] | undefined {
-  if (value === undefined) return undefined
-  if (!Array.isArray(value)) return undefined
-  const parameterSources = value
-    .map(readAgentWorkflowProcessStageParameterSource)
-    .filter((item): item is AgentWorkflowProcessStageParameterSource => item !== undefined)
-  return parameterSources.length === value.length ? parameterSources : undefined
-}
-
-function readAgentWorkflowProcessStageParameterSource(
-  value: unknown,
-): AgentWorkflowProcessStageParameterSource | undefined {
-  if (!isRecordValue(value)) return undefined
-  const parameterId = readProcessText(value, 'parameterId')
-  const title = readProcessText(value, 'title')
-  const source = readProcessText(value, 'source')
-  const path = readProcessText(value, 'path')
-  const required = value['required']
-  if (
-    parameterId === undefined
-    || title === undefined
-    || source === undefined
-    || path === undefined
-    || typeof required !== 'boolean'
-  ) {
-    return undefined
-  }
-  return { parameterId, title, source, path, required }
-}
-
-function readAgentWorkflowProcessStageLlmTask(value: unknown): AgentWorkflowProcessStageLlmTask | undefined {
-  if (value === undefined) return undefined
-  if (!isRecordValue(value)) return undefined
-  const objective = readProcessText(value, 'objective')
-  const instructions = readTextList(value['instructions'])
-  const expectedOutput = readTextList(value['expectedOutput'])
-  const forbidden = readOptionalTextList(value['forbidden'])
-  if (objective === undefined || instructions === undefined || expectedOutput === undefined) return undefined
-  return {
-    objective,
-    instructions,
-    expectedOutput,
-    ...(forbidden === undefined ? {} : { forbidden }),
-  }
-}
-
-function readAgentWorkflowProcessStageVerificationList(
-  value: unknown,
-): readonly AgentWorkflowProcessStageVerification[] | undefined {
-  if (value === undefined) return undefined
-  if (!Array.isArray(value)) return undefined
-  const verification = value
-    .map(readAgentWorkflowProcessStageVerification)
-    .filter((item): item is AgentWorkflowProcessStageVerification => item !== undefined)
-  return verification.length === value.length ? verification : undefined
-}
-
-function readAgentWorkflowProcessStageVerification(
-  value: unknown,
-): AgentWorkflowProcessStageVerification | undefined {
-  if (!isRecordValue(value)) return undefined
-  const verificationId = readProcessText(value, 'verificationId')
-  const title = readProcessText(value, 'title')
-  const method = readProcessText(value, 'method')
-  const metrics = readAgentWorkflowProcessStageMetrics(value['metrics'])
-  if (
-    verificationId === undefined
-    || title === undefined
-    || method === undefined
-    || metrics === undefined
-  ) {
-    return undefined
-  }
-  return { verificationId, title, method, metrics }
-}
-
-function readAgentWorkflowProcessStageCompletion(value: unknown): AgentWorkflowProcessStageCompletion | undefined {
-  if (value === undefined) return undefined
-  if (!isRecordValue(value)) return undefined
-  const criteria = readTextList(value['criteria'])
-  const nextWhen = readProcessText(value, 'nextWhen')
-  const stopWhen = readProcessText(value, 'stopWhen')
-  if (criteria === undefined || nextWhen === undefined || stopWhen === undefined) return undefined
-  return { criteria, nextWhen, stopWhen }
-}
-
-function readAgentWorkflowProcessStageConsiderations(
-  value: unknown,
-): readonly AgentWorkflowProcessStageConsideration[] | undefined {
-  if (value === undefined) return undefined
-  if (!Array.isArray(value)) return undefined
-  const considerations = value
-    .map(readAgentWorkflowProcessStageConsideration)
-    .filter((consideration): consideration is AgentWorkflowProcessStageConsideration => consideration !== undefined)
-  return considerations.length === value.length ? considerations : undefined
-}
-
-function readAgentWorkflowProcessStageConsideration(
-  value: unknown,
-): AgentWorkflowProcessStageConsideration | undefined {
-  if (!isRecordValue(value)) return undefined
-  const phaseId = readProcessText(value, 'phaseId')
-  const title = readProcessText(value, 'title')
-  const checks = readTextList(value['checks'])
-  const metrics = readAgentWorkflowProcessStageMetrics(value['metrics'])
-  if (
-    phaseId === undefined
-    || !AGENT_WORKFLOW_FACTORY_PHASES.some(descriptor => descriptor.phaseId === phaseId)
-    || title === undefined
-    || checks === undefined
-  ) {
-    return undefined
-  }
-  return {
-    phaseId: phaseId as AgentWorkflowProcessStageConsideration['phaseId'],
-    title,
-    checks,
-    ...(metrics === undefined ? {} : { metrics }),
-  }
-}
-
-function readAgentWorkflowProcessStageMetrics(value: unknown): readonly AgentWorkflowProcessStageMetric[] | undefined {
-  if (value === undefined) return undefined
-  if (!Array.isArray(value)) return undefined
-  const metrics = value
-    .map(readAgentWorkflowProcessStageMetric)
-    .filter((metric): metric is AgentWorkflowProcessStageMetric => metric !== undefined)
-  return metrics.length === value.length ? metrics : undefined
-}
-
-function readAgentWorkflowProcessStageMetric(value: unknown): AgentWorkflowProcessStageMetric | undefined {
-  if (!isRecordValue(value)) return undefined
-  const metricId = readProcessText(value, 'metricId')
-  const title = readProcessText(value, 'title')
-  const operator = readProcessText(value, 'operator')
-  const target = value['target']
-  const unit = readProcessText(value, 'unit')
-  if (
-    metricId === undefined
-    || title === undefined
-    || (operator !== 'eq' && operator !== 'lte' && operator !== 'gte')
-    || typeof target !== 'number'
-    || !Number.isFinite(target)
-    || unit === undefined
-  ) {
-    return undefined
-  }
-  return {
-    metricId,
-    title,
-    operator,
-    target,
-    unit,
-  }
-}
-
-function readAgentWorkflowProcessStep(value: unknown): AgentWorkflowProcessStep | undefined {
-  if (!isRecordValue(value)) return undefined
-  const stepId = readProcessText(value, 'stepId')
-  const title = readProcessText(value, 'title')
-  const actions = readTextList(value['actions'])
-  const outputs = readTextList(value['outputs'])
-  const checks = readTextList(value['checks'])
-  if (
-    stepId === undefined
-    || title === undefined
-    || actions === undefined
-    || outputs === undefined
-    || checks === undefined
-  ) {
-    return undefined
-  }
-  const sourceSteps = readProcessText(value, 'sourceSteps')
-  return {
-    stepId,
-    title,
-    ...(sourceSteps === undefined ? {} : { sourceSteps }),
-    actions,
-    outputs,
-    checks,
-  }
-}
-
-function readTextList(value: unknown): readonly string[] | undefined {
-  if (!Array.isArray(value)) return undefined
-  const normalized = value.map((item) => {
-    if (typeof item !== 'string') return ''
-    return item.trim()
-  })
-  if (normalized.some(item => item.length === 0)) return undefined
-  return normalized
-}
-
-function readOptionalTextList(value: unknown): readonly string[] | undefined {
-  if (value === undefined) return undefined
-  return readTextList(value)
-}
-
-function readProcessText(record: JsonRecord, key: string): string | undefined {
-  const value = record[key]
-  if (typeof value !== 'string') return undefined
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : undefined
-}
-
-function readSingleModelEditObjectValue(
-  node: WorkflowDesignNodeView,
-  descriptor: AgentWorkflowFactoryPhaseDescriptor,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): Readonly<Record<string, unknown>> {
-  const value = getSingleModelEditValue(node.node)
-  if (isJsonRecord(value)) return value
-  issues.push({
-    severity: 'error',
-    code: 'AGENT_WORKFLOW_SECTION_VALUE_NOT_OBJECT',
-    message: `${descriptor.phaseId} ${descriptor.phase} section value must be an object.`,
-    phaseId: descriptor.phaseId,
-    publishPath: descriptor.publishPath,
-    nodeId: node.id,
-    path: `${node.scopePath}.${node.id}.data.model.value`,
-  })
-  return {}
-}
-
-function createEmptyAgentWorkflowSection(
-  descriptor: AgentWorkflowFactoryPhaseDescriptor,
-): AgentWorkflowFactorySection {
-  return {
-    phaseId: descriptor.phaseId,
-    phase: descriptor.phase,
-    sectionPath: descriptor.sectionPath,
-    publishPath: descriptor.publishPath,
-    value: {},
-  }
-}
-
-function seedFactorySectionsFromSpark(
-  value: unknown,
-  sectionByPhase: Map<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>,
-): void {
-  if (!isRecordValue(value)) return
-  for (const descriptor of AGENT_WORKFLOW_FACTORY_PHASES) {
-    const section = readSparkFactorySection(value[descriptor.phase], descriptor)
-    if (section === undefined) continue
-    sectionByPhase.set(descriptor.phase, section)
-  }
-}
-
-function readSparkFactorySection(
-  value: unknown,
-  descriptor: AgentWorkflowFactoryPhaseDescriptor,
-): AgentWorkflowFactorySection | undefined {
-  if (!isRecordValue(value)) return undefined
-  if (
-    value['phaseId'] !== descriptor.phaseId
-    || value['phase'] !== descriptor.phase
-    || value['sectionPath'] !== descriptor.sectionPath
-    || value['publishPath'] !== descriptor.publishPath
-    || !isRecordValue(value['value'])
-  ) {
-    return undefined
-  }
-  return {
-    phaseId: descriptor.phaseId,
-    phase: descriptor.phase,
-    sectionPath: descriptor.sectionPath,
-    publishPath: descriptor.publishPath,
-    value: value['value'],
-  }
-}
-
-function createAgentWorkflowFactorySections(
-  sectionByPhase: ReadonlyMap<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>,
-): AgentWorkflowFactorySections {
-  const identity = readPublishedSection(sectionByPhase, 'identity')
-  const materials = readPublishedSection(sectionByPhase, 'materials')
-  const knowledge = readPublishedSection(sectionByPhase, 'knowledge')
-  const contract = readPublishedSection(sectionByPhase, 'contract')
-  const runtime = readPublishedSection(sectionByPhase, 'runtime')
-  const governance = readPublishedSection(sectionByPhase, 'governance')
-  const acceptance = readPublishedSection(sectionByPhase, 'acceptance')
-  const activation = readPublishedSection(sectionByPhase, 'activation')
-  const workOrder = readPublishedSection(sectionByPhase, 'workOrder')
-  const delivery = readPublishedSection(sectionByPhase, 'delivery')
-
-  return {
-    identity: {
-      phaseId: 'F0',
-      phase: 'identity',
-      sectionPath: 'factory.identity',
-      publishPath: 'workflow.factory.identity',
-      ...readPublishedSectionSource(identity),
-      value: identity.value,
-    },
-    materials: {
-      phaseId: 'F1',
-      phase: 'materials',
-      sectionPath: 'factory.materials',
-      publishPath: 'workflow.factory.materials',
-      ...readPublishedSectionSource(materials),
-      value: materials.value,
-    },
-    knowledge: {
-      phaseId: 'F2',
-      phase: 'knowledge',
-      sectionPath: 'factory.knowledge',
-      publishPath: 'workflow.factory.knowledge',
-      ...readPublishedSectionSource(knowledge),
-      value: knowledge.value,
-    },
-    contract: {
-      phaseId: 'F3',
-      phase: 'contract',
-      sectionPath: 'factory.contract',
-      publishPath: 'workflow.factory.contract',
-      ...readPublishedSectionSource(contract),
-      value: contract.value,
-    },
-    runtime: {
-      phaseId: 'F4',
-      phase: 'runtime',
-      sectionPath: 'factory.runtime',
-      publishPath: 'workflow.factory.runtime',
-      ...readPublishedSectionSource(runtime),
-      value: runtime.value,
-    },
-    governance: {
-      phaseId: 'F5',
-      phase: 'governance',
-      sectionPath: 'factory.governance',
-      publishPath: 'workflow.factory.governance',
-      ...readPublishedSectionSource(governance),
-      value: governance.value,
-    },
-    acceptance: {
-      phaseId: 'F6',
-      phase: 'acceptance',
-      sectionPath: 'factory.acceptance',
-      publishPath: 'workflow.factory.acceptance',
-      ...readPublishedSectionSource(acceptance),
-      value: acceptance.value,
-    },
-    activation: {
-      phaseId: 'F7',
-      phase: 'activation',
-      sectionPath: 'factory.activation',
-      publishPath: 'workflow.factory.activation',
-      ...readPublishedSectionSource(activation),
-      value: activation.value,
-    },
-    workOrder: {
-      phaseId: 'F8',
-      phase: 'workOrder',
-      sectionPath: 'factory.workOrder',
-      publishPath: 'workflow.factory.workOrder',
-      ...readPublishedSectionSource(workOrder),
-      value: workOrder.value,
-    },
-    delivery: {
-      phaseId: 'F9',
-      phase: 'delivery',
-      sectionPath: 'factory.delivery',
-      publishPath: 'workflow.factory.delivery',
-      ...readPublishedSectionSource(delivery),
-      value: delivery.value,
-    },
-  }
-}
-
-function readPublishedSection(
-  sectionByPhase: ReadonlyMap<AgentWorkflowFactoryPhaseDescriptor['phase'], AgentWorkflowFactorySection>,
-  phase: AgentWorkflowFactoryPhaseDescriptor['phase'],
-): AgentWorkflowFactorySection {
-  const section = sectionByPhase.get(phase)
-  if (section === undefined) {
-    throw new Error(`Missing agent workflow section after normalization: ${phase}`)
-  }
-  return section
-}
-
-function readPublishedSectionSource(
-  section: AgentWorkflowFactorySection,
-): Readonly<Pick<AgentWorkflowFactorySection, 'nodeId' | 'scopePath'>> {
-  return {
-    ...(section.nodeId === undefined ? {} : { nodeId: section.nodeId }),
-    ...(section.scopePath === undefined ? {} : { scopePath: section.scopePath }),
+    ...(desc === undefined || desc.length === 0 ? {} : { desc }),
   }
 }
 
@@ -1193,10 +684,9 @@ function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowD
   const { graph, scopePath, depth, ancestry } = command
   const result: WorkflowDesignNodeView[] = []
   for (const node of graph.nodes) {
-    const data = node.data
-    const spark = data?.x_spark
-    const nodeType = typeof data?.type === 'string' ? data.type : node.type
-    const title = typeof data?.title === 'string' && data.title.length > 0 ? data.title : node.id
+    const nodeType = typeof node.data?.type === 'string' ? node.data.type : node.type
+    const title = typeof node.data?.title === 'string' && node.data.title.length > 0 ? node.data.title : node.id
+    const isClassModelTool = isClassModelToolNode(node)
     const view: WorkflowDesignNodeView = {
       key: `${scopePath}:${node.id}`,
       id: node.id,
@@ -1207,34 +697,43 @@ function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowD
       ancestry,
       node,
       graph,
-      isSingleModelEditTool: isSingleModelEditToolNode(node),
-      isProcessStageNode: isProcessStageNode(node),
-      ...(typeof spark?.stageId === 'string' ? { stageId: spark.stageId } : {}),
-      ...(typeof spark?.phaseId === 'string' ? { phaseId: spark.phaseId } : {}),
-      ...(typeof spark?.sectionPath === 'string' ? { sectionPath: spark.sectionPath } : {}),
-      ...(typeof spark?.publishPath === 'string' ? { publishPath: spark.publishPath } : {}),
+      isClassModelToolNode: isClassModelTool,
+      isChatflowNode: nodeType === 'chatflow',
+      isWorkflowNode: nodeType === 'workflow',
+      isSingleModelEditTool: false,
+      isProcessStageNode: false,
     }
     result.push(view)
+    result.push(...collectNestedNodes(node, scopePath, depth, ancestry))
+  }
+  return result
+}
 
-    const childAncestry = [...ancestry, node.id]
-    const loopSubGraph = data?.loop?.subGraph
-    if (isWorkflowDesignGraph(loopSubGraph)) {
-      result.push(...collectGraphNodes({
-        graph: loopSubGraph,
-        scopePath: `${scopePath}.${node.id}.loop.subGraph`,
-        depth: depth + 1,
-        ancestry: childAncestry,
-      }))
-    }
-    const iterationSubGraph = data?.iteration?.subGraph
-    if (isWorkflowDesignGraph(iterationSubGraph)) {
-      result.push(...collectGraphNodes({
-        graph: iterationSubGraph,
-        scopePath: `${scopePath}.${node.id}.iteration.subGraph`,
-        depth: depth + 1,
-        ancestry: childAncestry,
-      }))
-    }
+function collectNestedNodes(
+  node: WorkflowDesignGraphNode,
+  scopePath: string,
+  depth: number,
+  ancestry: string[],
+): WorkflowDesignNodeView[] {
+  const result: WorkflowDesignNodeView[] = []
+  const nextAncestry = [...ancestry, node.id]
+  const loopGraph = node.data?.loop?.subGraph
+  if (loopGraph !== undefined) {
+    result.push(...collectGraphNodes({
+      graph: loopGraph,
+      scopePath: `${scopePath}.${node.id}.loop.subGraph`,
+      depth: depth + 1,
+      ancestry: nextAncestry,
+    }))
+  }
+  const iterationGraph = node.data?.iteration?.subGraph
+  if (iterationGraph !== undefined) {
+    result.push(...collectGraphNodes({
+      graph: iterationGraph,
+      scopePath: `${scopePath}.${node.id}.iteration.subGraph`,
+      depth: depth + 1,
+      ancestry: nextAncestry,
+    }))
   }
   return result
 }
@@ -1246,219 +745,71 @@ function collectNestedGraphViews(
 ): WorkflowDesignGraphView[] {
   const result: WorkflowDesignGraphView[] = []
   for (const node of graph.nodes) {
-    const data = node.data
-    const loopSubGraph = data?.loop?.subGraph
-    if (isWorkflowDesignGraph(loopSubGraph)) {
-      const childScopePath = `${scopePath}.${node.id}.loop.subGraph`
+    const loopGraph = node.data?.loop?.subGraph
+    if (loopGraph !== undefined) {
+      const nextScopePath = `${scopePath}.${node.id}.loop.subGraph`
       result.push({
-        key: childScopePath,
-        id: typeof loopSubGraph.id === 'string' && loopSubGraph.id.length > 0 ? loopSubGraph.id : childScopePath,
-        title: `${readNodeTitle(node)} Loop Subgraph`,
+        key: nextScopePath,
+        id: loopGraph.id ?? `${node.id}.loop`,
+        title: `${node.id} / loop`,
         depth: depth + 1,
-        scopePath: childScopePath,
-        graph: loopSubGraph,
+        scopePath: nextScopePath,
+        graph: loopGraph,
         carrier: 'loop',
         ownerNodeId: node.id,
         ownerNode: node,
       })
-      result.push(...collectNestedGraphViews(loopSubGraph, childScopePath, depth + 1))
+      result.push(...collectNestedGraphViews(loopGraph, nextScopePath, depth + 1))
     }
-
-    const iterationSubGraph = data?.iteration?.subGraph
-    if (isWorkflowDesignGraph(iterationSubGraph)) {
-      const childScopePath = `${scopePath}.${node.id}.iteration.subGraph`
+    const iterationGraph = node.data?.iteration?.subGraph
+    if (iterationGraph !== undefined) {
+      const nextScopePath = `${scopePath}.${node.id}.iteration.subGraph`
       result.push({
-        key: childScopePath,
-        id: typeof iterationSubGraph.id === 'string' && iterationSubGraph.id.length > 0
-          ? iterationSubGraph.id
-          : childScopePath,
-        title: `${readNodeTitle(node)} Iteration Subgraph`,
+        key: nextScopePath,
+        id: iterationGraph.id ?? `${node.id}.iteration`,
+        title: `${node.id} / iteration`,
         depth: depth + 1,
-        scopePath: childScopePath,
-        graph: iterationSubGraph,
+        scopePath: nextScopePath,
+        graph: iterationGraph,
         carrier: 'iteration',
         ownerNodeId: node.id,
         ownerNode: node,
       })
-      result.push(...collectNestedGraphViews(iterationSubGraph, childScopePath, depth + 1))
+      result.push(...collectNestedGraphViews(iterationGraph, nextScopePath, depth + 1))
     }
   }
   return result
 }
 
 function collectGraphEdges(view: WorkflowDesignGraphView): WorkflowDesignEdgeView[] {
-  const nodeById = new Map(view.graph.nodes.map(node => [node.id, node] as const))
   return view.graph.edges.map((edge, index) => {
-    const sourceNode = nodeById.get(edge.source)
-    const targetNode = nodeById.get(edge.target)
+    const sourceNode = view.graph.nodes.find(node => node.id === edge.source)
+    const targetNode = view.graph.nodes.find(node => node.id === edge.target)
     return {
-      key: `${view.scopePath}:${readEdgeId(edge, index)}`,
-      id: readEdgeId(edge, index),
+      key: `${view.scopePath}:edge:${edge.id ?? index}`,
+      id: edge.id ?? `${edge.source}-${edge.target}`,
       source: edge.source,
       target: edge.target,
       depth: view.depth,
       scopePath: view.scopePath,
       graph: view.graph,
       edge,
-      ...(sourceNode !== undefined ? { sourceNode } : {}),
-      ...(targetNode !== undefined ? { targetNode } : {}),
+      ...(sourceNode === undefined ? {} : { sourceNode }),
+      ...(targetNode === undefined ? {} : { targetNode }),
     }
   })
 }
 
-function readNodeTitle(node: WorkflowDesignGraphNode): string {
-  const title = node.data?.title
-  return typeof title === 'string' && title.length > 0 ? title : node.id
+function isClassModelToolNode(node: WorkflowDesignGraphNode): boolean {
+  const data = node.data
+  return (data?.type === 'tool' || node.type === 'tool') && data?.provider === 'class-model'
 }
 
-function readEdgeId(edge: WorkflowDesignGraphEdge, index: number): string {
-  return typeof edge.id === 'string' && edge.id.length > 0 ? edge.id : `edge.${edge.source}.${edge.target}.${index}`
-}
-
-function nextEdgeId(graph: WorkflowDesignGraph, source: string, target: string): string {
-  const base = `edge.${source}.${target}`.replace(/[^\w.-]+/gu, '-')
-  const used = new Set(graph.edges.map((edge, index) => readEdgeId(edge, index)))
-  if (!used.has(base)) return base
-  for (let index = 2; ; index += 1) {
-    const candidate = `${base}.${index}`
-    if (!used.has(candidate)) return candidate
-  }
-}
-
-function nextNodeId(graph: WorkflowDesignGraph, preferredId: string): string {
-  const base = sanitizeIdentifier(preferredId.trim().length > 0 ? preferredId : 'node.custom')
-  const used = new Set(graph.nodes.map(node => node.id))
-  if (!used.has(base)) return base
-  for (let index = 2; ; index += 1) {
-    const candidate = `${base}.${index}`
-    if (!used.has(candidate)) return candidate
-  }
-}
-
-function defaultNodeId(kind: WorkflowDesignNodeCreateKind, phaseId?: string): string {
-  const normalizedPhaseId = phaseId?.trim()
-  if (kind === 'tool') {
-    return `phase.${sanitizeIdentifier(
-      normalizedPhaseId !== undefined && normalizedPhaseId.length > 0 ? normalizedPhaseId : 'custom',
-    )}`
-  }
-  if (kind === 'loop') return 'loop.group'
-  if (kind === 'start') return 'start'
-  if (kind === 'end') return 'end'
-  if (kind === 'exit-loop') return 'loop.exit'
-  return 'node.custom'
-}
-
-function sanitizeIdentifier(value: string): string {
-  const normalized = value.trim().replace(/[^\w.-]+/gu, '-').replace(/^-+|-+$/gu, '')
-  return normalized.length > 0 ? normalized : 'node.custom'
-}
-
-function isJsonRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function normalizePosition(
-  position: WorkflowDesignNodeCreateInput['position'],
-  index: number,
-): { x: number; y: number } {
-  const fallbackX = 80 + (index % 4) * 240
-  const fallbackY = 80 + Math.floor(index / 4) * 160
-  return {
-    x: typeof position?.x === 'number' && Number.isFinite(position.x) ? position.x : fallbackX,
-    y: typeof position?.y === 'number' && Number.isFinite(position.y) ? position.y : fallbackY,
-  }
-}
-
-function createNodeData(nodeId: string, input: WorkflowDesignNodeCreateInput): WorkflowDesignNodeData {
-  const normalizedTitle = input.title?.trim()
-  const title = normalizedTitle !== undefined && normalizedTitle.length > 0
-    ? normalizedTitle
-    : defaultNodeTitle(input.nodeKind, nodeId)
-  const desc = input.desc?.trim() ?? ''
-  if (input.nodeKind === 'tool') {
-    const normalizedPhaseId = input.phaseId?.trim()
-    const phaseId = normalizedPhaseId !== undefined && normalizedPhaseId.length > 0
-      ? normalizedPhaseId
-      : nodeId.replace(/^phase\./u, '')
-    const normalizedSectionPath = input.sectionPath?.trim()
-    const sectionPath = normalizedSectionPath !== undefined && normalizedSectionPath.length > 0
-      ? normalizedSectionPath
-      : `factory.${phaseId}`
-    const normalizedPublishPath = input.publishPath?.trim()
-    const publishPath = normalizedPublishPath !== undefined && normalizedPublishPath.length > 0
-      ? normalizedPublishPath
-      : `workflow.${sectionPath}`
-    return {
-      type: 'tool',
-      title,
-      desc,
-      provider_id: 'spark.model-editor',
-      provider_type: 'builtin',
-      tool_name: SINGLE_MODEL_EDIT_TOOL_NAME,
-      tool_label: 'Single Model Edit',
-      tool_config: {},
-      tool_parameters: {},
-      outputs: {},
-      model: {
-        phaseId,
-        sectionPath,
-        value: {},
-      },
-      x_spark: {
-        nodeRole: 'single-model-edit',
-        phaseId,
-        sectionPath,
-        publishPath,
-      },
-    }
-  }
-
-  if (input.nodeKind === 'loop') {
-    return {
-      type: 'loop',
-      title,
-      desc,
-      loop: {
-        mode: 'progressive',
-        maxLoopCount: 10,
-        exitNodeId: 'loop.exit',
-        subGraph: {
-          id: `${nodeId}.loop.subGraph`,
-          nodes: [
-            {
-              id: 'loop.exit',
-              type: 'custom',
-              position: { x: 420, y: 180 },
-              data: { type: 'exit-loop', title: 'Exit Loop' },
-            },
-          ],
-          edges: [],
-          viewport: { x: 0, y: 0, zoom: 1 },
-        },
-      },
-    }
-  }
-
-  return {
-    type: input.nodeKind,
-    title,
-    desc,
-  }
-}
-
-function defaultNodeTitle(kind: WorkflowDesignNodeCreateKind, nodeId: string): string {
-  if (kind === 'tool') return 'Single Model Edit'
-  if (kind === 'loop') return 'Loop Group'
-  if (kind === 'start') return 'Start'
-  if (kind === 'end') return 'End'
-  if (kind === 'exit-loop') return 'Exit Loop'
-  return nodeId
-}
-
-function isWorkflowDesignGraph(value: unknown): value is WorkflowDesignGraph {
-  if (!isRecordValue(value)) return false
-  return Array.isArray(value['nodes']) && Array.isArray(value['edges'])
+function ensureDocumentSpark(document: WorkflowDesignDocument): JsonRecord {
+  const spark = document.x_spark
+  if (isJsonRecord(spark)) return spark
+  document.x_spark = {}
+  return document.x_spark
 }
 
 function ensureNodeData(node: WorkflowDesignGraphNode): WorkflowDesignNodeData {
@@ -1466,21 +817,137 @@ function ensureNodeData(node: WorkflowDesignGraphNode): WorkflowDesignNodeData {
   return node.data
 }
 
-function ensureDocumentSpark(document: WorkflowDesignDocument): JsonRecord {
-  if (!isRecordValue(document.x_spark)) {
-    document.x_spark = {}
-  }
-  return document.x_spark
-}
-
 function ensureRecord(parent: JsonRecord, key: string): JsonRecord {
-  const current = parent[key]
-  if (isRecordValue(current)) return current
+  const existing = parent[key]
+  if (isJsonRecord(existing)) return existing
   const created: JsonRecord = {}
   parent[key] = created
   return created
 }
 
-function isRecordValue(value: unknown): value is JsonRecord {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
+function dirtyPathsFromDraft(draft: JsonRecord): string[] {
+  const value = draft['dirtyPaths']
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+}
+
+function nextNodeId(graph: WorkflowDesignGraph, baseId: string): string {
+  const used = new Set(graph.nodes.map(node => node.id))
+  if (!used.has(baseId)) return baseId
+  let index = 2
+  while (used.has(`${baseId}-${index}`)) {
+    index += 1
+  }
+  return `${baseId}-${index}`
+}
+
+function nextEdgeId(graph: WorkflowDesignGraph, source: string, target: string): string {
+  const baseId = `edge.${source}.${target}`.replace(/[^a-zA-Z0-9_.-]/gu, '-')
+  const used = new Set(graph.edges.map(edge => edge.id).filter((id): id is string => typeof id === 'string'))
+  if (!used.has(baseId)) return baseId
+  let index = 2
+  while (used.has(`${baseId}-${index}`)) {
+    index += 1
+  }
+  return `${baseId}-${index}`
+}
+
+function defaultNodeId(kind: WorkflowDesignNodeCreateKind): string {
+  switch (kind) {
+    case 'class-model-tool':
+      return 'tool.classModel'
+    case 'chatflow':
+      return 'chatflow.clarify'
+    case 'workflow':
+      return 'workflow.call'
+    case 'start':
+      return 'start'
+    case 'end':
+      return 'end'
+    case 'condition':
+      return 'condition'
+    case 'code':
+      return 'code'
+    case 'llm':
+      return 'llm'
+    case 'agent':
+      return 'agent'
+    case 'custom':
+      return 'node.custom'
+  }
+}
+
+function defaultNodeTitle(kind: WorkflowDesignNodeCreateKind): string {
+  switch (kind) {
+    case 'class-model-tool':
+      return 'ClassModel Tool'
+    case 'chatflow':
+      return 'Chatflow'
+    case 'workflow':
+      return 'Workflow'
+    case 'start':
+      return 'Start'
+    case 'end':
+      return 'End'
+    case 'condition':
+      return 'Condition'
+    case 'code':
+      return 'Code'
+    case 'llm':
+      return 'LLM'
+    case 'agent':
+      return 'Agent'
+    case 'custom':
+      return 'Custom'
+  }
+}
+
+function normalizePosition(
+  input: WorkflowDesignNodeCreateInput['position'],
+  index: number,
+): NonNullable<WorkflowDesignGraphNode['position']> {
+  return {
+    x: typeof input?.x === 'number' ? input.x : 120 + index * 220,
+    y: typeof input?.y === 'number' ? input.y : 120,
+  }
+}
+
+function readErrorStatus(error: unknown): number | null {
+  if (!isJsonRecord(error)) return null
+  const status = error['status']
+  if (typeof status === 'number') return status
+  const response = error['response']
+  if (!isJsonRecord(response)) return null
+  const responseStatus = response['status']
+  return typeof responseStatus === 'number' ? responseStatus : null
+}
+
+function readTitle(data: JsonRecord, fallback: string): string {
+  const title = readNonBlankText(data['title'])
+  return title ?? fallback
+}
+
+function readNonBlankText(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function isDefinitionNodeType(value: unknown): value is AgentWorkflowGraphNodeType {
+  return value === 'start'
+    || value === 'tool'
+    || value === 'chatflow'
+    || value === 'workflow'
+    || value === 'condition'
+    || value === 'code'
+    || value === 'llm'
+    || value === 'agent'
+    || value === 'end'
+}
+
+function isWorkflowReference(value: unknown): value is WorkflowDesignWorkflowReference {
+  return isJsonRecord(value) && typeof value['workflowId'] === 'string'
+}
+
+function isJsonRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

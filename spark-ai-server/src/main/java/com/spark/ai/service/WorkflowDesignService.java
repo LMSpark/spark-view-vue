@@ -32,50 +32,8 @@ public class WorkflowDesignService {
     private static final String DESIGN_KIND = "agent.workflow.design";
     private static final String DEFINITION_KIND = "agent.workflow";
     private static final String DEFINITION_SCHEMA = "spark.agent.workflow.definition.v1";
-    private static final String GRAPH_NODE_TYPE = "custom";
-    private static final String SINGLE_MODEL_EDIT_TOOL_NAME = "single_model_edit";
-    private static final String SINGLE_MODEL_EDIT_PROVIDER = "spark.model-editor";
-    private static final List<FactoryPhase> FACTORY_PHASES = List.of(
-            new FactoryPhase("F0", "identity", "factory.identity", "workflow.factory.identity"),
-            new FactoryPhase("F1", "materials", "factory.materials", "workflow.factory.materials"),
-            new FactoryPhase("F2", "knowledge", "factory.knowledge", "workflow.factory.knowledge"),
-            new FactoryPhase("F3", "contract", "factory.contract", "workflow.factory.contract"),
-            new FactoryPhase("F4", "runtime", "factory.runtime", "workflow.factory.runtime"),
-            new FactoryPhase("F5", "governance", "factory.governance", "workflow.factory.governance"),
-            new FactoryPhase("F6", "acceptance", "factory.acceptance", "workflow.factory.acceptance"),
-            new FactoryPhase("F7", "activation", "factory.activation", "workflow.factory.activation"),
-            new FactoryPhase("F8", "workOrder", "factory.workOrder", "workflow.factory.workOrder"),
-            new FactoryPhase("F9", "delivery", "factory.delivery", "workflow.factory.delivery"));
-    private static final List<ProcessStage> PROCESS_STAGES = List.of(
-            new ProcessStage("PD1.scope-inventory", "Scope and inventory", "1-20", 0, 0, List.of(
-                    new StageConsideration("F0", "Identity boundary", "pageIdResolvedCount", "Resolved pageId count", "gte", 1, "page"),
-                    new StageConsideration("F1", "Material inventory", "fileBindingCount", "File binding count", "gte", 4, "file"),
-                    new StageConsideration("F6", "Entry acceptance", "bootstrapMissingCapabilityCount", "Missing capability count", "eq", 0, "capability"))),
-            new ProcessStage("PD2.data-model", "Data planning and table model", "21-40", 300, 0, List.of(
-                    new StageConsideration("F1", "Data material", "businessObjectCount", "Business object count", "gte", 1, "object"),
-                    new StageConsideration("F2", "Data knowledge", "uiStateColumnCount", "UI state column count", "eq", 0, "column"),
-                    new StageConsideration("F6", "Model acceptance", "dataSetRoundTripErrorCount", "DataSet round-trip error count", "eq", 0, "error"))),
-            new ProcessStage("PD3.table-relations", "Table relations", "41-50", 600, 0, List.of(
-                    new StageConsideration("F3", "Relation contract", "relationFieldMissingCount", "Missing relation field count", "eq", 0, "field"),
-                    new StageConsideration("F5", "Relation governance", "relationWithoutConsumerCount", "Relation without consumer count", "eq", 0, "relation"),
-                    new StageConsideration("F6", "Relation acceptance", "missingChildFieldCount", "Missing child field count", "eq", 0, "field"))),
-            new ProcessStage("PD4.page-data-use", "Page planning and data use", "51-70", 900, 0, List.of(
-                    new StageConsideration("F3", "Consumption contract", "regionMappingCoveragePercent", "Region mapping coverage", "gte", 100, "percent"),
-                    new StageConsideration("F5", "Consumption governance", "decorativeDataViewCount", "Decorative DataView count", "eq", 0, "view"),
-                    new StageConsideration("F8", "Work order traceability", "consumerTraceabilityPercent", "Consumer traceability", "gte", 100, "percent"))),
-            new ProcessStage("PD5.views-dependencies", "Views and dependencies", "71-88", 900, 240, List.of(
-                    new StageConsideration("F4", "View workstation", "stateIsolationDecisionCoveragePercent", "State isolation decision coverage", "gte", 100, "percent"),
-                    new StageConsideration("F5", "View governance", "viewWithoutConsumerCount", "View without consumer count", "eq", 0, "view"),
-                    new StageConsideration("F6", "Dependency acceptance", "circularDependencyCount", "Circular dependency count", "eq", 0, "cycle"))),
-            new ProcessStage("PD6.structure-behavior-style", "Structure behavior style", "89-96", 600, 240, List.of(
-                    new StageConsideration("F2", "Component knowledge", "componentGuideCoveragePercent", "Component guide coverage", "gte", 100, "percent"),
-                    new StageConsideration("F4", "Structure workstation", "nodeTreeMutationCount", "NodeTree mutation count", "gte", 1, "mutation"),
-                    new StageConsideration("F6", "Four-file acceptance", "missingHandlerCount", "Missing handler count", "eq", 0, "handler"),
-                    new StageConsideration("F9", "Delivery boundary", "outOfArtifactWriteCount", "Out-of-artifact write count", "eq", 0, "write"))),
-            new ProcessStage("PD7.verify-deliver", "Verify and deliver", "97-100", 300, 240, List.of(
-                    new StageConsideration("F6", "Final acceptance", "previewErrorCount", "Preview error count", "eq", 0, "error"),
-                    new StageConsideration("F7", "Design handoff", "executionImplementationStepCount", "Execution implementation step count", "eq", 0, "step"),
-                    new StageConsideration("F9", "Delivery closure", "deliveryArtifactCount", "Delivery artifact count", "gte", 4, "file"))));
+    private static final String CLASS_MODEL_PROVIDER = "class-model";
+    private static final String PLACEHOLDER_TOOL_NAME = "spark.placeholder.tool";
 
     private final ObjectMapper objectMapper;
     private final Path root;
@@ -278,25 +236,16 @@ public class WorkflowDesignService {
         document.put("version", 1);
         document.put("id", workflowId);
 
-        ObjectNode app = document.putObject("app");
-        app.put("id", workflowId);
-        app.put("name", resolvedTitle);
-        app.put("mode", "workflow");
-        app.put("description", "");
-        app.put("icon", "spark");
-        app.put("icon_background", "#0f766e");
-
         ObjectNode workflow = document.putObject("workflow");
         workflow.put("id", workflowId);
         workflow.put("version", 1);
+        workflow.putArray("variables");
         workflow.set("graph", createDefaultWorkflowGraph(workflowId));
 
         ObjectNode spark = document.putObject("x_spark");
         spark.put("schema", "spark.agent.workflow.design.v1");
-        spark.put("businessFactory", true);
-        spark.put("phaseModel", "F0-F9-considerations");
-        spark.set("factory", createDefaultFactorySections());
-        spark.set("process", createDefaultWorkflowProcess());
+        ObjectNode designer = spark.putObject("designer");
+        designer.put("title", resolvedTitle);
 
         ObjectNode draft = spark.putObject("draft");
         draft.put("status", "draft");
@@ -311,168 +260,16 @@ public class WorkflowDesignService {
         return document;
     }
 
-    private ObjectNode createDefaultFactorySections() {
-        ObjectNode factory = objectMapper.createObjectNode();
-        for (FactoryPhase phase : FACTORY_PHASES) {
-            ObjectNode section = factory.putObject(phase.phase());
-            section.put("phaseId", phase.phaseId());
-            section.put("phase", phase.phase());
-            section.put("sectionPath", phase.sectionPath());
-            section.put("publishPath", phase.publishPath());
-            section.putObject("value");
-        }
-        return factory;
-    }
-
-    private ObjectNode createDefaultWorkflowProcess() {
-        ObjectNode process = objectMapper.createObjectNode();
-        process.put("processId", "pageDesign.data-first-100-step-process");
-        process.put("title", "Page design seven-stage data-first process");
-        process.put("sourceRef", "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10");
-        process.put("principle", "The graph contains craft steps; F0-F9 are stage considerations with numeric metrics.");
-        ArrayNode knowledgeSources = process.putArray("knowledgeSources");
-        addPageDesignProcessDocumentRef(knowledgeSources);
-        addGeneratedKnowledgeRef(knowledgeSources, "generated.manifest", "DTS ClassModel bundle manifest",
-                "generated/dts-class-model/manifest.json",
-                "Locate generated model, component, tool, and script knowledge shards.");
-        addGeneratedKnowledgeRef(knowledgeSources, "generated.configPageNode", "ConfigPageNode",
-                "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
-                "Confirm four-file memory editing APIs.", "ConfigPageNode");
-        addGeneratedKnowledgeRef(knowledgeSources, "generated.dataSetCrudTool", "DataSetCrudTool",
-                "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
-                "Confirm structured DataSet, relation, view, and dependency mutation parameters.", "DataSetCrudTool");
-        ArrayNode stages = process.putArray("stages");
-        for (ProcessStage stage : PROCESS_STAGES) {
-            ObjectNode stageNode = stages.addObject();
-            stageNode.put("stageId", stage.stageId());
-            stageNode.put("title", stage.title());
-            stageNode.put("sourceSteps", stage.sourceSteps());
-            stageNode.put("goal", "Complete source steps " + stage.sourceSteps() + " in the page design craft.");
-            addStageKnowledgeRefs(stageNode.putArray("knowledgeRefs"), stage);
-            ArrayNode steps = stageNode.putArray("steps");
-            ObjectNode step = steps.addObject();
-            step.put("stepId", stage.stageId() + ".1");
-            step.put("title", stage.title());
-            step.put("sourceSteps", stage.sourceSteps());
-            step.putArray("actions").add("Follow the source step range.");
-            step.putArray("outputs").add("Stage result");
-            step.putArray("checks").add("Stage result is closed before moving on.");
-            ArrayNode considerations = stageNode.putArray("considerations");
-            for (StageConsideration stageConsideration : stage.considerations()) {
-                ObjectNode consideration = considerations.addObject();
-                consideration.put("phaseId", stageConsideration.phaseId());
-                consideration.put("title", stageConsideration.title());
-                consideration.putArray("checks").add(stageConsideration.metricTitle());
-                ArrayNode metrics = consideration.putArray("metrics");
-                ObjectNode metric = metrics.addObject();
-                metric.put("metricId", stageConsideration.metricId());
-                metric.put("title", stageConsideration.metricTitle());
-                metric.put("operator", stageConsideration.operator());
-                metric.put("target", stageConsideration.target());
-                metric.put("unit", stageConsideration.unit());
-            }
-        }
-        return process;
-    }
-
-    private void addStageKnowledgeRefs(ArrayNode knowledgeRefs, ProcessStage stage) {
-        addPageDesignProcessDocumentRef(knowledgeRefs);
-        switch (stage.stageId()) {
-            case "PD1.scope-inventory" -> {
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.projectModel", "ProjectModel",
-                        "generated/dts-class-model/files/packages/spark-project-model/src/project/project-model.ts.json",
-                        "Confirm pageDesign entry and openPageDesign page model access.", "ProjectModel");
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.configPageNode", "ConfigPageNode",
-                        "generated/dts-class-model/files/packages/spark-project-model/src/page/config-page.ts.json",
-                        "Confirm four-file memory model and editing API boundaries.", "ConfigPageNode");
-            }
-            case "PD2.data-model" -> {
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataSet", "DataSet",
-                        "generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json",
-                        "Confirm pagedata root model and serialization boundary.", "DataSet");
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataSetCrudTool", "DataSetCrudTool",
-                        "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
-                        "Confirm structured table creation and update parameters.", "DataSetCrudTool");
-            }
-            case "PD3.table-relations" -> addGeneratedKnowledgeRef(knowledgeRefs,
-                    "generated.dataSetCrudTool", "DataSetCrudTool",
-                    "generated/dts-class-model/files/packages/spark-data/src/dataset-crud-tool.ts.json",
-                    "Confirm relation selector and relation mutation parameters.", "DataSetCrudTool");
-            case "PD4.page-data-use" -> {
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataViewKey", "DataViewKey",
-                        "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
-                        "Confirm dataViewKey, dataMember, and dataField separation.", "DataViewKeyDescriptor");
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.rendererButton", "RendererButton props",
-                        "generated/dts-class-model/files/packages/spark-component/src/components/containers/layout/RendererButton.props.ts.json",
-                        "Confirm action scope and dataViewKey parameters.", "RButtonProps");
-            }
-            case "PD5.views-dependencies" -> addGeneratedKnowledgeRef(knowledgeRefs,
-                    "generated.dataView", "DataView",
-                    "generated/dts-class-model/files/packages/spark-data/src/data-view.ts.json",
-                    "Confirm DataView state isolation and dependency basis.", "DataView");
-            case "PD6.structure-behavior-style" -> {
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.sparkNodeTree", "SparkNodeTree",
-                        "generated/dts-class-model/files/packages/spark-project-model/src/node-tree/spark-node-tree.ts.json",
-                        "Confirm rule node tree mutation rules.", "SparkNodeTree");
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.rendererTable", "RendererTable props",
-                        "generated/dts-class-model/files/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts.json",
-                        "Confirm table component data source and action props.", "RTableProps");
-            }
-            case "PD7.verify-deliver" -> {
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.sparkPageRenderer", "SparkPageRenderer",
-                        "generated/dts-class-model/files/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.json",
-                        "Confirm preview and render error feedback source.", "PageRuntimeErrorPayload");
-                addGeneratedKnowledgeRef(knowledgeRefs, "generated.dataViewKey", "DataViewKey",
-                        "generated/dts-class-model/files/packages/spark-data/src/core/data-view-key.ts.json",
-                        "Confirm final binding closure checks.", "DataViewKeyDescriptor");
-            }
-            default -> addGeneratedKnowledgeRef(knowledgeRefs, "generated.manifest", "DTS ClassModel bundle manifest",
-                    "generated/dts-class-model/manifest.json",
-                    "Locate generated model, component, tool, and script knowledge shards.");
-        }
-    }
-
-    private void addPageDesignProcessDocumentRef(ArrayNode refs) {
-        ObjectNode ref = refs.addObject();
-        ref.put("refId", "doc.pageDesign100");
-        ref.put("title", "Page design 100-step process");
-        ref.put("source", "document");
-        ref.put("path", "docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10");
-        ref.put("usage", "Define seven-stage page design craft boundaries and acceptance closure.");
-    }
-
-    private void addGeneratedKnowledgeRef(ArrayNode refs, String refId, String title, String path,
-                                          String usage, String... symbols) {
-        ObjectNode ref = refs.addObject();
-        ref.put("refId", refId);
-        ref.put("title", title);
-        ref.put("source", "generated-dts-class-model");
-        ref.put("path", path);
-        if (symbols.length > 0) {
-            ArrayNode symbolArray = ref.putArray("symbols");
-            for (String symbol : symbols) {
-                symbolArray.add(symbol);
-            }
-        }
-        ref.put("usage", usage);
-    }
-
     private ObjectNode createDefaultWorkflowGraph(String workflowId) {
         ObjectNode graph = objectMapper.createObjectNode();
-        graph.put("id", workflowId + ".factory-process");
+        graph.put("id", workflowId + ".graph");
         ArrayNode nodes = objectMapper.createArrayNode();
         addStartNode(nodes);
-        addProcessStageNodes(nodes);
+        addClassModelToolNode(nodes);
         addEndNode(nodes);
         ArrayNode edges = objectMapper.createArrayNode();
-        addGraphEdge(edges, "edge.start.PD1", "start", "process.PD1.scope-inventory", "source", "target");
-        addGraphEdge(edges, "edge.PD1.PD2", "process.PD1.scope-inventory", "process.PD2.data-model", "source", "target");
-        addGraphEdge(edges, "edge.PD2.PD3", "process.PD2.data-model", "process.PD3.table-relations", "source", "target");
-        addGraphEdge(edges, "edge.PD3.PD4", "process.PD3.table-relations", "process.PD4.page-data-use", "source", "target");
-        addGraphEdge(edges, "edge.PD4.PD5", "process.PD4.page-data-use", "process.PD5.views-dependencies", "source", "target");
-        addGraphEdge(edges, "edge.PD5.PD6", "process.PD5.views-dependencies", "process.PD6.structure-behavior-style", "source", "target");
-        addGraphEdge(edges, "edge.PD6.PD7", "process.PD6.structure-behavior-style", "process.PD7.verify-deliver", "source", "target");
-        addGraphEdge(edges, "edge.PD7.end", "process.PD7.verify-deliver", "end", "source", "target");
+        addGraphEdge(edges, "edge.start.tool", "start", "tool.classModel", "source", "target");
+        addGraphEdge(edges, "edge.tool.end", "tool.classModel", "end", "source", "target");
 
         graph.set("nodes", nodes);
         graph.set("edges", edges);
@@ -486,102 +283,45 @@ public class WorkflowDesignService {
     private void addStartNode(ArrayNode nodes) {
         ObjectNode node = nodes.addObject();
         node.put("id", "start");
-        node.put("type", GRAPH_NODE_TYPE);
+        node.put("type", "start");
         ObjectNode position = node.putObject("position");
-        position.put("x", -260);
+        position.put("x", 0);
         position.put("y", 0);
         ObjectNode data = node.putObject("data");
         data.put("type", "start");
         data.put("title", "Start");
-        data.put("desc", "Factory process entry");
-        data.putArray("variables");
-    }
-
-    private void addProcessStageNodes(ArrayNode nodes) {
-        for (ProcessStage stage : PROCESS_STAGES) {
-            ObjectNode node = nodes.addObject();
-            node.put("id", "process." + stage.stageId());
-            node.put("type", GRAPH_NODE_TYPE);
-            ObjectNode position = node.putObject("position");
-            position.put("x", stage.x());
-            position.put("y", stage.y());
-            ObjectNode data = node.putObject("data");
-            data.put("type", "process-step");
-            data.put("title", stage.title());
-            data.put("desc", "Source steps " + stage.sourceSteps());
-            ObjectNode spark = data.putObject("x_spark");
-            spark.put("nodeRole", "process-stage");
-            spark.put("stageId", stage.stageId());
-            spark.put("sourceSteps", stage.sourceSteps());
-            ArrayNode considerations = spark.putArray("factoryConsiderations");
-            for (StageConsideration stageConsideration : stage.considerations()) {
-                considerations.add(stageConsideration.phaseId());
-            }
-        }
+        data.put("desc", "Workflow input");
     }
 
     private void addEndNode(ArrayNode nodes) {
         ObjectNode node = nodes.addObject();
         node.put("id", "end");
-        node.put("type", GRAPH_NODE_TYPE);
+        node.put("type", "end");
         ObjectNode position = node.putObject("position");
-        position.put("x", -260);
-        position.put("y", 240);
+        position.put("x", 520);
+        position.put("y", 0);
         ObjectNode data = node.putObject("data");
         data.put("type", "end");
         data.put("title", "End");
-        data.put("desc", "Factory process completion");
-        data.putArray("outputs");
+        data.put("desc", "Workflow output");
+        data.putObject("outputMapping");
     }
 
-    private void addSingleModelEditToolNode(ArrayNode nodes, String id, String phaseId, String sectionPath,
-                                            String title, int x, int y) {
+    private void addClassModelToolNode(ArrayNode nodes) {
         ObjectNode node = nodes.addObject();
-        node.put("id", id);
-        node.put("type", GRAPH_NODE_TYPE);
+        node.put("id", "tool.classModel");
+        node.put("type", "tool");
         ObjectNode position = node.putObject("position");
-        position.put("x", x);
-        position.put("y", y);
+        position.put("x", 260);
+        position.put("y", 0);
         ObjectNode data = node.putObject("data");
         data.put("type", "tool");
-        data.put("title", title);
-        data.put("desc", "Single-model edit tool node for " + sectionPath);
-        data.put("provider_id", SINGLE_MODEL_EDIT_PROVIDER);
-        data.put("provider_type", "builtin");
-        data.put("tool_name", SINGLE_MODEL_EDIT_TOOL_NAME);
-        data.put("tool_label", "Single Model Edit");
-
-        ObjectNode toolConfig = data.putObject("tool_config");
-        toolConfig.put("target", "node.data.model");
-        toolConfig.put("operation", "replace-model");
-        toolConfig.put("outputVariable", "updated_model");
-
-        ObjectNode toolParameters = data.putObject("tool_parameters");
-        toolParameters.put("document_id", "{{#sys.workflow_id#}}");
-        toolParameters.put("node_id", id);
-        toolParameters.put("section_path", sectionPath);
-        toolParameters.put("patch", "{}");
-
-        ObjectNode outputs = data.putObject("outputs");
-        outputs.put("updated_model", "object");
-        outputs.put("validation_issues", "array[object]");
-
-        data.set("model", createDefaultPhaseModel(phaseId, sectionPath));
-
-        ObjectNode spark = data.putObject("x_spark");
-        spark.put("nodeRole", "single-model-edit");
-        spark.put("phaseId", phaseId);
-        spark.put("sectionPath", sectionPath);
-        spark.put("modelPath", "workflow.graph.nodes." + id + ".data.model");
-        spark.put("publishPath", "workflow.factory." + sectionPath.substring("factory.".length()));
-    }
-
-    private ObjectNode createDefaultPhaseModel(String phaseId, String sectionPath) {
-        ObjectNode model = objectMapper.createObjectNode();
-        model.put("phaseId", phaseId);
-        model.put("sectionPath", sectionPath);
-        model.putObject("value");
-        return model;
+        data.put("title", "ClassModel Tool");
+        data.put("desc", "Configure provider/toolName/toolParameters before publishing.");
+        data.put("provider", CLASS_MODEL_PROVIDER);
+        data.put("toolName", PLACEHOLDER_TOOL_NAME);
+        data.putObject("toolParameters");
+        data.putObject("outputMapping");
     }
 
     private void addGraphEdge(ArrayNode edges, String id, String source, String target,
@@ -592,10 +332,10 @@ public class WorkflowDesignService {
         edge.put("target", target);
         edge.put("sourceHandle", sourceHandle);
         edge.put("targetHandle", targetHandle);
-        edge.put("type", GRAPH_NODE_TYPE);
+        edge.put("type", "custom");
         ObjectNode data = edge.putObject("data");
         data.put("relation", "sequence");
-        data.put("meaning", "craft-order");
+        data.put("meaning", "workflow-order");
     }
 
     private void validateDesignDocument(String workflowId, JsonNode document) {
@@ -609,7 +349,9 @@ public class WorkflowDesignService {
             throw new IllegalArgumentException("workflowId mismatch: path=" + workflowId
                     + ", document=" + documentId);
         }
-        requiredObject(document, "app");
+        rejectField(document, "app");
+        rejectField(document, "factory");
+        rejectField(document, "process");
 
         JsonNode workflow = requiredObject(document, "workflow");
         requireInt(workflow, "version", 1);
@@ -620,15 +362,14 @@ public class WorkflowDesignService {
         }
 
         JsonNode graph = requiredObject(workflow, "graph");
-        requireArray(graph, "nodes");
+        JsonNode nodes = requireArray(graph, "nodes");
         requireArray(graph, "edges");
         requiredObject(graph, "viewport");
-
-        if (!containsSingleModelEditTool(graph) && !containsProcessStageNode(graph)) {
-            throw new IllegalArgumentException("workflow graph must contain process-stage or single_model_edit nodes");
-        }
+        validateWorkflowNodes(nodes, true);
 
         JsonNode spark = requiredObject(document, "x_spark");
+        rejectField(spark, "factory");
+        rejectField(spark, "process");
         requiredObject(spark, "draft");
         requiredObject(spark, "validation");
     }
@@ -653,16 +394,17 @@ public class WorkflowDesignService {
                     + ", definition.source.designId=" + designId);
         }
         requireInt(source, "designVersion", 1);
+        rejectField(document, "app");
+        rejectField(document, "factory");
+        rejectField(document, "process");
 
-        JsonNode factory = requiredObject(document, "factory");
-        for (FactoryPhase phase : FACTORY_PHASES) {
-            JsonNode section = requiredObject(factory, phase.phase());
-            requireText(section, "phaseId", phase.phaseId());
-            requireText(section, "phase", phase.phase());
-            requireText(section, "sectionPath", phase.sectionPath());
-            requireText(section, "publishPath", phase.publishPath());
-            requiredObject(section, "value");
-        }
+        JsonNode workflow = requiredObject(document, "workflow");
+        requireArray(workflow, "variables");
+        JsonNode graph = requiredObject(workflow, "graph");
+        JsonNode nodes = requireArray(graph, "nodes");
+        JsonNode edges = requireArray(graph, "edges");
+        validateWorkflowNodes(nodes, false);
+        validateWorkflowEdges(nodes, edges);
 
         JsonNode spark = requiredObject(document, "x_spark");
         requireText(spark, "schema", DEFINITION_SCHEMA);
@@ -675,40 +417,87 @@ public class WorkflowDesignService {
         requireArray(validation, "issues");
     }
 
-    private boolean containsSingleModelEditTool(JsonNode graph) {
-        JsonNode nodes = graph.path("nodes");
-        if (nodes.isArray()) {
-            for (JsonNode node : nodes) {
-                JsonNode data = node.path("data");
-                if ("tool".equals(data.path("type").asText())
-                        && SINGLE_MODEL_EDIT_TOOL_NAME.equals(data.path("tool_name").asText())) {
-                    return true;
-                }
-                JsonNode subGraph = data.path("loop").path("subGraph");
-                if (subGraph.isObject() && containsSingleModelEditTool(subGraph)) {
-                    return true;
-                }
-                JsonNode iterationSubGraph = data.path("iteration").path("subGraph");
-                if (iterationSubGraph.isObject() && containsSingleModelEditTool(iterationSubGraph)) {
-                    return true;
-                }
+    private void validateWorkflowNodes(JsonNode nodes, boolean allowPlaceholderToolName) {
+        boolean hasStart = false;
+        boolean hasEnd = false;
+        for (JsonNode node : nodes) {
+            String id = requireNonBlankText(node, "id");
+            String type = requireNonBlankText(node, "type");
+            JsonNode data = requiredObject(node, "data");
+            String dataType = requireNonBlankText(data, "type");
+            if (!type.equals(dataType)) {
+                throw new IllegalArgumentException("workflow node type mismatch: " + id);
+            }
+            rejectLegacyNode(id, data);
+            if ("start".equals(type)) {
+                hasStart = true;
+            } else if ("end".equals(type)) {
+                hasEnd = true;
+            } else if ("tool".equals(type)) {
+                validateToolNode(id, data, allowPlaceholderToolName);
+            } else if ("chatflow".equals(type)) {
+                validateWorkflowRefNode(id, data);
             }
         }
-        return false;
+        if (!hasStart) {
+            throw new IllegalArgumentException("workflow graph must contain a start node");
+        }
+        if (!hasEnd) {
+            throw new IllegalArgumentException("workflow graph must contain an end node");
+        }
     }
 
-    private boolean containsProcessStageNode(JsonNode graph) {
-        JsonNode nodes = graph.path("nodes");
-        if (nodes.isArray()) {
-            for (JsonNode node : nodes) {
-                JsonNode data = node.path("data");
-                if ("process-step".equals(data.path("type").asText())
-                        && "process-stage".equals(data.path("x_spark").path("nodeRole").asText())) {
-                    return true;
-                }
+    private void validateWorkflowEdges(JsonNode nodes, JsonNode edges) {
+        List<String> nodeIds = new ArrayList<>();
+        for (JsonNode node : nodes) {
+            nodeIds.add(requireNonBlankText(node, "id"));
+        }
+        for (JsonNode edge : edges) {
+            String source = requireNonBlankText(edge, "source");
+            String target = requireNonBlankText(edge, "target");
+            if (!nodeIds.contains(source)) {
+                throw new IllegalArgumentException("workflow edge source missing: " + source);
+            }
+            if (!nodeIds.contains(target)) {
+                throw new IllegalArgumentException("workflow edge target missing: " + target);
             }
         }
-        return false;
+    }
+
+    private void validateToolNode(String id, JsonNode data, boolean allowPlaceholderToolName) {
+        requireText(data, "provider", CLASS_MODEL_PROVIDER);
+        requireNonBlankText(data, "toolName");
+        requiredObject(data, "toolParameters");
+        if (!allowPlaceholderToolName && PLACEHOLDER_TOOL_NAME.equals(data.path("toolName").asText())) {
+            throw new IllegalArgumentException("workflow tool node must set a real toolName: " + id);
+        }
+    }
+
+    private void validateWorkflowRefNode(String id, JsonNode data) {
+        JsonNode workflowRef = requiredObject(data, "workflowRef");
+        requireNonBlankText(workflowRef, "workflowId");
+        requiredObject(data, "inputMapping");
+        requiredObject(data, "outputMapping");
+        JsonNode definitionPath = workflowRef.get("definitionPath");
+        if (definitionPath != null && (!definitionPath.isTextual() || definitionPath.asText().isBlank())) {
+            throw new IllegalArgumentException("chatflow node definitionPath must be non-empty when provided: " + id);
+        }
+    }
+
+    private void rejectLegacyNode(String id, JsonNode data) {
+        if (data.has("tool_name") || "single_model_edit".equals(data.path("toolName").asText())) {
+            throw new IllegalArgumentException("legacy single_model_edit node is not allowed: " + id);
+        }
+        if ("process-step".equals(data.path("type").asText())
+                || "process-stage".equals(data.path("x_spark").path("nodeRole").asText())) {
+            throw new IllegalArgumentException("legacy process-stage node is not allowed: " + id);
+        }
+    }
+
+    private void rejectField(JsonNode node, String field) {
+        if (node.has(field)) {
+            throw new IllegalArgumentException("forbidden field: " + field);
+        }
     }
 
     private JsonNode requiredObject(JsonNode node, String field) {
@@ -723,11 +512,12 @@ public class WorkflowDesignService {
         requiredObject(node, field);
     }
 
-    private void requireArray(JsonNode node, String field) {
+    private JsonNode requireArray(JsonNode node, String field) {
         JsonNode value = node.get(field);
         if (value == null || !value.isArray()) {
             throw new IllegalArgumentException("missing array field: " + field);
         }
+        return value;
     }
 
     private void requireText(JsonNode node, String field, String expected) {
@@ -755,11 +545,11 @@ public class WorkflowDesignService {
     private void addDesignSummary(Map<String, Object> item, Path designFile) {
         try {
             JsonNode document = objectMapper.readTree(designFile.toFile());
-            JsonNode app = document.path("app");
             JsonNode workflow = document.path("workflow");
+            JsonNode designer = document.path("x_spark").path("designer");
             JsonNode draft = document.path("x_spark").path("draft");
-            if (app.path("name").isTextual()) {
-                item.put("title", app.path("name").asText());
+            if (designer.path("title").isTextual()) {
+                item.put("title", designer.path("title").asText());
             }
             if (workflow.path("version").isInt()) {
                 item.put("version", workflow.path("version").asInt());
@@ -820,14 +610,4 @@ public class WorkflowDesignService {
         }
     }
 
-    private record FactoryPhase(String phaseId, String phase, String sectionPath, String publishPath) {
-    }
-
-    private record ProcessStage(String stageId, String title, String sourceSteps, int x, int y,
-                                List<StageConsideration> considerations) {
-    }
-
-    private record StageConsideration(String phaseId, String title, String metricId, String metricTitle,
-                                      String operator, int target, String unit) {
-    }
 }

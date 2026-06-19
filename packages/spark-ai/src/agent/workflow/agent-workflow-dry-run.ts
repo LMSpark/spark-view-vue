@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-dry-run
- * 职责：作为运行时适配器消费 AgentWorkflowDefinition 中的绑定引用，执行 Host 激活和 dryRun 验收链。
- * 边界：不改变 definition 的工艺说明书定位；只调用 Host.ensure/dryRun，不启动 LLM turn，不执行工具，不处理 APP delivery。
- * AI用途：需要验证运行时是否能消费 workflow 工艺说明书中的 registration binding 时，用本模块确认链路。
+ * 职责：作为运行时承载适配器消费 AgentWorkflowDefinition，按 workflowId 绑定 Host 并执行 dryRun 验收链。
+ * 边界：definition 不保存注册信息；本模块只在运行时把 workflowId 解析到 Host 可执行对象。
+ * AI用途：需要验证运行时是否能承载 workflow definition 时，用本模块确认链路。
  */
 
 import type { AiJsonParams } from '../../json'
@@ -15,26 +15,32 @@ import type { AgentWorkflowDefinition } from './agent-workflow-definition'
 import { assertAgentWorkflowDefinition } from './agent-workflow-validation'
 
 export type AgentWorkflowActivation = Readonly<{
+  workflowId: string
   alias: string
   moduleId: string
-  registrationBindingKey: string
   rootClassName?: string
 }>
 
-export type AgentWorkflowRegistrationBinding<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+export type AgentWorkflowRuntimeBinding<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  alias: string
   moduleId: string
+  rootClassName?: string
   create: () => AiAgentRegistration<TInput>
 }>
 
 export type AgentWorkflowBindings<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
-  registrations: Readonly<Record<string, AgentWorkflowRegistrationBinding<TInput>>>
+  workflows: Readonly<Record<string, AgentWorkflowRuntimeBinding<TInput>>>
 }>
 
-export type ActivateAgentWorkflowDefinitionCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
-  host: AiAgentHost
+export type ResolveAgentWorkflowActivationCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
   definition: AgentWorkflowDefinition
   bindings: AgentWorkflowBindings<TInput>
 }>
+
+export type ActivateAgentWorkflowDefinitionCommand<TInput extends AiJsonParams = AiJsonParams> =
+  ResolveAgentWorkflowActivationCommand<TInput> & Readonly<{
+    host: AiAgentHost
+  }>
 
 export type AgentWorkflowDryRunCommand<TInput extends AiJsonParams = AiJsonParams> =
   ActivateAgentWorkflowDefinitionCommand<TInput> & Readonly<{
@@ -47,32 +53,30 @@ export type AgentWorkflowDryRunResult = Readonly<{
   dryRun: AiAgentHostDryRunResult
 }>
 
-export function resolveAgentWorkflowActivation(definition: AgentWorkflowDefinition): AgentWorkflowActivation {
-  assertAgentWorkflowDefinition(definition)
-  const identity = definition.factory.identity.value
-  const activation = definition.factory.activation.value
-  const alias = readRequiredText(identity, 'alias', 'factory.identity.value.alias')
-  const moduleId = readRequiredText(identity, 'moduleId', 'factory.identity.value.moduleId')
-  const registrationBindingKey = readOptionalText(activation, 'registrationBindingKey')
-    ?? readOptionalText(activation, 'bindingKey')
-    ?? alias
-  const rootClassName = readOptionalText(identity, 'rootClassName')
+export function resolveAgentWorkflowActivation<TInput extends AiJsonParams>(
+  command: ResolveAgentWorkflowActivationCommand<TInput>,
+): AgentWorkflowActivation {
+  assertAgentWorkflowDefinition(command.definition)
+  const binding = command.bindings.workflows[command.definition.workflowId]
+  if (binding === undefined) {
+    throw new Error(`Agent workflow runtime binding not found: ${command.definition.workflowId}`)
+  }
 
   return {
-    alias,
-    moduleId,
-    registrationBindingKey,
-    ...(rootClassName === undefined ? {} : { rootClassName }),
+    workflowId: command.definition.workflowId,
+    alias: binding.alias,
+    moduleId: binding.moduleId,
+    ...(binding.rootClassName === undefined ? {} : { rootClassName: binding.rootClassName }),
   }
 }
 
 export function activateAgentWorkflowDefinition<TInput extends AiJsonParams>(
   command: ActivateAgentWorkflowDefinitionCommand<TInput>,
 ): AiAgentHost {
-  const activation = resolveAgentWorkflowActivation(command.definition)
-  const binding = command.bindings.registrations[activation.registrationBindingKey]
+  const activation = resolveAgentWorkflowActivation(command)
+  const binding = command.bindings.workflows[activation.workflowId]
   if (binding === undefined) {
-    throw new Error(`Agent workflow registration binding not found: ${activation.registrationBindingKey}`)
+    throw new Error(`Agent workflow runtime binding not found: ${activation.workflowId}`)
   }
   if (binding.moduleId !== activation.moduleId) {
     throw new Error(
@@ -89,33 +93,11 @@ export function activateAgentWorkflowDefinition<TInput extends AiJsonParams>(
 export function dryRunAgentWorkflowDefinition<TInput extends AiJsonParams>(
   command: AgentWorkflowDryRunCommand<TInput>,
 ): AgentWorkflowDryRunResult {
-  const activation = resolveAgentWorkflowActivation(command.definition)
+  const activation = resolveAgentWorkflowActivation(command)
   const host = activateAgentWorkflowDefinition(command)
   return {
     host,
     activation,
     dryRun: host.dryRun(activation.alias, command.input),
   }
-}
-
-function readRequiredText(
-  record: Readonly<Record<string, unknown>>,
-  field: string,
-  path: string,
-): string {
-  const value = readOptionalText(record, field)
-  if (value === undefined) {
-    throw new Error(`Agent workflow activation requires ${path}.`)
-  }
-  return value
-}
-
-function readOptionalText(
-  record: Readonly<Record<string, unknown>>,
-  field: string,
-): string | undefined {
-  const value = record[field]
-  if (typeof value !== 'string') return undefined
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : undefined
 }

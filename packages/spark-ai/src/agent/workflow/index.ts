@@ -1,15 +1,15 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow
- * 职责：汇总 Agent Workflow 工艺说明书、校验和运行时适配器公共 API。
+ * 职责：汇总 Agent Workflow definition graph、校验和运行时适配器公共 API。
  * 边界：只导出 workflow 子域稳定契约，不导入 APP 层或具体业务实现。
- * AI用途：应用层需要引用 workflow definition、工艺 process 或运行时消费 helper 时，从本模块确认公共出口。
+ * AI用途：应用层需要引用 workflow definition、节点/边契约或运行时消费 helper 时，从本模块确认公共出口。
  */
 
 export {
   AGENT_WORKFLOW_DEFINITION_KIND,
   AGENT_WORKFLOW_DEFINITION_SCHEMA,
   AGENT_WORKFLOW_DEFINITION_VERSION,
-  AGENT_WORKFLOW_FACTORY_PHASES,
+  AGENT_WORKFLOW_GRAPH_NODE_TYPES,
 } from './agent-workflow-definition'
 
 export {
@@ -35,24 +35,34 @@ export type {
   AgentWorkflowDefinitionValidationSeverity,
   AgentWorkflowDefinitionValidationStatus,
   AgentWorkflowDefinitionVersion,
-  AgentWorkflowFactoryPhaseDescriptor,
-  AgentWorkflowFactorySection,
-  AgentWorkflowFactorySections,
+  AgentWorkflowAgentNode,
+  AgentWorkflowBody,
+  AgentWorkflowChatflowNode,
+  AgentWorkflowChatflowNodeData,
+  AgentWorkflowCodeNode,
+  AgentWorkflowConditionNode,
+  AgentWorkflowEndNode,
+  AgentWorkflowEndNodeData,
+  AgentWorkflowGenericNodeData,
+  AgentWorkflowGraph,
+  AgentWorkflowGraphEdge,
+  AgentWorkflowGraphNode,
+  AgentWorkflowGraphNodeBase,
+  AgentWorkflowGraphNodeType,
   AgentWorkflowJsonRecord,
-  AgentWorkflowProcess,
-  AgentWorkflowProcessKnowledgeRef,
-  AgentWorkflowProcessKnowledgeSourceKind,
-  AgentWorkflowProcessStageCompletion,
-  AgentWorkflowProcessStageMetric,
-  AgentWorkflowProcessStageMetricOperator,
-  AgentWorkflowProcessStage,
-  AgentWorkflowProcessStageConsideration,
-  AgentWorkflowProcessStageLlmTask,
-  AgentWorkflowProcessStageModelSelection,
-  AgentWorkflowProcessStageParameterSource,
-  AgentWorkflowProcessStagePrerequisite,
-  AgentWorkflowProcessStep,
-  AgentWorkflowProcessStageVerification,
+  AgentWorkflowLlmNode,
+  AgentWorkflowNodePosition,
+  AgentWorkflowReference,
+  AgentWorkflowStartNode,
+  AgentWorkflowStartNodeData,
+  AgentWorkflowSubWorkflowNode,
+  AgentWorkflowSubWorkflowNodeData,
+  AgentWorkflowToolDescriptor,
+  AgentWorkflowToolNode,
+  AgentWorkflowToolNodeData,
+  AgentWorkflowToolParameterDescriptor,
+  AgentWorkflowToolParameterSource,
+  AgentWorkflowVariable,
 } from './agent-workflow-definition'
 
 export type {
@@ -61,5 +71,6 @@ export type {
   AgentWorkflowBindings,
   AgentWorkflowDryRunCommand,
   AgentWorkflowDryRunResult,
-  AgentWorkflowRegistrationBinding,
+  AgentWorkflowRuntimeBinding,
+  ResolveAgentWorkflowActivationCommand,
 } from './agent-workflow-dry-run'

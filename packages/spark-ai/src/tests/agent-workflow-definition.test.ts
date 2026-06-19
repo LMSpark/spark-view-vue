@@ -9,16 +9,16 @@ import {
   dryRunAgentWorkflowDefinition,
   validateAgentWorkflowDefinition,
   type AgentWorkflowDefinition,
-  type AgentWorkflowFactorySection,
+  type AgentWorkflowToolDescriptor,
   type AiAgentToolRuntime,
   type AiAgentTurnCallbacks,
-  type BusinessFactoryWorkflowPhaseId,
-  type BusinessFactoryWorkflowPhaseKind,
 } from '../agent'
 
 describe('AgentWorkflowDefinition', () => {
-  it('validates the F0-F9 business factory definition shape', () => {
-    const validation = validateAgentWorkflowDefinition(createDefinition())
+  it('validates the workflow graph definition shape', () => {
+    const validation = validateAgentWorkflowDefinition(createDefinition(), {
+      resolveToolDescriptor: () => createToolDescriptor(),
+    })
 
     expect(validation).toEqual({
       status: 'valid',
@@ -26,10 +26,11 @@ describe('AgentWorkflowDefinition', () => {
     })
   })
 
-  it('rejects definitions that miss a required factory phase', () => {
-    const broken = JSON.parse(JSON.stringify(createDefinition())) as Record<string, unknown>
-    const factory = broken['factory'] as Record<string, unknown>
-    delete factory['activation']
+  it('rejects legacy factory definitions', () => {
+    const broken = {
+      ...createDefinition(),
+      factory: {},
+    }
 
     const validation = validateAgentWorkflowDefinition(broken)
 
@@ -37,13 +38,77 @@ describe('AgentWorkflowDefinition', () => {
     expect(validation.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({
         severity: 'error',
-        code: 'AGENT_WORKFLOW_REQUIRED_OBJECT_MISSING',
-        path: 'definition.factory.activation',
+        code: 'AGENT_WORKFLOW_FORBIDDEN_FIELD',
+        path: 'definition.factory',
       }),
     ]))
   })
 
-  it('uses activation binding to ensure the registration and run host dryRun', () => {
+  it('validates ClassModel tool parameters through a descriptor resolver', () => {
+    const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
+    const tool = broken.workflow.graph.nodes.find(node => node.id === 'tool.demo')
+    if (tool?.type !== 'tool') throw new Error('test fixture must include tool.demo')
+    ;(tool.data.toolParameters as Record<string, unknown>)['prompt'] = undefined
+    delete (tool.data.toolParameters as Record<string, unknown>)['prompt']
+
+    const validation = validateAgentWorkflowDefinition(broken, {
+      resolveToolDescriptor: () => createToolDescriptor(),
+    })
+
+    expect(validation.status).toBe('invalid')
+    expect(validation.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_TOOL_PARAMETER_MISSING',
+        nodeId: 'tool.demo',
+        path: 'definition.workflow.graph.nodes[1].data.toolParameters.prompt',
+      }),
+    ]))
+  })
+
+  it('validates chatflow references through a definition loader', () => {
+    const definition = createDefinition({
+      nodes: [
+        createStartNode(),
+        {
+          id: 'chatflow.clarify',
+          type: 'chatflow',
+          data: {
+            title: 'Clarify',
+            workflowRef: {
+              workflowId: 'demo.clarify',
+              version: 1,
+              definitionPath: 'workflows/demo.clarify/definition.json',
+            },
+            inputMapping: {
+              context: '{{ start.prompt }}',
+            },
+            outputMapping: {
+              answers: 'clarify.answers',
+            },
+          },
+        },
+        createEndNode(),
+      ],
+      edges: [
+        { id: 'edge.start.chatflow', source: 'start', target: 'chatflow.clarify' },
+        { id: 'edge.chatflow.end', source: 'chatflow.clarify', target: 'end' },
+      ],
+    })
+
+    const validation = validateAgentWorkflowDefinition(definition, {
+      loadWorkflowDefinition: ref => ref.workflowId === 'demo.clarify'
+        ? createDefinition({ workflowId: 'demo.clarify' })
+        : undefined,
+    })
+
+    expect(validation).toEqual({
+      status: 'valid',
+      issues: [],
+    })
+  })
+
+  it('uses workflowId binding to ensure the runtime carrier and run host dryRun', () => {
     const host = createAiAgentHost({ turnCallbacks: createTurnCallbacks() })
     let createCalls = 0
 
@@ -51,9 +116,11 @@ describe('AgentWorkflowDefinition', () => {
       host,
       definition: createDefinition(),
       bindings: {
-        registrations: {
-          'demo.registration': {
+        workflows: {
+          'demo.workflow': {
+            alias: 'demo',
             moduleId: 'demo.module',
+            rootClassName: 'DemoBusiness',
             create: () => {
               createCalls += 1
               return createRegistration('demo.module')
@@ -69,9 +136,9 @@ describe('AgentWorkflowDefinition', () => {
 
     expect(createCalls).toBe(1)
     expect(result.activation).toMatchObject({
+      workflowId: 'demo.workflow',
       alias: 'demo',
       moduleId: 'demo.module',
-      registrationBindingKey: 'demo.registration',
       rootClassName: 'DemoBusiness',
     })
     expect(result.host.has('demo')).toBe(true)
@@ -84,60 +151,62 @@ describe('AgentWorkflowDefinition', () => {
     }
   })
 
-  it('fails fast when activation binding is missing or targets another module', () => {
+  it('fails fast when workflow runtime binding is missing', () => {
     const host = createAiAgentHost({ turnCallbacks: createTurnCallbacks() })
 
     expect(() => dryRunAgentWorkflowDefinition({
       host,
       definition: createDefinition(),
-      bindings: { registrations: {} },
+      bindings: { workflows: {} },
       input: { id: 'demo-1', prompt: 'Build demo' },
-    })).toThrow('registration binding not found: demo.registration')
-
-    expect(() => dryRunAgentWorkflowDefinition({
-      host,
-      definition: createDefinition(),
-      bindings: {
-        registrations: {
-          'demo.registration': {
-            moduleId: 'other.module',
-            create: () => createRegistration('other.module'),
-          },
-        },
-      },
-      input: { id: 'demo-1', prompt: 'Build demo' },
-    })).toThrow('binding moduleId mismatch')
+    })).toThrow('runtime binding not found: demo.workflow')
   })
 })
 
-function createDefinition(): AgentWorkflowDefinition {
+function createDefinition(options: {
+  workflowId?: string
+  nodes?: AgentWorkflowDefinition['workflow']['graph']['nodes']
+  edges?: AgentWorkflowDefinition['workflow']['graph']['edges']
+} = {}): AgentWorkflowDefinition {
+  const workflowId = options.workflowId ?? 'demo.workflow'
   const now = '2026-06-16T00:00:00.000Z'
   return {
     kind: 'agent.workflow',
     version: 1,
-    workflowId: 'demo.workflow',
+    workflowId,
     source: {
       designKind: 'agent.workflow.design',
-      designId: 'demo.workflow',
+      designId: workflowId,
       designVersion: 1,
     },
-    factory: {
-      identity: section('F0', 'identity', 'factory.identity', 'workflow.factory.identity', {
-        alias: 'demo',
-        moduleId: 'demo.module',
-        rootClassName: 'DemoBusiness',
-      }),
-      materials: section('F1', 'materials', 'factory.materials', 'workflow.factory.materials'),
-      knowledge: section('F2', 'knowledge', 'factory.knowledge', 'workflow.factory.knowledge'),
-      contract: section('F3', 'contract', 'factory.contract', 'workflow.factory.contract'),
-      runtime: section('F4', 'runtime', 'factory.runtime', 'workflow.factory.runtime'),
-      governance: section('F5', 'governance', 'factory.governance', 'workflow.factory.governance'),
-      acceptance: section('F6', 'acceptance', 'factory.acceptance', 'workflow.factory.acceptance'),
-      activation: section('F7', 'activation', 'factory.activation', 'workflow.factory.activation', {
-        registrationBindingKey: 'demo.registration',
-      }),
-      workOrder: section('F8', 'workOrder', 'factory.workOrder', 'workflow.factory.workOrder'),
-      delivery: section('F9', 'delivery', 'factory.delivery', 'workflow.factory.delivery'),
+    workflow: {
+      variables: [
+        { name: 'id', required: true },
+        { name: 'prompt', required: true },
+      ],
+      graph: {
+        nodes: options.nodes ?? [
+          createStartNode(),
+          {
+            id: 'tool.demo',
+            type: 'tool',
+            data: {
+              title: 'Demo Tool',
+              provider: 'class-model',
+              toolName: 'spark.demo.run',
+              toolParameters: {
+                id: '{{ start.id }}',
+                prompt: '{{ start.prompt }}',
+              },
+            },
+          },
+          createEndNode(),
+        ],
+        edges: options.edges ?? [
+          { id: 'edge.start.tool', source: 'start', target: 'tool.demo' },
+          { id: 'edge.tool.end', source: 'tool.demo', target: 'end' },
+        ],
+      },
     },
     x_spark: {
       schema: 'spark.agent.workflow.definition.v1',
@@ -150,24 +219,34 @@ function createDefinition(): AgentWorkflowDefinition {
   }
 }
 
-function section<
-  TPhaseId extends BusinessFactoryWorkflowPhaseId,
-  TPhaseKind extends BusinessFactoryWorkflowPhaseKind,
->(
-  phaseId: TPhaseId,
-  phase: TPhaseKind,
-  sectionPath: string,
-  publishPath: string,
-  value: Readonly<Record<string, unknown>> = {},
-): AgentWorkflowFactorySection<TPhaseId, TPhaseKind> {
+function createStartNode(): AgentWorkflowDefinition['workflow']['graph']['nodes'][number] {
   return {
-    phaseId,
-    phase,
-    sectionPath,
-    publishPath,
-    nodeId: `phase.${phaseId}`,
-    scopePath: `workflow.graph.loop.business-factory.loop.subGraph:phase.${phaseId}`,
-    value,
+    id: 'start',
+    type: 'start',
+    data: {
+      title: 'Start',
+    },
+  }
+}
+
+function createEndNode(): AgentWorkflowDefinition['workflow']['graph']['nodes'][number] {
+  return {
+    id: 'end',
+    type: 'end',
+    data: {
+      title: 'End',
+    },
+  }
+}
+
+function createToolDescriptor(): AgentWorkflowToolDescriptor {
+  return {
+    provider: 'class-model',
+    toolName: 'spark.demo.run',
+    parameters: [
+      { name: 'id', required: true, source: 'constructor' },
+      { name: 'prompt', required: true, source: 'function' },
+    ],
   }
 }
 

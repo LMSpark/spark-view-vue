@@ -21,13 +21,6 @@ import type { AiAgentOptions } from './host-options'
 import type { AiAgentScope } from './scope-types'
 import type { AiAgentSessionRecord } from '../session/session-types'
 import type { AiAgentToolRuntimeInspectReport } from '../tool-runtime'
-import {
-  createBusinessFactoryAcceptanceReport,
-  createBusinessFactoryWorkflowGraph,
-  type BusinessFactoryAcceptanceReport,
-  type BusinessFactoryAcceptanceReportInput,
-  type BusinessFactoryWorkflowGraph,
-} from './business-factory'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型 — Host 构造、运行、注册的输入/输出类型
@@ -138,23 +131,6 @@ export type AiAgentHostDryRunResult = Readonly<
   }
 >
 
-/** 业务工厂检查结果：复用 dryRun，并附加 F0-F9 验收报告与图 DTO。 */
-export type AiAgentHostFactoryInspectResult = Readonly<{
-  dryRun: AiAgentHostDryRunResult
-  report: BusinessFactoryAcceptanceReport
-  graph: BusinessFactoryWorkflowGraph
-}>
-
-export type AiAgentHostFactoryInspectOptions = Pick<
-  BusinessFactoryAcceptanceReportInput,
-  | 'moduleId'
-  | 'rootClassName'
-  | 'materialsChecks'
-  | 'knowledgeChecks'
-  | 'governanceChecks'
-  | 'deliveryChecks'
->
-
 // ═══════════════════════════════════════════════════════════════
 // 第 2 节 · 内部状态类型 — Host 实例的运行时状态
 // ═══════════════════════════════════════════════════════════════
@@ -180,7 +156,6 @@ type AiAgentHostState = {
  *   ensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）
  *   has(alias)                    — 检查别名是否已注册
  *   dryRun(alias, input)          — 验证输入契约和 runtime inspect，不调用 LLM
- *   inspectFactory(alias, input)  — 输出业务工厂 report + graph 首版验收投影
  *   run(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）
  *
  * 泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。
@@ -356,33 +331,6 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
   }
 
   /**
-   * 业务工厂首版验收投影。
-   *
-   * 只执行 Host dryRun 和 runtime inspect，不调用 LLM、不执行工具、不触发 Delivery。
-   * 当前报告会把 knowledge / governance / delivery 这类 dryRun 无法证明的阶段标为 warn，
-   * 供后续 APP 层补充 smoke test 和交付策略检查。
-   */
-  public inspectFactory(
-    alias: string,
-    args: unknown,
-    options: AiAgentHostFactoryInspectOptions = {},
-  ): AiAgentHostFactoryInspectResult {
-    const dryRun = this.dryRun(alias, args)
-    const description = this.describeSafely(alias)
-    const report = createBusinessFactoryAcceptanceReport({
-      alias: dryRun.ok ? dryRun.alias : alias,
-      ...options,
-      ...(description === undefined ? {} : { description }),
-      dryRun,
-    })
-    return {
-      dryRun,
-      report,
-      graph: createBusinessFactoryWorkflowGraph(report),
-    }
-  }
-
-  /**
    * 运行一个已注册业务。
    *
    * 这是外部系统触发 AI 能力的主入口。
@@ -444,13 +392,6 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
     return registration
   }
 
-  private describeSafely(alias: string): AiAgentHostRegistrationDescription | undefined {
-    try {
-      return this.describe(alias)
-    } catch {
-      return undefined
-    }
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -535,7 +476,6 @@ function isAiAgentHost(value: unknown): value is AiAgentHost {
     && isCallable(value['ensure'])
     && isCallable(value['has'])
     && isCallable(value['dryRun'])
-    && isCallable(value['inspectFactory'])
     && isCallable(value['run'])
     && isCallable(value['listSessions'])
 }

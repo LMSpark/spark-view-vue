@@ -8,13 +8,11 @@ import type { ClassModelKnowledgeProvider } from '@spark-appworks/spark-ai/class
 import {
   createPageDesignAgentWorkflowDefinition,
   ensurePageDesignBusiness,
-  PAGE_DESIGN_AGENT_WORKFLOW_PROCESS,
   PAGE_DESIGN_MODULE_ID,
 } from '@/services/page-design/page-design-business'
 import {
   createProjectPlanningAgentWorkflowDefinition,
   ensureProjectPlanningBusiness,
-  PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS,
   PROJECT_PLANNING_MODULE_ID,
 } from '@/services/project-planning/project-planning-business'
 
@@ -36,19 +34,12 @@ describe('app agent workflow business activation', () => {
       projectId: 'demo',
     })
 
-    expect(definition.factory.activation.value).toEqual({
-      registrationBindingKey: 'pageDesign.registration',
-      handoff: {
-        target: 'runtime-binding',
-        workflowDoesNotActivateHost: true,
-        bindingRef: 'pageDesign.registration',
-      },
-    })
-    expect(definition.process).toEqual(PAGE_DESIGN_AGENT_WORKFLOW_PROCESS)
-    expect(definition.factory.workOrder.value).toMatchObject({
-      productionProcess: {
-        processId: 'pageDesign.data-first-100-step-process',
-        mode: 'progressive-data-first-craft',
+    expect(definition.workflow.graph.nodes.map(node => node.type)).toEqual(['start', 'tool', 'end'])
+    expect(definition.workflow.graph.nodes.find(node => node.id === 'tool.pageDesign')).toMatchObject({
+      type: 'tool',
+      data: {
+        provider: 'class-model',
+        toolName: 'model_script',
       },
     })
     expect(host.has(PAGE_DESIGN_MODULE_ID)).toBe(true)
@@ -72,32 +63,12 @@ describe('app agent workflow business activation', () => {
       navigationNodes: [],
     })
 
-    expect(definition.factory.activation.value).toEqual({
-      registrationBindingKey: 'projectPlanning.registration',
-      handoff: {
-        target: 'runtime-binding',
-        workflowDoesNotActivateHost: true,
-        bindingRef: 'projectPlanning.registration',
-      },
-    })
-    expect(definition.process).toEqual(PROJECT_PLANNING_AGENT_WORKFLOW_PROCESS)
-    expect(definition.process?.stages.map(stage => stage.stageId)).toEqual([
-      'PP1.intake-inventory',
-      'PP2.domain-decomposition',
-      'PP3.page-tree-planning',
-      'PP4.node-contract',
-      'PP5.model-write',
-      'PP6.verify-deliver',
-    ])
-    expect(definition.process?.knowledgeSources?.map(ref => ref.refId)).toEqual(expect.arrayContaining([
-      'doc.platformRouting.projectPlanning',
-      'generated.projectModel',
-      'generated.projectNode',
-    ]))
-    expect(definition.factory.workOrder.value).toMatchObject({
-      productionProcess: {
-        processId: 'projectPlanning.navigation-craft-process',
-        mode: 'progressive-navigation-craft',
+    expect(definition.workflow.graph.nodes.map(node => node.type)).toEqual(['start', 'tool', 'end'])
+    expect(definition.workflow.graph.nodes.find(node => node.id === 'tool.projectPlanning')).toMatchObject({
+      type: 'tool',
+      data: {
+        provider: 'class-model',
+        toolName: 'model_script',
       },
     })
     expect(host.has(PROJECT_PLANNING_MODULE_ID)).toBe(true)

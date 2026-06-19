@@ -1,14 +1,9 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-definition
- * 职责：定义可序列化 Agent Workflow Definition 契约，把业务工厂 F0-F9 和业务内部工艺沉淀为稳定 JSON 结构。
- * 边界：只描述 workflow 定义，不持有函数、class、实例、APP delivery port 或 UI 状态。
- * AI用途：需要判断业务工厂 workflow definition 字段、阶段映射、工艺 process 或发布产物格式时，用本模块确认契约。
+ * 职责：定义可序列化 Agent Workflow Definition 契约，发布态只表达 workflow graph。
+ * 边界：只描述 workflow 定义，不持有函数、class 实例、APP、注册对象、delivery port 或 UI 状态。
+ * AI用途：需要判断 workflow definition 字段、节点、边、Tool Node 或 Chatflow Node 格式时，用本模块确认契约。
  */
-
-import type {
-  BusinessFactoryWorkflowPhaseId,
-  BusinessFactoryWorkflowPhaseKind,
-} from '../business/business-factory'
 
 export type AgentWorkflowJsonRecord = Readonly<Record<string, unknown>>
 
@@ -26,8 +21,6 @@ export type AgentWorkflowDefinitionValidationIssue = Readonly<{
   severity: AgentWorkflowDefinitionValidationSeverity
   code: string
   message: string
-  phaseId?: BusinessFactoryWorkflowPhaseId
-  publishPath?: string
   nodeId?: string
   path?: string
 }>
@@ -43,141 +36,134 @@ export type AgentWorkflowDefinitionSource = Readonly<{
   designVersion: number
 }>
 
-export type AgentWorkflowProcessStep = Readonly<{
-  stepId: string
-  title: string
-  sourceSteps?: string
-  actions: readonly string[]
-  outputs: readonly string[]
-  checks: readonly string[]
+export type AgentWorkflowVariable = Readonly<{
+  name: string
+  title?: string
+  required?: boolean
+  schema?: AgentWorkflowJsonRecord
+  defaultValue?: unknown
 }>
 
-export type AgentWorkflowProcessStageMetricOperator = 'eq' | 'lte' | 'gte'
-
-export type AgentWorkflowProcessStageMetric = Readonly<{
-  metricId: string
-  title: string
-  operator: AgentWorkflowProcessStageMetricOperator
-  target: number
-  unit: string
+export type AgentWorkflowNodePosition = Readonly<{
+  x: number
+  y: number
 }>
 
-export type AgentWorkflowProcessKnowledgeSourceKind = 'document' | 'generated-dts-class-model'
-
-export type AgentWorkflowProcessKnowledgeRef = Readonly<{
-  refId: string
-  title: string
-  source: AgentWorkflowProcessKnowledgeSourceKind
-  path: string
-  symbols?: readonly string[]
-  usage: string
+export type AgentWorkflowStartNodeData = Readonly<{
+  title?: string
+  inputMapping?: AgentWorkflowJsonRecord
 }>
 
-export type AgentWorkflowProcessStageConsideration = Readonly<{
-  phaseId: BusinessFactoryWorkflowPhaseId
-  title: string
-  checks: readonly string[]
-  metrics?: readonly AgentWorkflowProcessStageMetric[]
+export type AgentWorkflowEndNodeData = Readonly<{
+  title?: string
+  outputMapping?: AgentWorkflowJsonRecord
 }>
 
-export type AgentWorkflowProcessStagePrerequisite = Readonly<{
-  prerequisiteId: string
-  title: string
-  source: string
-  metrics: readonly AgentWorkflowProcessStageMetric[]
+export type AgentWorkflowToolNodeData = Readonly<{
+  title?: string
+  provider: string
+  toolName: string
+  toolParameters: AgentWorkflowJsonRecord
+  outputMapping?: AgentWorkflowJsonRecord
 }>
 
-export type AgentWorkflowProcessStageModelSelection = Readonly<{
-  modelRole: string
-  modelRef: string
-  selectionReason: string
-  fallbackModelRefs?: readonly string[]
+export type AgentWorkflowReference = Readonly<{
+  workflowId: string
+  version?: number
+  definitionPath?: string
 }>
 
-export type AgentWorkflowProcessStageParameterSource = Readonly<{
-  parameterId: string
-  title: string
-  source: string
-  path: string
-  required: boolean
+export type AgentWorkflowChatflowNodeData = Readonly<{
+  title?: string
+  workflowRef: AgentWorkflowReference
+  inputMapping: AgentWorkflowJsonRecord
+  outputMapping: AgentWorkflowJsonRecord
 }>
 
-export type AgentWorkflowProcessStageLlmTask = Readonly<{
-  objective: string
-  instructions: readonly string[]
-  expectedOutput: readonly string[]
-  forbidden?: readonly string[]
+export type AgentWorkflowSubWorkflowNodeData = Readonly<{
+  title?: string
+  workflowRef: AgentWorkflowReference
+  inputMapping: AgentWorkflowJsonRecord
+  outputMapping: AgentWorkflowJsonRecord
 }>
 
-export type AgentWorkflowProcessStageVerification = Readonly<{
-  verificationId: string
-  title: string
-  method: string
-  metrics: readonly AgentWorkflowProcessStageMetric[]
+export type AgentWorkflowGenericNodeData = Readonly<{
+  title?: string
+  [key: string]: unknown
 }>
 
-export type AgentWorkflowProcessStageCompletion = Readonly<{
-  criteria: readonly string[]
-  nextWhen: string
-  stopWhen: string
-}>
-
-export type AgentWorkflowProcessStage = Readonly<{
-  stageId: string
-  title: string
-  sourceSteps: string
-  goal: string
-  steps: readonly AgentWorkflowProcessStep[]
-  knowledgeRefs?: readonly AgentWorkflowProcessKnowledgeRef[]
-  considerations?: readonly AgentWorkflowProcessStageConsideration[]
-  prerequisites?: readonly AgentWorkflowProcessStagePrerequisite[]
-  model?: AgentWorkflowProcessStageModelSelection
-  parameterSources?: readonly AgentWorkflowProcessStageParameterSource[]
-  llmTask?: AgentWorkflowProcessStageLlmTask
-  verification?: readonly AgentWorkflowProcessStageVerification[]
-  completion?: AgentWorkflowProcessStageCompletion
-}>
-
-export type AgentWorkflowProcess = Readonly<{
-  processId: string
-  title: string
-  sourceRef: string
-  principle: string
-  knowledgeSources?: readonly AgentWorkflowProcessKnowledgeRef[]
-  stages: readonly AgentWorkflowProcessStage[]
-}>
-
-export type AgentWorkflowFactoryPhaseDescriptor = Readonly<{
-  phaseId: BusinessFactoryWorkflowPhaseId
-  phase: BusinessFactoryWorkflowPhaseKind
-  sectionPath: string
-  publishPath: string
-}>
-
-export type AgentWorkflowFactorySection<
-  TPhaseId extends BusinessFactoryWorkflowPhaseId = BusinessFactoryWorkflowPhaseId,
-  TPhaseKind extends BusinessFactoryWorkflowPhaseKind = BusinessFactoryWorkflowPhaseKind,
+export type AgentWorkflowGraphNodeBase<
+  TType extends string,
+  TData extends AgentWorkflowJsonRecord,
 > = Readonly<{
-  phaseId: TPhaseId
-  phase: TPhaseKind
-  sectionPath: string
-  publishPath: string
-  nodeId?: string
-  scopePath?: string
-  value: AgentWorkflowJsonRecord
+  id: string
+  type: TType
+  data: TData
+  position?: AgentWorkflowNodePosition
 }>
 
-export type AgentWorkflowFactorySections = Readonly<{
-  identity: AgentWorkflowFactorySection<'F0', 'identity'>
-  materials: AgentWorkflowFactorySection<'F1', 'materials'>
-  knowledge: AgentWorkflowFactorySection<'F2', 'knowledge'>
-  contract: AgentWorkflowFactorySection<'F3', 'contract'>
-  runtime: AgentWorkflowFactorySection<'F4', 'runtime'>
-  governance: AgentWorkflowFactorySection<'F5', 'governance'>
-  acceptance: AgentWorkflowFactorySection<'F6', 'acceptance'>
-  activation: AgentWorkflowFactorySection<'F7', 'activation'>
-  workOrder: AgentWorkflowFactorySection<'F8', 'workOrder'>
-  delivery: AgentWorkflowFactorySection<'F9', 'delivery'>
+export type AgentWorkflowStartNode = AgentWorkflowGraphNodeBase<'start', AgentWorkflowStartNodeData>
+
+export type AgentWorkflowEndNode = AgentWorkflowGraphNodeBase<'end', AgentWorkflowEndNodeData>
+
+export type AgentWorkflowToolNode = AgentWorkflowGraphNodeBase<'tool', AgentWorkflowToolNodeData>
+
+export type AgentWorkflowChatflowNode = AgentWorkflowGraphNodeBase<'chatflow', AgentWorkflowChatflowNodeData>
+
+export type AgentWorkflowSubWorkflowNode = AgentWorkflowGraphNodeBase<'workflow', AgentWorkflowSubWorkflowNodeData>
+
+export type AgentWorkflowConditionNode = AgentWorkflowGraphNodeBase<'condition', AgentWorkflowGenericNodeData>
+
+export type AgentWorkflowCodeNode = AgentWorkflowGraphNodeBase<'code', AgentWorkflowGenericNodeData>
+
+export type AgentWorkflowLlmNode = AgentWorkflowGraphNodeBase<'llm', AgentWorkflowGenericNodeData>
+
+export type AgentWorkflowAgentNode = AgentWorkflowGraphNodeBase<'agent', AgentWorkflowGenericNodeData>
+
+export type AgentWorkflowGraphNode =
+  | AgentWorkflowStartNode
+  | AgentWorkflowEndNode
+  | AgentWorkflowToolNode
+  | AgentWorkflowChatflowNode
+  | AgentWorkflowSubWorkflowNode
+  | AgentWorkflowConditionNode
+  | AgentWorkflowCodeNode
+  | AgentWorkflowLlmNode
+  | AgentWorkflowAgentNode
+
+export type AgentWorkflowGraphNodeType = AgentWorkflowGraphNode['type']
+
+export type AgentWorkflowGraphEdge = Readonly<{
+  id: string
+  source: string
+  target: string
+  sourceHandle?: string
+  targetHandle?: string
+  data?: AgentWorkflowJsonRecord
+}>
+
+export type AgentWorkflowGraph = Readonly<{
+  nodes: readonly AgentWorkflowGraphNode[]
+  edges: readonly AgentWorkflowGraphEdge[]
+}>
+
+export type AgentWorkflowBody = Readonly<{
+  variables: readonly AgentWorkflowVariable[]
+  graph: AgentWorkflowGraph
+}>
+
+export type AgentWorkflowToolParameterSource = 'constructor' | 'function' | 'binding'
+
+export type AgentWorkflowToolParameterDescriptor = Readonly<{
+  name: string
+  required: boolean
+  source: AgentWorkflowToolParameterSource
+}>
+
+export type AgentWorkflowToolDescriptor = Readonly<{
+  provider: string
+  toolName: string
+  parameters: readonly AgentWorkflowToolParameterDescriptor[]
 }>
 
 export type AgentWorkflowDefinitionSparkMeta = Readonly<{
@@ -191,8 +177,7 @@ export type AgentWorkflowDefinition = Readonly<{
   version: AgentWorkflowDefinitionVersion
   workflowId: string
   source: AgentWorkflowDefinitionSource
-  process?: AgentWorkflowProcess
-  factory: AgentWorkflowFactorySections
+  workflow: AgentWorkflowBody
   x_spark: AgentWorkflowDefinitionSparkMeta
 }>
 
@@ -202,15 +187,14 @@ export const AGENT_WORKFLOW_DEFINITION_VERSION: AgentWorkflowDefinitionVersion =
 
 export const AGENT_WORKFLOW_DEFINITION_SCHEMA: AgentWorkflowDefinitionSchema = 'spark.agent.workflow.definition.v1'
 
-export const AGENT_WORKFLOW_FACTORY_PHASES = Object.freeze([
-  { phaseId: 'F0', phase: 'identity', sectionPath: 'factory.identity', publishPath: 'workflow.factory.identity' },
-  { phaseId: 'F1', phase: 'materials', sectionPath: 'factory.materials', publishPath: 'workflow.factory.materials' },
-  { phaseId: 'F2', phase: 'knowledge', sectionPath: 'factory.knowledge', publishPath: 'workflow.factory.knowledge' },
-  { phaseId: 'F3', phase: 'contract', sectionPath: 'factory.contract', publishPath: 'workflow.factory.contract' },
-  { phaseId: 'F4', phase: 'runtime', sectionPath: 'factory.runtime', publishPath: 'workflow.factory.runtime' },
-  { phaseId: 'F5', phase: 'governance', sectionPath: 'factory.governance', publishPath: 'workflow.factory.governance' },
-  { phaseId: 'F6', phase: 'acceptance', sectionPath: 'factory.acceptance', publishPath: 'workflow.factory.acceptance' },
-  { phaseId: 'F7', phase: 'activation', sectionPath: 'factory.activation', publishPath: 'workflow.factory.activation' },
-  { phaseId: 'F8', phase: 'workOrder', sectionPath: 'factory.workOrder', publishPath: 'workflow.factory.workOrder' },
-  { phaseId: 'F9', phase: 'delivery', sectionPath: 'factory.delivery', publishPath: 'workflow.factory.delivery' },
-] satisfies readonly AgentWorkflowFactoryPhaseDescriptor[])
+export const AGENT_WORKFLOW_GRAPH_NODE_TYPES = Object.freeze([
+  'start',
+  'tool',
+  'chatflow',
+  'workflow',
+  'condition',
+  'code',
+  'llm',
+  'agent',
+  'end',
+] satisfies readonly AgentWorkflowGraphNodeType[])

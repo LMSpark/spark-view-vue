@@ -8,7 +8,7 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'AGENT_WORKFLOW_DEFINITION_KIND',
       'AGENT_WORKFLOW_DEFINITION_SCHEMA',
       'AGENT_WORKFLOW_DEFINITION_VERSION',
-      'AGENT_WORKFLOW_FACTORY_PHASES',
+      'AGENT_WORKFLOW_GRAPH_NODE_TYPES',
       'AI_AGENT_HOST',
       'AiApiScriptActionFailure',
       'AiAgentHost',

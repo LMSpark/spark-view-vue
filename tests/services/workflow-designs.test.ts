@@ -27,7 +27,6 @@ import {
   collectWorkflowDesignNodes,
   createAgentWorkflowDefinitionFromDesign,
   createWorkflowDesignNode,
-  getSingleModelEditValue,
   markWorkflowDesignDirty,
   parseAgentWorkflowDefinitionJson,
   publishWorkflowDefinition,
@@ -35,7 +34,6 @@ import {
   removeWorkflowDesignEdge,
   removeWorkflowDesignNode,
   saveWorkflowDefinition,
-  setSingleModelEditValue,
   updateWorkflowDesignEdge,
   type WorkflowDesignDocument,
 } from '@/services/workflow-designs'
@@ -45,83 +43,51 @@ function createDesign(): WorkflowDesignDocument {
     kind: 'agent.workflow.design',
     version: 1,
     id: 'agent.workflow.test',
-    app: {
-      id: 'agent.workflow.test',
-      name: 'Agent Workflow',
-      mode: 'workflow',
-    },
     workflow: {
       id: 'agent.workflow.test',
       version: 1,
+      variables: [
+        { name: 'requirement', required: true },
+      ],
       graph: {
         nodes: [
           {
             id: 'start',
-            type: 'custom',
+            type: 'start',
             data: { type: 'start', title: 'Start' },
           },
           {
-            id: 'loop.business-factory',
-            type: 'custom',
+            id: 'tool.classModel',
+            type: 'tool',
             data: {
-              type: 'loop',
-              title: 'Loop',
-              loop: {
-                subGraph: {
-                  nodes: [
-                    {
-                      id: 'phase.F0',
-                      type: 'custom',
-                      data: {
-                        type: 'tool',
-                        title: 'Edit identity',
-                        tool_name: 'single_model_edit',
-                        provider_id: 'spark.model-editor',
-                        model: {
-                          phaseId: 'F0',
-                          sectionPath: 'factory.identity',
-                          value: { name: 'initial' },
-                        },
-                        x_spark: {
-                          nodeRole: 'single-model-edit',
-                          phaseId: 'F0',
-                          sectionPath: 'factory.identity',
-                          publishPath: 'workflow.factory.identity',
-                        },
-                      },
-                    },
-                    {
-                      id: 'loop.exit',
-                      type: 'custom',
-                      data: { type: 'exit-loop', title: 'Exit Loop' },
-                    },
-                  ],
-                  edges: [
-                    {
-                      id: 'edge.F0.exit',
-                      source: 'phase.F0',
-                      target: 'loop.exit',
-                    },
-                  ],
-                },
+              type: 'tool',
+              title: 'ClassModel Tool',
+              provider: 'class-model',
+              toolName: 'spark.demo.run',
+              toolParameters: {
+                requirement: '{{ start.requirement }}',
+              },
+              outputMapping: {
+                result: 'tool.result',
               },
             },
           },
           {
             id: 'end',
-            type: 'custom',
+            type: 'end',
             data: { type: 'end', title: 'End' },
           },
         ],
         edges: [
-          { id: 'edge.start.loop', source: 'start', target: 'loop.business-factory' },
-          { id: 'edge.loop.end', source: 'loop.business-factory', target: 'end' },
+          { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
+          { id: 'edge.tool.end', source: 'tool.classModel', target: 'end' },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
     },
     x_spark: {
       schema: 'spark.agent.workflow.design.v1',
+      designer: { title: 'Agent Workflow' },
       draft: { status: 'draft', dirtyPaths: [] },
       validation: { status: 'unknown', issues: [] },
     },
@@ -133,101 +99,87 @@ describe('workflow design helpers', () => {
     vi.clearAllMocks()
   })
 
-  it('collects single_model_edit tool nodes from loop subgraphs', () => {
+  it('collects ClassModel Tool nodes from the workflow graph', () => {
     const nodes = collectWorkflowDesignNodes(createDesign())
-    const tool = nodes.find(node => node.id === 'phase.F0')
+    const tool = nodes.find(node => node.id === 'tool.classModel')
 
-    expect(nodes.map(node => node.id)).toEqual([
-      'start',
-      'loop.business-factory',
-      'phase.F0',
-      'loop.exit',
-      'end',
-    ])
-    expect(tool?.isSingleModelEditTool).toBe(true)
-    expect(tool?.depth).toBe(1)
-    expect(tool?.phaseId).toBe('F0')
-    expect(tool?.sectionPath).toBe('factory.identity')
-    expect(tool?.publishPath).toBe('workflow.factory.identity')
+    expect(nodes.map(node => node.id)).toEqual(['start', 'tool.classModel', 'end'])
+    expect(tool?.isClassModelToolNode).toBe(true)
+    expect(tool?.isChatflowNode).toBe(false)
+    expect(tool?.depth).toBe(0)
   })
 
-  it('updates single model value on the tool node itself', () => {
+  it('marks workflow design dirty paths', () => {
     const design = createDesign()
-    const tool = collectWorkflowDesignNodes(design).find(node => node.id === 'phase.F0')
-    if (tool === undefined) throw new Error('missing test tool node')
 
-    setSingleModelEditValue(tool.node, { name: 'updated' })
-    markWorkflowDesignDirty(design, `${tool.scopePath}.${tool.id}.data.model.value`)
+    markWorkflowDesignDirty(design, 'workflow.graph.nodes')
 
-    expect(getSingleModelEditValue(tool.node)).toEqual({ name: 'updated' })
     expect(design.x_spark.draft?.['status']).toBe('dirty')
-    expect(design.x_spark.draft?.['dirtyPaths']).toContain('workflow.graph.loop.business-factory.loop.subGraph.phase.F0.data.model.value')
+    expect(design.x_spark.draft?.['dirtyPaths']).toContain('workflow.graph.nodes')
   })
 
-  it('collects graph and edge views across loop subgraphs', () => {
+  it('collects graph and edge views', () => {
     const design = createDesign()
     const graphs = collectWorkflowDesignGraphs(design)
     const edges = collectWorkflowDesignEdges(design)
 
-    expect(graphs.map(graph => graph.scopePath)).toEqual([
-      'workflow.graph',
-      'workflow.graph.loop.business-factory.loop.subGraph',
-    ])
-    expect(graphs[1]?.carrier).toBe('loop')
-    expect(graphs[1]?.ownerNodeId).toBe('loop.business-factory')
-    expect(edges.map(edge => edge.id)).toEqual([
-      'edge.start.loop',
-      'edge.loop.end',
-      'edge.F0.exit',
-    ])
-    expect(edges.find(edge => edge.id === 'edge.F0.exit')?.scopePath).toBe('workflow.graph.loop.business-factory.loop.subGraph')
+    expect(graphs.map(graph => graph.scopePath)).toEqual(['workflow.graph'])
+    expect(graphs[0]?.carrier).toBe('root')
+    expect(edges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.end'])
   })
 
   it('adds and removes edges in a selected graph', () => {
     const design = createDesign()
-    const loopGraph = design.workflow.graph.nodes[1]?.data?.loop?.subGraph
-    if (loopGraph === undefined) throw new Error('missing loop graph')
+    const graph = design.workflow.graph
 
-    const edge = addWorkflowDesignEdge(loopGraph, 'phase.F0', 'phase.F0')
-    expect(edge.id).toBe('edge.phase.F0.phase.F0')
-    expect(loopGraph.edges.some(item => item === edge)).toBe(true)
+    const edge = addWorkflowDesignEdge(graph, 'start', 'end')
+    expect(edge.id).toBe('edge.start.end')
+    expect(graph.edges.some(item => item === edge)).toBe(true)
 
-    expect(removeWorkflowDesignEdge(loopGraph, edge)).toBe(true)
-    expect(loopGraph.edges.some(item => item === edge)).toBe(false)
+    expect(removeWorkflowDesignEdge(graph, edge)).toBe(true)
+    expect(graph.edges.some(item => item === edge)).toBe(false)
   })
 
-  it('creates typed nodes in the selected graph', () => {
+  it('creates ClassModel Tool and Chatflow nodes in the selected graph', () => {
     const design = createDesign()
-    const loopGraph = design.workflow.graph.nodes[1]?.data?.loop?.subGraph
-    if (loopGraph === undefined) throw new Error('missing loop graph')
+    const graph = design.workflow.graph
 
-    const tool = createWorkflowDesignNode(loopGraph, {
-      nodeKind: 'tool',
-      id: 'phase.F1',
-      title: 'Edit audience',
-      phaseId: 'F1',
-      sectionPath: 'factory.audience',
+    const tool = createWorkflowDesignNode(graph, {
+      nodeKind: 'class-model-tool',
+      id: 'tool.next',
+      title: 'Next Tool',
     })
-    const loop = createWorkflowDesignNode(design.workflow.graph, {
-      nodeKind: 'loop',
-      id: 'loop.review',
-      title: 'Review Loop',
+    const chatflow = createWorkflowDesignNode(graph, {
+      nodeKind: 'chatflow',
+      id: 'chatflow.clarify',
+      title: 'Clarify',
     })
 
-    expect(tool.data?.tool_name).toBe('single_model_edit')
-    expect(tool.data?.model?.['sectionPath']).toBe('factory.audience')
-    expect(loop.data?.loop?.subGraph?.nodes[0]?.data?.type).toBe('exit-loop')
-    expect(collectWorkflowDesignNodes(design).map(node => node.id)).toContain('phase.F1')
+    expect(tool.type).toBe('tool')
+    expect(tool.data).toMatchObject({
+      type: 'tool',
+      provider: 'class-model',
+      toolParameters: {},
+    })
+    expect(chatflow.type).toBe('chatflow')
+    expect(chatflow.data).toMatchObject({
+      type: 'chatflow',
+      workflowRef: {
+        workflowId: 'chatflow.chatflow.clarify',
+      },
+      inputMapping: {},
+      outputMapping: {},
+    })
   })
 
   it('removes a node and all related edges in the same graph', () => {
     const design = createDesign()
     const rootGraph = design.workflow.graph
 
-    const result = removeWorkflowDesignNode(rootGraph, 'loop.business-factory')
+    const result = removeWorkflowDesignNode(rootGraph, 'tool.classModel')
 
     expect(result.removed).toBe(true)
-    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.loop', 'edge.loop.end'])
+    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.end'])
     expect(rootGraph.nodes.map(node => node.id)).toEqual(['start', 'end'])
     expect(rootGraph.edges).toEqual([])
   })
@@ -238,7 +190,7 @@ describe('workflow design helpers', () => {
     if (edge === undefined) throw new Error('missing edge')
 
     updateWorkflowDesignEdge(edge, {
-      source: 'loop.business-factory',
+      source: 'tool.classModel',
       target: 'end',
       sourceHandle: 'next',
       targetHandle: 'entry',
@@ -247,7 +199,7 @@ describe('workflow design helpers', () => {
     })
 
     expect(edge).toEqual(expect.objectContaining({
-      source: 'loop.business-factory',
+      source: 'tool.classModel',
       target: 'end',
       sourceHandle: 'next',
       targetHandle: 'entry',
@@ -256,10 +208,8 @@ describe('workflow design helpers', () => {
     }))
   })
 
-  it('publishes complete F0-F9 model values into an AgentWorkflowDefinition', () => {
-    const design = createCompleteBusinessFactoryDesign()
-
-    const definition = createAgentWorkflowDefinitionFromDesign(design, {
+  it('publishes workflow graph into an AgentWorkflowDefinition', () => {
+    const definition = createAgentWorkflowDefinitionFromDesign(createDesign(), {
       publishedAt: '2026-06-16T00:00:00.000Z',
     })
 
@@ -272,6 +222,29 @@ describe('workflow design helpers', () => {
         designId: 'agent.workflow.test',
         designVersion: 1,
       },
+      workflow: {
+        variables: [
+          { name: 'requirement', required: true },
+        ],
+        graph: {
+          nodes: [
+            expect.objectContaining({ id: 'start', type: 'start' }),
+            expect.objectContaining({
+              id: 'tool.classModel',
+              type: 'tool',
+              data: expect.objectContaining({
+                provider: 'class-model',
+                toolName: 'spark.demo.run',
+              }),
+            }),
+            expect.objectContaining({ id: 'end', type: 'end' }),
+          ],
+          edges: [
+            { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
+            { id: 'edge.tool.end', source: 'tool.classModel', target: 'end' },
+          ],
+        },
+      },
       x_spark: {
         schema: 'spark.agent.workflow.definition.v1',
         publishedAt: '2026-06-16T00:00:00.000Z',
@@ -281,106 +254,18 @@ describe('workflow design helpers', () => {
         },
       },
     })
-    expect(definition.process?.processId).toBe('test.page-design-process')
-    expect(definition.process?.sourceRef).toBe('docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10')
-    expect(definition.process?.knowledgeSources).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        refId: 'doc.pageDesign100',
-        source: 'document',
-        path: 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10',
-      }),
-      expect.objectContaining({
-        refId: 'generated.dataSet',
-        source: 'generated-dts-class-model',
-      }),
-    ]))
-    expect(definition.process?.stages).toHaveLength(7)
-    expect(definition.process?.stages[0]).toMatchObject({
-      stageId: 'PD1.scope-inventory',
-      sourceSteps: '1-20',
-      knowledgeRefs: [
-        expect.objectContaining({
-          refId: 'generated.PD1.scope-inventory',
-          source: 'generated-dts-class-model',
-        }),
-      ],
-      considerations: expect.arrayContaining([
-        expect.objectContaining({
-          phaseId: 'F0',
-          metrics: expect.arrayContaining([
-            expect.objectContaining({
-              metricId: 'PD1.scope-inventory.F0.metric',
-              operator: 'gte',
-              target: 1,
-            }),
-          ]),
-        }),
-        expect.objectContaining({ phaseId: 'F9' }),
-      ]),
-    })
-    expect(definition.factory.identity.value).toEqual({
-      alias: 'pageDesign',
-      moduleId: 'pageDesign',
-      rootClassName: 'ProjectModel',
-    })
-    expect(definition.factory.activation.value).toEqual({
-      status: 'deferred',
-      reason: 'process-flow-shaping-only',
-    })
-    expect(definition.factory.delivery.value).toEqual({
-      status: 'deferred',
-      reason: 'process-flow-shaping-only',
-    })
-    expect(design.workflow.graph.nodes.map(node => node.id)).toEqual([
-      'start',
-      'process.PD1.scope-inventory',
-      'process.PD2.data-model',
-      'process.PD3.table-relations',
-      'process.PD4.page-data-use',
-      'process.PD5.views-dependencies',
-      'process.PD6.structure-behavior-style',
-      'process.PD7.verify-deliver',
-      'end',
-    ])
-    expect(design.workflow.graph.edges.map(edge => edge.id)).toEqual([
-      'edge.start.PD1',
-      'edge.PD1.PD2',
-      'edge.PD2.PD3',
-      'edge.PD3.PD4',
-      'edge.PD4.PD5',
-      'edge.PD5.PD6',
-      'edge.PD6.PD7',
-      'edge.PD7.end',
-    ])
+    expect('factory' in definition).toBe(false)
+    expect('process' in definition).toBe(false)
   })
 
-  it('keeps an invalid publishable definition when required phases are missing', () => {
-    const definition = createAgentWorkflowDefinitionFromDesign(createDesign(), {
-      publishedAt: '2026-06-16T00:00:00.000Z',
-    })
-
-    expect(definition.x_spark.validation.status).toBe('invalid')
-    expect(definition.x_spark.validation.issues).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        severity: 'error',
-        code: 'AGENT_WORKFLOW_FACTORY_PHASE_MISSING',
-        phaseId: 'F1',
-      }),
-    ]))
-    expect(definition.factory.materials.value).toEqual({})
-  })
-
-  it('marks duplicate publishPath as invalid', () => {
-    const design = createDesign()
-    const loopGraph = design.workflow.graph.nodes[1]?.data?.loop?.subGraph
-    if (loopGraph === undefined) throw new Error('missing loop graph')
-    createWorkflowDesignNode(loopGraph, {
-      nodeKind: 'tool',
-      id: 'phase.F0.duplicate',
-      title: 'Duplicate identity',
-      phaseId: 'F0',
-      sectionPath: 'factory.identity',
-    })
+  it('marks legacy design fields as invalid during publish', () => {
+    const design = createDesign() as WorkflowDesignDocument & { app?: unknown; factory?: unknown }
+    design.app = { mode: 'workflow' }
+    design.workflow.graph.nodes[1]!.data = {
+      type: 'tool',
+      title: 'Legacy',
+      tool_name: 'single_model_edit',
+    }
 
     const definition = createAgentWorkflowDefinitionFromDesign(design)
 
@@ -388,14 +273,19 @@ describe('workflow design helpers', () => {
     expect(definition.x_spark.validation.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({
         severity: 'error',
-        code: 'AGENT_WORKFLOW_DUPLICATE_PUBLISH_PATH',
-        phaseId: 'F0',
+        code: 'AGENT_WORKFLOW_LEGACY_DESIGN_FIELD',
+        path: 'design.app',
+      }),
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_NODE',
+        nodeId: 'tool.classModel',
       }),
     ]))
   })
 
   it('posts a generated definition to the publish endpoint', async () => {
-    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+    const definition = createAgentWorkflowDefinitionFromDesign(createDesign())
     httpMock.post.mockResolvedValue({
       ok: true,
       workflowId: 'agent.workflow.test',
@@ -413,7 +303,7 @@ describe('workflow design helpers', () => {
   })
 
   it('reads and saves definition.json through the document endpoint', async () => {
-    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+    const definition = createAgentWorkflowDefinitionFromDesign(createDesign())
     httpMock.get.mockResolvedValue({
       workflowId: 'agent.workflow.test',
       filename: 'definition.json',
@@ -443,7 +333,7 @@ describe('workflow design helpers', () => {
   })
 
   it('falls back to publish when the definition document endpoint is missing', async () => {
-    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+    const definition = createAgentWorkflowDefinitionFromDesign(createDesign())
     httpMock.put.mockRejectedValue(new Error(
       'No static resource api/tenants/tenant-a/projects/project-a/workflow-designs/agent.workflow.test/definition.json.',
     ))
@@ -464,242 +354,9 @@ describe('workflow design helpers', () => {
   })
 
   it('parses definition JSON with AgentWorkflowDefinition validation', () => {
-    const definition = createAgentWorkflowDefinitionFromDesign(createCompleteBusinessFactoryDesign())
+    const definition = createAgentWorkflowDefinitionFromDesign(createDesign())
 
     expect(parseAgentWorkflowDefinitionJson(JSON.stringify(definition))).toEqual(definition)
     expect(() => parseAgentWorkflowDefinitionJson('{"kind":"agent.workflow"}')).toThrow()
   })
 })
-
-function createCompleteBusinessFactoryDesign(): WorkflowDesignDocument {
-  const design = createDesign()
-  design.x_spark['process'] = createTestProcess()
-  design.x_spark['factory'] = createTestFactory()
-  design.workflow.graph = {
-    id: 'agent.workflow.test.page-design-process',
-    nodes: [
-      createFactoryProcessStartNode(),
-      ...createTestProcessStageNodes(),
-      createFactoryProcessEndNode(),
-    ],
-    edges: [],
-    viewport: { x: 0, y: 0, zoom: 1 },
-  }
-  design.workflow.graph.edges = createFactoryProcessEdges()
-  return design
-}
-
-function createFactoryProcessStartNode() {
-  return {
-    id: 'start',
-    type: 'custom',
-    position: { x: -260, y: 0 },
-    data: {
-      type: 'start',
-      title: 'Start',
-      desc: 'Factory process entry',
-    },
-  }
-}
-
-function createFactoryProcessEndNode() {
-  return {
-    id: 'end',
-    type: 'custom',
-    position: { x: -260, y: 240 },
-    data: {
-      type: 'end',
-      title: 'End',
-      desc: 'Factory process completion',
-    },
-  }
-}
-
-function createTestProcessStageNodes() {
-  return createTestProcess().stages.map((stage, index) => ({
-    id: `process.${stage.stageId}`,
-    type: 'custom',
-    position: index < 4
-      ? { x: index * 300, y: 0 }
-      : { x: (7 - index) * 300, y: 240 },
-    data: {
-      type: 'process-step',
-      title: stage.title,
-      desc: stage.goal,
-      x_spark: {
-        nodeRole: 'process-stage',
-        stageId: stage.stageId,
-        sourceSteps: stage.sourceSteps,
-        knowledgeRefIds: stage.knowledgeRefs?.map(item => item.refId) ?? [],
-        factoryConsiderations: stage.considerations.map(item => item.phaseId),
-      },
-    },
-  }))
-}
-
-function createFactoryProcessEdges() {
-  const sequence = [
-    ['edge.start.PD1', 'start', 'process.PD1.scope-inventory'],
-    ['edge.PD1.PD2', 'process.PD1.scope-inventory', 'process.PD2.data-model'],
-    ['edge.PD2.PD3', 'process.PD2.data-model', 'process.PD3.table-relations'],
-    ['edge.PD3.PD4', 'process.PD3.table-relations', 'process.PD4.page-data-use'],
-    ['edge.PD4.PD5', 'process.PD4.page-data-use', 'process.PD5.views-dependencies'],
-    ['edge.PD5.PD6', 'process.PD5.views-dependencies', 'process.PD6.structure-behavior-style'],
-    ['edge.PD6.PD7', 'process.PD6.structure-behavior-style', 'process.PD7.verify-deliver'],
-    ['edge.PD7.end', 'process.PD7.verify-deliver', 'end'],
-  ] as const
-
-  return sequence.map(([id, source, target]) => ({
-    id,
-    source,
-    target,
-    sourceHandle: 'source',
-    targetHandle: 'target',
-    type: 'custom',
-    data: {
-      relation: 'sequence',
-      meaning: 'craft-order',
-    },
-  }))
-}
-
-function createTestFactory() {
-  return {
-    identity: createTestFactorySection('F0', 'identity', 'factory.identity', 'workflow.factory.identity', {
-      alias: 'pageDesign',
-      moduleId: 'pageDesign',
-      rootClassName: 'ProjectModel',
-    }),
-    materials: createTestFactorySection('F1', 'materials', 'factory.materials', 'workflow.factory.materials', {
-      moduleClass: 'ProjectModel',
-    }),
-    knowledge: createTestFactorySection('F2', 'knowledge', 'factory.knowledge', 'workflow.factory.knowledge', {
-      rootClassName: 'ProjectModel',
-    }),
-    contract: createTestFactorySection('F3', 'contract', 'factory.contract', 'workflow.factory.contract', {
-      identityField: 'pageId',
-    }),
-    runtime: createTestFactorySection('F4', 'runtime', 'factory.runtime', 'workflow.factory.runtime', {
-      status: 'deferred',
-      reason: 'process-flow-shaping-only',
-    }),
-    governance: createTestFactorySection('F5', 'governance', 'factory.governance', 'workflow.factory.governance', {
-      mutationGate: 'pageDesign',
-    }),
-    acceptance: createTestFactorySection('F6', 'acceptance', 'factory.acceptance', 'workflow.factory.acceptance', {
-      dryRun: true,
-    }),
-    activation: createTestFactorySection('F7', 'activation', 'factory.activation', 'workflow.factory.activation', {
-      status: 'deferred',
-      reason: 'process-flow-shaping-only',
-    }),
-    workOrder: createTestFactorySection('F8', 'workOrder', 'factory.workOrder', 'workflow.factory.workOrder', {
-      sampleInput: 'pageDesign',
-    }),
-    delivery: createTestFactorySection('F9', 'delivery', 'factory.delivery', 'workflow.factory.delivery', {
-      status: 'deferred',
-      reason: 'process-flow-shaping-only',
-    }),
-  }
-}
-
-function createTestFactorySection(
-  phaseId: string,
-  phase: string,
-  sectionPath: string,
-  publishPath: string,
-  value: Readonly<Record<string, unknown>>,
-) {
-  return {
-    phaseId,
-    phase,
-    sectionPath,
-    publishPath,
-    value,
-  }
-}
-
-function createTestProcess() {
-  return {
-    processId: 'test.page-design-process',
-    title: '页面设计测试工艺',
-    sourceRef: 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10',
-    principle: 'workflow graph contains craft steps; F0-F9 are stage considerations.',
-    knowledgeSources: [
-      createTestKnowledgeRef('doc.pageDesign100', 'docs/ai/DATASET_PAGE_DESIGN_AI_FLOW_100_STEPS_ZH.md#10'),
-      createTestKnowledgeRef('generated.dataSet', 'generated/dts-class-model/files/packages/spark-data/src/dataset.ts.json'),
-    ],
-    stages: [
-      createTestProcessStage('PD1.scope-inventory', '接单与盘点', '1-20'),
-      createTestProcessStage('PD2.data-model', '数据规划与最小表模型', '21-40'),
-      createTestProcessStage('PD3.table-relations', '表关系建模', '41-50'),
-      createTestProcessStage('PD4.page-data-use', '页面规划与数据消费', '51-70'),
-      createTestProcessStage('PD5.views-dependencies', '按需视图与依赖', '71-88'),
-      createTestProcessStage('PD6.structure-behavior-style', '结构行为样式落地', '89-96'),
-      createTestProcessStage('PD7.verify-deliver', '交叉校验与收尾', '97-100'),
-    ],
-  }
-}
-
-function createTestProcessStage(stageId: string, title: string, sourceSteps: string) {
-  return {
-    stageId,
-    title,
-    sourceSteps,
-    goal: `Run source steps ${sourceSteps}.`,
-    knowledgeRefs: [
-      createTestKnowledgeRef(`generated.${stageId}`, `generated/dts-class-model/files/${stageId}.json`),
-    ],
-    considerations: [
-      {
-        phaseId: 'F0',
-        title: '身份边界',
-        checks: ['scope'],
-        metrics: [
-          {
-            metricId: `${stageId}.F0.metric`,
-            title: 'F0 metric',
-            operator: 'gte',
-            target: 1,
-            unit: 'item',
-          },
-        ],
-      },
-      {
-        phaseId: 'F9',
-        title: '交付',
-        checks: ['delivery'],
-        metrics: [
-          {
-            metricId: `${stageId}.F9.metric`,
-            title: 'F9 metric',
-            operator: 'eq',
-            target: 0,
-            unit: 'issue',
-          },
-        ],
-      },
-    ],
-    steps: [
-      {
-        stepId: `${stageId}.1`,
-        title,
-        sourceSteps,
-        actions: ['run stage'],
-        outputs: ['stage result'],
-        checks: ['stage closed'],
-      },
-    ],
-  }
-}
-
-function createTestKnowledgeRef(refId: string, path: string) {
-  return {
-    refId,
-    title: refId,
-    source: refId.startsWith('doc.') ? 'document' : 'generated-dts-class-model',
-    path,
-    symbols: refId.startsWith('generated.') ? ['TestSymbol'] : undefined,
-    usage: `Use ${refId} in workflow process tests.`,
-  }
-}

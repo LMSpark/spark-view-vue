@@ -23,4 +23,4 @@ Host 层「LLM ↔ 工具执行」闭环编排。
 
 - 状态机与 nudge：[`docs/native-runtime-and-agent-flow-zh-cn.md`](../../../docs/native-runtime-and-agent-flow-zh-cn.md) §9、§16
 - 传输交互：[`docs/transport-and-session-zh-cn.md`](../../../docs/transport-and-session-zh-cn.md)
-- F8 recovery 删减：主文档 §13
+- recovery 删减：主文档 §13

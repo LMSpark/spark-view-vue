@@ -870,8 +870,8 @@ describe('readDtsClassModelBundleJson', () => {
     }
   })
 
-  it('projects readonly business factory commands with create return links', async () => {
-    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-business-factory-${String(process.pid)}-${String(Date.now())}`)
+  it('projects readonly host ensure commands with create return links', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-host-ensure-${String(process.pid)}-${String(Date.now())}`)
     const registrationSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts'
     const hostSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts'
     const registrationPath = resolve(tempRoot, registrationSourcePath)
