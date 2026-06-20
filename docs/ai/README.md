@@ -15,10 +15,8 @@
 1. [../../packages/spark-ai/ARCHITECTURE.md](../../packages/spark-ai/ARCHITECTURE.md)：spark-ai 端到端架构 SSOT（ClassModel 七工具、Turn、DTS 知识）。
 2. [spark-ai-workflow.md](spark-ai-workflow.md)：工作流速查 SOP。
 3. [AI_MODEL_SPEC.md](AI_MODEL_SPEC.md)：模型 class 规范。
-4. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
-5. [AI_CODE_GENERATION_BEHAVIOR.en.md](AI_CODE_GENERATION_BEHAVIOR.en.md)：代码生成规则英文版。
-6. [AI_CODE_CHANGE_PROTOCOL.md](AI_CODE_CHANGE_PROTOCOL.md)：代码修改强制流程（7 阶段工作流）。
-7. [../../knowledge/](../../knowledge/)：知识库——AI 编码过程中积累的隐含规则和踩坑记录。
+4. [../../ai-coding-kit/AGENTS.md](../../ai-coding-kit/AGENTS.md)：AI 编码标准主体（7 阶段代码修改协议、代码生成行为规范、跨会话委派协议 EPSS）。
+5. [../../knowledge/](../../knowledge/)：知识库——AI 编码过程中积累的隐含规则和踩坑记录。
 
 ## 当前口径
 

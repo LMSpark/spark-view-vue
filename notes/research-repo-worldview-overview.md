@@ -305,5 +305,4 @@
 | ProjectModel | `packages/spark-project-model/src/project/project-model.ts` |
 | AI 工作流 SOP | `docs/ai/spark-ai-workflow.md` |
 | AI 模型规范 | `docs/ai/AI_MODEL_SPEC.md` |
-| 代码修改协议 | `docs/ai/AI_CODE_CHANGE_PROTOCOL.md` |
-| 代码生成行为规范 | `docs/ai/ai-code-generation-behavior.md` |
+| 代码修改协议与代码生成规范 | `ai-coding-kit/AGENTS.md` |

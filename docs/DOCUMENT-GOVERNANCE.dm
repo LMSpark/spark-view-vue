@@ -303,11 +303,11 @@ section DirectoryRegistry {
     new_file_rule: "不再新增普通专题文档到根目录。"
   }
 
-  entry ai_spec {
-    path: "ai-spec/"
+  entry ai_coding_kit {
+    path: "ai-coding-kit/"
     owner: "docs"
     purpose: "可移植 AI 编码标准模板。"
-    index: "ai-spec/AGENTS.md"
+    index: "ai-coding-kit/AGENTS.md"
     allowed_files: ["AGENTS.md"]
     new_file_rule: "只维护可移植标准入口；项目特有规范留在 docs/ai/ 或 AGENTS.md。"
   }

@@ -33,6 +33,13 @@
 ### 规范文档跨项目移植的三层切分
 
 - **场景**：需要把项目内 AI 编码规范抽取为可移植版本，拷贝到其他项目共享
-- **规则**：抽取时做三层切分——①通用层（代码组织层次、命名字典式、函数签名、7 阶段流程）原样保留；②项目特有层（基类如 SparkAIModel、特定 subpath、namespace 类型、特定框架禁导）整段删除，不进入可移植版；③可配置层（验证命令、目录路径、提交 scope）替换为 `{{占位符}}`，并在附录给出多技术栈默认值表。产出物应是独立文件夹（如 `ai-spec/`），可整体拷贝。
-- **违反后果**：直接拷贝会让其他项目继承无关约束（如强制继承 SparkAIModel 协议），或留下硬编码命令（如 `pnpm run verify:rules`）导致新项目流程失效
-- **发现来源**：2026-06 创建 `ai-spec/AGENTS.md` 可移植规范时
+- **规则**：抽取时做三层切分——①通用层（代码组织层次、命名字典式、函数签名、7 阶段流程）原样保留；②项目特有层（基类如 SparkAIModel、特定 subpath、namespace 类型、特定框架禁导）整段删除，不进入可移植版；③可配置层（验证命令、目录路径、提交 scope）写成通用示例值（如 `pnpm run typecheck`、`notes/`、`knowledge/`），不用 `{{占位符}}`，附录 A 给出各技术栈常见值表供接入时替换。产出物应是独立文件夹（如 `ai-coding-kit/`），可整体拷贝。
+- **违反后果**：直接拷贝会让其他项目继承无关约束（如强制继承 SparkAIModel 协议），或留下硬编码命令（如 `pnpm run verify:rules`）导致新项目流程失效；用 `{{占位符}}` 会让 AI 在源项目内看到一堆未替换标记产生歧义
+- **发现来源**：2026-06 创建 `ai-coding-kit/AGENTS.md` 可移植规范时；2026-06 去占位符改通用示例值
+
+### verify-docs allowlist 反向校验
+
+- **场景**：删除 `docs/` 下被 `tools/verify-docs.mjs` 的 `legacyMarkdownAllowlist` 收录的 markdown 文档
+- **规则**：`legacyMarkdownAllowlist` 不仅是"放行非 kebab-case 文件名"的白名单，`checkLegacyAllowlist` 还会反向校验 allowlist 里的文件**必须存在**。删除任一 allowlist 文档时，必须同步从 `legacyMarkdownAllowlist` 集合中移除对应条目，否则 `pnpm run verify:docs` 报 `legacy markdown allowlist entry no longer exists; remove it from tools/verify-docs.mjs`。
+- **违反后果**：`verify:rules` / `verify` 门禁失败，CI 红
+- **发现来源**：2026-06 合并 AI 编码标准、删除 `docs/ai/AI_CODE_CHANGE_PROTOCOL.md` 等三个重复文档时

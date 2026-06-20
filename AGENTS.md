@@ -10,7 +10,7 @@
 
 `AGENTS.md` 是 AI 编码助手在本仓库生成代码、阅读项目事实、执行验证和沉淀知识的纲领性入口。
 
-- `docs/ai/`、`knowledge/`、`notes/`、`ai-spec/` 都属于 AI 编码赋能层，必须对接本项目真实代码、路径、约束和踩坑记录
+- `docs/ai/`、`knowledge/`、`notes/`、`ai-coding-kit/` 都属于 AI 编码赋能层，必须对接本项目真实代码、路径、约束和踩坑记录
 - 赋能层文档不替代产品层源码、模型 class、JSDoc 和产品文档；涉及产品事实时必须回到对应代码或产品文档确认
 
 ### `notes/` 临时记录与度量管理
@@ -51,28 +51,31 @@ pnpm --filter @spark-appworks/<pkg> run test
 
 ## AI 工作规程（强制）
 
-**修改任何代码前，必须完整阅读以下文档：**
+**修改任何代码前，必须完整阅读 [ai-coding-kit/AGENTS.md](ai-coding-kit/AGENTS.md)**——它是 AI 编码标准的完整主体，包含：
 
-1. **代码修改协议** — `docs/ai/AI_CODE_CHANGE_PROTOCOL.md`
-   - 7 阶段门控工作流：深度研读（含复述确认）→ 复杂度分级 → 反向提问 → 方案计划书 → 用户审核 → 编码实施 → 知识沉淀
-   - HARD-GATE：用户未明确说"通过/开工"，禁止写任何代码
-   - 严格一问一答，每题 5 个以上选项，题数由复杂度等级决定（简单 3-5、中等 5-8、复杂 8-10）
-   - 研读后必须复述理解并等用户确认，禁止跳过
-   - 跨会话委派只传结构化持久层文件，禁止传聊天记录
-   - context window 超 40% 时主动建议压缩重启
+- 第 0 章 治理优先级
+- 第 1 章 代码修改协议（7 阶段强制工作流：深度研读含复述确认 → 复杂度分级 → 反向提问 → 方案计划书 → 用户审核 → 编码实施 → 知识沉淀）
+- 第 2 章 代码生成行为规范（代码组织层次、interface/class 命名、函数签名、导出约束、硬门禁）
+- 第 3 章 跨会话委派协议（EPSS）
 
-2. **代码生成行为规范** — `docs/ai/ai-code-generation-behavior.md`
-   - 代码按层次组织，禁止大平层（interface / class / 文件 / 文件夹四种反模式）
-   - 字典式命名 `[领域路径][角色]`，矩阵式命名禁止
-   - 函数签名最多 3 个位置参数，超出用 options object
-   - 导出约束、错误处理、注释规则
+### SPARK 落地要点（写死值）
 
-3. **AI 模型规范** — `docs/ai/AI_MODEL_SPEC.md`
+- **HARD-GATE**：用户未明确说"通过/开工"，禁止写任何代码
+- **严格一问一答**，每题 5 个以上选项；题数由复杂度等级决定（简单 3-5、中等 5-8、复杂 8-10）
+- **研读后必须复述理解并等用户确认**，禁止跳过
+- **跨会话委派只传结构化持久层文件**（`notes/research-*`、`notes/plan-*`、验证结果），禁止传聊天记录
+- **context window 超 40% 时主动建议压缩重启**
+- 目录约定：研读锚点 `notes/research-<task-slug>.md`；方案计划 `notes/plan-<task-slug>.md`（顶部写 `状态：draft | approved | implementing | blocked | superseded`）；度量台账 `notes/ai-code-metrics.md`；知识沉淀 `knowledge/`
+- 验证命令：`pnpm run typecheck` → `pnpm run lint` → `pnpm run test` → `pnpm run verify:rules`（完整门禁 `pnpm run verify`）
+
+### SPARK 产品文档（ai-coding-kit 不覆盖，必读）
+
+1. **AI 模型规范** — `docs/ai/AI_MODEL_SPEC.md`
    - 业务 class 必须继承 `SparkAIModel`，`toJson()` 是唯一强制协议方法
    - 模型 class = LLM 知识真源，无额外 registry、无 metadata 第二真源
    - 知识有界：只看当前 root 实例 + 已引用子 model
 
-4. **spark-ai 工作流** — `docs/ai/spark-ai-workflow.md`
+2. **spark-ai 工作流** — `docs/ai/spark-ai-workflow.md`
    - 工具循环、相位门控、渐进澄清（`human_question`）
    - 知识消费顺序：`model_query → model_class_guide / model_attribute_guide / model_action_guide → model_script`
 
