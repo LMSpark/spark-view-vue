@@ -309,7 +309,7 @@ section DirectoryRegistry {
     purpose: "可移植 AI 编码标准模板。"
     index: "ai-coding-kit/AGENTS.md"
     allowed_files: ["AGENTS.md"]
-    new_file_rule: "只维护可移植标准入口；项目特有规范留在 docs/ai/ 或 AGENTS.md。"
+    new_file_rule: "只维护可移植标准入口；项目特有规范留在 AGENTS.md。"
   }
 
   entry config {
@@ -327,14 +327,6 @@ section DirectoryRegistry {
     purpose: "全仓文档入口和跨包治理。"
     index: "docs/README.md"
     allowed_files: ["README.md", "*.dm", "kebab-case.md", "legacy UPPER_SNAKE allowlist"]
-  }
-
-  entry docs_ai {
-    path: "docs/ai/"
-    owner: "spark-ai"
-    purpose: "AI 运行时、业务模块注册和代码生成规则。"
-    index: "docs/ai/README.md"
-    allowed_files: ["README.md", "kebab-case.md"]
   }
 
   entry docs_architecture {
@@ -513,7 +505,7 @@ section NamingExamples {
   ]
 
   markdown_bad_for_new_files: [
-    "docs/ai/SPARK_AI_NEW_TOPIC.md",
+    "packages/spark-ai/docs/SPARK_AI_NEW_TOPIC.md",
     "docs/architecture/DM-OLD-RULE-2026-05-23.md",
     "docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md",
     "packages/spark-utils/REQUEST_GUIDE.md"

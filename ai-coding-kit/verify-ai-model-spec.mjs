@@ -3,7 +3,7 @@
 /**
  * AI 生成模型规范验证脚本。
  *
- * 检查业务模型 class 是否符合 docs/ai/AI_MODEL_SPEC.md 规范：
+ * 检查业务模型 class 是否符合 packages/spark-ai/docs/ai-model-spec.md 规范：
  * 1. 模型 class 是否有 toJson()（extends SparkAIModel 或快照/树模型）
  * 2. 快照/树模型（非 SparkAIModel 子类）是否有 static fromJson 等工厂方法
  * 3. fromJson 签名是否接受 Record<string, unknown> | string

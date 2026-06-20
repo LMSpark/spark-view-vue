@@ -6,7 +6,7 @@
 
 | 主线 | 一句话 |
 |------|--------|
-| 全仓大分析 | 低代码应用平台，pnpm monorepo，前端 Vue 3 + TypeScript + Element Plus，后端 Spring Boot（Java）位于 `spark-ai-server/`。AI 编码赋能层（`docs/ai/`、`knowledge/`、`notes/`）对接真实代码，不替代产品事实。 |
+| 全仓大分析 | 低代码应用平台，pnpm monorepo，前端 Vue 3 + TypeScript + Element Plus，后端 Spring Boot（Java）位于 `spark-ai-server/`。AI 编码赋能层（`knowledge/`、`notes/`）对接真实代码，不替代产品事实。 |
 | 知识大无边 | 前端写的全部内容（`.ts` / `.vue` 业务源码 + JSDoc）通过编译系统，投影成可查询、可校验、可执行前置阅读的完整知识体系（`generated/dts-class-model`）。 |
 | 业务有边界 | 通过 Agent Workflow Design（`design.json` → `definition.json`）确定业务形态：流程图 `start → node → output`，每个业务节点绑定一个 ClassModel model context + LLM 工作 + validation action。 |
 
@@ -265,7 +265,7 @@
 
 ### 2. SparkAIModel 规范与实现的偏差
 
-`AI_MODEL_SPEC.md` 规定"凡 AI 要改数据的 class → extends SparkAIModel"，但实际只有 `DataSet` 严格遵守。
+`ai-model-spec.md` 规定"凡 AI 要改数据的 class → extends SparkAIModel"，但实际只有 `DataSet` 严格遵守。
 
 | 模型 | 继承 SparkAIModel | 实现 toJson/fromJson | 验证脚本判定 |
 |------|:-:|:-:|------|
@@ -303,6 +303,6 @@
 | ClassModel 对接 | `packages/spark-ai/src/agent/business/class-model-agent-adapter.ts` |
 | SparkAIModel 基类 | `packages/spark-utils/src/ai-model.ts` |
 | ProjectModel | `packages/spark-project-model/src/project/project-model.ts` |
-| AI 工作流 SOP | `docs/ai/spark-ai-workflow.md` |
-| AI 模型规范 | `docs/ai/AI_MODEL_SPEC.md` |
+| AI 工作流 SOP | `packages/spark-ai/docs/spark-ai-workflow.md` |
+| AI 模型规范 | `packages/spark-ai/docs/ai-model-spec.md` |
 | 代码修改协议与代码生成规范 | `ai-coding-kit/AGENTS.md` |

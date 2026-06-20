@@ -12,8 +12,8 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const E2E_SCRIPT = path.join(ROOT, 'scripts/verify-page-design-e2e.mjs')
-const SNAPSHOT_PATH = path.join(ROOT, 'docs/ai/page-design-e2e-observation.snapshot.json')
-const SUMMARY_PATH = path.join(ROOT, 'docs/ai/page-design-e2e-observation.md')
+const SNAPSHOT_PATH = path.join(ROOT, 'notes/page-design-e2e-observation.snapshot.json')
+const SUMMARY_PATH = path.join(ROOT, 'notes/page-design-e2e-observation.md')
 const rounds = Number(process.env.AI_E2E_ROUNDS ?? '3')
 const backendUrl = process.env.AI_BACKEND_URL ?? 'http://localhost:8180'
 

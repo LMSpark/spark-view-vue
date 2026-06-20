@@ -1,6 +1,6 @@
 # spark-ai 工作流 SOP（速查）
 
-> 完整架构见 [`packages/spark-ai/ARCHITECTURE.md`](../../packages/spark-ai/ARCHITECTURE.md)。
+> 完整架构见 [`packages/spark-ai/ARCHITECTURE.md`](../ARCHITECTURE.md)。
 
 ## 角色一览
 
@@ -52,7 +52,7 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 
 - **参数表会生长**：`attribute.api` 指向子 model kind，每深入一层才暴露下一层字段与约束（代码：`class-model/class-model/model-projection.ts` 的 `listAttributeReachableKinds` / `projectClassModelForGuide`，可达才投影）。
 - **收敛 = 探索到底**，不是填满一张预设表：属性链 BFS 走到叶子、当前层 required 已补全、无新 `attribute.api` 子 kind 待问，即可进入生产。
-- `human_question` 的 `missingFacts` / `candidateOptions` 参数承载「当前层还缺什么」，是渐进澄清的接口锚点（见 [`../../packages/spark-ai/ARCHITECTURE.md`](../../packages/spark-ai/ARCHITECTURE.md) 工具闭集表）。
+- `human_question` 的 `missingFacts` / `candidateOptions` 参数承载「当前层还缺什么」，是渐进澄清的接口锚点（见 [`../ARCHITECTURE.md`](../ARCHITECTURE.md) 工具闭集表）。
 
 ## 编译与运行时加载
 

@@ -10,7 +10,7 @@
 
 `AGENTS.md` 是 AI 编码助手在本仓库生成代码、阅读项目事实、执行验证和沉淀知识的纲领性入口。
 
-- `docs/ai/`、`knowledge/`、`notes/`、`ai-coding-kit/` 都属于 AI 编码赋能层，必须对接本项目真实代码、路径、约束和踩坑记录
+- `knowledge/`、`notes/`、`ai-coding-kit/` 都属于 AI 编码赋能层，必须对接本项目真实代码、路径、约束和踩坑记录
 - 赋能层文档不替代产品层源码、模型 class、JSDoc 和产品文档；涉及产品事实时必须回到对应代码或产品文档确认
 
 ### `notes/` 临时记录与度量管理
@@ -70,12 +70,12 @@ pnpm --filter @spark-appworks/<pkg> run test
 
 ### SPARK 产品文档（ai-coding-kit 不覆盖，必读）
 
-1. **AI 模型规范** — `docs/ai/AI_MODEL_SPEC.md`
+1. **AI 模型规范** — `packages/spark-ai/docs/ai-model-spec.md`
    - 业务 class 必须继承 `SparkAIModel`，`toJson()` 是唯一强制协议方法
    - 模型 class = LLM 知识真源，无额外 registry、无 metadata 第二真源
    - 知识有界：只看当前 root 实例 + 已引用子 model
 
-2. **spark-ai 工作流** — `docs/ai/spark-ai-workflow.md`
+2. **spark-ai 工作流** — `packages/spark-ai/docs/spark-ai-workflow.md`
    - 工具循环、相位门控、渐进澄清（`human_question`）
    - 知识消费顺序：`model_query → model_class_guide / model_attribute_guide / model_action_guide → model_script`
 
