@@ -5,7 +5,7 @@
 
 ## 文件夹定位
 
-- **AI 编码标准**（`AGENTS.md`）：定义 AI 助手如何读代码、提问、写方案、实施、验证和沉淀知识，与具体项目解耦
+- **AI 编码标准**（`AGENTS.md`）：定义 AI 助手如何读代码、提问、写方案、实施、验证和沉淀知识，与具体项目解耦。它是通用底板；接入新项目时复制一份到目标项目根目录，改写为该项目落地版（命令、目录、特有门禁），`ai-coding-kit/AGENTS.md` 保持通用底板不动
 - **检查脚本**（`verify-*.mjs` + `verifier-common.mjs`）：把标准中的硬门禁落地为可执行校验，接入 CI 或本地 `verify` 流程
 - 本文件夹是底板快照；SPARK 本仓库以 `tools/` 下的脚本和根 `AGENTS.md` 为准，两边的脚本不自动同步
 
@@ -33,8 +33,12 @@
 
 ## 接入步骤
 
-1. **拷贝**：将整个 `ai-coding-kit/` 文件夹复制到目标项目根目录
-2. **调整标准文档**：按 `AGENTS.md` [附录 A](AGENTS.md#附录-a接入配置) 把示例命令和目录改为目标项目实际值
+1. **拷贝文件夹**：将整个 `ai-coding-kit/` 文件夹复制到目标项目根目录
+2. **建立根 AGENTS.md**：把 `ai-coding-kit/AGENTS.md` 复制一份到目标项目根目录（覆盖已有的话先备份）。根 `AGENTS.md` 是 AI 工具首屏入口，在里面改写为该项目落地版：
+   - 按 [附录 A](AGENTS.md#附录-a接入配置) 把示例命令（`pnpm run typecheck` 等）和目录（`notes/`、`knowledge/`）改为目标项目实际值
+   - 在顶部补项目概述、构建命令、monorepo 结构等项目落地信息
+   - 项目特有的硬门禁和禁止事项写在根 `AGENTS.md`（2.13 节末尾 + 禁止事项节）
+   - `ai-coding-kit/AGENTS.md` 保持通用底板不动，后续底板升级时作为对照参考
 3. **清理脚本**：删除 6 个 SPARK 专属脚本（`verify-architecture.mjs`、`verify-dependency-catalog.mjs`、`verify-pages-config.mjs`、`verify-workflow-designs.mjs`、`verify-ai-model-spec.mjs`、`verify-ai-model-schema.mjs`），或按目标项目架构重写
 4. **调整通用脚本配置**：打开 `verify-ai-codegen-rules.mjs` 和 `verify-docs.mjs`，修改脚本顶部的配置块：
    - `includeRoots` / `includeFiles`：改为目标项目的源码目录
@@ -51,8 +55,7 @@
      }
    }
    ```
-6. **入口引用**：在目标项目根目录的 `AGENTS.md`（或 `.cursor/rules`、`CLAUDE.md` 等 AI 入口文件）顶部加一行：`> AI 编码标准见 ai-coding-kit/AGENTS.md，修改任何代码前必须先读。`
-7. **按需追加项目特有门禁**：若有项目特有的硬门禁，追加到 `AGENTS.md` 2.13 节末尾，并在 `verify-ai-codegen-rules.mjs` 中补对应检查逻辑
+6. **如需项目特有门禁检查**：在 `verify-ai-codegen-rules.mjs` 中补对应检查逻辑，与根 `AGENTS.md` 2.13 节追加的项目特有硬门禁对齐
 
 完成以上步骤后，目标项目的 AI 编码流程与检查门禁即与本底板对齐。
 
