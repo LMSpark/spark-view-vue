@@ -6,6 +6,23 @@
 
 低代码应用平台。pnpm monorepo 结构。前端：Vue 3 + TypeScript + Element Plus。后端：Spring Boot（Java），位于 `spark-ai-server/`。
 
+## AI 编码赋能层边界
+
+`AGENTS.md` 是 AI 编码助手在本仓库生成代码、阅读项目事实、执行验证和沉淀知识的纲领性入口。
+
+- `docs/ai/`、`knowledge/`、`notes/`、`ai-spec/` 都属于 AI 编码赋能层，必须对接本项目真实代码、路径、约束和踩坑记录
+- 赋能层文档不替代产品层源码、模型 class、JSDoc 和产品文档；涉及产品事实时必须回到对应代码或产品文档确认
+
+### `notes/` 临时记录与度量管理
+
+- 文件分类：研读锚点写入 `notes/research-<task-slug>.md`；方案计划写入 `notes/plan-<task-slug>.md`；执行效果度量统一追加到 `notes/ai-code-metrics.md`
+- 文件名格式：`<task-slug>` 必须是具体任务主题的 kebab-case 英文短语；禁止日期、版本号、`notes`、`draft`、`final`、`latest`、`temp` 等低信号词
+- 状态管理：计划文件顶部必须写 `状态：draft | approved | implementing | blocked | superseded`；用户审核前是 `draft`，用户明确“通过/开工”后改为 `approved`，开始实施后改为 `implementing`
+- 状态变更：方案前提失效或用户改变方向时，先把原计划标为 `superseded` 并写明替代方案；实施受阻且无法继续时标为 `blocked` 并写明阻塞原因
+- 完成处理：计划执行完成并验证通过后，删除对应 `notes/plan-*`，不保留“完成版方案”；可复用规则沉淀到 `knowledge/`，效果度量追加到 `notes/ai-code-metrics.md`
+- 研读锚点处理：`notes/research-*` 按跨会话需要保留；若只服务一次性任务且已无复用价值，完成后可删除；禁止把历史研读当作当前产品事实源
+- 度量台账处理：`notes/ai-code-metrics.md` 是长期过程数据，只记录 AI 编码任务的复杂度、返工、审查和存活率；它不是执行计划、产品路线图或产品架构事实源
+
 ## 构建与验证
 
 ```bash
