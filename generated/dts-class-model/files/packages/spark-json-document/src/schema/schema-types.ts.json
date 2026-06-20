@@ -178,7 +178,7 @@
   "models": {
     "JsonSchemaType": {
       "name": "JsonSchemaType",
-      "jsdoc": "@module\n@spark-appworks /spark-json-document:schema/schema-types\n职责：提供 JSON Document/schema 处理中的 schema types 能力，支撑 schema 标准化、审计和元数据保留。\n边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。\nAI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。\nJSON Schema type 字段允许的类型字符串。\n支持联合类型数组，如 ['string', 'null'] 表示可选字符串。",
+      "jsdoc": "JSON Schema type 字段允许的类型字符串。\n支持联合类型数组，如 ['string', 'null'] 表示可选字符串。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "'null' | 'boolean' | 'object' | 'array' | 'number' | 'integer' | 'string'",

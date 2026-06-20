@@ -89,6 +89,47 @@
       "type": "object",
       "title": "TreeDisplayNode",
       "properties": {
+        "id": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "segment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/JsonNodeType"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order": {
+          "type": "number"
+        },
         "depth": {
           "type": "number"
         },

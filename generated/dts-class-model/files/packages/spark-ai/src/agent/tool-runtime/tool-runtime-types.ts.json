@@ -431,7 +431,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T22:59:24.497Z",
+  "generatedAt": "2026-06-20T04:47:21.106Z",
   "models": {
     "AiAgentToolCheckLevel": {
       "name": "AiAgentToolCheckLevel",
@@ -463,7 +463,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Tool Check 实例。",
-          "signatureText": "constructor(\n    /** 检查等级：error 会阻断，warn/info 用于提示。 */\n    level: AiAgentToolCheckLevel, \n    /** 稳定检查码，供 UI 和恢复提示识别问题类型。 */\n    code: string, \n    /** 面向用户或日志的检查说明。 */\n    message: string, \n    /** 可选修复提示。 */\n    hint?: string | undefined)",
+          "signatureText": "constructor(level: AiAgentToolCheckLevel, code: string, message: string, hint?: string | undefined)",
           "parameters": [
             {
               "name": "level",
@@ -506,25 +506,21 @@
           "attributes": [
             {
               "name": "level",
-              "jsdoc": "检查等级：error 会阻断，warn/info 用于提示。",
               "readable": true,
               "writable": false
             },
             {
               "name": "code",
-              "jsdoc": "稳定检查码，供 UI 和恢复提示识别问题类型。",
               "readable": true,
               "writable": false
             },
             {
               "name": "message",
-              "jsdoc": "面向用户或日志的检查说明。",
               "readable": true,
               "writable": false
             },
             {
               "name": "hint",
-              "jsdoc": "可选修复提示。",
               "readable": true,
               "writable": false
             }

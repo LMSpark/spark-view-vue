@@ -29,9 +29,11 @@ import {
   subscribeAppSseEvents,
 } from './app-sse-client.mjs'
 import {
-  ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
-} from '../src/services/page-design/page-design-business.ts'
+} from '../src/services/page-design/page-design-agent-workflow-binding.ts'
+import {
+  activatePageDesignAgentWorkflow,
+} from '../src/services/ai/agent-workflow-bindings.ts'
 import { getDtsClassModelManifestUrl } from '../src/class-model-artifacts/artifact-urls.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
@@ -709,12 +711,12 @@ function assertAppendMessages(body, input) {
 // 第 7 层：pageDesign 业务注册（ProjectWorkspace 直接作为 IO 入口）
 // ============================================================================
 
-function createPageDesignAiAgent(options, auth, workspace) {
+async function createPageDesignAiAgent(options, auth, workspace) {
   const aiHost = createAiAgentHost({
     turnCallbacks: createTurnCallbacks(options, auth),
     maxToolRounds: options.maxRounds,
   })
-  ensurePageDesignBusiness({
+  await activatePageDesignAgentWorkflow({
     host: aiHost,
     getPageDesignEditor: () => workspace,
     knowledge: createNodePageDesignKnowledgeProvider(),
@@ -1635,7 +1637,7 @@ async function run(options) {
   const before = readEditorFiles(editor)
 
   // 3. 注册 pageDesign 业务入口
-  const pageDesignHost = createPageDesignAiAgent(options, auth, editor)
+  const pageDesignHost = await createPageDesignAiAgent(options, auth, editor)
 
   // 5. 启动会话，发送 LLM 需求
   const textDeltas = []

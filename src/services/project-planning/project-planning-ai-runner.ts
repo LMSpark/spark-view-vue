@@ -23,11 +23,11 @@ import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   buildProjectPlanningAgentInput,
-  ensureProjectPlanningBusiness,
   PROJECT_PLANNING_MODULE_ID,
   type ProjectPlanningAgentInput,
   type ResolveScopedProjectPlanningRunInputOptions,
-} from '@/services/project-planning/project-planning-business'
+} from '@/services/project-planning/project-planning-agent-workflow-binding'
+import { activateProjectPlanningAgentWorkflow } from '@/services/ai/agent-workflow-bindings'
 import { createAiDeliveryFailureError } from '@/services/ai/ai-delivery-port'
 import { createProjectPlanningInlineDeliveryPort } from '@/services/project-planning/project-planning-host-run-provider'
 
@@ -94,7 +94,7 @@ export async function runProjectPlanningAiSession(
   }
 
   const input = buildProjectPlanningAgentInput(editor.project, command)
-  const projectPlanningHost = ensureProjectPlanningBusiness({
+  const projectPlanningHost = await activateProjectPlanningAgentWorkflow({
     host: aiAgentHost,
     getProjectPlanningEditor: (context) => {
       if (context.moduleInstanceId !== projectId) {

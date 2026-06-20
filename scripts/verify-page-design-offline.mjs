@@ -14,11 +14,11 @@ import process from 'node:process'
 const ROOT = path.resolve(import.meta.dirname, '..')
 
 const testFiles = [
-  'tests/page/page-design-business.test.ts',
-  'tests/page/page-design-ai-runner.test.ts',
-  'tests/page/page-design-knowledge.test.ts',
+  'tests/services/page-design-ai-runner.test.ts',
+  'tests/services/page-design-host-run-provider.test.ts',
+  'tests/services/page-data-design-host-run-provider.test.ts',
+  'tests/services/page-data-design-preset.test.ts',
   'tests/page/page-design-gates.test.ts',
-  'tests/page/page-design-class-model-knowledge-provider.test.ts',
   'tests/page/page-design-e2e-artifacts.test.ts',
   'tests/page/page-design-sop.test.ts',
   'packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts',

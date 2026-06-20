@@ -69,7 +69,7 @@
       "declarationKind": "class",
       "classDecl": {
         "constructorMeta": {
-          "jsdoc": "=============================================================================\n构造函数\n=============================================================================\n创建 TokenManager 实例\n@param storage - 存储类型，默认为 'localStorage'\n@param tokenKey - 存储键名，默认为 'spark_token'\n@example ```typescript\n// 默认配置\nconst manager = new TokenManager()\n// 自定义存储类型\nconst sessionManager = new TokenManager('sessionStorage')\n// 自定义键名\nconst customManager = new TokenManager('cookie', 'my_app_token')\n```",
+          "jsdoc": "创建 TokenManager 实例\n@param storage - 存储类型，默认为 'localStorage'\n@param tokenKey - 存储键名，默认为 'spark_token'\n@example ```typescript\n// 默认配置\nconst manager = new TokenManager()\n// 自定义存储类型\nconst sessionManager = new TokenManager('sessionStorage')\n// 自定义键名\nconst customManager = new TokenManager('cookie', 'my_app_token')\n```",
           "signatureText": "constructor(storage?: TokenStorage, tokenKey?: string)",
           "parameters": [
             {
@@ -99,7 +99,7 @@
           "methods": [
             {
               "name": "getToken",
-              "jsdoc": "=============================================================================\n公共 API 方法\n=============================================================================\n获取当前存储的令牌\n根据配置的存储类型和当前运行环境，检索存储的令牌。\n在服务端或测试环境中自动使用内存存储。\n@returns 令牌字符串或 null（如果不存在）\n@example ```typescript\nconst token = tokenManager.getToken()\nif (token) {\nconsole.log('Token found:', token)\n} else {\nconsole.log('No token stored')\n}\n```",
+              "jsdoc": "获取当前存储的令牌\n根据配置的存储类型和当前运行环境，检索存储的令牌。\n在服务端或测试环境中自动使用内存存储。\n@returns 令牌字符串或 null（如果不存在）\n@example ```typescript\nconst token = tokenManager.getToken()\nif (token) {\nconsole.log('Token found:', token)\n} else {\nconsole.log('No token stored')\n}\n```",
               "parameters": [],
               "type": {
                 "type": "union",

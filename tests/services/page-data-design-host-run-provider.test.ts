@@ -7,7 +7,7 @@ import type {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import { HttpClientBase, type HttpResponse, type RequestConfig } from '@spark-appworks/spark-utils'
-import { PAGE_DESIGN_MODULE_ID } from '@/services/page-design/page-design-business'
+import { PAGE_DESIGN_MODULE_ID } from '@/services/page-design/page-design-agent-workflow-binding'
 import { preparePageDataDesignHostRun } from '@/services/page-data-design/page-data-design-host-run-provider'
 import { readAiDeliveryErrorExtras } from '@/services/ai/ai-delivery-port'
 
@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => {
   return {
     createHeadlessPageDesignEditor,
     delegateHost,
-    ensurePageDesignBusiness: vi.fn(() => delegateHost),
+    activatePageDesignAgentWorkflow: vi.fn(async () => delegateHost),
   }
 })
 
@@ -33,11 +33,11 @@ vi.mock('@/services/page-design/page-design-headless', async (importOriginal) =>
   }
 })
 
-vi.mock('@/services/page-design/page-design-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design/page-design-business')>()
+vi.mock('@/services/ai/agent-workflow-bindings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/ai/agent-workflow-bindings')>()
   return {
     ...actual,
-    ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
+    activatePageDesignAgentWorkflow: mocks.activatePageDesignAgentWorkflow,
   }
 })
 
@@ -118,7 +118,7 @@ describe('preparePageDataDesignHostRun', () => {
       effectiveDescription: '订单列表需要主从表',
     } as AiJsonParams)
 
-    expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledOnce()
+    expect(mocks.activatePageDesignAgentWorkflow).toHaveBeenCalledOnce()
     expect(mocks.delegateHost.run).toHaveBeenCalledWith(
       PAGE_DESIGN_MODULE_ID,
       expect.objectContaining({
@@ -199,6 +199,6 @@ describe('preparePageDataDesignHostRun', () => {
     }, mocks.delegateHost as unknown as AiAgentHost)
 
     expect(host).toBe(mocks.delegateHost)
-    expect(mocks.ensurePageDesignBusiness).not.toHaveBeenCalled()
+    expect(mocks.activatePageDesignAgentWorkflow).not.toHaveBeenCalled()
   })
 })

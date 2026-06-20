@@ -365,6 +365,26 @@
       "type": "object",
       "title": "ClassDeclarationModel",
       "properties": {
+        "name": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "declarationKind": {
+          "type": "object",
+          "title": "TDeclarationKind"
+        },
+        "jsonSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "component": {
+          "$ref": "#/$defs/ComponentProfileMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        },
         "classDecl": {
           "$ref": "#/$defs/ClassDeclarationPayload"
         }
@@ -376,6 +396,26 @@
       "type": "object",
       "title": "InterfaceDeclarationModel",
       "properties": {
+        "name": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "declarationKind": {
+          "type": "object",
+          "title": "TDeclarationKind"
+        },
+        "jsonSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "component": {
+          "$ref": "#/$defs/ComponentProfileMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        },
         "interfaceDecl": {
           "$ref": "#/$defs/InterfaceDeclarationPayload"
         }
@@ -387,6 +427,26 @@
       "type": "object",
       "title": "TypeAliasDeclarationModel",
       "properties": {
+        "name": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "declarationKind": {
+          "type": "object",
+          "title": "TDeclarationKind"
+        },
+        "jsonSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "component": {
+          "$ref": "#/$defs/ComponentProfileMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        },
         "typeAlias": {
           "$ref": "#/$defs/TypeAliasDeclarationPayload"
         }
@@ -398,6 +458,26 @@
       "type": "object",
       "title": "EnumDeclarationModel",
       "properties": {
+        "name": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "declarationKind": {
+          "type": "object",
+          "title": "TDeclarationKind"
+        },
+        "jsonSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "component": {
+          "$ref": "#/$defs/ComponentProfileMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        },
         "enumDecl": {
           "$ref": "#/$defs/EnumDeclarationPayload"
         }

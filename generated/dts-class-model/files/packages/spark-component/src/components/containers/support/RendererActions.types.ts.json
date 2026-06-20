@@ -87,7 +87,7 @@
   "models": {
     "ActionsAlign": {
       "name": "ActionsAlign",
-      "jsdoc": "@module\n@spark-appworks /spark-component:components/containers/support/RendererActions.types\n职责：维护\n@spark-appworks /spark-component 中 components/containers/support/RendererActions.types 的模块能力，围绕 ActionsAlign、ActionsPosition、PermissionDeniedBehavior 等 4 个公开契约 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/containers/support/RendererActions.types 的声明、导出和使用边界时，从本模块开始。\n动作区内容对齐方式。",
+      "jsdoc": "动作区内容对齐方式。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "'left' | 'center' | 'right'",
@@ -129,7 +129,7 @@
     },
     "PermissionDeniedBehavior": {
       "name": "PermissionDeniedBehavior",
-      "jsdoc": "动作区固定策略。\n- `true`：沿用宿主默认固定行为\n- `'left' | 'right'`：显式固定到指定侧\n- `false | undefined`：不额外固定\n权限不足时的动作呈现策略。",
+      "jsdoc": "权限不足时的动作呈现策略。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "'hide' | 'disable'",

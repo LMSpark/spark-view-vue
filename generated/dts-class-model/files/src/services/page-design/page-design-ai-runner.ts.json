@@ -65,6 +65,21 @@
       "type": "object",
       "title": "PageDesignAiRunCommand",
       "properties": {
+        "description": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "page-design-gates.ts.json#/$defs/PageDesignRunMode"
+        },
+        "allowedOperations": {
+          "$ref": "page-design-gates.ts.json#/$defs/PageDesignAllowedOperations"
+        },
+        "preserveExistingInteractions": {
+          "type": "boolean"
+        },
+        "strictImplGate": {
+          "type": "boolean"
+        },
         "pageId": {
           "type": "string"
         },
@@ -110,6 +125,7 @@
         }
       },
       "required": [
+        "description",
         "pageId",
         "editor",
         "consumeCapability"
@@ -151,7 +167,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-12T01:02:39.579Z",
+  "generatedAt": "2026-06-20T13:41:04.366Z",
   "models": {
     "PageDesignAiRunOptions": {
       "name": "PageDesignAiRunOptions",

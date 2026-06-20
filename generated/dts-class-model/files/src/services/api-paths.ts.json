@@ -32,11 +32,11 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-15T00:04:57.439Z",
+  "generatedAt": "2026-06-19T02:46:50.989Z",
   "models": {
     "ProjectApiScope": {
       "name": "ProjectApiScope",
-      "jsdoc": "@module app:services/api-paths\n职责：提供应用运行时 service 层的 api paths 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
+      "jsdoc": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",

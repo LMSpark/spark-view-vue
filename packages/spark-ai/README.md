@@ -26,13 +26,13 @@ Spark AI agent runtime：JSON Schema 校验、ClassModel 工具闭集、Host 编
 ```typescript
 import { createAiAgentHost } from '@spark-appworks/spark-ai/agent'
 import { createAiAgentTurnCallbacks } from '@/services/ai-turn-bridge'
-import { ensurePageDesignBusiness } from '@/services/page-design-business'
+import { activatePageDesignAgentWorkflow } from '@/services/ai/agent-workflow-bindings'
 
 const host = createAiAgentHost({
   turnCallbacks: createAiAgentTurnCallbacks({ transport: 'session-turn' }),
 })
 
-ensurePageDesignBusiness({ host, getPageDesignEditor })
+await activatePageDesignAgentWorkflow({ host, getPageDesignEditor })
 ```
 
 生产 Host 见 `src/services/ai-host.ts`（`appAiAgent`）。

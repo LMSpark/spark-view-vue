@@ -29,12 +29,12 @@ import {
 import {
   PAGE_DESIGN_MODULE_ID,
   assertPageDesignRunGateAllowed,
-  ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
   type PageDesignAllowedOperations,
   type PageDesignRunInput,
   type PageDesignRunMode,
-} from '@/services/page-design/page-design-business'
+} from '@/services/page-design/page-design-agent-workflow-binding'
+import { activatePageDesignAgentWorkflow } from '@/services/ai/agent-workflow-bindings'
 import { createAiDeliveryFailureError } from '@/services/ai/ai-delivery-port'
 import { createPageDesignInlineDeliveryPort } from '@/services/page-design/page-design-host-run-provider'
 import {
@@ -124,7 +124,7 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     strictImplGate: command.strictImplGate === true,
   })
 
-  const pageDesignHost = ensurePageDesignBusiness({
+  const pageDesignHost = await activatePageDesignAgentWorkflow({
     host: aiAgentHost,
     getPageDesignEditor: (context) => {
       if (context.moduleInstanceId !== pageId) {

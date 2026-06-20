@@ -386,18 +386,18 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T20:19:35.804Z",
+  "generatedAt": "2026-06-20T04:47:21.085Z",
   "models": {
     "AiAgentRunTraceToolCall": {
       "name": "AiAgentRunTraceToolCall",
       "jsdoc": "工具调用轨迹条目：单次 function tool 调用的 headless 投影",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 调用参数的截断预览文本 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒） */\n    durationMs: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / module_action） */\n    toolName: string;\n    /** 调用参数的截断预览文本 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒） */\n    durationMs: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 调用参数的截断预览文本 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒） */\n    durationMs: number;\n}>",
+            "typeText": "Readonly<{\n    /** 工具名称（如 model_script / module_action） */\n    toolName: string;\n    /** 调用参数的截断预览文本 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒） */\n    durationMs: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -405,7 +405,7 @@
           "attributes": [
             {
               "name": "toolName",
-              "jsdoc": "工具名称（如 model_script / editNodeTree）",
+              "jsdoc": "工具名称（如 model_script / module_action）",
               "readable": true,
               "writable": false
             },

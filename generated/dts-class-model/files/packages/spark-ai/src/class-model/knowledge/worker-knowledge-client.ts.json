@@ -31,7 +31,7 @@
             }
           ]
         },
-        "workerOptions": {
+        "workerInit": {
           "type": "object",
           "title": "WorkerOptions"
         }
@@ -151,14 +151,14 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T20:00:37.332Z",
+  "generatedAt": "2026-06-20T04:47:21.193Z",
   "models": {
     "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
       "name": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
       "jsdoc": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "ClassModelKnowledgeWorkerInitInput & Readonly<{\n    /** Worker 脚本的 URL，用于在主线程创建 Web Worker 实例；必须指向知识链路的 worker 入口文件。 */\n    workerUrl: string | URL;\n    /** 传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。 */\n    workerOptions?: WorkerOptions;\n    /** 自定义 Worker 创建函数，用于替代默认的 new Worker()；在非浏览器环境或需要拦截 Worker 生命周期时注入。 */\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
+        "declarationTypeText": "ClassModelKnowledgeWorkerInitInput & Readonly<{\n    /** Worker 脚本的 URL，用于在主线程创建 Web Worker 实例；必须指向知识链路的 worker 入口文件。 */\n    workerUrl: string | URL;\n    /** 传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。 */\n    workerInit?: WorkerOptions;\n    /** 自定义 Worker 创建函数，用于替代默认的 new Worker()；在非浏览器环境或需要拦截 Worker 生命周期时注入。 */\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
         "declarationRelations": [
           {
             "kind": "intersection",
@@ -167,7 +167,7 @@
           },
           {
             "kind": "intersection",
-            "typeText": "Readonly<{\n    /** Worker 脚本的 URL，用于在主线程创建 Web Worker 实例；必须指向知识链路的 worker 入口文件。 */\n    workerUrl: string | URL;\n    /** 传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。 */\n    workerOptions?: WorkerOptions;\n    /** 自定义 Worker 创建函数，用于替代默认的 new Worker()；在非浏览器环境或需要拦截 Worker 生命周期时注入。 */\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
+            "typeText": "Readonly<{\n    /** Worker 脚本的 URL，用于在主线程创建 Web Worker 实例；必须指向知识链路的 worker 入口文件。 */\n    workerUrl: string | URL;\n    /** 传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。 */\n    workerInit?: WorkerOptions;\n    /** 自定义 Worker 创建函数，用于替代默认的 new Worker()；在非浏览器环境或需要拦截 Worker 生命周期时注入。 */\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -180,7 +180,7 @@
               "writable": false
             },
             {
-              "name": "workerOptions",
+              "name": "workerInit",
               "jsdoc": "传递给 Worker 构造函数的选项（如 type: 'module'），默认为 { type: 'module' }。",
               "readable": true,
               "writable": false

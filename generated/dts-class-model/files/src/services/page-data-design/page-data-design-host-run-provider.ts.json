@@ -44,7 +44,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T20:20:18.812Z",
+  "generatedAt": "2026-06-20T13:41:22.179Z",
   "models": {
     "PageDataDesignHostInput": {
       "name": "PageDataDesignHostInput",

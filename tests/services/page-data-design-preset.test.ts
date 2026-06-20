@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PAGE_DESIGN_MODULE_ID } from '@/services/page-design/page-design-business'
+import { PAGE_DESIGN_MODULE_ID } from '@/services/page-design/page-design-agent-workflow-binding'
 import {
   PAGE_DATA_DESIGN_ALLOWED_OPERATIONS,
   PAGE_DATA_DESIGN_MODULE_ID,

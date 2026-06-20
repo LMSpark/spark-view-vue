@@ -92,6 +92,30 @@
       "type": "object",
       "title": "ControlledFieldStateLike",
       "properties": {
+        "fieldName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "displayLabel": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isCurrentFieldHidden": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "shouldRenderCurrentField": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "currentDisplayValue": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "validationRules": {
+          "type": "object",
+          "title": "ComputedRef<FormItemRule[]>"
+        },
         "fieldValue": {
           "type": "object",
           "title": "ComputedRef<TValue>"
@@ -113,6 +137,12 @@
         }
       },
       "required": [
+        "fieldName",
+        "displayLabel",
+        "isCurrentFieldHidden",
+        "shouldRenderCurrentField",
+        "currentDisplayValue",
+        "validationRules",
         "fieldValue",
         "contextData",
         "dataSource",

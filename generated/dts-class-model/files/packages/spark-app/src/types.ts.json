@@ -203,6 +203,22 @@
       "type": "object",
       "title": "BootstrapContext",
       "properties": {
+        "user": {
+          "$ref": "#/$defs/UserInfo"
+        },
+        "tenant": {
+          "$ref": "#/$defs/TenantInfo"
+        },
+        "env": {
+          "$ref": "#/$defs/EnvironmentInfo"
+        },
+        "config": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "initializedAt": {
+          "type": "string"
+        },
         "app": {
           "type": "object",
           "title": "App"
@@ -216,6 +232,11 @@
         }
       },
       "required": [
+        "user",
+        "tenant",
+        "env",
+        "config",
+        "initializedAt",
         "app",
         "router"
       ],

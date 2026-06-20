@@ -50,6 +50,9 @@
       "type": "object",
       "title": "ProjectPlanningAiRunCommand",
       "properties": {
+        "saveNavigationAfterRun": {
+          "type": "boolean"
+        },
         "editor": {
           "$ref": "../../../packages/spark-project-model/src/project/project-workspace.ts.json#/$defs/ProjectWorkspace"
         },
@@ -95,7 +98,7 @@
           "type": "boolean"
         },
         "input": {
-          "$ref": "project-planning-business.ts.json#/$defs/ProjectPlanningAgentInput"
+          "$ref": "project-planning-agent-workflow-binding.ts.json#/$defs/ProjectPlanningAgentInput"
         },
         "navigationDirty": {
           "type": "boolean"
@@ -107,7 +110,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T22:54:27.080Z",
+  "generatedAt": "2026-06-20T13:41:30.640Z",
   "models": {
     "ProjectPlanningAiRunOptions": {
       "name": "ProjectPlanningAiRunOptions",

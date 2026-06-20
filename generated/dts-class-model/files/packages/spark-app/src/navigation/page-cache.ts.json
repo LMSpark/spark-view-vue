@@ -150,7 +150,7 @@
   "models": {
     "PageCacheSource": {
       "name": "PageCacheSource",
-      "jsdoc": "@module\n@spark-appworks /spark-app:navigation/page-cache\n职责：提供应用壳层 page-cache 能力，围绕 PageCacheSource、PageCacheHandle 连接导航、认证、插件、主题或 AI 宿主接线。\n边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。\nAI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/page-cache。\n页面配置缓存管理（spark-app 内聚）",
+      "jsdoc": "页面配置缓存管理（spark-app 内聚）",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    /** 清除指定页面的内存缓存，同时由 handle 清除 localStorage 中对应的四文件条目 */\n    clearPageCache(pageId: string): void;\n    /** 清除所有页面的内存与 localStorage 缓存，返回清除前统计（size + keys） */\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    /** 返回当前缓存条目统计，不含 localStorage 条目 */\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",

@@ -36,7 +36,7 @@
   "models": {
     "SessionReasoningBlockProps": {
       "name": "SessionReasoningBlockProps",
-      "jsdoc": "@module\n@spark-appworks /spark-component:ai/components/SessionReasoningBlock.props\n职责：维护\n@spark-appworks /spark-component 中 ai/components/SessionReasoningBlock.props 的模块能力，围绕 SessionReasoningBlockProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionReasoningBlock.props 的声明、导出和使用边界时，从本模块开始。\nSession Reasoning Block Props 的属性契约。",
+      "jsdoc": "Session Reasoning Block Props 的属性契约。",
       "declarationKind": "typeAlias",
       "component": {
         "name": "SessionReasoningBlock"

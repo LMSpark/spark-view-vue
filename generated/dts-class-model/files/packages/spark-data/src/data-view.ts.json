@@ -3251,7 +3251,7 @@
             },
             {
               "name": "applyViewConfig",
-              "jsdoc": "将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。\n将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。\n@param vc 要应用的视图配置片段。",
+              "jsdoc": "将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。\n@param vc 要应用的视图配置片段。",
               "parameters": [
                 {
                   "name": "vc",

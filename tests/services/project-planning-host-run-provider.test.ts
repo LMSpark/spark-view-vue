@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => {
   return {
     createHeadlessProjectPlanningEditor,
     delegateHost,
-    ensureProjectPlanningBusiness: vi.fn(() => delegateHost),
+    activateProjectPlanningAgentWorkflow: vi.fn(async () => delegateHost),
   }
 })
 
@@ -32,11 +32,11 @@ vi.mock('@/services/project-planning/project-planning-headless', async (importOr
   }
 })
 
-vi.mock('@/services/project-planning/project-planning-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/project-planning/project-planning-business')>()
+vi.mock('@/services/ai/agent-workflow-bindings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/ai/agent-workflow-bindings')>()
   return {
     ...actual,
-    ensureProjectPlanningBusiness: mocks.ensureProjectPlanningBusiness,
+    activateProjectPlanningAgentWorkflow: mocks.activateProjectPlanningAgentWorkflow,
   }
 })
 

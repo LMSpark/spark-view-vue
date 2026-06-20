@@ -147,6 +147,18 @@
       "type": "object",
       "title": "DataSetHistoryListOptions",
       "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "scopeId": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
         "adapter": {
           "anyOf": [
             {
@@ -165,6 +177,28 @@
       "type": "object",
       "title": "DataSetSnapshotCommitOptions",
       "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "scopeId": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "adapter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DataSetHistoryStorageAdapter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "maxEntries": {
           "type": "number"
         },

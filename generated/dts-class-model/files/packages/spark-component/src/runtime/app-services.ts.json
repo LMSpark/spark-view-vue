@@ -135,6 +135,18 @@
       "type": "object",
       "title": "PageUploadFilesOptions",
       "properties": {
+        "title": {
+          "type": "string"
+        },
+        "accept": {
+          "type": "string"
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "currentValue": {
+          "type": "string"
+        },
         "action": {
           "type": "string"
         },
@@ -177,12 +189,33 @@
       "type": "object",
       "title": "PageUploadedFile",
       "properties": {
+        "name": {
+          "type": "string"
+        },
+        "size": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "lastModified": {
+          "type": "number"
+        },
+        "file": {
+          "type": "object",
+          "title": "File"
+        },
         "response": true,
         "url": {
           "type": "string"
         }
       },
       "required": [
+        "name",
+        "size",
+        "type",
+        "lastModified",
+        "file",
         "response"
       ],
       "additionalProperties": false

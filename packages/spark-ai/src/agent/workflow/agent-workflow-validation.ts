@@ -61,6 +61,14 @@ type AgentWorkflowOptionalObjectValidationCommand = Readonly<{
   context: AgentWorkflowValidationPathContext
 }>
 
+type AgentWorkflowArrayFieldValidationCommand = Readonly<{
+  record: Readonly<Record<string, unknown>>
+  field: string
+  path: string
+  issues: AgentWorkflowValidationIssueSink
+  nodeId?: string
+}>
+
 type AgentWorkflowErrorIssueDetail = Readonly<{
   code: string
   message: string
@@ -432,6 +440,12 @@ function validateBusinessNodeData(command: AgentWorkflowNodeFieldValidationComma
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
   const llm = expectObject({ record: data, field: 'llm', path: `${path}.llm`, issues })
   const validation = expectObject({ record: data, field: 'validation', path: `${path}.validation`, issues })
+  const runtimeBinding = expectObject({
+    record: data,
+    field: 'runtimeBinding',
+    path: `${path}.runtimeBinding`,
+    issues,
+  })
   validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
   validateOptionalObject({ record: data, field: 'state', context: { path: `${path}.state`, nodeId, issues } })
   validateOptionalObject({ record: data, field: 'result', context: { path: `${path}.result`, nodeId, issues } })
@@ -485,6 +499,241 @@ function validateBusinessNodeData(command: AgentWorkflowNodeFieldValidationComma
       })
     }
   }
+
+  if (runtimeBinding !== undefined) {
+    validateRuntimeBinding(runtimeBinding, { path: `${path}.runtimeBinding`, nodeId, issues })
+  }
+}
+
+function validateRuntimeBinding(
+  runtimeBinding: Readonly<Record<string, unknown>>,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  const { path, nodeId, issues } = context
+  const registration = expectObject({
+    record: runtimeBinding,
+    field: 'registration',
+    path: `${path}.registration`,
+    issues,
+  })
+  if (registration !== undefined) {
+    expectNonBlankString({ record: registration, field: 'alias', path: `${path}.registration.alias`, issues })
+    expectNonBlankString({ record: registration, field: 'moduleId', path: `${path}.registration.moduleId`, issues })
+    expectNonBlankString({ record: registration, field: 'businessId', path: `${path}.registration.businessId`, issues })
+  }
+
+  const inputContract = expectObject({
+    record: runtimeBinding,
+    field: 'inputContract',
+    path: `${path}.inputContract`,
+    issues,
+  })
+  if (inputContract !== undefined) {
+    expectNonBlankString({
+      record: inputContract,
+      field: 'identityField',
+      path: `${path}.inputContract.identityField`,
+      issues,
+    })
+    expectNonBlankString({
+      record: inputContract,
+      field: 'messageField',
+      path: `${path}.inputContract.messageField`,
+      issues,
+    })
+    expectObject({
+      record: inputContract,
+      field: 'paramsSchema',
+      path: `${path}.inputContract.paramsSchema`,
+      issues,
+    })
+    validateOptionalStringArray({
+      value: inputContract['readonlySteps'],
+      context: { path: `${path}.inputContract.readonlySteps`, nodeId, issues },
+    })
+  }
+
+  const systemPrompt = expectObject({
+    record: runtimeBinding,
+    field: 'systemPrompt',
+    path: `${path}.systemPrompt`,
+    issues,
+  })
+  if (systemPrompt !== undefined) {
+    expectNonBlankString({ record: systemPrompt, field: 'template', path: `${path}.systemPrompt.template`, issues })
+    validateOptionalConditionalHints(systemPrompt['conditionalHints'], {
+      path: `${path}.systemPrompt.conditionalHints`,
+      nodeId,
+      issues,
+    })
+  }
+
+  const knowledge = expectObject({
+    record: runtimeBinding,
+    field: 'knowledge',
+    path: `${path}.knowledge`,
+    issues,
+  })
+  if (knowledge !== undefined) {
+    expectNonBlankString({ record: knowledge, field: 'rootClassName', path: `${path}.knowledge.rootClassName`, issues })
+    expectNonBlankString({ record: knowledge, field: 'manifestUrlRef', path: `${path}.knowledge.manifestUrlRef`, issues })
+  }
+
+  const resolveInstance = expectObject({
+    record: runtimeBinding,
+    field: 'resolveInstance',
+    path: `${path}.resolveInstance`,
+    issues,
+  })
+  if (resolveInstance !== undefined) {
+    expectNonBlankString({
+      record: resolveInstance,
+      field: 'editorSource',
+      path: `${path}.resolveInstance.editorSource`,
+      issues,
+    })
+    expectNonBlankString({
+      record: resolveInstance,
+      field: 'identityField',
+      path: `${path}.resolveInstance.identityField`,
+      issues,
+    })
+  }
+
+  const moduleClassRef = expectObject({
+    record: runtimeBinding,
+    field: 'moduleClassRef',
+    path: `${path}.moduleClassRef`,
+    issues,
+  })
+  if (moduleClassRef !== undefined) {
+    expectNonBlankString({ record: moduleClassRef, field: 'kind', path: `${path}.moduleClassRef.kind`, issues })
+  }
+
+  validateOptionalToolLoopNudge(runtimeBinding['toolLoopNudge'], {
+    path: `${path}.toolLoopNudge`,
+    nodeId,
+    issues,
+  })
+  validateOptionalBeforeFunctionCall(runtimeBinding['beforeFunctionCall'], {
+    path: `${path}.beforeFunctionCall`,
+    nodeId,
+    issues,
+  })
+  validateOptionalStringArray({
+    value: runtimeBinding['executionToolNames'],
+    context: { path: `${path}.executionToolNames`, nodeId, issues },
+  })
+  validateOptionalStringArray({
+    value: runtimeBinding['planWithoutToolMarkers'],
+    context: { path: `${path}.planWithoutToolMarkers`, nodeId, issues },
+  })
+  validateOptionalText({
+    record: runtimeBinding,
+    field: 'agentCompleteMethodName',
+    path: `${path}.agentCompleteMethodName`,
+    nodeId,
+    issues,
+  })
+}
+
+function validateOptionalConditionalHints(
+  value: unknown,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  const hints = expectOptionalArray(value, context)
+  if (hints === undefined) return
+  const { path, nodeId, issues } = context
+  hints.forEach((hint, index) => {
+    const hintPath = `${path}[${index}]`
+    if (!isJsonRecord(hint)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_RUNTIME_HINT_INVALID',
+          message: `${hintPath} must be an object.`,
+        },
+        hintPath,
+        nodeId,
+      ))
+      return
+    }
+    expectObject({ record: hint, field: 'when', path: `${hintPath}.when`, issues })
+    expectNonBlankString({ record: hint, field: 'template', path: `${hintPath}.template`, issues })
+  })
+}
+
+function validateOptionalToolLoopNudge(
+  value: unknown,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  if (value === undefined) return
+  const { path, nodeId, issues } = context
+  if (!isJsonRecord(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_RUNTIME_NUDGE_INVALID', message: `${path} must be an object when provided.` },
+      path,
+      nodeId,
+    ))
+    return
+  }
+  const templates = expectObject({ record: value, field: 'templates', path: `${path}.templates`, issues })
+  if (templates !== undefined) {
+    for (const [key, template] of Object.entries(templates)) {
+      if (typeof template !== 'string' || template.trim().length === 0) {
+        issues.push(errorIssue(
+          {
+            code: 'AGENT_WORKFLOW_RUNTIME_NUDGE_TEMPLATE_INVALID',
+            message: `${path}.templates.${key} must be a non-empty string.`,
+          },
+          `${path}.templates.${key}`,
+          nodeId,
+        ))
+      }
+    }
+  }
+  validateOptionalStringArray({
+    value: value['contextFields'],
+    context: { path: `${path}.contextFields`, nodeId, issues },
+  })
+}
+
+function validateOptionalBeforeFunctionCall(
+  value: unknown,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  if (value === undefined) return
+  const { path, nodeId, issues } = context
+  if (!isJsonRecord(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_RUNTIME_GATE_INVALID', message: `${path} must be an object when provided.` },
+      path,
+      nodeId,
+    ))
+    return
+  }
+  const rules = expectArray({
+    record: value,
+    field: 'gateRules',
+    path: `${path}.gateRules`,
+    issues,
+    ...(nodeId === undefined ? {} : { nodeId }),
+  })
+  if (rules === undefined) return
+  rules.forEach((rule, index) => {
+    const rulePath = `${path}.gateRules[${index}]`
+    if (!isJsonRecord(rule)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_RUNTIME_GATE_RULE_INVALID',
+          message: `${rulePath} must be an object.`,
+        },
+        rulePath,
+        nodeId,
+      ))
+      return
+    }
+    expectNonBlankString({ record: rule, field: 'kind', path: `${rulePath}.kind`, issues })
+  })
 }
 
 function validateOutputNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
@@ -731,6 +980,43 @@ function validateOptionalStringArray(command: AgentWorkflowCapabilitiesValidatio
       ))
     }
   })
+}
+
+function expectArray(command: AgentWorkflowArrayFieldValidationCommand): readonly unknown[] | undefined {
+  const { record, field, path, issues, nodeId } = command
+  const value = record[field]
+  if (!Array.isArray(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_REQUIRED_ARRAY_MISSING', message: `${path} must be an array.` },
+      path,
+      nodeId,
+    ))
+    return undefined
+  }
+  return copyUnknownArray(value)
+}
+
+function expectOptionalArray(
+  value: unknown,
+  context: AgentWorkflowValidationPathContext,
+): readonly unknown[] | undefined {
+  const { path, nodeId, issues } = context
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_OPTIONAL_ARRAY_INVALID', message: `${path} must be an array when provided.` },
+      path,
+      nodeId,
+    ))
+    return undefined
+  }
+  return copyUnknownArray(value)
+}
+
+function copyUnknownArray(value: readonly unknown[]): readonly unknown[] {
+  const items: unknown[] = []
+  for (const item of value) items.push(item)
+  return items
 }
 
 function canReachOutput(

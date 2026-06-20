@@ -1,0 +1,392 @@
+{
+  "kind": "agent.workflow",
+  "version": 1,
+  "workflowId": "agent.workflow.projectPlanning",
+  "source": {
+    "designKind": "agent.workflow.design",
+    "designId": "agent.workflow.projectPlanning",
+    "designVersion": 1
+  },
+  "workflow": {
+    "variables": [
+      {
+        "name": "projectScopeKey",
+        "title": "Project Scope Key",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "projectId",
+        "title": "Project ID",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "requirement",
+        "title": "Project Requirement",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "navigationNodes",
+        "title": "Navigation Planning Nodes",
+        "required": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "nodeKind": {
+                "type": "string"
+              },
+              "requirement": {
+                "type": "string"
+              },
+              "planningAttachmentRef": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "nodeId",
+              "title",
+              "nodeKind",
+              "requirement"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      {
+        "name": "tenantId",
+        "title": "Tenant ID",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "planningAttachmentRef",
+        "title": "Planning Attachment Ref",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "capabilities": [
+      {
+        "id": "project-planning.delivery",
+        "title": "Project Planning Delivery",
+        "description": "Coordinate project planning input, ClassModel runtime execution, and navigation plan delivery.",
+        "scope": "workflow",
+        "constraints": [
+          "Workflow definition declares runtime binding; app layer injects executable capabilities."
+        ]
+      }
+    ],
+    "graph": {
+      "nodes": [
+        {
+          "id": "start",
+          "type": "start",
+          "data": {
+            "type": "start",
+            "title": "Start"
+          }
+        },
+        {
+          "id": "node.projectPlanning",
+          "type": "node",
+          "data": {
+            "type": "node",
+            "title": "Project Planning Module",
+            "model": {
+              "rootClassName": "ProjectModel",
+              "className": "ProjectModel",
+              "contextPath": "$"
+            },
+            "inputs": {
+              "projectScopeKey": "{{ start.projectScopeKey }}",
+              "projectId": "{{ start.projectId }}",
+              "requirement": "{{ start.requirement }}",
+              "navigationNodes": "{{ start.navigationNodes }}"
+            },
+            "outputs": {
+              "result": "projectPlanning.result"
+            },
+            "llm": {
+              "task": {
+                "goal": "Compose project planning navigation from requirement and navigation inputs.",
+                "requirements": {
+                  "projectScopeKey": "{{ start.projectScopeKey }}",
+                  "projectId": "{{ start.projectId }}",
+                  "requirement": "{{ start.requirement }}",
+                  "navigationNodes": "{{ start.navigationNodes }}"
+                },
+                "contextInputs": {
+                  "projectRequirement": "{{ start.requirement }}",
+                  "navigationNodes": "{{ start.navigationNodes }}"
+                }
+              },
+              "knowledge": {
+                "rootClassName": "ProjectModel",
+                "className": "ProjectModel",
+                "allowedActions": [
+                  "readProjectPlanningInput",
+                  "readNavigationPlanningInputs",
+                  "replaceNavigationChildren",
+                  "completeProjectPlanning"
+                ],
+                "readableAttributes": [
+                  "navigationRoot"
+                ]
+              },
+              "functionCalling": {
+                "mode": "freeWithinModelContext",
+                "constraints": [
+                  "Runtime binding owns ClassModel knowledge lookup, script generation, and navigation mutation.",
+                  "Completion must go through completeProjectPlanning via agent_complete."
+                ]
+              },
+              "output": {
+                "structuredResult": {
+                  "result": "projectPlanning.result"
+                },
+                "handoffToValidation": true
+              }
+            },
+            "validation": {
+              "action": {
+                "className": "ProjectModel",
+                "actionName": "completeProjectPlanning",
+                "inputProjection": {
+                  "summary": "{{ node.projectPlanning.result.summary }}"
+                },
+                "expectedResult": {
+                  "completed": true
+                }
+              },
+              "status": "draft",
+              "issues": []
+            },
+            "runtimeBinding": {
+              "registration": {
+                "alias": "projectPlanning",
+                "moduleId": "projectPlanning",
+                "businessId": "projectPlanning"
+              },
+              "inputContract": {
+                "identityField": "projectScopeKey",
+                "messageField": "requirement",
+                "paramsSchema": {
+                  "type": "object",
+                  "properties": {
+                    "tenantId": {
+                      "type": "string"
+                    },
+                    "projectScopeKey": {
+                      "type": "string"
+                    },
+                    "projectId": {
+                      "type": "string"
+                    },
+                    "requirement": {
+                      "type": "string"
+                    },
+                    "planningAttachmentRef": {
+                      "type": "string"
+                    },
+                    "navigationNodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "nodeId": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "nodeKind": {
+                            "type": "string"
+                          },
+                          "requirement": {
+                            "type": "string"
+                          },
+                          "planningAttachmentRef": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "nodeId",
+                          "title",
+                          "nodeKind",
+                          "requirement"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "projectScopeKey",
+                    "projectId",
+                    "requirement",
+                    "navigationNodes"
+                  ],
+                  "additionalProperties": false
+                },
+                "readonlySteps": [
+                  "策划输入已注入 requirement 与 navigationNodes。",
+                  "业务契约见 DTS ClassModel 知识索引（model_query / model_action_guide）。"
+                ]
+              },
+              "systemPrompt": {
+                "template": "projectPlanning system prompt is interpolated by app binding.",
+                "conditionalHints": []
+              },
+              "knowledge": {
+                "rootClassName": "ProjectModel",
+                "manifestUrlRef": "dts-class-model"
+              },
+              "toolLoopNudge": {
+                "templates": {
+                  "plan_without_tool": "projectId=\"{{moduleInstanceId}}\"；禁止只输出计划，下一回合必须发起 tool_call。",
+                  "execution_phase": "projectId=\"{{moduleInstanceId}}\"；目录/指南阶段已完成，直接 model_script。",
+                  "model_script_retry": "projectId=\"{{moduleInstanceId}}\"；按 RECOVERY_HINT 修正后重试 model_script。"
+                },
+                "contextFields": [
+                  "moduleInstanceId"
+                ]
+              },
+              "beforeFunctionCall": {
+                "gateRules": [
+                  {
+                    "kind": "projectPlanningToolGate"
+                  },
+                  {
+                    "kind": "projectActionLookup"
+                  },
+                  {
+                    "kind": "forbiddenScriptMarkers",
+                    "markers": [
+                      "openPageDesign",
+                      "writePageFile",
+                      "setFileText",
+                      "editNodeTree",
+                      "editDataSet"
+                    ]
+                  }
+                ]
+              },
+              "executionToolNames": [
+                "model_script"
+              ],
+              "planWithoutToolMarkers": [
+                "readplanningprojection",
+                "readnavigationplanninginputs",
+                "replacenavigationchildren",
+                "readprojectplanninginput"
+              ],
+              "agentCompleteMethodName": "completeProjectPlanning",
+              "resolveInstance": {
+                "editorSource": "projectPlanning",
+                "identityField": "projectScopeKey"
+              },
+              "moduleClassRef": {
+                "kind": "ProjectModel"
+              }
+            },
+            "state": {},
+            "result": {},
+            "capabilities": [
+              {
+                "id": "project-planning.compose",
+                "title": "Compose Project Plan",
+                "description": "Let projectPlanning inspect model knowledge and produce navigation planning changes through runtime tools.",
+                "inputs": {
+                  "projectScopeKey": "{{ start.projectScopeKey }}",
+                  "projectId": "{{ start.projectId }}",
+                  "requirement": "{{ start.requirement }}",
+                  "navigationNodes": "{{ start.navigationNodes }}"
+                },
+                "outputs": {
+                  "result": "projectPlanning.result"
+                },
+                "scope": "node",
+                "constraints": [
+                  "Workflow definition names the module; runtime chooses ClassModel actions and script calls."
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "output",
+          "type": "output",
+          "data": {
+            "type": "output",
+            "title": "Output",
+            "outputs": {
+              "result": "{{ node.projectPlanning.result }}"
+            },
+            "capabilities": []
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge.start.node",
+          "source": "start",
+          "target": "node.projectPlanning",
+          "data": {
+            "projection": {
+              "sourceRef": "start.outputs",
+              "targetRef": "node.projectPlanning.inputs"
+            },
+            "branch": {
+              "label": "default",
+              "default": true
+            },
+            "validation": {}
+          }
+        },
+        {
+          "id": "edge.node.output",
+          "source": "node.projectPlanning",
+          "target": "output",
+          "data": {
+            "projection": {
+              "sourceRef": "node.projectPlanning.outputs",
+              "targetRef": "output.inputs"
+            },
+            "branch": {
+              "label": "default",
+              "default": true
+            },
+            "validation": {}
+          }
+        }
+      ]
+    }
+  },
+  "x_spark": {
+    "schema": "spark.agent.workflow.definition.v1",
+    "publishedAt": "2026-06-20T00:00:00.000Z",
+    "validation": {
+      "status": "valid",
+      "issues": []
+    }
+  }
+}

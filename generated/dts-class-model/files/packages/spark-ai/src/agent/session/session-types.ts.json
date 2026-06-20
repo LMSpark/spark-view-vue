@@ -176,6 +176,27 @@
       "type": "object",
       "title": "AiAgentMessageHistoryEntry",
       "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "runtimeInstanceId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "seq": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
         "kind": {
           "const": "message"
         },
@@ -200,6 +221,27 @@
       "type": "object",
       "title": "AiAgentFunctionCallHistoryEntry",
       "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "runtimeInstanceId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "seq": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
         "kind": {
           "const": "functionCall"
         },

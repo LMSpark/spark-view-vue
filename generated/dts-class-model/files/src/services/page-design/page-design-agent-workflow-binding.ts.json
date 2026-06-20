@@ -2,17 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schemaVersion": 3,
   "module": {
-    "name": "app:services/page-design/page-design-business",
-    "sourcePath": "src/services/page-design/page-design-business.ts",
-    "sourceFile": "src/services/page-design/page-design-business.ts",
+    "name": "app:services/page-design/page-design-agent-workflow-binding",
+    "sourcePath": "src/services/page-design/page-design-agent-workflow-binding.ts",
+    "sourceFile": "src/services/page-design/page-design-agent-workflow-binding.ts",
     "packageName": "app",
-    "modulePath": "services/page-design/page-design-business",
-    "jsdoc": "@module app:services/page-design-business\n职责：提供应用运行时 service 层的 page design business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign AI business registration.\nThis app-layer service exposes the current ProjectModel to spark-ai without\nmaking spark-project-model depend on AI runtime or generated metadata files.",
+    "modulePath": "services/page-design/page-design-agent-workflow-binding",
+    "jsdoc": "@module app:services/page-design/page-design-agent-workflow-binding\n职责：承载 pageDesign 领域的 AI workflow binding 能力——合法业务逻辑（MODULE_ID、类型、resolve/build、SOP、gate）+ binding 片段（editorGetter / gateExecutor / systemPromptInterpolator）。\n边界：只做 pageDesign 领域能力注入，不手写 workflow definition（definition 由设计器落盘 JSON 承载），也不承载解释器组合（由 agent-workflow-bindings.ts 薄组合入口完成）。\nAI用途：排查 pageDesign AI 注册如何从 definition + binding 解释而来时，用本模块定位领域 binding 片段。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageDesignRunInput",
       "ResolvePageDesignPlanningContextOptions",
-      "EnsurePageDesignBusinessOptions"
+      "PageDesignEditorGetterOptions",
+      "PageDesignAgentWorkflowBindingOptions"
     ]
   },
   "$defs": {
@@ -70,22 +71,10 @@
       },
       "additionalProperties": false
     },
-    "EnsurePageDesignBusinessOptions": {
+    "PageDesignEditorGetterOptions": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "EnsurePageDesignBusinessOptions",
-      "properties": {
-        "host": {
-          "$ref": "../../../packages/spark-ai/src/agent/business/ai-host.ts.json#/$defs/AiAgentHost"
-        },
-        "knowledge": {
-          "$ref": "../../../packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts.json#/$defs/ClassModelKnowledgeProvider"
-        }
-      },
-      "required": [
-        "host"
-      ],
-      "additionalProperties": false,
+      "title": "PageDesignEditorGetterOptions",
       "$defs": {
         "method.getPageDesignEditor.params": {
           "type": "object",
@@ -109,9 +98,20 @@
           "$ref": "../../../packages/spark-project-model/src/project/project-workspace.ts.json#/$defs/ProjectWorkspace"
         }
       }
+    },
+    "PageDesignAgentWorkflowBindingOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "PageDesignAgentWorkflowBindingOptions",
+      "properties": {
+        "knowledge": {
+          "$ref": "../../../packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts.json#/$defs/ClassModelKnowledgeProvider"
+        }
+      },
+      "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-13T23:11:15.498Z",
+  "generatedAt": "2026-06-20T14:06:46.713Z",
   "models": {
     "PageDesignRunInput": {
       "name": "PageDesignRunInput",
@@ -203,31 +203,24 @@
         }
       }
     },
-    "EnsurePageDesignBusinessOptions": {
-      "name": "EnsurePageDesignBusinessOptions",
-      "jsdoc": "Ensure Page Design Business Options 的调用配置。",
+    "PageDesignEditorGetterOptions": {
+      "name": "PageDesignEditorGetterOptions",
+      "jsdoc": "Page Design Editor Getter Options 的调用配置。",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "{\n    /** 宿主运行时信息。 */\n    host: AiAgentHost;\n    /** get Page Design Editor 回调。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n    /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n}",
+        "declarationTypeText": "Readonly<{\n    /** 按 moduleInstanceId（即 pageId）返回 pageDesign 编辑器。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** 按 moduleInstanceId（即 pageId）返回 pageDesign 编辑器。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
         "members": {
-          "attributes": [
-            {
-              "name": "host",
-              "jsdoc": "宿主运行时信息。",
-              "readable": true,
-              "writable": true
-            },
-            {
-              "name": "knowledge",
-              "jsdoc": "Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。",
-              "readable": true,
-              "writable": false
-            }
-          ],
           "methods": [
             {
               "name": "getPageDesignEditor",
-              "jsdoc": "get Page Design Editor 回调。",
+              "jsdoc": "按 moduleInstanceId（即 pageId）返回 pageDesign 编辑器。",
               "parameters": [
                 {
                   "name": "context",
@@ -241,6 +234,36 @@
                 "type": "reference",
                 "name": "ProjectWorkspace"
               }
+            }
+          ]
+        }
+      }
+    },
+    "PageDesignAgentWorkflowBindingOptions": {
+      "name": "PageDesignAgentWorkflowBindingOptions",
+      "jsdoc": "Page Design Agent Workflow Binding Options 的调用配置。",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "PageDesignEditorGetterOptions & Readonly<{\n    /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "intersection",
+            "typeText": "PageDesignEditorGetterOptions",
+            "targetName": "PageDesignEditorGetterOptions"
+          },
+          {
+            "kind": "intersection",
+            "typeText": "Readonly<{\n    /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */\n    knowledge?: ClassModelKnowledgeProvider;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "knowledge",
+              "jsdoc": "Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。",
+              "readable": true,
+              "writable": false
             }
           ]
         }

@@ -73,7 +73,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T20:17:53.783Z",
+  "generatedAt": "2026-06-20T04:47:21.197Z",
   "models": {
     "ApiObjectValidationFinding": {
       "name": "ApiObjectValidationFinding",
@@ -125,7 +125,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Api Object Metadata Validation Error 实例。",
-          "signatureText": "constructor(\n    /** 校验失败的 API object kind。 */\n    kind: string, \n    /** 该 API object 上收集到的全部校验发现。 */\n    findings: readonly ApiObjectValidationFinding[])",
+          "signatureText": "constructor(kind: string, findings: readonly ApiObjectValidationFinding[])",
           "parameters": [
             {
               "name": "kind",
@@ -154,13 +154,11 @@
           "attributes": [
             {
               "name": "kind",
-              "jsdoc": "校验失败的 API object kind。",
               "readable": true,
               "writable": false
             },
             {
               "name": "findings",
-              "jsdoc": "该 API object 上收集到的全部校验发现。",
               "readable": true,
               "writable": false
             }

@@ -5,10 +5,12 @@
  * AI用途：应用层需要引用 spark-ai agent 类型或 ClassModel 适配器时，用本模块避免散落深层子路径 import。
  */
 export {
+  activateAgentWorkflowFromDefinition,
   activateAgentWorkflowDefinition,
   createSimpleInputContract,
   ClassModelAgentAdapter,
   dryRunAgentWorkflowDefinition,
+  interpretAgentWorkflowDefinition,
   resolveAgentWorkflowActivation,
 } from '@spark-appworks/spark-ai/agent'
 
@@ -17,7 +19,13 @@ export type {
   AgentWorkflowBindings,
   AgentWorkflowDefinition,
   AgentWorkflowGraphNode,
+  AgentWorkflowInterpretedRegistration,
+  AgentWorkflowModuleConstructor,
+  AgentWorkflowRuntimeBindings,
   AgentWorkflowRuntimeBinding,
+  AgentWorkflowRuntimeGateCommand,
+  AgentWorkflowRuntimeGateResult,
+  AgentWorkflowRuntimeSystemPromptCommand,
   AiAgentBeforeFunctionCallDirective,
   AiAgentBeforeFunctionCallOptions,
   AiAgentHost,

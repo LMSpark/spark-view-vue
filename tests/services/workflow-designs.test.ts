@@ -121,6 +121,49 @@ function createDesign(): WorkflowDesignDocument {
                 status: 'draft',
                 issues: [],
               },
+              runtimeBinding: {
+                registration: {
+                  alias: 'demo',
+                  moduleId: 'demo',
+                  businessId: 'demo',
+                },
+                inputContract: {
+                  identityField: 'requirement',
+                  messageField: 'requirement',
+                  paramsSchema: {
+                    type: 'object',
+                    properties: {
+                      requirement: { type: 'string' },
+                    },
+                    required: ['requirement'],
+                    additionalProperties: false,
+                  },
+                  readonlySteps: [],
+                },
+                systemPrompt: {
+                  template: 'Demo prompt: {{ requirement }}',
+                  conditionalHints: [],
+                },
+                knowledge: {
+                  rootClassName: 'DemoModel',
+                  manifestUrlRef: 'dts-class-model',
+                },
+                resolveInstance: {
+                  editorSource: 'demo',
+                  identityField: 'requirement',
+                },
+                moduleClassRef: {
+                  kind: 'DemoModel',
+                },
+                beforeFunctionCall: {
+                  gateRules: [
+                    { kind: 'demoGate' },
+                  ],
+                },
+                executionToolNames: ['model_script'],
+                planWithoutToolMarkers: ['runDemo'],
+                agentCompleteMethodName: 'validateDemo',
+              },
               capabilities: [
                 {
                   id: 'demo.execute',

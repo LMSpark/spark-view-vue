@@ -26,9 +26,9 @@ import type {
 import { createAiAgentTurnCallbacks } from '@/services/ai/ai-turn-bridge'
 import {
   buildProjectPlanningAgentInput,
-  ensureProjectPlanningBusiness,
   PROJECT_PLANNING_MODULE_ID,
-} from '@/services/project-planning/project-planning-business'
+} from '@/services/project-planning/project-planning-agent-workflow-binding'
+import { activateProjectPlanningAgentWorkflow } from '@/services/ai/agent-workflow-bindings'
 import { createHeadlessProjectPlanningEditor } from '@/services/project-planning/project-planning-headless'
 import {
   attachAiDeliveryResult,
@@ -154,7 +154,7 @@ export const prepareProjectPlanningHostRun: AiHostRunPrepare<AiAgentHost> = asyn
     turnCallbacks: createAiAgentTurnCallbacks({ transport: 'app-sse' }),
     maxToolRounds: 16,
   })
-  const projectPlanningHost = ensureProjectPlanningBusiness({
+  const projectPlanningHost = await activateProjectPlanningAgentWorkflow({
     host: runHost,
     getProjectPlanningEditor: () => editor,
   })

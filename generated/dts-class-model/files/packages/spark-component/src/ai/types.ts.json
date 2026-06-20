@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/ai/types.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "ai/types",
-    "jsdoc": "@module @spark-appworks/spark-component:ai/types\n职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。\n边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。\nAI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。\n\nAI 会话监视组件 — 共享领域类型（SSOT）。\nStreamDisplayEntry、ToolCallDisplayItem、ReasoningDisplayItem\n等流展示类型只在这里定义。UI 组件只消费外部传入的展示投影。",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/types\n职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。\n边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。\nAI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ToolCallDisplayItem",
@@ -15,6 +15,8 @@
       "StreamDisplayEntry",
       "SparkAgentTimelineEvent",
       "SessionDiagnosticIssue",
+      "SessionSummaryDisplayData",
+      "SessionTranscriptDisplayEntry",
       "SessionDiagnosticsData",
       "ToolApprovalDisplayItem"
     ]
@@ -262,18 +264,107 @@
       },
       "additionalProperties": false
     },
+    "SessionSummaryDisplayData": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "SessionSummaryDisplayData",
+      "properties": {
+        "status": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "historyCount": {
+          "type": "number"
+        },
+        "messageCount": {
+          "type": "number"
+        },
+        "toolCallCount": {
+          "type": "number"
+        },
+        "failedToolCallCount": {
+          "type": "number"
+        },
+        "functionNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lastAssistantText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SessionTranscriptDisplayEntry": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "SessionTranscriptDisplayEntry",
+      "properties": {
+        "seq": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "message",
+            "functionCall",
+            "unknown"
+          ]
+        },
+        "direction": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "args": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "SessionDiagnosticsData": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SessionDiagnosticsData",
       "properties": {
         "summary": {
-          "$ref": "../../../spark-ai/src/agent/session/session-diagnostics.ts.json#/$defs/AiAgentSessionSummary"
+          "$ref": "#/$defs/SessionSummaryDisplayData"
         },
         "transcript": {
           "type": "array",
           "items": {
-            "$ref": "../../../spark-ai/src/agent/session/session-diagnostics.ts.json#/$defs/AiAgentSessionTranscriptEntry"
+            "$ref": "#/$defs/SessionTranscriptDisplayEntry"
           }
         },
         "issues": {
@@ -306,18 +397,18 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T20:15:26.415Z",
+  "generatedAt": "2026-06-20T04:47:21.246Z",
   "models": {
     "ToolCallDisplayItem": {
       "name": "ToolCallDisplayItem",
       "jsdoc": "工具调用展示条目：单次 function tool 调用在 UI 流视图中的投影",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 调用参数的截断预览文本，用于 UI 展示而非完整参数还原 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null（调用尚未完成或无结果时） */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / module_action） */\n    toolName: string;\n    /** 调用参数的截断预览文本，用于 UI 展示而非完整参数还原 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null（调用尚未完成或无结果时） */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 调用参数的截断预览文本，用于 UI 展示而非完整参数还原 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null（调用尚未完成或无结果时） */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
+            "typeText": "Readonly<{\n    /** 工具名称（如 model_script / module_action） */\n    toolName: string;\n    /** 调用参数的截断预览文本，用于 UI 展示而非完整参数还原 */\n    argsPreview: string;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为 null（非 function calling 场景） */\n    callId: string | null;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果的截断摘要文本，可能为 null（调用尚未完成或无结果时） */\n    resultSummary: string | null;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -325,7 +416,7 @@
           "attributes": [
             {
               "name": "toolName",
-              "jsdoc": "工具名称（如 model_script / editNodeTree）",
+              "jsdoc": "工具名称（如 model_script / module_action）",
               "readable": true,
               "writable": false
             },
@@ -544,16 +635,149 @@
         }
       }
     },
+    "SessionSummaryDisplayData": {
+      "name": "SessionSummaryDisplayData",
+      "jsdoc": "会话摘要展示投影；组件包不依赖 spark-ai 内部 session 类型。",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "historyCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "messageCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolCallCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "failedToolCallCount",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "functionNames",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "lastAssistantText",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "SessionTranscriptDisplayEntry": {
+      "name": "SessionTranscriptDisplayEntry",
+      "jsdoc": "会话转写展示投影；只保留诊断面板实际展示需要的字段。",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "seq",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "id",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "timestamp",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "direction",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "role",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "source",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "toolName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "status",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "content",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "args",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "result",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
     "SessionDiagnosticsData": {
       "name": "SessionDiagnosticsData",
       "jsdoc": "诊断数据——永远有值（非 null）。\n由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 会话摘要（含状态、开始/结束时间等） */\n    summary: AiAgentSessionSummary;\n    /** 完整的会话交互记录列表 */\n    transcript: readonly AiAgentSessionTranscriptEntry[];\n    /** 诊断问题列表，由 runtime inspect 产出 */\n    issues: readonly SessionDiagnosticIssue[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 会话摘要（含状态、开始/结束时间等） */\n    summary: SessionSummaryDisplayData;\n    /** 完整的会话交互记录列表 */\n    transcript: readonly SessionTranscriptDisplayEntry[];\n    /** 诊断问题列表，由 runtime inspect 产出 */\n    issues: readonly SessionDiagnosticIssue[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 会话摘要（含状态、开始/结束时间等） */\n    summary: AiAgentSessionSummary;\n    /** 完整的会话交互记录列表 */\n    transcript: readonly AiAgentSessionTranscriptEntry[];\n    /** 诊断问题列表，由 runtime inspect 产出 */\n    issues: readonly SessionDiagnosticIssue[];\n}>",
+            "typeText": "Readonly<{\n    /** 会话摘要（含状态、开始/结束时间等） */\n    summary: SessionSummaryDisplayData;\n    /** 完整的会话交互记录列表 */\n    transcript: readonly SessionTranscriptDisplayEntry[];\n    /** 诊断问题列表，由 runtime inspect 产出 */\n    issues: readonly SessionDiagnosticIssue[];\n}>",
             "targetName": "Readonly"
           }
         ],

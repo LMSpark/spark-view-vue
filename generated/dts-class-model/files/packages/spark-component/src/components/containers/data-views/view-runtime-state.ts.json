@@ -220,6 +220,131 @@
           "type": "object",
           "title": "DataViewRequestAndAggregateState"
         }
+      ],
+      "properties": {
+        "tableName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "viewId": {
+          "type": "object",
+          "title": "ComputedRef<string | undefined>"
+        },
+        "primaryKey": {
+          "type": "object",
+          "title": "ComputedRef<string | undefined>"
+        },
+        "treeConfig": {
+          "type": "object",
+          "title": "ComputedRef<TreeConfig | undefined>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "columns": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataColumn[]>"
+        },
+        "currentRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        },
+        "selectedRows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "editingRows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "isMultiSelect": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "modelPermission": {
+          "type": "object",
+          "title": "ComputedRef<ModelPermission | undefined>"
+        },
+        "_modelPerm": {
+          "type": "object",
+          "title": "ComputedRef<ModelPermission | undefined>"
+        },
+        "value": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "label": {
+          "type": "object",
+          "title": "ComputedRef<string | null>"
+        },
+        "labels": {
+          "type": "object",
+          "title": "ComputedRef<readonly string[]>"
+        },
+        "requestState": {
+          "type": "object",
+          "title": "ComputedRef<RequestState>"
+        },
+        "aggregateResult": {
+          "type": "object",
+          "title": "ComputedRef<AggregateResultState>"
+        },
+        "selectionAggregateResult": {
+          "type": "object",
+          "title": "ComputedRef<AggregateResultState>"
+        },
+        "total": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "page": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "pageSize": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "mutating": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "mutatingError": {
+          "type": "object",
+          "title": "ComputedRef<Error | null>"
+        },
+        "loadingError": {
+          "type": "object",
+          "title": "ComputedRef<Error | null>"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tableName",
+        "viewId",
+        "primaryKey",
+        "treeConfig",
+        "rows",
+        "columns",
+        "currentRow",
+        "selectedRows",
+        "editingRows",
+        "isMultiSelect",
+        "modelPermission",
+        "_modelPerm",
+        "value",
+        "label",
+        "labels",
+        "requestState",
+        "aggregateResult",
+        "selectionAggregateResult",
+        "total",
+        "page",
+        "pageSize",
+        "mutating",
+        "mutatingError",
+        "loadingError"
       ]
     },
     "ContainerDataViewContextState": {
@@ -254,6 +379,141 @@
           "type": "object",
           "title": "ContainerDataViewContextState"
         }
+      ],
+      "properties": {
+        "tableName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "viewId": {
+          "type": "object",
+          "title": "ComputedRef<string | undefined>"
+        },
+        "primaryKey": {
+          "type": "object",
+          "title": "ComputedRef<string | undefined>"
+        },
+        "treeConfig": {
+          "type": "object",
+          "title": "ComputedRef<TreeConfig | undefined>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "columns": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataColumn[]>"
+        },
+        "currentRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        },
+        "selectedRows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "editingRows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "isMultiSelect": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "modelPermission": {
+          "type": "object",
+          "title": "ComputedRef<ModelPermission | undefined>"
+        },
+        "_modelPerm": {
+          "type": "object",
+          "title": "ComputedRef<ModelPermission | undefined>"
+        },
+        "value": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "label": {
+          "type": "object",
+          "title": "ComputedRef<string | null>"
+        },
+        "labels": {
+          "type": "object",
+          "title": "ComputedRef<readonly string[]>"
+        },
+        "requestState": {
+          "type": "object",
+          "title": "ComputedRef<RequestState>"
+        },
+        "aggregateResult": {
+          "type": "object",
+          "title": "ComputedRef<AggregateResultState>"
+        },
+        "selectionAggregateResult": {
+          "type": "object",
+          "title": "ComputedRef<AggregateResultState>"
+        },
+        "total": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "page": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "pageSize": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "mutating": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "mutatingError": {
+          "type": "object",
+          "title": "ComputedRef<Error | null>"
+        },
+        "loadingError": {
+          "type": "object",
+          "title": "ComputedRef<Error | null>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ComputedRef<DataView | null>"
+        },
+        "resolvedDataRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tableName",
+        "viewId",
+        "primaryKey",
+        "treeConfig",
+        "rows",
+        "columns",
+        "currentRow",
+        "selectedRows",
+        "editingRows",
+        "isMultiSelect",
+        "modelPermission",
+        "_modelPerm",
+        "value",
+        "label",
+        "labels",
+        "requestState",
+        "aggregateResult",
+        "selectionAggregateResult",
+        "total",
+        "page",
+        "pageSize",
+        "mutating",
+        "mutatingError",
+        "loadingError",
+        "resolvedView",
+        "resolvedDataRow"
       ]
     },
     "AggregateResultState": {

@@ -240,11 +240,15 @@
       "type": "object",
       "title": "DataSetCrudToolColumnSelectorParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
         "columnName": {
           "type": "string"
         }
       },
       "required": [
+        "tableName",
         "columnName"
       ],
       "additionalProperties": false
@@ -254,11 +258,15 @@
       "type": "object",
       "title": "DataSetCrudToolCreateColumnParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
         "column": {
           "$ref": "types.ts.json#/$defs/DataColumn"
         }
       },
       "required": [
+        "tableName",
         "column"
       ],
       "additionalProperties": false
@@ -268,11 +276,19 @@
       "type": "object",
       "title": "DataSetCrudToolUpdateColumnParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "columnName": {
+          "type": "string"
+        },
         "updates": {
           "$ref": "types.ts.json#/$defs/DataColumn"
         }
       },
       "required": [
+        "tableName",
+        "columnName",
         "updates"
       ],
       "additionalProperties": false
@@ -282,11 +298,19 @@
       "type": "object",
       "title": "DataSetCrudToolRenameColumnParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "columnName": {
+          "type": "string"
+        },
         "newColumnName": {
           "type": "string"
         }
       },
       "required": [
+        "tableName",
+        "columnName",
         "newColumnName"
       ],
       "additionalProperties": false
@@ -303,6 +327,88 @@
           "type": "object",
           "title": "DataSetCrudToolUpdateTableOptions"
         }
+      ],
+      "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "columnsToAdd": {
+          "type": "array",
+          "items": {
+            "$ref": "types.ts.json#/$defs/DataColumn"
+          }
+        },
+        "columnUpdates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataSetCrudToolColumnUpdate"
+          }
+        },
+        "columnsToRemove": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "api": {
+          "anyOf": [
+            {
+              "$ref": "types.ts.json#/$defs/CrudApi"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "crudConfig": {
+          "anyOf": [
+            {
+              "$ref": "types.ts.json#/$defs/CrudOperationConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resourceType": {
+          "anyOf": [
+            {
+              "$ref": "types.ts.json#/$defs/TableResourceType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resourceId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "businessCategory": {
+          "anyOf": [
+            {
+              "$ref": "types.ts.json#/$defs/TableBusinessCategory"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultRows": {
+          "type": "array",
+          "items": {
+            "$ref": "types.ts.json#/$defs/DataRow"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tableName"
       ]
     },
     "DataSetCrudToolRenameTableParams": {
@@ -310,11 +416,15 @@
       "type": "object",
       "title": "DataSetCrudToolRenameTableParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
         "newTableName": {
           "type": "string"
         }
       },
       "required": [
+        "tableName",
         "newTableName"
       ],
       "additionalProperties": false
@@ -324,17 +434,26 @@
       "type": "object",
       "title": "DataSetCrudToolViewSelectorParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
         "viewId": {
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "required": [
+        "tableName"
+      ]
     },
     "DataSetCrudToolCreateViewParams": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "DataSetCrudToolCreateViewParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
         "viewId": {
           "type": "string"
         },
@@ -343,6 +462,7 @@
         }
       },
       "required": [
+        "tableName",
         "viewId"
       ],
       "additionalProperties": false
@@ -352,11 +472,18 @@
       "type": "object",
       "title": "DataSetCrudToolUpdateViewParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "updates": {
           "$ref": "types.ts.json#/$defs/ViewMetadata"
         }
       },
       "required": [
+        "tableName",
         "updates"
       ],
       "additionalProperties": false
@@ -366,11 +493,15 @@
       "type": "object",
       "title": "DataSetCrudToolDeleteViewParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
         "viewId": {
           "type": "string"
         }
       },
       "required": [
+        "tableName",
         "viewId"
       ],
       "additionalProperties": false
@@ -380,11 +511,18 @@
       "type": "object",
       "title": "DataSetCrudToolAggregateSelectorParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "key": {
           "type": "string"
         }
       },
       "required": [
+        "tableName",
         "key"
       ],
       "additionalProperties": false
@@ -394,11 +532,22 @@
       "type": "object",
       "title": "DataSetCrudToolAddAggregateParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
         "config": {
           "$ref": "types.ts.json#/$defs/AggregateColumnConfig"
         }
       },
       "required": [
+        "tableName",
+        "key",
         "config"
       ],
       "additionalProperties": false
@@ -408,11 +557,22 @@
       "type": "object",
       "title": "DataSetCrudToolUpdateAggregateParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
         "updates": {
           "$ref": "types.ts.json#/$defs/AggregateColumnConfig"
         }
       },
       "required": [
+        "tableName",
+        "key",
         "updates"
       ],
       "additionalProperties": false
@@ -422,11 +582,19 @@
       "type": "object",
       "title": "DataSetCrudToolSetComputeExpressionParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "columnName": {
+          "type": "string"
+        },
         "expression": {
           "type": "string"
         }
       },
       "required": [
+        "tableName",
+        "columnName",
         "expression"
       ],
       "additionalProperties": false
@@ -436,6 +604,12 @@
       "type": "object",
       "title": "DataSetCrudToolRowSelectorParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "id": {
           "anyOf": [
             {
@@ -448,6 +622,7 @@
         }
       },
       "required": [
+        "tableName",
         "id"
       ],
       "additionalProperties": false
@@ -457,11 +632,18 @@
       "type": "object",
       "title": "DataSetCrudToolCreateRowParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "data": {
           "$ref": "types.ts.json#/$defs/DataRow"
         }
       },
       "required": [
+        "tableName",
         "data"
       ],
       "additionalProperties": false
@@ -471,6 +653,12 @@
       "type": "object",
       "title": "DataSetCrudToolCreateRowsParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "items": {
           "type": "array",
           "items": {
@@ -479,6 +667,7 @@
         }
       },
       "required": [
+        "tableName",
         "items"
       ],
       "additionalProperties": false
@@ -488,11 +677,29 @@
       "type": "object",
       "title": "DataSetCrudToolUpdateRowParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
         "data": {
           "$ref": "types.ts.json#/$defs/DataRow"
         }
       },
       "required": [
+        "tableName",
+        "id",
         "data"
       ],
       "additionalProperties": false
@@ -527,6 +734,12 @@
       "type": "object",
       "title": "DataSetCrudToolUpdateRowsParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "items": {
           "type": "array",
           "items": {
@@ -535,6 +748,7 @@
         }
       },
       "required": [
+        "tableName",
         "items"
       ],
       "additionalProperties": false
@@ -544,6 +758,12 @@
       "type": "object",
       "title": "DataSetCrudToolDeleteRowsParams",
       "properties": {
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
         "ids": {
           "type": "array",
           "items": {
@@ -559,6 +779,7 @@
         }
       },
       "required": [
+        "tableName",
         "ids"
       ],
       "additionalProperties": false
@@ -647,11 +868,19 @@
       "type": "object",
       "title": "DataSetCrudToolUpdateDependencyParams",
       "properties": {
+        "parentTable": {
+          "type": "string"
+        },
+        "childTable": {
+          "type": "string"
+        },
         "updates": {
           "$ref": "types.ts.json#/$defs/ViewDependency"
         }
       },
       "required": [
+        "parentTable",
+        "childTable",
         "updates"
       ],
       "additionalProperties": false

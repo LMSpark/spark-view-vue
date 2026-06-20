@@ -59,6 +59,12 @@
       "type": "object",
       "title": "JsonLoadOptions",
       "properties": {
+        "forceRefresh": {
+          "type": "boolean"
+        },
+        "expirationLevel": {
+          "type": "number"
+        },
         "parseJSON": {
           "const": true
         }
@@ -70,6 +76,12 @@
       "type": "object",
       "title": "TextLoadOptions",
       "properties": {
+        "forceRefresh": {
+          "type": "boolean"
+        },
+        "expirationLevel": {
+          "type": "number"
+        },
         "parseJSON": {
           "const": false
         }
@@ -105,7 +117,16 @@
             }
           ]
         }
-      }
+      },
+      "properties": {
+        "forceRefresh": {
+          "type": "boolean"
+        },
+        "expirationLevel": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
     },
     "LoadOptions": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -378,7 +399,7 @@
           "attributes": [
             {
               "name": "forceRefresh",
-              "jsdoc": "false = 返回原始字符串，不 JSON.parse（默认 true）\n跳过缓存强制重新请求（默认 false）",
+              "jsdoc": "跳过缓存强制重新请求（默认 false）",
               "readable": true,
               "writable": false
             },
@@ -873,7 +894,7 @@
             },
             {
               "name": "load",
-              "jsdoc": "加载单个文件。\n- 不传 transform：返回解析后的原始 JSON（或字符串）。\n- 传入 transform：返回变换结果，变换产物自动缓存，timestamp 未变时跳过变换。\n加载文件并使用 transform 返回变换结果。",
+              "jsdoc": "加载文件并使用 transform 返回变换结果。",
               "parameters": [
                 {
                   "name": "fileName",

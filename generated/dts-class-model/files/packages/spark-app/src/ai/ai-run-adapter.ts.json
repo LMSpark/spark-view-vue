@@ -145,7 +145,7 @@
         },
         "method.run.return": {
           "type": "object",
-          "title": "Promise<AiAgentHostRunResult>"
+          "title": "Promise<SparkAgent.AiAgentHostRunResult>"
         }
       }
     },
@@ -178,7 +178,7 @@
         },
         "runInput": {
           "type": "object",
-          "title": "SparkAgUiRunInput"
+          "title": "SparkAgent.RunAgentInput"
         },
         "threadId": {
           "type": "string"
@@ -208,7 +208,7 @@
           "properties": {
             "event": {
               "type": "object",
-              "title": "SparkAgUiEvent"
+              "title": "SparkAgent.AGUIEvent"
             }
           },
           "additionalProperties": false
@@ -248,7 +248,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "title": "SparkAgUiEvent"
+            "title": "SparkAgent.AGUIEvent"
           }
         },
         "timeline": {
@@ -321,18 +321,18 @@
       }
     }
   },
-  "generatedAt": "2026-06-14T20:23:14.619Z",
+  "generatedAt": "2026-06-20T04:47:21.240Z",
   "models": {
     "AiRunTraceSink": {
       "name": "AiRunTraceSink",
       "jsdoc": "外部 trace sink 接口：宿主方可实现此接口在 run 生命周期中接收观测数据",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: SparkAgent.AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: SparkAgent.AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
+            "typeText": "Readonly<{\n    /** 追加用户消息 */\n    appendUserMessage(content: string): void;\n    /** 从原始 SSE 事件派发内部状态变更 */\n    appendEvent(event: SparkAgent.AiAgentStreamEvent): void;\n    /** 追加模型文本增量 */\n    appendDelta(delta: string): void;\n    /** 追加推理文本增量 */\n    appendReasoning(text: string): void;\n    /** 追加工具调用完成记录 */\n    appendToolCall(record: SparkAgent.AiAgentToolCallRecord): void;\n    /** 追加错误条目 */\n    appendError(message: string): void;\n    /** 标记为用户主动中断 */\n    markAborted(message?: string): void;\n    /** 结束当前活跃 turn */\n    finish(): void;\n    /** 重置全部状态 */\n    reset(): void;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -363,7 +363,7 @@
                   "name": "event",
                   "type": {
                     "type": "reference",
-                    "name": "AiAgentStreamEvent"
+                    "name": "SparkAgent.AiAgentStreamEvent"
                   }
                 }
               ],
@@ -414,7 +414,7 @@
                   "name": "record",
                   "type": {
                     "type": "reference",
-                    "name": "AiAgentToolCallRecord"
+                    "name": "SparkAgent.AiAgentToolCallRecord"
                   }
                 }
               ],
@@ -496,7 +496,7 @@
       "jsdoc": "Ai Run Before Function Call 的语义模型。",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>",
+        "declarationTypeText": "(options: SparkAgent.AiAgentBeforeFunctionCallOptions) => SparkAgent.AiAgentBeforeFunctionCallDirective | Promise<SparkAgent.AiAgentBeforeFunctionCallDirective>",
         "members": {}
       }
     },
@@ -533,11 +533,11 @@
       "jsdoc": "AI 运行宿主接口：封装 AiAgentHost.run() 调用，便于 adapter 在不依赖具体 Host 实现的情况下发起 run",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: SparkAgent.AiAgentTaskChatOptions): Promise<SparkAgent.AiAgentHostRunResult>;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+            "typeText": "Readonly<{\n    /** 按 alias 运行已注册业务，委托给 AiAgentHost.run() */\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: SparkAgent.AiAgentTaskChatOptions): Promise<SparkAgent.AiAgentHostRunResult>;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -566,7 +566,7 @@
                   "name": "chat",
                   "type": {
                     "type": "reference",
-                    "name": "AiAgentTaskChatOptions"
+                    "name": "SparkAgent.AiAgentTaskChatOptions"
                   },
                   "flags": {
                     "isOptional": true
@@ -579,7 +579,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "AiAgentHostRunResult"
+                    "name": "SparkAgent.AiAgentHostRunResult"
                   }
                 ]
               }
@@ -618,11 +618,11 @@
       "jsdoc": "单次 AI run 的启动命令参数",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgUiRunInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgUiEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgent.RunAgentInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgent.AGUIEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgUiRunInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgUiEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
+            "typeText": "Readonly<{\n    /** 运行宿主，封装了 AiAgentHost.run() 调用 */\n    host: AiRunHost;\n    /** 业务注册别名，对应 Host 中已注册的业务 */\n    alias: string;\n    /** 业务输入参数，类型由 alias 推断 */\n    input: TInput;\n    /** AG-UI run 输入元数据（threadId / runId / parentRunId），用于构造 AG-UI 事件 */\n    runInput?: SparkAgent.RunAgentInput;\n    /** AG-UI 线程 ID；省略时自动生成 spark-thread:{alias} */\n    threadId?: string;\n    /** AG-UI 运行 ID；省略时自动生成 spark-run:{sequence} */\n    runId?: string;\n    /** 外部 trace sink，用于宿主观测 run 生命周期事件；省略时使用 noopTraceSink */\n    trace?: AiRunTraceSink;\n    /** 本次请求级工具执行前置裁决 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** 用户中断回调：abort 触发后调用，参数为中断原因 */\n    onAbort?: AiRunAbortHandler;\n    /** AG-UI 事件回调：每次产出 AG-UI 事件时调用，用于外部实时消费 */\n    onEvent?: (event: SparkAgent.AGUIEvent) => void;\n    /** 用户消息文本，run 开始前追加到 trace；省略则不追加 */\n    userMessage?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -698,7 +698,7 @@
                   "name": "event",
                   "type": {
                     "type": "reference",
-                    "name": "SparkAgUiEvent"
+                    "name": "SparkAgent.AGUIEvent"
                   }
                 }
               ],
@@ -759,11 +759,11 @@
       "jsdoc": "headless AI run adapter 暴露给 UI 的完整只读快照。",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgUiEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: SparkAgent.AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgent.AGUIEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgUiEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
+            "typeText": "Readonly<{\n    /** 内置 run trace 快照（含流式文本、条目列表、工具调用记录） */\n    trace: SparkAgent.AiAgentRunTraceSnapshot;\n    /** 已产出的 AG-UI 事件列表，按时间顺序排列 */\n    agUiEvents: readonly SparkAgent.AGUIEvent[];\n    /** AG-UI 事件 timeline 摘要列表，用于 UI 渲染精简事件流 */\n    timeline: readonly AiRunTimelineEvent[];\n}>",
             "targetName": "Readonly"
           }
         ],

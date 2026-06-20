@@ -258,7 +258,78 @@
           "type": "object",
           "title": "SparkMultilineRowsProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "rows": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkNumericMaxProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -276,6 +347,9 @@
       "type": "object",
       "title": "SparkNumericBoundsProps",
       "properties": {
+        "max": {
+          "type": "number"
+        },
         "min": {
           "type": "number"
         }
@@ -294,7 +368,78 @@
           "type": "object",
           "title": "SparkNumericMaxProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkBoundedFieldProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -308,7 +453,81 @@
           "type": "object",
           "title": "SparkNumericBoundsProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkRangeNumericFieldProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -322,13 +541,158 @@
           "type": "object",
           "title": "SparkRangeFilterProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "filterMode": {
+          "const": "range"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkFileFieldProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SparkFileFieldProps",
       "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "buttonText": {
+          "type": "string"
+        },
         "accept": {
           "type": "string"
         },
@@ -343,6 +707,9 @@
       "type": "object",
       "title": "SparkFileUploadActionProps",
       "properties": {
+        "readonlyButtonText": {
+          "type": "string"
+        },
         "action": {
           "type": "string"
         }
@@ -361,13 +728,176 @@
           "type": "object",
           "title": "SparkFileUploadActionProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "buttonText": {
+          "type": "string"
+        },
+        "accept": {
+          "type": "string"
+        },
+        "separator": {
+          "type": "string"
+        },
+        "readonlyButtonText": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkFilePickerFieldProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "SparkFilePickerFieldProps",
       "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "buttonText": {
+          "type": "string"
+        },
+        "accept": {
+          "type": "string"
+        },
+        "separator": {
+          "type": "string"
+        },
+        "readonlyButtonText": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
         "multiple": {
           "type": "boolean"
         }
@@ -379,6 +909,71 @@
       "type": "object",
       "title": "SparkTemporalPickerProps",
       "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
         "format": {
           "type": "string"
         },
@@ -417,7 +1012,90 @@
           "type": "object",
           "title": "SparkRangeFilterProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "format": {
+          "type": "string"
+        },
+        "startPlaceholder": {
+          "type": "string"
+        },
+        "endPlaceholder": {
+          "type": "string"
+        },
+        "rangeSeparator": {
+          "type": "string"
+        },
+        "filterMode": {
+          "const": "range"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkOptionButtonStyleProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -455,6 +1133,90 @@
       "type": "object",
       "title": "SparkOptionFieldProps",
       "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "TOption"
+          }
+        },
+        "optionLabelField": {
+          "type": "string"
+        },
+        "optionValueField": {
+          "type": "string"
+        },
+        "optionDisabledField": {
+          "type": "string"
+        },
+        "optionChildrenField": {
+          "type": "string"
+        },
         "dataSource": {
           "$ref": "../../../spark-data/src/data-view.ts.json#/$defs/DataView"
         },
@@ -498,7 +1260,125 @@
           "type": "object",
           "title": "SparkOptionButtonStyleProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "TOption"
+          }
+        },
+        "optionLabelField": {
+          "type": "string"
+        },
+        "optionValueField": {
+          "type": "string"
+        },
+        "optionDisabledField": {
+          "type": "string"
+        },
+        "optionChildrenField": {
+          "type": "string"
+        },
+        "dataSource": {
+          "$ref": "../../../spark-data/src/data-view.ts.json#/$defs/DataView"
+        },
+        "optionDataViewKey": {
+          "type": "string"
+        },
+        "optionDataMember": true,
+        "optionDataField": {
+          "type": "string"
+        },
+        "valueSeparator": {
+          "type": "string"
+        },
+        "valueMode": {
+          "$ref": "#/$defs/SparkOptionValueMode"
+        },
+        "textSeparator": {
+          "type": "string"
+        },
+        "textStorageField": {
+          "type": "string"
+        },
+        "filterable": {
+          "type": "boolean"
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "buttonStyle": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkHierarchicalOptionFieldProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -512,7 +1392,125 @@
           "type": "object",
           "title": "SparkHierarchicalSelectionProps"
         }
-      ]
+      ],
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "clearable": {
+          "type": "boolean"
+        },
+        "modelValue": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "value": {
+          "type": "object",
+          "title": "TValue"
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "titleAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "valueAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "custom"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "TOption"
+          }
+        },
+        "optionLabelField": {
+          "type": "string"
+        },
+        "optionValueField": {
+          "type": "string"
+        },
+        "optionDisabledField": {
+          "type": "string"
+        },
+        "optionChildrenField": {
+          "type": "string"
+        },
+        "dataSource": {
+          "$ref": "../../../spark-data/src/data-view.ts.json#/$defs/DataView"
+        },
+        "optionDataViewKey": {
+          "type": "string"
+        },
+        "optionDataMember": true,
+        "optionDataField": {
+          "type": "string"
+        },
+        "valueSeparator": {
+          "type": "string"
+        },
+        "valueMode": {
+          "$ref": "#/$defs/SparkOptionValueMode"
+        },
+        "textSeparator": {
+          "type": "string"
+        },
+        "textStorageField": {
+          "type": "string"
+        },
+        "filterable": {
+          "type": "boolean"
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "checkStrictly": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkOptionSourceProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -676,7 +1674,41 @@
           "type": "object",
           "title": "SparkCrudEventProps"
         }
-      ]
+      ],
+      "properties": {
+        "dataSource": {
+          "$ref": "../../../spark-data/src/data-view.ts.json#/$defs/DataView"
+        },
+        "dataViewKey": {
+          "type": "string"
+        },
+        "dataMember": true,
+        "dataField": {
+          "type": "string"
+        },
+        "showDataViewMeta": {
+          "type": "boolean"
+        },
+        "showAggregateSummary": {
+          "type": "boolean"
+        },
+        "showSelectionSummary": {
+          "type": "boolean"
+        },
+        "onAddRow": {
+          "type": "object",
+          "title": "AddRowHandler"
+        },
+        "onEditRow": {
+          "type": "object",
+          "title": "EditRowHandler"
+        },
+        "onRemoveRow": {
+          "type": "object",
+          "title": "RemoveRowHandler"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkInteractiveDataContainerProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -690,7 +1722,53 @@
           "type": "object",
           "title": "SparkRowInteractionEventProps"
         }
-      ]
+      ],
+      "properties": {
+        "dataSource": {
+          "$ref": "../../../spark-data/src/data-view.ts.json#/$defs/DataView"
+        },
+        "dataViewKey": {
+          "type": "string"
+        },
+        "dataMember": true,
+        "dataField": {
+          "type": "string"
+        },
+        "showDataViewMeta": {
+          "type": "boolean"
+        },
+        "showAggregateSummary": {
+          "type": "boolean"
+        },
+        "showSelectionSummary": {
+          "type": "boolean"
+        },
+        "onAddRow": {
+          "type": "object",
+          "title": "AddRowHandler"
+        },
+        "onEditRow": {
+          "type": "object",
+          "title": "EditRowHandler"
+        },
+        "onRemoveRow": {
+          "type": "object",
+          "title": "RemoveRowHandler"
+        },
+        "onRowClick": {
+          "type": "object",
+          "title": "RowClickHandler"
+        },
+        "onSelectionChange": {
+          "type": "object",
+          "title": "RowSelectionHandler"
+        },
+        "onCurrentChange": {
+          "type": "object",
+          "title": "CurrentRowChangeHandler"
+        }
+      },
+      "additionalProperties": false
     },
     "SparkVisibilityEventProps": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -817,7 +1895,7 @@
     },
     "SparkDataDisplayProps": {
       "name": "SparkDataDisplayProps",
-      "jsdoc": "作为容器 props 的命名中间层，承接 page-header、popover 这类\n既保留 `SparkNodeProps` 根层，又复用标题/正文语义的场景。\n展示组件值语义。\n适用于只读 display 组件：\n- 可以直接接收显式 `value`\n- 也可以通过 `field` 从当前上下文数据读取值\n注意：\n- 这里只描述“值来源”语义，不包含字段编辑语义\n- 组件自身仍应显式 `extends SparkNodeProps`，保持 props 入口可读",
+      "jsdoc": "展示组件值语义。\n适用于只读 display 组件：\n- 可以直接接收显式 `value`\n- 也可以通过 `field` 从当前上下文数据读取值\n注意：\n- 这里只描述“值来源”语义，不包含字段编辑语义\n- 组件自身仍应显式 `extends SparkNodeProps`，保持 props 入口可读",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    /**\n     * 显式展示值。\n     *\n     * 适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。\n     */\n    value?: TValue;\n    /** DataView 定位键，用于从页面数据空间读取展示值。 */\n    dataViewKey?: string;\n    /** DataView 成员枚举值。 */\n    dataMember?: DataMember | `${DataMember}`;\n    /** DataView 成员内部业务字段或点路径。 */\n    dataField?: string;\n    /**\n     * 数据字段绑定键。\n     *\n     * 常见语义是从当前上下文数据中读取 `currentRow[field]`，\n     * 用于详情展示、只读文本渲染或行内展示等场景。\n     */\n    field?: string;\n}",
@@ -1232,7 +2310,7 @@
     },
     "SparkFileUploadActionProps": {
       "name": "SparkFileUploadActionProps",
-      "jsdoc": "文件上传/浏览动作地址（例如上传接口 URL 或 '#'）。\n文件上传/浏览切换动作语义。\n适用于既可能上传，也可能只读浏览的文件字段。",
+      "jsdoc": "文件上传/浏览切换动作语义。\n适用于既可能上传，也可能只读浏览的文件字段。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "SparkReadonlyActionTextProps & {\n    /**\n       * 上传目标地址。\n       *\n       * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。\n       */\n    action?: string;\n}",
@@ -1687,7 +2765,7 @@
     },
     "SparkGridLayoutProps": {
       "name": "SparkGridLayoutProps",
-      "jsdoc": "适用于 tooltip、popover 这类以浮层配置为主的容器组件。\nGrid 布局容器语义。\n适用于 form、detail、dialog、section 等需要统一声明内容区 CSS Grid 布局的容器。",
+      "jsdoc": "Grid 布局容器语义。\n适用于 form、detail、dialog、section 等需要统一声明内容区 CSS Grid 布局的容器。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    /** CSS Grid 列数 */\n    gridColumns?: number;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n}",
@@ -1831,7 +2909,7 @@
     },
     "SparkCrudDataContainerProps": {
       "name": "SparkCrudDataContainerProps",
-      "jsdoc": "作为 DataView 驱动容器的命名中间层，统一表达它们与页面数据空间的绑定关系。\n在数据容器基础上增加统一 CRUD 动作入口，适用于 form、detail、list、tree、table。",
+      "jsdoc": "在数据容器基础上增加统一 CRUD 动作入口，适用于 form、detail、list、tree、table。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "SparkTableModelProps & SparkCrudEventProps",

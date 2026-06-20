@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => {
   return {
     createHeadlessPageDesignEditor,
     delegateHost,
-    ensurePageDesignBusiness: vi.fn(() => delegateHost),
+    activatePageDesignAgentWorkflow: vi.fn(async () => delegateHost),
   }
 })
 
@@ -32,11 +32,11 @@ vi.mock('@/services/page-design/page-design-headless', async (importOriginal) =>
   }
 })
 
-vi.mock('@/services/page-design/page-design-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design/page-design-business')>()
+vi.mock('@/services/ai/agent-workflow-bindings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/ai/agent-workflow-bindings')>()
   return {
     ...actual,
-    ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
+    activatePageDesignAgentWorkflow: mocks.activatePageDesignAgentWorkflow,
   }
 })
 

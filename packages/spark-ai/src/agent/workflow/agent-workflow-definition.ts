@@ -1,9 +1,11 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-definition
- * 职责：定义可序列化 Agent Workflow Definition 契约，发布态只表达 workflow graph。
+ * 职责：定义可序列化 Agent Workflow Definition 契约，发布态表达 workflow graph 与运行时 binding 声明。
  * 边界：只描述 workflow 定义，不持有函数、class 实例、APP、注册对象、delivery port 或 UI 状态。
  * AI用途：需要判断 workflow definition 字段、业务节点、边投影或验证 action 格式时，用本模块确认契约。
  */
+
+import type { AiJsonSchemaObject } from '../../json'
 
 export type AgentWorkflowJsonRecord = Readonly<Record<string, unknown>>
 
@@ -106,6 +108,71 @@ export type AgentWorkflowNodeValidation = Readonly<{
   issues?: readonly AgentWorkflowJsonRecord[]
 }>
 
+export type AgentWorkflowNodeRuntimeRegistration = Readonly<{
+  alias: string
+  moduleId: string
+  businessId: string
+}>
+
+export type AgentWorkflowNodeInputContract = Readonly<{
+  identityField: string
+  messageField: string
+  paramsSchema: AiJsonSchemaObject
+  readonlySteps?: readonly string[]
+}>
+
+export type AgentWorkflowNodeConditionalHint = Readonly<{
+  when: AgentWorkflowJsonRecord
+  template: string
+}>
+
+export type AgentWorkflowNodeSystemPrompt = Readonly<{
+  template: string
+  conditionalHints?: readonly AgentWorkflowNodeConditionalHint[]
+}>
+
+export type AgentWorkflowNodeKnowledge = Readonly<{
+  rootClassName: string
+  manifestUrlRef: string
+}>
+
+export type AgentWorkflowNodeToolLoopNudge = Readonly<{
+  templates: Readonly<Record<string, string>>
+  contextFields?: readonly string[]
+}>
+
+export type AgentWorkflowNodeGateRule = Readonly<{
+  kind: string
+  [key: string]: unknown
+}>
+
+export type AgentWorkflowNodeBeforeFunctionCall = Readonly<{
+  gateRules: readonly AgentWorkflowNodeGateRule[]
+}>
+
+export type AgentWorkflowNodeResolveInstance = Readonly<{
+  editorSource: string
+  identityField: string
+}>
+
+export type AgentWorkflowNodeModuleClassRef = Readonly<{
+  kind: string
+}>
+
+export type AgentWorkflowNodeRuntimeBinding = Readonly<{
+  registration: AgentWorkflowNodeRuntimeRegistration
+  inputContract: AgentWorkflowNodeInputContract
+  systemPrompt: AgentWorkflowNodeSystemPrompt
+  knowledge: AgentWorkflowNodeKnowledge
+  resolveInstance: AgentWorkflowNodeResolveInstance
+  moduleClassRef: AgentWorkflowNodeModuleClassRef
+  toolLoopNudge?: AgentWorkflowNodeToolLoopNudge
+  beforeFunctionCall?: AgentWorkflowNodeBeforeFunctionCall
+  executionToolNames?: readonly string[]
+  planWithoutToolMarkers?: readonly string[]
+  agentCompleteMethodName?: string
+}>
+
 export type AgentWorkflowBusinessNodeData = Readonly<{
   type?: 'node'
   title?: string
@@ -114,6 +181,7 @@ export type AgentWorkflowBusinessNodeData = Readonly<{
   outputs: AgentWorkflowJsonRecord
   llm: AgentWorkflowLlmWork
   validation: AgentWorkflowNodeValidation
+  runtimeBinding?: AgentWorkflowNodeRuntimeBinding
   state?: AgentWorkflowJsonRecord
   result?: AgentWorkflowJsonRecord
   capabilities?: readonly AgentWorkflowCapability[]

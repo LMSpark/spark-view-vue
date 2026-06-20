@@ -34,8 +34,10 @@ DTS ClassModel runtime
 ## 注册流程
 
 ```text
-src/services/page-design/page-design-business.ts
-  -> ClassModelAgentAdapter.register()
+src/services/ai/agent-workflow-bindings.ts
+  -> readWorkflowDefinition(...)
+  -> activateAgentWorkflowFromDefinition(...)
+  -> ClassModelAgentAdapter.createRegistration()
      -> resolveRuntimeApiMetadataJson()
      -> createClassModelDocumentFromRuntimeDocument()
      -> new ClassModelRuntime({ document, knowledge, scriptExecutor })

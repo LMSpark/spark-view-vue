@@ -109,7 +109,7 @@
   "models": {
     "LogLevel": {
       "name": "LogLevel",
-      "jsdoc": "@module\n@spark-appworks /spark-utils:logger\n职责：提供框架无关基础设施 logger 能力，围绕 LogLevel、LoggerApi、LogTransport 支撑 capability、HTTP、日志、脚本类型或历史快照。\n边界：保持底层工具包纯净，不依赖 Vue、spark-data 或应用壳层，也不承载业务配置。\nAI用途：需要跨包复用基础能力或确认底层协议时，用本模块理解 logger。\n日志级别",
+      "jsdoc": "日志级别",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "'debug' | 'info' | 'warn' | 'error'",

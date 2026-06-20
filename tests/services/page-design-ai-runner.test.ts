@@ -10,14 +10,14 @@ import type { AiRunAdapterState, AiRunSnapshot } from '@spark-appworks/spark-app
 import { runPageDesignAiSession } from '@/services/page-design/page-design-ai-runner'
 
 const mocks = vi.hoisted(() => ({
-  ensurePageDesignBusiness: vi.fn((options: { host: AiAgentHost }) => options.host),
+  activatePageDesignAgentWorkflow: vi.fn(async (options: { host: AiAgentHost }) => options.host),
 }))
 
-vi.mock('@/services/page-design/page-design-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design/page-design-business')>()
+vi.mock('@/services/ai/agent-workflow-bindings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/ai/agent-workflow-bindings')>()
   return {
     ...actual,
-    ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
+    activatePageDesignAgentWorkflow: mocks.activatePageDesignAgentWorkflow,
   }
 })
 

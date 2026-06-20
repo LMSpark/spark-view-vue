@@ -697,6 +697,98 @@
       "type": "object",
       "title": "CrudApi",
       "properties": {
+        "node": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "children": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/HttpEndpoint"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "subtree": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/HttpEndpoint"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "includeTargetChildren": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "move": {
+          "$ref": "#/$defs/HttpEndpoint"
+        },
+        "search": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/HttpEndpoint"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "nested": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/HttpEndpoint"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "depthLimit": {
+                  "type": "number"
+                },
+                "limit": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "nestedSearch": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/HttpEndpoint"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
         "create": {
           "$ref": "#/$defs/HttpEndpoint"
         },
@@ -796,6 +888,15 @@
       "type": "object",
       "title": "TableMetadata",
       "properties": {
+        "resourceType": {
+          "$ref": "#/$defs/TableResourceType"
+        },
+        "resourceId": {
+          "type": "string"
+        },
+        "businessCategory": {
+          "$ref": "#/$defs/TableBusinessCategory"
+        },
         "tableName": {
           "type": "string"
         },
@@ -1272,6 +1373,41 @@
       "type": "object",
       "title": "NestedTreeNode",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "level": {
+          "type": "number"
+        },
+        "hasChildren": {
+          "type": "boolean"
+        },
+        "isLoaded": {
+          "type": "boolean"
+        },
         "children": {
           "type": "array",
           "items": {
@@ -1280,6 +1416,8 @@
         }
       },
       "required": [
+        "id",
+        "name",
         "children"
       ],
       "additionalProperties": false

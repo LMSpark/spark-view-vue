@@ -112,6 +112,28 @@
       "type": "object",
       "title": "AiAgentHostRegistrationDescription",
       "properties": {
+        "alias": {
+          "type": "string"
+        },
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "rootKinds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "moduleCount": {
+          "type": "number"
+        },
+        "status": true,
         "inspectReport": {
           "type": "object",
           "title": "AiAgentToolRuntimeInspectReport"
@@ -418,7 +440,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-15T01:34:31.020Z",
+  "generatedAt": "2026-06-20T04:47:21.050Z",
   "models": {
     "CreateAiAgentHostOptions": {
       "name": "CreateAiAgentHostOptions",
@@ -752,7 +774,7 @@
     },
     "AiAgentHost": {
       "name": "AiAgentHost",
-      "jsdoc": "AI 业务宿主编排器。\n对外暴露四个核心方法：\nregister(alias, registration) — 注册一个业务（别名 + 注册项）\nensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）\nhas(alias)                    — 检查别名是否已注册\nrun(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）\n泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。",
+      "jsdoc": "AI 业务宿主编排器。\n对外暴露核心方法：\nregister(alias, registration) — 注册一个业务（别名 + 注册项）\nensure(alias, command)        — 幂等注册（已存在则跳过，否则调用 factory 创建）\nhas(alias)                    — 检查别名是否已注册\ndryRun(alias, input)          — 验证输入契约和 runtime inspect，不调用 LLM\nrun(alias, input, chat?)      — 运行一个已注册业务（创建 task → 启动 session → 发送消息）\n泛型参数 TEntries 支持链式类型推断：每次 register/ensure 返回新的类型窄化实例。",
       "declarationKind": "class",
       "classDecl": {
         "constructorMeta": {
@@ -1031,7 +1053,7 @@
             },
             {
               "name": "run",
-              "jsdoc": "运行一个已注册业务。\n这是外部系统触发 AI 能力的主入口。\n流程：解析 alias → 查找 moduleId → 委托 runAiAgent() 执行完整的\n\"创建 task → 启动 session → 发送首轮消息\" 流程。\n按已知 alias 运行注册业务，并使用该 alias 推断输入类型。",
+              "jsdoc": "按已知 alias 运行注册业务，并使用该 alias 推断输入类型。",
               "parameters": [
                 {
                   "name": "alias",

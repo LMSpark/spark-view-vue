@@ -12,9 +12,9 @@ import type {
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import type { PageNodeFileName, ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
-  ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
-} from '@/services/page-design/page-design-business'
+} from '@/services/page-design/page-design-agent-workflow-binding'
+import { activatePageDesignAgentWorkflow } from '@/services/ai/agent-workflow-bindings'
 import {
   createHeadlessPageDesignEditor,
   createPageDesignEditorGetter,
@@ -207,7 +207,7 @@ export const preparePageDesignHostRun: AiHostRunPrepare<AiAgentHost> = async (ev
     pageDesignEditors.set(pageId, editor)
   }
 
-  const pageDesignHost = ensurePageDesignBusiness({
+  const pageDesignHost = await activatePageDesignAgentWorkflow({
     host,
     getPageDesignEditor: createPageDesignEditorGetter(pageDesignEditors),
   })

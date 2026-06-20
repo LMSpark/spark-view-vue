@@ -1,49 +1,22 @@
 /**
- * @module app:services/project-planning-business
- * 职责：提供应用运行时 service 层的 project planning business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。
- * 边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。
- * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
+ * @module app:services/project-planning/project-planning-agent-workflow-binding
+ * 职责：承载 projectPlanning Agent Workflow 的应用侧领域 binding，连接 ProjectModel、输入构造、prompt 和 gate。
+ * 边界：不手写 workflow definition，不直接注册 AiAgentHost；只提供解释器所需 app 能力与领域纯函数。
+ * AI用途：排查 projectPlanning AI 输入、prompt、gate 或 editorSource 接线时，用本模块确认迁移后的业务逻辑。
  */
-/**
- * 项目策划 AI 输入契约与 Host workflow binding。
- *
- * 策划阶段只消费 navigation description + 附件详细说明，产出子模块/页面概要；
- * 不绑定 pageDesign 四文件或 config-page metadata。
- */
-import {
-  activateAgentWorkflowDefinition,
-  createSimpleInputContract,
-  ClassModelAgentAdapter,
-  type AgentWorkflowDefinition,
-  type AiAgentBeforeFunctionCallDirective,
-  type AiAgentBeforeFunctionCallOptions,
-  type AiAgentHost,
-  type AiAgentRuntimeContext,
-  type AiAgentToolLoopNudgeContext,
+
+import type {
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
+  AiAgentRuntimeContext,
 } from '@/services/ai/spark-ai-agent-bindings'
-import {
-  CLASS_MODEL_TOOL_NAMES,
-  createWorkerDtsClassModelKnowledgeProvider,
-  type ClassModelKnowledgeProvider,
-} from '@spark-appworks/spark-ai/class-model'
-import {
+import type { ClassModelKnowledgeProvider } from '@spark-appworks/spark-ai/class-model'
+import type {
   ProjectModel,
-  type ProjectWorkspace,
+  ProjectWorkspace,
 } from '@spark-appworks/spark-project-model'
-import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
-
-const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectModel'
-const PROJECT_PLANNING_WORKFLOW_ID = 'agent.workflow.projectPlanning'
-const PROJECT_PLANNING_WORKFLOW_PUBLISHED_AT = '1970-01-01T00:00:00.000Z'
-function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
-  return createWorkerDtsClassModelKnowledgeProvider({
-    workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
-    dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
-    rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
-  })
-}
 
 /** Project Planning Run Input 的输入数据。 */
 export type ProjectPlanningRunInput = Readonly<{
@@ -123,10 +96,8 @@ export type FilterNavigationPlanningNodesOptions = Readonly<{
 export type ResolveScopedProjectPlanningRunInputOptions =
   ResolveProjectPlanningRunInputOptions & FilterNavigationPlanningNodesOptions
 
-/** Ensure Project Planning Business Options 的调用配置。 */
-export type EnsureProjectPlanningBusinessOptions = Readonly<{
-  /** AI Agent Host 实例。 */
-  host: AiAgentHost
+/** Project Planning Agent Workflow Binding Options 的调用配置。 */
+export type ProjectPlanningAgentWorkflowBindingOptions = Readonly<{
   /** 按 moduleInstanceId 获取 ProjectWorkspace 编辑器。 */
   getProjectPlanningEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
   /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */
@@ -263,272 +234,24 @@ export function buildProjectPlanningAgentInput(
   }
 }
 
-export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusinessOptions): AiAgentHost {
-  return activateAgentWorkflowDefinition({
-    host: options.host,
-    definition: createProjectPlanningAgentWorkflowDefinition(),
-    bindings: {
-      workflows: {
-        [PROJECT_PLANNING_WORKFLOW_ID]: {
-          alias: PROJECT_PLANNING_MODULE_ID,
-          moduleId: PROJECT_PLANNING_MODULE_ID,
-          rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
-          create: () => createProjectPlanningRegistration(options),
-        },
-      },
-    },
-  })
-}
-
-export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDefinition {
-  return {
-    kind: 'agent.workflow',
-    version: 1,
-    workflowId: PROJECT_PLANNING_WORKFLOW_ID,
-    source: {
-      designKind: 'agent.workflow.design',
-      designId: PROJECT_PLANNING_WORKFLOW_ID,
-      designVersion: 1,
-    },
-    workflow: {
-      variables: [
-        { name: 'projectScopeKey', required: true },
-        { name: 'projectId', required: true },
-        { name: 'requirement', required: true },
-        { name: 'navigationNodes', required: true },
-      ],
-      capabilities: [
-        {
-          id: 'project-planning.delivery',
-          title: 'Project Planning Delivery',
-          scope: 'workflow',
-          description: 'Coordinate project planning input, ClassModel runtime execution, and navigation plan delivery.',
-          constraints: [
-            'Runtime binding owns ClassModel knowledge lookup, script generation, and navigation mutation.',
-          ],
-        },
-      ],
-      graph: {
-        nodes: [
-          {
-            id: 'start',
-            type: 'start',
-            data: {
-              title: 'Start',
-            },
-          },
-          {
-            id: 'node.projectPlanning',
-            type: 'node',
-            data: {
-              type: 'node',
-              title: 'Project Planning Module',
-              model: {
-                rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
-                className: 'ProjectModel',
-                contextPath: '$',
-              },
-              inputs: {
-                projectScopeKey: '{{ start.projectScopeKey }}',
-                projectId: '{{ start.projectId }}',
-                requirement: '{{ start.requirement }}',
-                navigationNodes: '{{ start.navigationNodes }}',
-              },
-              outputs: {
-                result: 'projectPlanning.result',
-              },
-              llm: {
-                task: {
-                  goal: 'Compose project planning navigation from requirement and navigation inputs.',
-                  requirements: {
-                    projectScopeKey: '{{ start.projectScopeKey }}',
-                    projectId: '{{ start.projectId }}',
-                    requirement: '{{ start.requirement }}',
-                    navigationNodes: '{{ start.navigationNodes }}',
-                  },
-                  contextInputs: {
-                    projectRequirement: '{{ start.requirement }}',
-                    navigationNodes: '{{ start.navigationNodes }}',
-                  },
-                },
-                knowledge: {
-                  rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
-                  className: 'ProjectModel',
-                  allowedActions: [
-                    'readProjectPlanningInput',
-                    'readNavigationPlanningInputs',
-                    'replaceNavigationChildren',
-                    'completeProjectPlanning',
-                  ],
-                  readableAttributes: [
-                    'navigationRoot',
-                  ],
-                },
-                functionCalling: {
-                  mode: 'freeWithinModelContext',
-                  constraints: [
-                    'Runtime binding owns ClassModel knowledge lookup, script generation, and navigation mutation.',
-                    'Completion must go through completeProjectPlanning via agent_complete.',
-                  ],
-                },
-                output: {
-                  structuredResult: {
-                    result: 'projectPlanning.result',
-                  },
-                  handoffToValidation: true,
-                },
-              },
-              validation: {
-                action: {
-                  className: 'ProjectModel',
-                  actionName: 'completeProjectPlanning',
-                  inputProjection: {
-                    summary: '{{ node.projectPlanning.result.summary }}',
-                  },
-                  expectedResult: {
-                    completed: true,
-                  },
-                },
-                status: 'draft',
-                issues: [],
-              },
-              state: {},
-              result: {},
-              capabilities: [
-                {
-                  id: 'project-planning.compose',
-                  title: 'Compose Project Plan',
-                  scope: 'node',
-                  description: 'Let the projectPlanning module inspect model knowledge and produce navigation planning changes through runtime tools.',
-                  inputs: {
-                    projectScopeKey: '{{ start.projectScopeKey }}',
-                    projectId: '{{ start.projectId }}',
-                    requirement: '{{ start.requirement }}',
-                    navigationNodes: '{{ start.navigationNodes }}',
-                  },
-                  outputs: {
-                    result: 'projectPlanning.result',
-                  },
-                  constraints: [
-                    'Workflow definition names the module; runtime chooses ClassModel actions and script calls.',
-                  ],
-                },
-              ],
-            },
-          },
-          {
-            id: 'output',
-            type: 'output',
-            data: {
-              type: 'output',
-              title: 'Output',
-              outputs: {
-                result: '{{ node.projectPlanning.result }}',
-              },
-              capabilities: [],
-            },
-          },
-        ],
-        edges: [
-          { id: 'edge.start.projectPlanning', source: 'start', target: 'node.projectPlanning' },
-          { id: 'edge.projectPlanning.output', source: 'node.projectPlanning', target: 'output' },
-        ],
-      },
-    },
-    x_spark: {
-      schema: 'spark.agent.workflow.definition.v1',
-      publishedAt: PROJECT_PLANNING_WORKFLOW_PUBLISHED_AT,
-      validation: {
-        status: 'valid',
-        issues: [],
-      },
-    },
+export function resolveProjectPlanningDomainRoot(
+  options: ProjectPlanningAgentWorkflowBindingOptions,
+  ctx: AiAgentRuntimeContext,
+): ProjectModel {
+  const moduleInstanceId = ctx.moduleInstanceId.trim()
+  if (moduleInstanceId.length === 0) {
+    throw new Error('projectPlanning ProjectModel requires host.moduleInstanceId.')
   }
-}
-
-function createProjectPlanningRegistration(options: EnsureProjectPlanningBusinessOptions) {
-  return ClassModelAgentAdapter.createRegistration({
-      moduleClass: ProjectModel,
-      options: {
-        moduleId: PROJECT_PLANNING_MODULE_ID,
-        rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
-        dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
-        knowledge: options.knowledge ?? createProjectPlanningClassModelKnowledgeProvider(),
-        inputContract: createSimpleInputContract<ProjectPlanningAgentInput>({
-          businessId: PROJECT_PLANNING_MODULE_ID,
-          identityField: 'projectScopeKey',
-          messageField: 'requirement',
-          paramsSchema: {
-            type: 'object',
-            properties: {
-              tenantId: { type: 'string' },
-              projectScopeKey: { type: 'string' },
-              projectId: { type: 'string' },
-              requirement: { type: 'string' },
-              planningAttachmentRef: { type: 'string' },
-              navigationNodes: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    nodeId: { type: 'string' },
-                    title: { type: 'string' },
-                    nodeKind: { type: 'string' },
-                    requirement: { type: 'string' },
-                    planningAttachmentRef: { type: 'string' },
-                  },
-                  required: ['nodeId', 'title', 'nodeKind', 'requirement'],
-                  additionalProperties: false,
-                },
-              },
-            },
-            required: ['projectScopeKey', 'projectId', 'requirement', 'navigationNodes'],
-            additionalProperties: false,
-          },
-          systemPrompt: createProjectPlanningSystemPrompt,
-          title: input => `projectPlanning:${input.projectId}`,
-          readonlySteps: [
-            '策划输入已注入 requirement 与 navigationNodes。',
-            '业务契约见 DTS ClassModel 知识索引（model_query / model_action_guide）。',
-          ],
-        }),
-        resolveInstance: (ctx) => resolveProjectPlanningDomainRoot(options, ctx),
-        beforeFunctionCall: (_instance: ProjectModel, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(hookOptions),
-        agentCompleteMethodName: 'completeProjectPlanning',
-        executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
-        planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
-        toolLoopNudge: createProjectPlanningToolLoopNudge,
-      },
-  })
-}
-
-const PROJECT_PLANNING_EXECUTION_TOOL_NAMES = new Set<string>([
-  CLASS_MODEL_TOOL_NAMES.script,
-])
-
-const PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS = [
-  'readplanningprojection',
-  'readnavigationplanninginputs',
-  'replacenavigationchildren',
-  'readprojectplanninginput',
-] as const
-
-function createProjectPlanningToolLoopNudge(context: AiAgentToolLoopNudgeContext): string | undefined {
-  const projectId = context.moduleInstanceId.trim()
-  if (projectId.length === 0) return undefined
-  switch (context.reason) {
-    case 'plan_without_tool':
-      return `projectId="${projectId}"；禁止只输出计划，下一回合必须发起 tool_call（见 model_action_guide / RECOVERY_HINT）。`
-    case 'execution_phase':
-      return `projectId="${projectId}"；目录/指南阶段已完成，直接 model_script：根对象是 this（ProjectModel），先 await this.readProjectPlanningInput() / await this.readNavigationPlanningInputs()，完成后 await this.replaceNavigationChildren({ children })；children 必须包含 module 及其 page 子节点，不能只有 module 壳。`
-    case 'model_script_retry':
-      return `projectId="${projectId}"；按 RECOVERY_HINT 修正后重试 model_script；导航策划必须包含至少一个 nodeKind="page" 的页面概要。`
-    default:
-      return undefined
+  const editor = options.getProjectPlanningEditor({ moduleInstanceId })
+  if (editor.project.projectId !== moduleInstanceId) {
+    throw new Error(
+      `projectPlanning editor mismatch: expected "${moduleInstanceId}", got "${editor.project.projectId}".`,
+    )
   }
+  return editor.project
 }
 
-function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): string {
+export function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): string {
   const context = formatProjectPlanningPromptContext({
     ...input,
     navigationNodes: input.navigationNodes,
@@ -552,49 +275,25 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
   ].join('\n')
 }
 
-function projectPlanningScriptSopLines(projectId: string): readonly string[] {
-  return [
-    'model_script 标准写法：以下内容必须作为 tool_call 参数 script 的 JavaScript 函数体交给运行时执行；不要作为自然语言回答。',
-    '根对象就是 this（ProjectModel）；通过 this.replaceNavigationChildren({ children }) 写入导航策划。',
-    '业务功能不要只写 module；module 必须带 children page，页面概要必须使用 nodeKind: "page"。',
-    'const projectInput = await this.readProjectPlanningInput()',
-    'const existingNodes = await this.readNavigationPlanningInputs()',
-    'const children = [',
-    '  {',
-    '    id: "core-module",',
-    '    title: "核心模块",',
-    '    nodeKind: "module",',
-    '    path: "/core",',
-    '    description: projectInput.requirement,',
-    '    children: [',
-    '      { id: "core-overview", title: "核心总览", nodeKind: "page", path: "/core/overview", description: "核心模块总览与关键任务入口" }',
-    '    ]',
-    '  }',
-    ']',
-    'const navigationRoot = await this.replaceNavigationChildren({ children })',
-    'if (!JSON.stringify(navigationRoot.children).includes(\'"nodeKind":"page"\')) throw new Error("projectPlanning requires page nodes")',
-    `return { kind: "projectPlanningResult", projectId: "${projectId}", navigationRoot, previousNodeCount: existingNodes.length }`,
-  ]
+export function createProjectPlanningToolLoopNudge(context: {
+  reason: 'plan_without_tool' | 'execution_phase' | 'model_script_retry'
+  moduleInstanceId: string
+}): string | undefined {
+  const projectId = context.moduleInstanceId.trim()
+  if (projectId.length === 0) return undefined
+  switch (context.reason) {
+    case 'plan_without_tool':
+      return `projectId="${projectId}"；禁止只输出计划，下一回合必须发起 tool_call（见 model_action_guide / RECOVERY_HINT）。`
+    case 'execution_phase':
+      return `projectId="${projectId}"；目录/指南阶段已完成，直接 model_script：根对象是 this（ProjectModel），先 await this.readProjectPlanningInput() / await this.readNavigationPlanningInputs()，完成后 await this.replaceNavigationChildren({ children })；children 必须包含 module 及其 page 子节点，不能只有 module 壳。`
+    case 'model_script_retry':
+      return `projectId="${projectId}"；按 RECOVERY_HINT 修正后重试 model_script；导航策划必须包含至少一个 nodeKind="page" 的页面概要。`
+    default:
+      return undefined
+  }
 }
 
-function resolveProjectPlanningDomainRoot(
-  options: EnsureProjectPlanningBusinessOptions,
-  ctx: AiAgentRuntimeContext,
-): ProjectModel {
-  const moduleInstanceId = ctx.moduleInstanceId.trim()
-  if (moduleInstanceId.length === 0) {
-    throw new Error('projectPlanning ProjectModel requires host.moduleInstanceId.')
-  }
-  const editor = options.getProjectPlanningEditor({ moduleInstanceId })
-  if (editor.project.projectId !== moduleInstanceId) {
-    throw new Error(
-      `projectPlanning editor mismatch: expected "${moduleInstanceId}", got "${editor.project.projectId}".`,
-    )
-  }
-  return editor.project
-}
-
-function evaluateProjectPlanningBeforeFunctionCall(
+export function evaluateProjectPlanningBeforeFunctionCall(
   options: AiAgentBeforeFunctionCallOptions,
 ): AiAgentBeforeFunctionCallDirective {
   const gate = evaluateProjectPlanningToolGate(options)
@@ -661,6 +360,31 @@ export function evaluateProjectPlanningToolGate(
     reason: `projectPlanning: model_script 禁止调用 ${marker}；本阶段只处理 navigation 策划，不涉及四文件或 openPageDesign。`,
     fix: '改用 readProjectPlanningInput / readNavigationPlanningInputs / replaceNavigationChildren 等 ProjectModel action；完成概要后 agent_complete。',
   }
+}
+
+function projectPlanningScriptSopLines(projectId: string): readonly string[] {
+  return [
+    'model_script 标准写法：以下内容必须作为 tool_call 参数 script 的 JavaScript 函数体交给运行时执行；不要作为自然语言回答。',
+    '根对象就是 this（ProjectModel）；通过 this.replaceNavigationChildren({ children }) 写入导航策划。',
+    '业务功能不要只写 module；module 必须带 children page，页面概要必须使用 nodeKind: "page"。',
+    'const projectInput = await this.readProjectPlanningInput()',
+    'const existingNodes = await this.readNavigationPlanningInputs()',
+    'const children = [',
+    '  {',
+    '    id: "core-module",',
+    '    title: "核心模块",',
+    '    nodeKind: "module",',
+    '    path: "/core",',
+    '    description: projectInput.requirement,',
+    '    children: [',
+    '      { id: "core-overview", title: "核心总览", nodeKind: "page", path: "/core/overview", description: "核心模块总览与关键任务入口" }',
+    '    ]',
+    '  }',
+    ']',
+    'const navigationRoot = await this.replaceNavigationChildren({ children })',
+    'if (!JSON.stringify(navigationRoot.children).includes(\'"nodeKind":"page"\')) throw new Error("projectPlanning requires page nodes")',
+    `return { kind: "projectPlanningResult", projectId: "${projectId}", navigationRoot, previousNodeCount: existingNodes.length }`,
+  ]
 }
 
 function evaluateProjectActionLookupGate(

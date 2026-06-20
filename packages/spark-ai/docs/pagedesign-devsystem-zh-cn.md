@@ -15,7 +15,7 @@ sequenceDiagram
   participant WS as ProjectWorkspace
 
   UI->>Runner: runPageDesignAiSession({ pageId, editor })
-  Runner->>Host: ensurePageDesignBusiness + host.run
+  Runner->>Host: read definition + activatePageDesignAgentWorkflow + host.run
   Host->>TL: startSession(moduleInstanceId=pageId)
   TL->>Bridge: beforeFunctionCall（UI 审批）
   Bridge-->>TL: allow / reject / abort
@@ -37,14 +37,14 @@ AI 与手动编辑共用 DevSystem 的 `getAppProjectEditor()`，避免双份 pr
 ## 注册与实例解析
 
 ```typescript
-ensurePageDesignBusiness({
+await activatePageDesignAgentWorkflow({
   host: appAiAgent,
   getPageDesignEditor: ({ moduleInstanceId }) => getAppProjectEditor(/* pageId = moduleInstanceId */),
 })
 ```
 
 - `moduleInstanceId` = `pageId`（会话级钉死，非 path 寻址）
-- `resolvePageDesignProject` → `ProjectModel` 根实例
+- `page-design-agent-workflow-binding.ts` 的 editor getter → `ProjectModel` 根实例
 - 知识索引：`generated/dts-class-model/manifest.json`
 
 ## 门禁（mutation）
@@ -108,7 +108,8 @@ return {
 
 | 路径 | 职责 |
 |------|------|
-| `src/services/page-design/page-design-business.ts` | 注册、resolve、systemPrompt（含 pageDataDesign data-only 分支） |
+| `src/services/ai/agent-workflow-bindings.ts` | 读取落盘 definition 并组合 app binding 激活 Host |
+| `src/services/page-design/page-design-agent-workflow-binding.ts` | pageDesign editor getter、prompt、nudge、gate 领域能力 |
 | `src/services/page-design/page-design-ai-runner.ts` | DevSystem session 启动 |
 | `src/services/page-design/page-design-gates.ts` | mutation gate、`allowedOperations` |
 | `src/services/page-data-design/page-data-design-host-run-provider.ts` | pageDataDesign preset Host Run |

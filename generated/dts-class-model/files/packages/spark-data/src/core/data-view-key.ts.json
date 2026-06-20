@@ -77,6 +77,21 @@
       "type": "object",
       "title": "DataViewMemberDescriptor",
       "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "viewId": {
+          "type": "string"
+        },
+        "raw": {
+          "type": "string"
+        },
+        "crossPage": {
+          "type": "boolean"
+        },
         "dataMember": {
           "$ref": "#/$defs/DataMember"
         },
@@ -85,6 +100,9 @@
         }
       },
       "required": [
+        "tableName",
+        "viewId",
+        "raw",
         "dataMember"
       ],
       "additionalProperties": false

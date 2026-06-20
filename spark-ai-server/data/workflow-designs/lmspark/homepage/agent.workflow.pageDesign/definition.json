@@ -1,0 +1,425 @@
+{
+  "kind": "agent.workflow",
+  "version": 1,
+  "workflowId": "agent.workflow.pageDesign",
+  "source": {
+    "designKind": "agent.workflow.design",
+    "designId": "agent.workflow.pageDesign",
+    "designVersion": 1
+  },
+  "workflow": {
+    "variables": [
+      {
+        "name": "pageId",
+        "title": "Page ID",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "description",
+        "title": "Requirement",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "effectiveDescription",
+        "title": "Planning Description",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "projectId",
+        "title": "Project ID",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "planningTitle",
+        "title": "Planning Title",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "planningPath",
+        "title": "Planning Path",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "mode",
+        "title": "Run Mode",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "create",
+            "update",
+            "fix"
+          ]
+        }
+      },
+      {
+        "name": "allowedOperations",
+        "title": "Allowed Operations",
+        "required": false,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeTree": {
+              "type": "boolean"
+            },
+            "dataSet": {
+              "type": "boolean"
+            },
+            "script": {
+              "type": "boolean"
+            },
+            "style": {
+              "type": "boolean"
+            },
+            "navigation": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "preserveExistingInteractions",
+        "title": "Preserve Existing Interactions",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "name": "strictImplGate",
+        "title": "Strict Implementation Gate",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    ],
+    "capabilities": [
+      {
+        "id": "page-design.delivery",
+        "title": "Page Design Delivery",
+        "description": "Coordinate page design input, ClassModel runtime execution, and page file delivery.",
+        "scope": "workflow",
+        "constraints": [
+          "Workflow definition declares runtime binding; app layer injects executable capabilities."
+        ]
+      }
+    ],
+    "graph": {
+      "nodes": [
+        {
+          "id": "start",
+          "type": "start",
+          "data": {
+            "type": "start",
+            "title": "Start"
+          }
+        },
+        {
+          "id": "node.pageDesign",
+          "type": "node",
+          "data": {
+            "type": "node",
+            "title": "Page Design Module",
+            "model": {
+              "rootClassName": "ProjectModel",
+              "className": "ProjectModel",
+              "contextPath": "$"
+            },
+            "inputs": {
+              "pageId": "{{ start.pageId }}",
+              "description": "{{ start.description }}",
+              "effectiveDescription": "{{ start.effectiveDescription }}"
+            },
+            "outputs": {
+              "result": "pageDesign.result"
+            },
+            "llm": {
+              "task": {
+                "goal": "Compose and deliver page design changes for the requested page.",
+                "requirements": {
+                  "pageId": "{{ start.pageId }}",
+                  "description": "{{ start.description }}",
+                  "effectiveDescription": "{{ start.effectiveDescription }}"
+                },
+                "contextInputs": {
+                  "planningProjection": "{{ start.effectiveDescription }}"
+                }
+              },
+              "knowledge": {
+                "rootClassName": "ProjectModel",
+                "className": "ProjectModel",
+                "allowedActions": [
+                  "openPageDesign",
+                  "editNodeTree",
+                  "editDataSet"
+                ],
+                "readableAttributes": [
+                  "activePage"
+                ]
+              },
+              "functionCalling": {
+                "mode": "freeWithinModelContext",
+                "constraints": [
+                  "Runtime binding owns ClassModel knowledge lookup, script generation, and file delivery."
+                ]
+              },
+              "output": {
+                "structuredResult": {
+                  "result": "pageDesign.result"
+                },
+                "handoffToValidation": true
+              }
+            },
+            "validation": {
+              "action": {
+                "className": "ProjectModel",
+                "actionName": "agent_complete",
+                "inputProjection": {
+                  "summary": "{{ node.pageDesign.result }}"
+                },
+                "expectedResult": {
+                  "completed": true
+                }
+              },
+              "status": "draft",
+              "issues": []
+            },
+            "runtimeBinding": {
+              "registration": {
+                "alias": "pageDesign",
+                "moduleId": "pageDesign",
+                "businessId": "pageDesign"
+              },
+              "inputContract": {
+                "identityField": "pageId",
+                "messageField": "description",
+                "paramsSchema": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "effectiveDescription": {
+                      "type": "string"
+                    },
+                    "projectId": {
+                      "type": "string"
+                    },
+                    "planningTitle": {
+                      "type": "string"
+                    },
+                    "planningPath": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "create",
+                        "update",
+                        "fix"
+                      ]
+                    },
+                    "allowedOperations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "nodeTree": {
+                          "type": "boolean"
+                        },
+                        "dataSet": {
+                          "type": "boolean"
+                        },
+                        "script": {
+                          "type": "boolean"
+                        },
+                        "style": {
+                          "type": "boolean"
+                        },
+                        "navigation": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "preserveExistingInteractions": {
+                      "type": "boolean"
+                    },
+                    "strictImplGate": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "pageId",
+                    "description",
+                    "effectiveDescription"
+                  ],
+                  "additionalProperties": false
+                },
+                "readonlySteps": [
+                  "策划约束已注入 effectiveDescription（来自 readPlanningProjection）。",
+                  "业务契约见 ClassModel 知识索引（model_query / model_class_guide / model_action_guide）。"
+                ]
+              },
+              "systemPrompt": {
+                "template": "pageDesign system prompt is interpolated by app binding.",
+                "conditionalHints": [
+                  {
+                    "when": {
+                      "allowedOperations": "dataSetOnly"
+                    },
+                    "template": "pageDataDesign preset: only pagedata.json/DataSet changes are allowed."
+                  }
+                ]
+              },
+              "knowledge": {
+                "rootClassName": "ProjectModel",
+                "manifestUrlRef": "dts-class-model"
+              },
+              "toolLoopNudge": {
+                "templates": {
+                  "plan_without_tool": "pageId=\"{{moduleInstanceId}}\"；禁止只输出计划，下一回合必须发起真实 tool_call。",
+                  "execution_phase": "pageId=\"{{moduleInstanceId}}\"；目录/指南阶段已完成，直接 model_script。",
+                  "model_script_retry": "pageId=\"{{moduleInstanceId}}\"；按 RECOVERY_HINT 修正后重试 model_script。"
+                },
+                "contextFields": [
+                  "moduleInstanceId"
+                ]
+              },
+              "beforeFunctionCall": {
+                "gateRules": [
+                  {
+                    "kind": "pageDesignMutationGate"
+                  },
+                  {
+                    "kind": "allowedOperations"
+                  },
+                  {
+                    "kind": "forbiddenScriptMarkers",
+                    "markers": [
+                      "editNodeTree",
+                      "editDataSet",
+                      "setFileText",
+                      "writePageFile"
+                    ]
+                  }
+                ]
+              },
+              "executionToolNames": [
+                "model_script"
+              ],
+              "planWithoutToolMarkers": [
+                "openpagedesign",
+                "editnodetree",
+                "editdataset"
+              ],
+              "resolveInstance": {
+                "editorSource": "pageDesign",
+                "identityField": "pageId"
+              },
+              "moduleClassRef": {
+                "kind": "ProjectModel"
+              }
+            },
+            "state": {},
+            "result": {},
+            "capabilities": [
+              {
+                "id": "page-design.compose",
+                "title": "Compose Page Design",
+                "description": "Let pageDesign inspect model knowledge and apply page design changes through runtime tools.",
+                "inputs": {
+                  "pageId": "{{ start.pageId }}",
+                  "description": "{{ start.description }}",
+                  "effectiveDescription": "{{ start.effectiveDescription }}"
+                },
+                "outputs": {
+                  "result": "pageDesign.result"
+                },
+                "scope": "node",
+                "constraints": [
+                  "Workflow definition names the module; runtime chooses ClassModel actions and script calls."
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "output",
+          "type": "output",
+          "data": {
+            "type": "output",
+            "title": "Output",
+            "outputs": {
+              "result": "{{ node.pageDesign.result }}"
+            },
+            "capabilities": []
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge.start.node",
+          "source": "start",
+          "target": "node.pageDesign",
+          "data": {
+            "projection": {
+              "sourceRef": "start.outputs",
+              "targetRef": "node.pageDesign.inputs"
+            },
+            "branch": {
+              "label": "default",
+              "default": true
+            },
+            "validation": {}
+          }
+        },
+        {
+          "id": "edge.node.output",
+          "source": "node.pageDesign",
+          "target": "output",
+          "data": {
+            "projection": {
+              "sourceRef": "node.pageDesign.outputs",
+              "targetRef": "output.inputs"
+            },
+            "branch": {
+              "label": "default",
+              "default": true
+            },
+            "validation": {}
+          }
+        }
+      ]
+    }
+  },
+  "x_spark": {
+    "schema": "spark.agent.workflow.definition.v1",
+    "publishedAt": "2026-06-20T00:00:00.000Z",
+    "validation": {
+      "status": "valid",
+      "issues": []
+    }
+  }
+}

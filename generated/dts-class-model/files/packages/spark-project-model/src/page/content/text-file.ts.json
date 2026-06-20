@@ -102,7 +102,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:38:13.629Z",
+  "generatedAt": "2026-06-20T04:47:21.288Z",
   "models": {
     "PageTextFile": {
       "name": "PageTextFile",
@@ -111,7 +111,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page Text File 实例。",
-          "signatureText": "constructor(\n    /** 页面 ID，用于标识当前文本资源所属页面。 */\n    pageId: string, \n    /** 页面文本资源文件名。 */\n    fileName: 'script.js' | 'style.css', initialText?: string)",
+          "signatureText": "constructor(pageId: string, fileName: 'script.js' | 'style.css', initialText?: string)",
           "parameters": [
             {
               "name": "pageId",
@@ -152,13 +152,11 @@
           "attributes": [
             {
               "name": "pageId",
-              "jsdoc": "页面 ID，用于标识当前文本资源所属页面。",
               "readable": true,
               "writable": false
             },
             {
               "name": "fileName",
-              "jsdoc": "页面文本资源文件名。",
               "readable": true,
               "writable": false
             }

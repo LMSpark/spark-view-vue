@@ -45,6 +45,22 @@
       "type": "object",
       "title": "AiNativeScriptRunCommand",
       "properties": {
+        "instance": {
+          "type": "object",
+          "title": "TInstance"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        },
+        "schemaDefs": {
+          "type": "object",
+          "title": "AiNativeRuntimeSchemaDefs"
+        },
         "script": {
           "type": "string"
         }
@@ -52,7 +68,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-15T01:34:31.016Z",
+  "generatedAt": "2026-06-19T09:58:23.266Z",
   "models": {
     "AiNativeRuntimeSchemaDefs": {
       "name": "AiNativeRuntimeSchemaDefs",

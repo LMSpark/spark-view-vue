@@ -24,6 +24,11 @@ export {
   resolveAgentWorkflowActivation,
 } from './agent-workflow-dry-run'
 
+export {
+  activateAgentWorkflowFromDefinition,
+  interpretAgentWorkflowDefinition,
+} from './agent-workflow-runtime'
+
 export type {
   AgentWorkflowDefinition,
   AgentWorkflowDefinitionKind,
@@ -51,6 +56,17 @@ export type {
   AgentWorkflowJsonRecord,
   AgentWorkflowLlmWork,
   AgentWorkflowModelContext,
+  AgentWorkflowNodeBeforeFunctionCall,
+  AgentWorkflowNodeConditionalHint,
+  AgentWorkflowNodeGateRule,
+  AgentWorkflowNodeInputContract,
+  AgentWorkflowNodeKnowledge,
+  AgentWorkflowNodeModuleClassRef,
+  AgentWorkflowNodeResolveInstance,
+  AgentWorkflowNodeRuntimeBinding,
+  AgentWorkflowNodeRuntimeRegistration,
+  AgentWorkflowNodeSystemPrompt,
+  AgentWorkflowNodeToolLoopNudge,
   AgentWorkflowNodeValidation,
   AgentWorkflowNodeValidationAction,
   AgentWorkflowNodePosition,
@@ -70,3 +86,12 @@ export type {
   AgentWorkflowRuntimeBinding,
   ResolveAgentWorkflowActivationCommand,
 } from './agent-workflow-dry-run'
+
+export type {
+  AgentWorkflowInterpretedRegistration,
+  AgentWorkflowModuleConstructor,
+  AgentWorkflowRuntimeBindings,
+  AgentWorkflowRuntimeGateCommand,
+  AgentWorkflowRuntimeGateResult,
+  AgentWorkflowRuntimeSystemPromptCommand,
+} from './agent-workflow-runtime'

@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  activateAgentWorkflowFromDefinition,
   AiAgentRegistration,
   AiAgentToolResult,
   createAiAgentHost,
   createSimpleInputContract,
   DefaultAiAgentSessionStore,
   dryRunAgentWorkflowDefinition,
+  interpretAgentWorkflowDefinition,
   validateAgentWorkflowDefinition,
   type AgentWorkflowDefinition,
+  type AgentWorkflowRuntimeBindings,
   type AiAgentToolRuntime,
   type AiAgentTurnCallbacks,
 } from '../agent'
+import type { ClassModelKnowledgeProvider } from '../class-model'
 
 describe('AgentWorkflowDefinition', () => {
   it('validates the workflow graph definition shape', () => {
@@ -58,6 +62,24 @@ describe('AgentWorkflowDefinition', () => {
         code: 'AGENT_WORKFLOW_LEGACY_NODE_FIELD',
         nodeId: 'node.demo',
         path: 'definition.workflow.graph.nodes[1].data.toolParameters',
+      }),
+    ]))
+  })
+
+  it('rejects business nodes without runtimeBinding', () => {
+    const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
+    const node = broken.workflow.graph.nodes.find(item => item.id === 'node.demo')
+    if (node?.type !== 'node') throw new Error('test fixture must include node.demo')
+    delete (node.data as Record<string, unknown>)['runtimeBinding']
+
+    const validation = validateAgentWorkflowDefinition(broken)
+
+    expect(validation.status).toBe('invalid')
+    expect(validation.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_REQUIRED_OBJECT_MISSING',
+        path: 'definition.workflow.graph.nodes[1].data.runtimeBinding',
       }),
     ]))
   })
@@ -152,6 +174,40 @@ describe('AgentWorkflowDefinition', () => {
       bindings: { workflows: {} },
       input: { id: 'demo-1', prompt: 'Build demo' },
     })).toThrow('runtime binding not found: demo.workflow')
+  })
+
+  it('interprets runtimeBinding with app bindings and activates the host', () => {
+    const host = createAiAgentHost({ turnCallbacks: createTurnCallbacks() })
+    const definition = createDefinition()
+    const bindings = createRuntimeBindings()
+
+    const interpreted = interpretAgentWorkflowDefinition({
+      definition,
+      bindings,
+    })
+    const activated = activateAgentWorkflowFromDefinition({
+      host,
+      definition,
+      bindings,
+    })
+
+    expect(interpreted).toMatchObject({
+      workflowId: 'demo.workflow',
+      alias: 'demo',
+      moduleId: 'demo.module',
+      rootClassName: 'DemoBusiness',
+    })
+    expect(activated.has('demo')).toBe(true)
+    const dryRun = activated.dryRun('demo', {
+      id: 'demo-1',
+      prompt: 'Build demo',
+    })
+    expect(dryRun.ok).toBe(true)
+    if (dryRun.ok) {
+      expect(dryRun.moduleId).toBe('demo.module')
+      expect(dryRun.orchestration.systemPrompt).toContain('Demo system prompt')
+      expect(dryRun.orchestration.readonlySteps).toEqual(['Read demo context.'])
+    }
   })
 })
 
@@ -267,6 +323,65 @@ function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nod
         status: 'draft',
         issues: [],
       },
+      runtimeBinding: {
+        registration: {
+          alias: 'demo',
+          moduleId: 'demo.module',
+          businessId: 'demo.module',
+        },
+        inputContract: {
+          identityField: 'id',
+          messageField: 'prompt',
+          paramsSchema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              prompt: { type: 'string' },
+            },
+            required: ['id', 'prompt'],
+            additionalProperties: false,
+          },
+          readonlySteps: ['Read demo context.'],
+        },
+        systemPrompt: {
+          template: 'Demo system prompt.',
+          conditionalHints: [
+            {
+              when: {
+                promptIncludes: 'demo',
+              },
+              template: 'Prefer the demo path.',
+            },
+          ],
+        },
+        knowledge: {
+          rootClassName: 'DemoBusiness',
+          manifestUrlRef: 'dts-class-model',
+        },
+        toolLoopNudge: {
+          templates: {
+            plan_without_tool: 'demo id="{{moduleInstanceId}}" must call a tool.',
+          },
+          contextFields: ['moduleInstanceId'],
+        },
+        beforeFunctionCall: {
+          gateRules: [
+            {
+              kind: 'demoAllow',
+            },
+          ],
+        },
+        executionToolNames: ['model_script'],
+        planWithoutToolMarkers: ['rundemo'],
+        agentCompleteMethodName: 'completeDemo',
+        resolveInstance: {
+          editorSource: 'demo',
+          identityField: 'id',
+        },
+        moduleClassRef: {
+          kind: 'DemoBusiness',
+        },
+      },
       capabilities: [
         {
           id: 'demo.execute',
@@ -307,6 +422,50 @@ function createOutputNode(): AgentWorkflowDefinition['workflow']['graph']['nodes
         result: '{{ node.demo.result }}',
       },
     },
+  }
+}
+
+class DemoBusiness {}
+
+function createRuntimeBindings(): AgentWorkflowRuntimeBindings<DemoBusiness> {
+  const instance = new DemoBusiness()
+  return {
+    moduleClassResolver: (ref) => {
+      if (ref.kind !== 'DemoBusiness') {
+        throw new Error(`Unexpected module class ref: ${ref.kind}`)
+      }
+      return DemoBusiness
+    },
+    editorGetterRegistry: {
+      demo: () => instance,
+    },
+    knowledgeProviderFactory: (config) => ({
+      provider: createKnowledgeProvider(config.rootClassName),
+      dtsClassModelManifestUrl: `/${config.manifestUrlRef}/manifest.json`,
+    }),
+    gateExecutor: (command) => {
+      const unknownRule = command.rules.find(rule => rule.kind !== 'demoAllow')
+      if (unknownRule !== undefined) {
+        throw new Error(`Unknown demo gate rule: ${unknownRule.kind}`)
+      }
+      return { ok: true }
+    },
+    systemPromptInterpolator: (command) => [
+      command.template,
+      ...command.hints.map(hint => hint.template),
+    ].join('\n'),
+  }
+}
+
+function createKnowledgeProvider(rootClassName: string): ClassModelKnowledgeProvider {
+  return {
+    query: () => ({
+      rootClassName,
+      results: [],
+    }),
+    modelGuide: () => `${rootClassName} guide`,
+    attributeGuide: input => `${input.kind}.${input.attributeName}`,
+    methodGuide: input => `${input.kind}.${input.methodName}`,
   }
 }
 

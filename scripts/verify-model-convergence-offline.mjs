@@ -17,7 +17,6 @@ const testFiles = [
   'tests/page/page-design-gates.test.ts',
   'tests/services/page-design-ai-runner.test.ts',
   'tests/services/project-planning-ai-runner.test.ts',
-  'tests/services/project-planning-business.test.ts',
   'packages/spark-app/src/tests/runtime-target.test.ts',
 ]
 

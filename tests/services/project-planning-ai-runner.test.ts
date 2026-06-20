@@ -19,17 +19,23 @@ import { runProjectPlanningAiSession } from '@/services/project-planning/project
 
 const mocks = vi.hoisted(() => {
   const projectPlanningRun = vi.fn()
+  const projectPlanningHost = {
+    has: vi.fn(() => true),
+    dryRun: vi.fn(),
+    run: projectPlanningRun,
+  }
   return {
     projectPlanningRun,
-    ensureProjectPlanningBusiness: vi.fn(() => ({ run: projectPlanningRun })),
+    projectPlanningHost,
+    activateProjectPlanningAgentWorkflow: vi.fn(async () => projectPlanningHost),
   }
 })
 
-vi.mock('@/services/project-planning/project-planning-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/project-planning/project-planning-business')>()
+vi.mock('@/services/ai/agent-workflow-bindings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/ai/agent-workflow-bindings')>()
   return {
     ...actual,
-    ensureProjectPlanningBusiness: mocks.ensureProjectPlanningBusiness,
+    activateProjectPlanningAgentWorkflow: mocks.activateProjectPlanningAgentWorkflow,
   }
 })
 
@@ -166,7 +172,7 @@ describe('runProjectPlanningAiSession', () => {
         },
       ],
     })
-    expect(mocks.ensureProjectPlanningBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
+    expect(mocks.activateProjectPlanningAgentWorkflow).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
     expect(mocks.projectPlanningRun).toHaveBeenCalledWith('projectPlanning', result.input, expect.any(Object))
   })
 
@@ -216,7 +222,7 @@ describe('runProjectPlanningAiSession', () => {
     })
 
     expect(adapter.run).toHaveBeenCalledOnce()
-    expect(mocks.ensureProjectPlanningBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
+    expect(mocks.activateProjectPlanningAgentWorkflow).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
   })
 
   it('can inject host directly without capability lookup', async () => {

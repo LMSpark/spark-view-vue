@@ -7,14 +7,9 @@
     "sourceFile": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/ag-ui/ag-ui-types",
-    "jsdoc": "@module @spark-appworks/spark-ai:agent/ag-ui/ag-ui-types\n职责：收拢 SPARK 首版 AG-UI adapter 暴露的官方 core 类型别名。\n边界：只定义协议类型别名，不执行 agent、不访问 transport，也不渲染 UI。\nAI用途：需要对齐 AG-UI 事件、tool、message 或 run input 时，从本模块确认公开类型。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/ag-ui/ag-ui-types\n职责：收拢 SPARK 首版 AG-UI adapter 的自有类型，并转出官方 AG-UI core 类型。\n边界：只定义协议类型别名，不执行 agent、不访问 transport，也不渲染 UI。\nAI用途：需要对齐 AG-UI 事件、tool、message 或 run input 时，从本模块确认公开类型。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
-      "SparkAgUiRunInput",
-      "SparkAgUiEvent",
-      "SparkAgUiBaseEvent",
-      "SparkAgUiTool",
-      "SparkAgUiMessage",
       "SparkAgUiRunRef",
       "SparkAgUiEventMetadata",
       "SparkAgUiTextMessageRole",
@@ -71,88 +66,8 @@
       ]
     }
   },
-  "generatedAt": "2026-06-14T19:24:22.410Z",
+  "generatedAt": "2026-06-20T04:47:21.041Z",
   "models": {
-    "SparkAgUiRunInput": {
-      "name": "SparkAgUiRunInput",
-      "jsdoc": "AG-UI run 输入的 SPARK 公开别名，供 adapter 接收标准 thread/run/message/tool 配置。",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "RunAgentInput",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "RunAgentInput",
-            "targetName": "RunAgentInput"
-          }
-        ],
-        "members": {}
-      }
-    },
-    "SparkAgUiEvent": {
-      "name": "SparkAgUiEvent",
-      "jsdoc": "AG-UI 事件联合类型的 SPARK 公开别名，用于事件流投影和外部 client 消费。",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "AGUIEvent",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "AGUIEvent",
-            "targetName": "AGUIEvent"
-          }
-        ],
-        "members": {}
-      }
-    },
-    "SparkAgUiBaseEvent": {
-      "name": "SparkAgUiBaseEvent",
-      "jsdoc": "AG-UI 基础事件类型的 SPARK 公开别名，用于只读 timeline 和调试视图。",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "BaseEvent",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "BaseEvent",
-            "targetName": "BaseEvent"
-          }
-        ],
-        "members": {}
-      }
-    },
-    "SparkAgUiTool": {
-      "name": "SparkAgUiTool",
-      "jsdoc": "AG-UI tool 描述的 SPARK 公开别名，用于从 transport tool spec 映射标准工具定义。",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "Tool",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "Tool",
-            "targetName": "Tool"
-          }
-        ],
-        "members": {}
-      }
-    },
-    "SparkAgUiMessage": {
-      "name": "SparkAgUiMessage",
-      "jsdoc": "AG-UI message 类型的 SPARK 公开别名，用于后续 generative UI 或消息投影扩展。",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "Message",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "Message",
-            "targetName": "Message"
-          }
-        ],
-        "members": {}
-      }
-    },
     "SparkAgUiRunRef": {
       "name": "SparkAgUiRunRef",
       "jsdoc": "SPARK run 在 AG-UI 事件中的稳定定位信息。",

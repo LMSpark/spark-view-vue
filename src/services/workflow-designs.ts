@@ -142,6 +142,7 @@ export type WorkflowDesignNodeData = {
   model?: JsonRecord
   llm?: JsonRecord
   validation?: JsonRecord
+  runtimeBinding?: SparkAgent.AgentWorkflowNodeRuntimeBinding
   state?: JsonRecord
   result?: JsonRecord
   loop?: WorkflowDesignNestedGraphCarrier
@@ -807,6 +808,7 @@ function normalizeNodeDataForDefinition(
       outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
       llm: normalizeBusinessNodeLlm(data['llm'], model),
       validation: normalizeBusinessNodeValidation(data['validation'], model.className),
+      ...(data.runtimeBinding === undefined ? {} : { runtimeBinding: data.runtimeBinding }),
       ...(isJsonRecord(data['state']) ? { state: data['state'] } : {}),
       ...(isJsonRecord(data['result']) ? { result: data['result'] } : {}),
       ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),

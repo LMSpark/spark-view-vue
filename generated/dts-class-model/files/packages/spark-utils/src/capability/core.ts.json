@@ -111,11 +111,11 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.059Z",
+  "generatedAt": "2026-06-20T04:47:21.292Z",
   "models": {
     "CapabilityReader": {
       "name": "CapabilityReader",
-      "jsdoc": "@module\n@spark-appworks /spark-utils:capability/core\n职责：提供框架无关的 core 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\nSpark 能力系统核心 —— 框架无关的原语。\n本模块刻意保持对 UI、DOM、路由、数据层的零依赖。\n提供能力键类型、上下文树定义，以及 provide / consume 原语。\n能力值读取器：把运行时 unknown 显式校验为能力类型。",
+      "jsdoc": "能力值读取器：把运行时 unknown 显式校验为能力类型。",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    (value: unknown): value is T;\n}",
@@ -129,7 +129,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Capability Key 实例。",
-          "signatureText": "constructor(\n    /** 能力键的全局唯一名称，会用于 Symbol.for(name)。 */\n    name: string, reader: CapabilityReader<T>)",
+          "signatureText": "constructor(name: string, reader: CapabilityReader<T>)",
           "parameters": [
             {
               "name": "name",
@@ -159,7 +159,6 @@
           "attributes": [
             {
               "name": "name",
-              "jsdoc": "能力键的全局唯一名称，会用于 Symbol.for(name)。",
               "readable": true,
               "writable": false
             },

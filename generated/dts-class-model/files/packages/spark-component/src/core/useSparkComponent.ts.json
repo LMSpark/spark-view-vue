@@ -120,7 +120,72 @@
           "additionalProperties": false
         },
         "method.registerApi.return": true
-      }
+      },
+      "properties": {
+        "provider": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "isVisible": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "isDisabled": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "resolvedProps": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "sparkProvide": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "sparkConsume": {
+          "type": "object",
+          "title": "SparkCapabilityConsumer"
+        },
+        "logger": {
+          "type": "object",
+          "title": "LoggerApi"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "isVisible",
+        "isDisabled",
+        "resolvedProps",
+        "sparkProvide",
+        "sparkConsume",
+        "logger"
+      ]
     },
     "UseSparkCapabilityReaderReturn": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",

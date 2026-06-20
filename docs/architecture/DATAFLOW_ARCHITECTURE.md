@@ -109,7 +109,8 @@ DevSystem 是消费层。它可以传入 HTTP、API path、认证头，但不能
 
 ```text
 AI Host
-  -> ensurePageDesignBusiness()
+  -> readWorkflowDefinition(...)
+  -> activatePageDesignAgentWorkflow()
   -> ProjectEditor.project
   -> ProjectModel.openPageDesign(pageId)
   -> ConfigPageNode

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "scannedFileCount": 672,
+  "scannedFileCount": 682,
   "files": {
     "packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts": {
       "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts.json",
@@ -13,7 +13,9 @@
         "modulePath": "agent/ag-ui/ag-ui-mapper",
         "jsdoc": "@module @spark-appworks/spark-ai:agent/ag-ui/ag-ui-mapper\n职责：把 SPARK agent transport/trace 事件投影为 AG-UI core 事件和工具定义。\n边界：纯 mapper，不持有运行状态、不调用 LLM、不依赖 app 或 component 层。\nAI用途：接入 AG-UI、外部 agent UI 或调试事件流时，用本模块完成协议映射。",
         "jsdocSource": "leading-jsdoc",
-        "symbols": []
+        "symbols": [
+          "SparkAgUiAdapter"
+        ]
       }
     },
     "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts": {
@@ -24,14 +26,9 @@
         "sourceFile": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "agent/ag-ui/ag-ui-types",
-        "jsdoc": "@module @spark-appworks/spark-ai:agent/ag-ui/ag-ui-types\n职责：收拢 SPARK 首版 AG-UI adapter 暴露的官方 core 类型别名。\n边界：只定义协议类型别名，不执行 agent、不访问 transport，也不渲染 UI。\nAI用途：需要对齐 AG-UI 事件、tool、message 或 run input 时，从本模块确认公开类型。",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/ag-ui/ag-ui-types\n职责：收拢 SPARK 首版 AG-UI adapter 的自有类型，并转出官方 AG-UI core 类型。\n边界：只定义协议类型别名，不执行 agent、不访问 transport，也不渲染 UI。\nAI用途：需要对齐 AG-UI 事件、tool、message 或 run input 时，从本模块确认公开类型。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "SparkAgUiRunInput",
-          "SparkAgUiEvent",
-          "SparkAgUiBaseEvent",
-          "SparkAgUiTool",
-          "SparkAgUiMessage",
           "SparkAgUiRunRef",
           "SparkAgUiEventMetadata",
           "SparkAgUiTextMessageRole",
@@ -649,6 +646,137 @@
         ]
       }
     },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts": {
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json",
+      "module": {
+        "name": "@spark-appworks/spark-ai:agent/workflow/agent-workflow-definition",
+        "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+        "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+        "packageName": "@spark-appworks/spark-ai",
+        "modulePath": "agent/workflow/agent-workflow-definition",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/workflow/agent-workflow-definition\n职责：定义可序列化 Agent Workflow Definition 契约，发布态表达 workflow graph 与运行时 binding 声明。\n边界：只描述 workflow 定义，不持有函数、class 实例、APP、注册对象、delivery port 或 UI 状态。\nAI用途：需要判断 workflow definition 字段、业务节点、边投影或验证 action 格式时，用本模块确认契约。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "AgentWorkflowJsonRecord",
+          "AgentWorkflowDefinitionKind",
+          "AgentWorkflowDefinitionVersion",
+          "AgentWorkflowDefinitionSchema",
+          "AgentWorkflowDefinitionValidationSeverity",
+          "AgentWorkflowDefinitionValidationStatus",
+          "AgentWorkflowDefinitionValidationIssue",
+          "AgentWorkflowDefinitionValidation",
+          "AgentWorkflowDefinitionSource",
+          "AgentWorkflowVariable",
+          "AgentWorkflowCapability",
+          "AgentWorkflowNodePosition",
+          "AgentWorkflowStartNodeData",
+          "AgentWorkflowOutputNodeData",
+          "AgentWorkflowModelContext",
+          "AgentWorkflowLlmWork",
+          "AgentWorkflowNodeValidationAction",
+          "AgentWorkflowNodeValidation",
+          "AgentWorkflowNodeRuntimeRegistration",
+          "AgentWorkflowNodeInputContract",
+          "AgentWorkflowNodeConditionalHint",
+          "AgentWorkflowNodeSystemPrompt",
+          "AgentWorkflowNodeKnowledge",
+          "AgentWorkflowNodeToolLoopNudge",
+          "AgentWorkflowNodeGateRule",
+          "AgentWorkflowNodeBeforeFunctionCall",
+          "AgentWorkflowNodeResolveInstance",
+          "AgentWorkflowNodeModuleClassRef",
+          "AgentWorkflowNodeRuntimeBinding",
+          "AgentWorkflowBusinessNodeData",
+          "AgentWorkflowGraphNodeBase",
+          "AgentWorkflowStartNode",
+          "AgentWorkflowOutputNode",
+          "AgentWorkflowBusinessNode",
+          "AgentWorkflowGraphNode",
+          "AgentWorkflowGraphNodeType",
+          "AgentWorkflowEdgeProjection",
+          "AgentWorkflowEdgeBranch",
+          "AgentWorkflowEdgeValidation",
+          "AgentWorkflowGraphEdgeData",
+          "AgentWorkflowGraphEdge",
+          "AgentWorkflowGraph",
+          "AgentWorkflowBody",
+          "AgentWorkflowDefinitionSparkMeta",
+          "AgentWorkflowDefinition"
+        ]
+      }
+    },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts": {
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json",
+      "module": {
+        "name": "@spark-appworks/spark-ai:agent/workflow/agent-workflow-dry-run",
+        "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+        "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+        "packageName": "@spark-appworks/spark-ai",
+        "modulePath": "agent/workflow/agent-workflow-dry-run",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/workflow/agent-workflow-dry-run\n职责：作为运行时承载适配器消费 AgentWorkflowDefinition，按 workflowId 绑定 Host 并执行 dryRun 验收链。\n边界：definition 不保存注册信息；本模块只在运行时把 workflowId 解析到 Host 可执行对象。\nAI用途：需要验证运行时是否能承载 workflow definition 时，用本模块确认链路。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "AgentWorkflowActivation",
+          "AgentWorkflowRuntimeBinding",
+          "AgentWorkflowBindings",
+          "ResolveAgentWorkflowActivationCommand",
+          "ActivateAgentWorkflowDefinitionCommand",
+          "AgentWorkflowDryRunCommand",
+          "AgentWorkflowDryRunResult"
+        ]
+      }
+    },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts": {
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json",
+      "module": {
+        "name": "@spark-appworks/spark-ai:agent/workflow/agent-workflow-runtime",
+        "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+        "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+        "packageName": "@spark-appworks/spark-ai",
+        "modulePath": "agent/workflow/agent-workflow-runtime",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/workflow/agent-workflow-runtime\n职责：把 Agent Workflow Definition 的 runtimeBinding 声明与 app 注入能力解释成可注册的 Agent registration。\n边界：不导入 app 层模型、编辑器或 UI；只通过泛型 binding 接口组合 ClassModel runtime。\nAI用途：需要从设计器发布 definition 激活 AI host 时，用本模块确认解释器接线。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "AgentWorkflowModuleConstructor",
+          "AgentWorkflowRuntimeKnowledge",
+          "AgentWorkflowRuntimeGateResult",
+          "AgentWorkflowRuntimeGateCommand",
+          "AgentWorkflowRuntimeSystemPromptCommand",
+          "AgentWorkflowRuntimeBindings",
+          "InterpretAgentWorkflowDefinitionCommand",
+          "ActivateAgentWorkflowFromDefinitionCommand",
+          "AgentWorkflowInterpretedRegistration"
+        ]
+      }
+    },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts": {
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts.json",
+      "module": {
+        "name": "@spark-appworks/spark-ai:agent/workflow/agent-workflow-validation",
+        "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts",
+        "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts",
+        "packageName": "@spark-appworks/spark-ai",
+        "modulePath": "agent/workflow/agent-workflow-validation",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/workflow/agent-workflow-validation\n职责：校验 Agent Workflow Definition 的结构完整性，供发布和运行前验收复用。\n边界：默认只做同步 JSON 结构检查；不解析 ClassModel 运行时、不加载外部 workflow 文件。\nAI用途：需要判断 definition 是否可发布或可进入 dryRun 链路时，用本模块确认校验规则。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "ValidateAgentWorkflowDefinitionOptions"
+        ]
+      }
+    },
+    "packages/spark-ai/src/agent/workflow/index.ts": {
+      "file": "files/packages/spark-ai/src/agent/workflow/index.ts.json",
+      "module": {
+        "name": "@spark-appworks/spark-ai:agent/workflow/index",
+        "sourcePath": "packages/spark-ai/src/agent/workflow/index.ts",
+        "sourceFile": "packages/spark-ai/src/agent/workflow/index.ts",
+        "packageName": "@spark-appworks/spark-ai",
+        "modulePath": "agent/workflow/index",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/workflow\n职责：汇总 Agent Workflow definition graph、校验和运行时适配器公共 API。\n边界：只导出 workflow 子域稳定契约，不导入 APP 层或具体业务实现。\nAI用途：应用层需要引用 workflow definition、节点/边契约或运行时消费 helper 时，从本模块确认公共出口。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": []
+      }
+    },
     "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts": {
       "file": "files/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts.json",
       "module": {
@@ -690,7 +818,9 @@
         "modulePath": "class-model/class-model/class-model-emit-fs",
         "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-fs\n职责：读取 DtsTypeDeclarationModel 内存 emit 对应源文件的 mtime，用于增量生成判断。\n边界：只服务 Node 编译期投影链路；运行时、浏览器入口和 Worker loader 不得导入本模块。\nAI用途：排查增量 bundle 为什么重建或跳过某个 .d.ts shard 时，用本模块确认源文件时间戳读取规则。",
         "jsdocSource": "source-file-jsdoc",
-        "symbols": []
+        "symbols": [
+          "ReadSourceModifiedAtIsoCommand"
+        ]
       }
     },
     "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts": {
@@ -2519,7 +2649,7 @@
         "sourceFile": "packages/spark-component/src/ai/types.ts",
         "packageName": "@spark-appworks/spark-component",
         "modulePath": "ai/types",
-        "jsdoc": "@module @spark-appworks/spark-component:ai/types\n职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。\n边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。\nAI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。\n\nAI 会话监视组件 — 共享领域类型（SSOT）。\nStreamDisplayEntry、ToolCallDisplayItem、ReasoningDisplayItem\n等流展示类型只在这里定义。UI 组件只消费外部传入的展示投影。",
+        "jsdoc": "@module @spark-appworks/spark-component:ai/types\n职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。\n边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。\nAI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ToolCallDisplayItem",
@@ -2527,6 +2657,8 @@
           "StreamDisplayEntry",
           "SparkAgentTimelineEvent",
           "SessionDiagnosticIssue",
+          "SessionSummaryDisplayData",
+          "SessionTranscriptDisplayEntry",
           "SessionDiagnosticsData",
           "ToolApprovalDisplayItem"
         ]
@@ -6231,6 +6363,9 @@
         "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useEntityPickerState\n职责：提供 useEntityPickerState（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use entity picker state 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
+          "EntityPickerSelectOption",
+          "EntityPickerSelectCommand",
+          "EntityPickerSelectedOption",
           "UseEntityPickerStateOptions"
         ],
         "componentLevel": "field-level",
@@ -6271,6 +6406,8 @@
         "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useFileFieldState\n职责：提供 useFileFieldState（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use file field state 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
+          "BrowseFilesCommand",
+          "UploadFilesCommand",
           "UploadBrowseFieldStateOptions",
           "FileBrowserFieldStateOptions"
         ],
@@ -10596,6 +10733,23 @@
         ]
       }
     },
+    "src/services/ai/agent-workflow-bindings.ts": {
+      "file": "files/src/services/ai/agent-workflow-bindings.ts.json",
+      "module": {
+        "name": "app:services/ai/agent-workflow-bindings",
+        "sourcePath": "src/services/ai/agent-workflow-bindings.ts",
+        "sourceFile": "src/services/ai/agent-workflow-bindings.ts",
+        "packageName": "app",
+        "modulePath": "services/ai/agent-workflow-bindings",
+        "jsdoc": "@module app:services/ai/agent-workflow-bindings\n职责：组合 app 领域 binding 并把落盘 Agent Workflow Definition 激活到 spark-ai Host。\n边界：只做薄组合和解释器调用，不承载 pageDesign/projectPlanning 领域实现。\nAI用途：排查 app 层如何从 workflow definition 注册 AI Host 时，用本模块确认统一入口。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "ActivatePageDesignAgentWorkflowOptions",
+          "ActivateProjectPlanningAgentWorkflowOptions",
+          "CreateAppAgentWorkflowRuntimeBindingsOptions"
+        ]
+      }
+    },
     "src/services/ai/ai-delivery-port.ts": {
       "file": "files/src/services/ai/ai-delivery-port.ts.json",
       "module": {
@@ -10750,6 +10904,24 @@
         ]
       }
     },
+    "src/services/page-design/page-design-agent-workflow-binding.ts": {
+      "file": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json",
+      "module": {
+        "name": "app:services/page-design/page-design-agent-workflow-binding",
+        "sourcePath": "src/services/page-design/page-design-agent-workflow-binding.ts",
+        "sourceFile": "src/services/page-design/page-design-agent-workflow-binding.ts",
+        "packageName": "app",
+        "modulePath": "services/page-design/page-design-agent-workflow-binding",
+        "jsdoc": "@module app:services/page-design/page-design-agent-workflow-binding\n职责：承载 pageDesign 领域的 AI workflow binding 能力——合法业务逻辑（MODULE_ID、类型、resolve/build、SOP、gate）+ binding 片段（editorGetter / gateExecutor / systemPromptInterpolator）。\n边界：只做 pageDesign 领域能力注入，不手写 workflow definition（definition 由设计器落盘 JSON 承载），也不承载解释器组合（由 agent-workflow-bindings.ts 薄组合入口完成）。\nAI用途：排查 pageDesign AI 注册如何从 definition + binding 解释而来时，用本模块定位领域 binding 片段。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "PageDesignRunInput",
+          "ResolvePageDesignPlanningContextOptions",
+          "PageDesignEditorGetterOptions",
+          "PageDesignAgentWorkflowBindingOptions"
+        ]
+      }
+    },
     "src/services/page-design/page-design-ai-runner.ts": {
       "file": "files/src/services/page-design/page-design-ai-runner.ts.json",
       "module": {
@@ -10765,23 +10937,6 @@
           "PageDesignAiRunEvents",
           "PageDesignAiRunCommand",
           "PageDesignAiRunResult"
-        ]
-      }
-    },
-    "src/services/page-design/page-design-business.ts": {
-      "file": "files/src/services/page-design/page-design-business.ts.json",
-      "module": {
-        "name": "app:services/page-design/page-design-business",
-        "sourcePath": "src/services/page-design/page-design-business.ts",
-        "sourceFile": "src/services/page-design/page-design-business.ts",
-        "packageName": "app",
-        "modulePath": "services/page-design/page-design-business",
-        "jsdoc": "@module app:services/page-design-business\n职责：提供应用运行时 service 层的 page design business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign AI business registration.\nThis app-layer service exposes the current ProjectModel to spark-ai without\nmaking spark-project-model depend on AI runtime or generated metadata files.",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "PageDesignRunInput",
-          "ResolvePageDesignPlanningContextOptions",
-          "EnsurePageDesignBusinessOptions"
         ]
       }
     },
@@ -10886,6 +11041,29 @@
         "symbols": []
       }
     },
+    "src/services/project-planning/project-planning-agent-workflow-binding.ts": {
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json",
+      "module": {
+        "name": "app:services/project-planning/project-planning-agent-workflow-binding",
+        "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+        "sourceFile": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+        "packageName": "app",
+        "modulePath": "services/project-planning/project-planning-agent-workflow-binding",
+        "jsdoc": "@module app:services/project-planning/project-planning-agent-workflow-binding\n职责：承载 projectPlanning Agent Workflow 的应用侧领域 binding，连接 ProjectModel、输入构造、prompt 和 gate。\n边界：不手写 workflow definition，不直接注册 AiAgentHost；只提供解释器所需 app 能力与领域纯函数。\nAI用途：排查 projectPlanning AI 输入、prompt、gate 或 editorSource 接线时，用本模块确认迁移后的业务逻辑。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "ProjectPlanningRunInput",
+          "ProjectPlanningAgentInput",
+          "NavigationPlanningAgentInput",
+          "NavigationPlanningRunInput",
+          "ResolveProjectPlanningRunInputOptions",
+          "FilterNavigationPlanningNodesOptions",
+          "ResolveScopedProjectPlanningRunInputOptions",
+          "ProjectPlanningAgentWorkflowBindingOptions",
+          "ProjectPlanningGateValidationResult"
+        ]
+      }
+    },
     "src/services/project-planning/project-planning-ai-runner.ts": {
       "file": "files/src/services/project-planning/project-planning-ai-runner.ts.json",
       "module": {
@@ -10904,26 +11082,19 @@
         ]
       }
     },
-    "src/services/project-planning/project-planning-business.ts": {
-      "file": "files/src/services/project-planning/project-planning-business.ts.json",
+    "src/services/project-planning/project-planning-attachments.ts": {
+      "file": "files/src/services/project-planning/project-planning-attachments.ts.json",
       "module": {
-        "name": "app:services/project-planning/project-planning-business",
-        "sourcePath": "src/services/project-planning/project-planning-business.ts",
-        "sourceFile": "src/services/project-planning/project-planning-business.ts",
+        "name": "app:services/project-planning/project-planning-attachments",
+        "sourcePath": "src/services/project-planning/project-planning-attachments.ts",
+        "sourceFile": "src/services/project-planning/project-planning-attachments.ts",
         "packageName": "app",
-        "modulePath": "services/project-planning/project-planning-business",
-        "jsdoc": "@module app:services/project-planning-business\n职责：提供应用运行时 service 层的 project planning business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\n项目策划 AI 输入契约与 Host 业务注册。\n策划阶段只消费 navigation description + 附件详细说明，产出子模块/页面概要；\n不绑定 pageDesign 四文件或 config-page metadata。",
+        "modulePath": "services/project-planning/project-planning-attachments",
+        "jsdoc": "@module app:services/project-planning-attachments\n职责：提供项目策划文档附件上传能力，只返回附件引用和元数据，不把正文带回前端。\n边界：附件正文由后端在 LLM turn 内临时解析注入，前端只持有 planningAttachmentRef。\nAI用途：排查 Word 需求文档到 projectPlanning 的数据链路时，从本模块确认上传契约。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "ProjectPlanningRunInput",
-          "ProjectPlanningAgentInput",
-          "NavigationPlanningAgentInput",
-          "NavigationPlanningRunInput",
-          "ResolveProjectPlanningRunInputOptions",
-          "FilterNavigationPlanningNodesOptions",
-          "ResolveScopedProjectPlanningRunInputOptions",
-          "EnsureProjectPlanningBusinessOptions",
-          "ProjectPlanningGateValidationResult"
+          "ProjectPlanningAttachmentUploadResult",
+          "UploadProjectPlanningAttachmentCommand"
         ]
       }
     },
@@ -11029,6 +11200,43 @@
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "TenantProjectScope"
+        ]
+      }
+    },
+    "src/services/workflow-designs.ts": {
+      "file": "files/src/services/workflow-designs.ts.json",
+      "module": {
+        "name": "app:services/workflow-designs",
+        "sourcePath": "src/services/workflow-designs.ts",
+        "sourceFile": "src/services/workflow-designs.ts",
+        "packageName": "app",
+        "modulePath": "services/workflow-designs",
+        "jsdoc": "@module app:services/workflow-designs\n职责：提供 workflow 设计稿的 JSON 文件读写与 Dify-like graph 节点解析能力。\n边界：只处理编辑态 workflow design，不执行 Agent workflow 运行时。\nAI用途：排查 workflow design、业务节点、ClassModel model context 或边投影时，用本模块确认前端接线。",
+        "jsdocSource": "source-file-jsdoc",
+        "symbols": [
+          "JsonRecord",
+          "WorkflowDesignSummary",
+          "WorkflowDesignWriteResult",
+          "WorkflowDesignReadResult",
+          "WorkflowDefinitionReadResult",
+          "WorkflowDesignDeleteResult",
+          "WorkflowDesignDocument",
+          "WorkflowDesignVariable",
+          "WorkflowDesignCapability",
+          "WorkflowDesignGraph",
+          "WorkflowDesignGraphNode",
+          "WorkflowDesignGraphEdge",
+          "WorkflowDesignNodeData",
+          "WorkflowDesignNestedGraphCarrier",
+          "WorkflowDesignSparkNodeMeta",
+          "WorkflowDesignNodeView",
+          "WorkflowDesignGraphView",
+          "WorkflowDesignEdgeView",
+          "WorkflowDesignNodeCreateKind",
+          "WorkflowDesignNodeCreateInput",
+          "WorkflowDesignNodeRemoveResult",
+          "WorkflowDesignEdgePatch",
+          "CreateAgentWorkflowDefinitionFromDesignOptions"
         ]
       }
     },
@@ -11294,6 +11502,19 @@
         "symbols": []
       }
     },
+    "src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue": {
+      "file": "files/src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue.json",
+      "module": {
+        "name": "app:views/app/dev-system/ProjectPlanningDocumentImportDialog",
+        "sourcePath": "src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue",
+        "sourceFile": "src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue",
+        "packageName": "app",
+        "modulePath": "views/app/dev-system/ProjectPlanningDocumentImportDialog",
+        "jsdoc": "@module app:views/app/dev-system/ProjectPlanningDocumentImportDialog\n职责：提供 DevSystem 的项目策划文档导入对话框，围绕 .docx 附件上传、附件引用绑定和 projectPlanning AI 运行状态展示。\n边界：只展示附件元数据与 AI trace；Word 正文不进入前端。\nAI用途：排查需求文档到 projectPlanning 的导入链路时，用本模块定位前端交互入口。",
+        "jsdocSource": "source-file-jsdoc",
+        "symbols": []
+      }
+    },
     "src/views/app/dev-system/useDevState.ts": {
       "file": "files/src/views/app/dev-system/useDevState.ts.json",
       "module": {
@@ -11354,6 +11575,19 @@
         "packageName": "app",
         "modulePath": "views/app/TemplateDslDemo",
         "jsdoc": "@module app:views/app/TemplateDslDemo\n职责：提供主应用 TemplateDslDemo 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 views/app/TemplateDslDemo。",
+        "jsdocSource": "source-file-jsdoc",
+        "symbols": []
+      }
+    },
+    "src/views/app/WorkflowDesigns.vue": {
+      "file": "files/src/views/app/WorkflowDesigns.vue.json",
+      "module": {
+        "name": "app:views/app/WorkflowDesigns",
+        "sourcePath": "src/views/app/WorkflowDesigns.vue",
+        "sourceFile": "src/views/app/WorkflowDesigns.vue",
+        "packageName": "app",
+        "modulePath": "views/app/WorkflowDesigns",
+        "jsdoc": "@module app:views/app/WorkflowDesigns\n职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与 workflow definition 发布。\n边界：只处理设计态 JSON，不执行 Agent workflow 运行时。\nAI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel model context 或步骤线投影时，用本页面定位。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
@@ -11554,9 +11788,253 @@
       "sourcePath": "packages/spark-component/src/page/actions/action-types.ts",
       "file": "files/packages/spark-component/src/page/actions/action-types.ts.json"
     },
+    "ActivateAgentWorkflowDefinitionCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
+    "ActivateAgentWorkflowFromDefinitionCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "ActivatePageDesignAgentWorkflowOptions": {
+      "sourcePath": "src/services/ai/agent-workflow-bindings.ts",
+      "file": "files/src/services/ai/agent-workflow-bindings.ts.json"
+    },
+    "ActivateProjectPlanningAgentWorkflowOptions": {
+      "sourcePath": "src/services/ai/agent-workflow-bindings.ts",
+      "file": "files/src/services/ai/agent-workflow-bindings.ts.json"
+    },
     "AddRowHandler": {
       "sourcePath": "packages/spark-component/src/components/containers/support/interactionControl.ts",
       "file": "files/packages/spark-component/src/components/containers/support/interactionControl.ts.json"
+    },
+    "AgentWorkflowActivation": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
+    "AgentWorkflowBindings": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
+    "AgentWorkflowBody": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowBusinessNode": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowBusinessNodeData": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowCapability": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinition": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionKind": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionSchema": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionSource": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionSparkMeta": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionValidation": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionValidationIssue": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionValidationSeverity": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionValidationStatus": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDefinitionVersion": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowDryRunCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
+    "AgentWorkflowDryRunResult": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
+    "AgentWorkflowEdgeBranch": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowEdgeProjection": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowEdgeValidation": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowGraph": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowGraphEdge": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowGraphEdgeData": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowGraphNode": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowGraphNodeBase": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowGraphNodeType": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowInterpretedRegistration": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowJsonRecord": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowLlmWork": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowModelContext": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowModuleConstructor": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowNodeBeforeFunctionCall": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeConditionalHint": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeGateRule": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeInputContract": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeKnowledge": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeModuleClassRef": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodePosition": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeResolveInstance": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeRuntimeBinding": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeRuntimeRegistration": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeSystemPrompt": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeToolLoopNudge": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeValidation": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowNodeValidationAction": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowOutputNode": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowOutputNodeData": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowRuntimeBinding": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
+    "AgentWorkflowRuntimeBindings": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowRuntimeGateCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowRuntimeGateResult": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowRuntimeKnowledge": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowRuntimeSystemPromptCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
+    "AgentWorkflowStartNode": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowStartNodeData": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowVariable": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
     "AggregateColumnConfig": {
       "sourcePath": "packages/spark-data/src/types.ts",
@@ -12338,6 +12816,10 @@
       "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts",
       "file": "files/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts.json"
     },
+    "BrowseFilesCommand": {
+      "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
+      "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json"
+    },
     "BuildDtsClassModelBundleOptions": {
       "sourcePath": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "file": "files/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts.json"
@@ -12734,9 +13216,17 @@
       "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
       "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts.json"
     },
+    "CreateAgentWorkflowDefinitionFromDesignOptions": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
     "CreateAiAgentHostOptions": {
       "sourcePath": "packages/spark-ai/src/agent/business/ai-host.ts",
       "file": "files/packages/spark-ai/src/agent/business/ai-host.ts.json"
+    },
+    "CreateAppAgentWorkflowRuntimeBindingsOptions": {
+      "sourcePath": "src/services/ai/agent-workflow-bindings.ts",
+      "file": "files/src/services/ai/agent-workflow-bindings.ts.json"
     },
     "CreateClassModelKnowledgeWorkerApiOptions": {
       "sourcePath": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
@@ -13478,13 +13968,17 @@
       "sourcePath": "packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.ts",
       "file": "files/packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.ts.json"
     },
-    "EnsurePageDesignBusinessOptions": {
-      "sourcePath": "src/services/page-design/page-design-business.ts",
-      "file": "files/src/services/page-design/page-design-business.ts.json"
+    "EntityPickerSelectCommand": {
+      "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+      "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json"
     },
-    "EnsureProjectPlanningBusinessOptions": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+    "EntityPickerSelectedOption": {
+      "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+      "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json"
+    },
+    "EntityPickerSelectOption": {
+      "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+      "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json"
     },
     "EnumDeclarationModel": {
       "sourcePath": "packages/spark-ai/src/class-model/class-model/types.ts",
@@ -13683,8 +14177,8 @@
       "file": "files/packages/spark-data/src/types.ts.json"
     },
     "FilterNavigationPlanningNodesOptions": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "FilterNegatedConditionExpression": {
       "sourcePath": "packages/spark-data/src/types.ts",
@@ -13790,6 +14284,10 @@
       "sourcePath": "packages/spark-ai/src/class-model/class-model/types.ts",
       "file": "files/packages/spark-ai/src/class-model/class-model/types.ts.json"
     },
+    "InterpretAgentWorkflowDefinitionCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json"
+    },
     "JsDocMeta": {
       "sourcePath": "packages/spark-ai/src/class-model/class-model/types.ts",
       "file": "files/packages/spark-ai/src/class-model/class-model/types.ts.json"
@@ -13829,6 +14327,10 @@
     "JsonPrimitive": {
       "sourcePath": "packages/spark-json-document/src/core/json-types.ts",
       "file": "files/packages/spark-json-document/src/core/json-types.ts.json"
+    },
+    "JsonRecord": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
     },
     "JsonSchema": {
       "sourcePath": "packages/spark-json-document/src/schema/schema-types.ts",
@@ -14099,16 +14601,16 @@
       "file": "files/packages/spark-project-model/src/navigation/navigation-edit.ts.json"
     },
     "NavigationPlanningAgentInput": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "NavigationPlanningInput": {
       "sourcePath": "packages/spark-project-model/src/project/project-types.ts",
       "file": "files/packages/spark-project-model/src/project/project-types.ts.json"
     },
     "NavigationPlanningRunInput": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "NavigationTreeNodeLike": {
       "sourcePath": "packages/spark-project-model/src/navigation/navigation-index.ts",
@@ -14270,6 +14772,10 @@
       "sourcePath": "packages/spark-project-model/src/page/content/dataset-file.ts",
       "file": "files/packages/spark-project-model/src/page/content/dataset-file.ts.json"
     },
+    "PageDesignAgentWorkflowBindingOptions": {
+      "sourcePath": "src/services/page-design/page-design-agent-workflow-binding.ts",
+      "file": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json"
+    },
     "PageDesignAiRunCommand": {
       "sourcePath": "src/services/page-design/page-design-ai-runner.ts",
       "file": "files/src/services/page-design/page-design-ai-runner.ts.json"
@@ -14294,6 +14800,10 @@
       "sourcePath": "src/services/page-design/page-design-host-run-provider.ts",
       "file": "files/src/services/page-design/page-design-host-run-provider.ts.json"
     },
+    "PageDesignEditorGetterOptions": {
+      "sourcePath": "src/services/page-design/page-design-agent-workflow-binding.ts",
+      "file": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json"
+    },
     "PageDesignEditorResolveContext": {
       "sourcePath": "src/services/page-design/page-design-headless.ts",
       "file": "files/src/services/page-design/page-design-headless.ts.json"
@@ -14315,8 +14825,8 @@
       "file": "files/src/services/page-design/page-design-gates.ts.json"
     },
     "PageDesignRunInput": {
-      "sourcePath": "src/services/page-design/page-design-business.ts",
-      "file": "files/src/services/page-design/page-design-business.ts.json"
+      "sourcePath": "src/services/page-design/page-design-agent-workflow-binding.ts",
+      "file": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json"
     },
     "PageDesignRunMode": {
       "sourcePath": "src/services/page-design/page-design-gates.ts",
@@ -14671,8 +15181,12 @@
       "file": "files/packages/spark-project-model/src/navigation/project-node.ts.json"
     },
     "ProjectPlanningAgentInput": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
+    },
+    "ProjectPlanningAgentWorkflowBindingOptions": {
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "ProjectPlanningAiRunCommand": {
       "sourcePath": "src/services/project-planning/project-planning-ai-runner.ts",
@@ -14689,6 +15203,10 @@
     "ProjectPlanningAiRunResult": {
       "sourcePath": "src/services/project-planning/project-planning-ai-runner.ts",
       "file": "files/src/services/project-planning/project-planning-ai-runner.ts.json"
+    },
+    "ProjectPlanningAttachmentUploadResult": {
+      "sourcePath": "src/services/project-planning/project-planning-attachments.ts",
+      "file": "files/src/services/project-planning/project-planning-attachments.ts.json"
     },
     "ProjectPlanningCompletionInput": {
       "sourcePath": "packages/spark-project-model/src/project/project-types.ts",
@@ -14707,16 +15225,16 @@
       "file": "files/src/services/project-planning/project-planning-headless.ts.json"
     },
     "ProjectPlanningGateValidationResult": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "ProjectPlanningInput": {
       "sourcePath": "packages/spark-project-model/src/project/project-types.ts",
       "file": "files/packages/spark-project-model/src/project/project-types.ts.json"
     },
     "ProjectPlanningRunInput": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "ProjectReferenceClient": {
       "sourcePath": "packages/spark-project-model/src/io/project-reference-client.ts",
@@ -14893,6 +15411,10 @@
     "ReadPageDesignGateStateOptions": {
       "sourcePath": "src/services/page-design/page-design-gates.ts",
       "file": "files/src/services/page-design/page-design-gates.ts.json"
+    },
+    "ReadSourceModifiedAtIsoCommand": {
+      "sourcePath": "packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts",
+      "file": "files/packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts.json"
     },
     "ReasoningDisplayItem": {
       "sourcePath": "packages/spark-component/src/ai/types.ts",
@@ -15090,6 +15612,10 @@
       "sourcePath": "packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.ts",
       "file": "files/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.ts.json"
     },
+    "ResolveAgentWorkflowActivationCommand": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
+    },
     "ResolvedActionDataCapabilities": {
       "sourcePath": "packages/spark-component/src/page/actions/executor-helpers.ts",
       "file": "files/packages/spark-component/src/page/actions/executor-helpers.ts.json"
@@ -15123,20 +15649,20 @@
       "file": "files/packages/spark-component/src/permission/PermissionResolver.ts.json"
     },
     "ResolvePageDesignPlanningContextOptions": {
-      "sourcePath": "src/services/page-design/page-design-business.ts",
-      "file": "files/src/services/page-design/page-design-business.ts.json"
+      "sourcePath": "src/services/page-design/page-design-agent-workflow-binding.ts",
+      "file": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json"
     },
     "ResolveProjectPlanningRunInputOptions": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "ResolveRuntimeApiMetadataJsonOptions": {
       "sourcePath": "packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.ts",
       "file": "files/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.ts.json"
     },
     "ResolveScopedProjectPlanningRunInputOptions": {
-      "sourcePath": "src/services/project-planning/project-planning-business.ts",
-      "file": "files/src/services/project-planning/project-planning-business.ts.json"
+      "sourcePath": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "file": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json"
     },
     "ResponseInterceptor": {
       "sourcePath": "packages/spark-utils/src/http/types.ts",
@@ -15450,9 +15976,17 @@
       "sourcePath": "packages/spark-component/src/ai/components/SessionStreamView.props.ts",
       "file": "files/packages/spark-component/src/ai/components/SessionStreamView.props.ts.json"
     },
+    "SessionSummaryDisplayData": {
+      "sourcePath": "packages/spark-component/src/ai/types.ts",
+      "file": "files/packages/spark-component/src/ai/types.ts.json"
+    },
     "SessionToolCallCardProps": {
       "sourcePath": "packages/spark-component/src/ai/components/SessionToolCallCard.props.ts",
       "file": "files/packages/spark-component/src/ai/components/SessionToolCallCard.props.ts.json"
+    },
+    "SessionTranscriptDisplayEntry": {
+      "sourcePath": "packages/spark-component/src/ai/types.ts",
+      "file": "files/packages/spark-component/src/ai/types.ts.json"
     },
     "SetFieldAction": {
       "sourcePath": "packages/spark-component/src/page/actions/action-types.ts",
@@ -15510,27 +16044,15 @@
       "sourcePath": "packages/spark-component/src/ai/types.ts",
       "file": "files/packages/spark-component/src/ai/types.ts.json"
     },
-    "SparkAgUiBaseEvent": {
-      "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-      "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
+    "SparkAgUiAdapter": {
+      "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts",
+      "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts.json"
     },
     "SparkAgUiCustomEventName": {
       "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
       "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
     },
-    "SparkAgUiEvent": {
-      "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-      "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
-    },
     "SparkAgUiEventMetadata": {
-      "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-      "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
-    },
-    "SparkAgUiMessage": {
-      "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-      "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
-    },
-    "SparkAgUiRunInput": {
       "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
       "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
     },
@@ -15539,10 +16061,6 @@
       "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
     },
     "SparkAgUiTextMessageRole": {
-      "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
-      "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
-    },
-    "SparkAgUiTool": {
       "sourcePath": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
       "file": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json"
     },
@@ -16126,6 +16644,14 @@
       "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
       "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json"
     },
+    "UploadFilesCommand": {
+      "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
+      "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json"
+    },
+    "UploadProjectPlanningAttachmentCommand": {
+      "sourcePath": "src/services/project-planning/project-planning-attachments.ts",
+      "file": "files/src/services/project-planning/project-planning-attachments.ts.json"
+    },
     "UseBasicFieldStateOptions": {
       "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts",
       "file": "files/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts.json"
@@ -16258,6 +16784,10 @@
       "sourcePath": "packages/spark-app/src/navigation/useTabPages.ts",
       "file": "files/packages/spark-app/src/navigation/useTabPages.ts.json"
     },
+    "ValidateAgentWorkflowDefinitionOptions": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts.json"
+    },
     "ValidationError": {
       "sourcePath": "packages/spark-data/src/validation.ts",
       "file": "files/packages/spark-data/src/validation.ts.json"
@@ -16317,6 +16847,90 @@
     "WorkerClassModelKnowledgeProvider": {
       "sourcePath": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
       "file": "files/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts.json"
+    },
+    "WorkflowDefinitionReadResult": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignCapability": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignDeleteResult": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignDocument": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignEdgePatch": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignEdgeView": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignGraph": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignGraphEdge": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignGraphNode": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignGraphView": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignNestedGraphCarrier": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignNodeCreateInput": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignNodeCreateKind": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignNodeData": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignNodeRemoveResult": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignNodeView": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignReadResult": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignSparkNodeMeta": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignSummary": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignVariable": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignWriteResult": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
     }
   },
   "componentIndex": {
@@ -16417,6 +17031,16 @@
         "className": "BoundBooleanColumn",
         "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts",
         "file": "files/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "BrowseFilesCommand": {
+        "className": "BrowseFilesCommand",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json",
         "component": {
           "level": "field-level",
           "layer": "data-field",
@@ -16635,6 +17259,36 @@
           "level": "table-level",
           "layer": "data-view-container",
           "directory": "containers/data-views"
+        }
+      },
+      "EntityPickerSelectCommand": {
+        "className": "EntityPickerSelectCommand",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "EntityPickerSelectedOption": {
+        "className": "EntityPickerSelectedOption",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
+      "EntityPickerSelectOption": {
+        "className": "EntityPickerSelectOption",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
         }
       },
       "FetchSuggestionsCallback": {
@@ -18338,6 +18992,16 @@
           "directory": "fields/data-components"
         }
       },
+      "UploadFilesCommand": {
+        "className": "UploadFilesCommand",
+        "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
+        "file": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json",
+        "component": {
+          "level": "field-level",
+          "layer": "data-field",
+          "directory": "fields/data-components"
+        }
+      },
       "UseBasicFieldStateOptions": {
         "className": "UseBasicFieldStateOptions",
         "sourcePath": "packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts",
@@ -19198,11 +19862,15 @@
       "field-level": [
         "BasicFieldProps",
         "BoundBooleanColumn",
+        "BrowseFilesCommand",
         "CascaderPath",
         "CascaderValue",
         "CheckboxGroupMultiValue",
         "ControlledFieldStateLike",
         "DatePickerType",
+        "EntityPickerSelectCommand",
+        "EntityPickerSelectedOption",
+        "EntityPickerSelectOption",
         "FetchSuggestionsCallback",
         "FieldContextStateLike",
         "FieldControlProps",
@@ -19245,6 +19913,7 @@
         "SuggestionItem",
         "TransferValue",
         "UploadBrowseFieldStateOptions",
+        "UploadFilesCommand",
         "UseBasicFieldStateOptions",
         "UseChoiceFieldStateOptions",
         "UseControlledFieldChangeOptions",
@@ -19333,11 +20002,15 @@
       "data-field": [
         "BasicFieldProps",
         "BoundBooleanColumn",
+        "BrowseFilesCommand",
         "CascaderPath",
         "CascaderValue",
         "CheckboxGroupMultiValue",
         "ControlledFieldStateLike",
         "DatePickerType",
+        "EntityPickerSelectCommand",
+        "EntityPickerSelectedOption",
+        "EntityPickerSelectOption",
         "FetchSuggestionsCallback",
         "FieldContextStateLike",
         "FieldControlProps",
@@ -19379,6 +20052,7 @@
         "SuggestionItem",
         "TransferValue",
         "UploadBrowseFieldStateOptions",
+        "UploadFilesCommand",
         "UseBasicFieldStateOptions",
         "UseChoiceFieldStateOptions",
         "UseControlledFieldChangeOptions",
@@ -19658,11 +20332,15 @@
       "fields/data-components": [
         "BasicFieldProps",
         "BoundBooleanColumn",
+        "BrowseFilesCommand",
         "CascaderPath",
         "CascaderValue",
         "CheckboxGroupMultiValue",
         "ControlledFieldStateLike",
         "DatePickerType",
+        "EntityPickerSelectCommand",
+        "EntityPickerSelectedOption",
+        "EntityPickerSelectOption",
         "FetchSuggestionsCallback",
         "FieldContextStateLike",
         "FieldControlProps",
@@ -19704,6 +20382,7 @@
         "SuggestionItem",
         "TransferValue",
         "UploadBrowseFieldStateOptions",
+        "UploadFilesCommand",
         "UseBasicFieldStateOptions",
         "UseChoiceFieldStateOptions",
         "UseControlledFieldChangeOptions",

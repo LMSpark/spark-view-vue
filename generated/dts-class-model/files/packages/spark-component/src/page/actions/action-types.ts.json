@@ -257,6 +257,12 @@
         "action": {
           "const": "show-message"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
         "message": {
           "type": "string"
         },
@@ -278,6 +284,12 @@
       "properties": {
         "action": {
           "const": "confirm"
+        },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
         },
         "message": {
           "type": "string"
@@ -310,6 +322,12 @@
         "action": {
           "const": "alert"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
         "message": {
           "type": "string"
         },
@@ -331,6 +349,12 @@
         "action": {
           "const": "navigate"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
         "path": {
           "type": "string"
         }
@@ -349,6 +373,12 @@
         "action": {
           "const": "open"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
         "target": {
           "type": "string"
         }
@@ -366,6 +396,12 @@
       "properties": {
         "action": {
           "const": "set-field"
+        },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
         },
         "dataViewKey": {
           "type": "string"
@@ -419,6 +455,41 @@
         "action": {
           "const": "append-row"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
         "dataViewKey": {
           "type": "string"
         },
@@ -459,6 +530,41 @@
         "action": {
           "const": "delete"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
         "target": {
           "$ref": "#/$defs/ActionRowTarget"
         },
@@ -482,6 +588,41 @@
       "properties": {
         "action": {
           "const": "patch"
+        },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
         },
         "target": {
           "$ref": "#/$defs/ActionRowTarget"
@@ -517,6 +658,41 @@
       "properties": {
         "action": {
           "const": "move"
+        },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
         },
         "target": {
           "enum": [
@@ -570,6 +746,41 @@
         "action": {
           "const": "message-row"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
         "target": {
           "enum": [
             "scope",
@@ -607,6 +818,41 @@
         "action": {
           "const": "refresh"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
         "dataViewKey": {
           "type": "string"
         }
@@ -624,6 +870,41 @@
         "action": {
           "const": "clear-rows"
         },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
         "dataViewKey": {
           "type": "string"
         }
@@ -640,6 +921,41 @@
       "properties": {
         "action": {
           "const": "submit-current-form"
+        },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
         },
         "dataViewKey": {
           "type": "string"
@@ -663,6 +979,41 @@
       "properties": {
         "action": {
           "const": "save-dataset"
+        },
+        "then": {
+          "$ref": "#/$defs/ActionDescriptor"
+        },
+        "cancelDefault": {
+          "type": "boolean"
+        },
+        "silent": {
+          "type": "boolean"
+        },
+        "successMessage": {
+          "type": "string"
+        },
+        "failureMessage": {
+          "type": "string"
+        },
+        "emptyMessage": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "confirmMessage": {
+          "type": "string"
+        },
+        "confirmTitle": {
+          "type": "string"
+        },
+        "confirmType": {
+          "type": "object",
+          "title": "PageMessageType"
+        },
+        "disabledWhenRow": {
+          "type": "object",
+          "title": "Record<string, unknown>"
         },
         "mode": {
           "$ref": "../../../../spark-data/src/types.ts.json#/$defs/DataSetSaveChangesMode"

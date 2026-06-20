@@ -153,7 +153,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-15T01:34:31.016Z",
+  "generatedAt": "2026-06-20T04:47:21.343Z",
   "models": {
     "AiDeliveryMode": {
       "name": "AiDeliveryMode",
@@ -257,8 +257,16 @@
     "AiDeliveryPort": {
       "name": "AiDeliveryPort",
       "jsdoc": "应用层交付端口：负责 save、trace 与 rollback 三阶段契约。",
-      "declarationKind": "interface",
-      "interfaceDecl": {
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    /** 交付模式（manual 需人工确认，auto 自动落盘）。 */\n    readonly mode: AiDeliveryMode;\n    /** 执行交付落盘并返回回执。 */\n    save(context: TContext): Promise<AiDeliveryResult>;\n    /** 记录交付 trace（日志/遥测）。 */\n    trace(context: TContext, result: AiDeliveryResult): Promise<void>;\n    /** 交付失败时执行回滚并返回回执。 */\n    rollback(context: TContext, error: Error): Promise<AiDeliveryResult>;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    /** 交付模式（manual 需人工确认，auto 自动落盘）。 */\n    readonly mode: AiDeliveryMode;\n    /** 执行交付落盘并返回回执。 */\n    save(context: TContext): Promise<AiDeliveryResult>;\n    /** 记录交付 trace（日志/遥测）。 */\n    trace(context: TContext, result: AiDeliveryResult): Promise<void>;\n    /** 交付失败时执行回滚并返回回执。 */\n    rollback(context: TContext, error: Error): Promise<AiDeliveryResult>;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
         "members": {
           "attributes": [
             {

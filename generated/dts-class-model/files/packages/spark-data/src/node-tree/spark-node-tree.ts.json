@@ -204,6 +204,12 @@
       "type": "object",
       "title": "SparkNodeTreeAddParams",
       "properties": {
+        "parentComponentId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
         "node": {
           "$ref": "spark-node.ts.json#/$defs/SparkNode"
         },
@@ -221,6 +227,12 @@
       "type": "object",
       "title": "SparkNodeTreeAddNodesParams",
       "properties": {
+        "parentComponentId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
         "nodes": {
           "type": "array",
           "items": {
@@ -241,6 +253,12 @@
       "type": "object",
       "title": "SparkNodeTreeMoveParams",
       "properties": {
+        "parentComponentId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
         "componentId": {
           "type": "string"
         },
@@ -258,6 +276,9 @@
       "type": "object",
       "title": "SparkNodeTreeSetPropsParams",
       "properties": {
+        "componentId": {
+          "type": "string"
+        },
         "props": {
           "type": "object",
           "title": "Record<string, unknown>"
@@ -267,6 +288,7 @@
         }
       },
       "required": [
+        "componentId",
         "props"
       ],
       "additionalProperties": false
@@ -276,6 +298,9 @@
       "type": "object",
       "title": "SparkNodeTreeSetPropsBatchItem",
       "properties": {
+        "componentId": {
+          "type": "string"
+        },
         "props": {
           "type": "object",
           "title": "Record<string, unknown>"
@@ -285,6 +310,7 @@
         }
       },
       "required": [
+        "componentId",
         "props"
       ],
       "additionalProperties": false
@@ -311,11 +337,15 @@
       "type": "object",
       "title": "SparkNodeTreeReplaceParams",
       "properties": {
+        "componentId": {
+          "type": "string"
+        },
         "node": {
           "$ref": "spark-node.ts.json#/$defs/SparkNode"
         }
       },
       "required": [
+        "componentId",
         "node"
       ],
       "additionalProperties": false
@@ -325,11 +355,15 @@
       "type": "object",
       "title": "SparkNodeTreeReplaceNodesItem",
       "properties": {
+        "componentId": {
+          "type": "string"
+        },
         "node": {
           "$ref": "spark-node.ts.json#/$defs/SparkNode"
         }
       },
       "required": [
+        "componentId",
         "node"
       ],
       "additionalProperties": false

@@ -335,7 +335,7 @@
     },
     "PluginLoader": {
       "name": "PluginLoader",
-      "jsdoc": "插件配置类型（支持简单布尔值或详细配置）\n插件加载器定义",
+      "jsdoc": "插件加载器定义",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    /** 插件 ID */\n    id: string;\n    /** 插件名称 */\n    name: string;\n    /** 模块路径或包名 */\n    module: string;\n    /** 动态导入函数 */\n    loader: () => Promise<{\n        default: Plugin;\n    }>;\n    /** 默认配置 */\n    defaultOptions?: Record<string, unknown>;\n    /** 插件描述 */\n    description?: string;\n    /** 插件版本 */\n    version?: string;\n}",

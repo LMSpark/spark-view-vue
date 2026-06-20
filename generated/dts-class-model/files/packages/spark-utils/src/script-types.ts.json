@@ -137,7 +137,7 @@
   "models": {
     "FieldRenderConfig": {
       "name": "FieldRenderConfig",
-      "jsdoc": "@module\n@spark-appworks /spark-utils:script-types\n职责：提供框架无关的 script types 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\n页面脚本共享类型 — 框架无关的基础数据结构\n这些类型原是 spark-project-model 中 `script-context-types.ts` 的 InScript 类型，\n提取到 spark-utils 以在更底层复用。\n字段渲染配置（脚本可见）",
+      "jsdoc": "字段渲染配置（脚本可见）",
       "declarationKind": "typeAlias",
       "typeAlias": {
         "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** 是否可见。 */\n    visible?: boolean;\n    /** editable 字段。 */\n    editable?: boolean;\n    /** 展示标签。 */\n    label?: string;\n    /** width 字段。 */\n    width?: number | string;\n}",

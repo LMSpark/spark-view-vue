@@ -125,7 +125,75 @@
           "type": "object",
           "title": "AiBusinessInputOptions<TInput>"
         }
-      ]
+      ],
+      "properties": {
+        "businessId": {
+          "type": "string"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "identityField": {
+          "allOf": [
+            {
+              "type": "object",
+              "title": "TInput"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "messageField": {
+          "allOf": [
+            {
+              "type": "object",
+              "title": "TInput"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "systemPrompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "(input: TInput) => string"
+            }
+          ]
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "(input: TInput) => string | undefined"
+            }
+          ]
+        },
+        "readonlySteps": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "object",
+              "title": "(input: TInput) => readonly string[] | undefined"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
     }
   },
   "generatedAt": "2026-06-14T20:00:28.620Z",

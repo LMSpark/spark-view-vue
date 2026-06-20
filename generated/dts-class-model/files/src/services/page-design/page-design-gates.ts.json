@@ -177,7 +177,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T20:13:33.411Z",
+  "generatedAt": "2026-06-20T04:47:21.364Z",
   "models": {
     "PageDesignAllowedOperations": {
       "name": "PageDesignAllowedOperations",

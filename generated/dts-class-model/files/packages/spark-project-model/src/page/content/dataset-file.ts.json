@@ -125,7 +125,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:51.052Z",
+  "generatedAt": "2026-06-20T04:47:21.281Z",
   "models": {
     "PageDataSetFile": {
       "name": "PageDataSetFile",
@@ -134,7 +134,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Page Data Set File 实例。",
-          "signatureText": "constructor(\n    /** 页面 ID，用作 DataSet 名称和 pagedata.json 解析上下文。 */\n    pageId: string)",
+          "signatureText": "constructor(pageId: string)",
           "parameters": [
             {
               "name": "pageId",
@@ -149,7 +149,6 @@
           "attributes": [
             {
               "name": "pageId",
-              "jsdoc": "页面 ID，用作 DataSet 名称和 pagedata.json 解析上下文。",
               "readable": true,
               "writable": false
             },

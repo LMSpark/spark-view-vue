@@ -82,7 +82,7 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 |------|------|
 | DevSystem 面板 | `src/services/page-design-ai-runner.ts` |
 | SSE Host Run | `src/services/ai-host-run-bridge.ts` + `page-design-host-run-provider.ts` |
-| 业务注册 | `src/services/page-design/page-design-business.ts` |
+| Workflow 激活 | `src/services/ai/agent-workflow-bindings.ts` + `src/services/page-design/page-design-agent-workflow-binding.ts` |
 
 ## 未实现（勿假设存在）
 

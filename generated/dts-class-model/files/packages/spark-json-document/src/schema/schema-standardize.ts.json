@@ -151,7 +151,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T13:58:22.059Z",
+  "generatedAt": "2026-06-20T04:47:21.260Z",
   "models": {
     "JsonSchemaType": {
       "name": "JsonSchemaType",

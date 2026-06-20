@@ -263,7 +263,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T20:18:12.663Z",
+  "generatedAt": "2026-06-20T04:47:21.063Z",
   "models": {
     "AiAgentChatMessage": {
       "name": "AiAgentChatMessage",
@@ -517,11 +517,11 @@
       "jsdoc": "工具调用记录（用于前端展示和调试）。\n每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onToolCall 回调\n将本记录传给业务方。",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 工具调用参数（原始值，未截断） */\n    args: unknown;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为空（非 function calling 场景） */\n    callId?: string;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果（原始值，类型由具体工具决定） */\n    result: AiAgentFunctionCallResult<unknown>;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
+        "declarationTypeText": "Readonly<{\n    /** 工具名称（如 model_script / module_action） */\n    toolName: string;\n    /** 工具调用参数（原始值，未截断） */\n    args: unknown;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为空（非 function calling 场景） */\n    callId?: string;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果（原始值，类型由具体工具决定） */\n    result: AiAgentFunctionCallResult<unknown>;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    /** 工具名称（如 model_script / editNodeTree） */\n    toolName: string;\n    /** 工具调用参数（原始值，未截断） */\n    args: unknown;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为空（非 function calling 场景） */\n    callId?: string;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果（原始值，类型由具体工具决定） */\n    result: AiAgentFunctionCallResult<unknown>;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
+            "typeText": "Readonly<{\n    /** 工具名称（如 model_script / module_action） */\n    toolName: string;\n    /** 工具调用参数（原始值，未截断） */\n    args: unknown;\n    /** 所属轮次 ID */\n    turnId: string;\n    /** 工具循环轮次序号（从 1 开始） */\n    round: number;\n    /** OpenAI function call ID，可能为空（非 function calling 场景） */\n    callId?: string;\n    /** 调用结果状态：success=成功 / error=失败 */\n    status: 'success' | 'error';\n    /** 调用结果（原始值，类型由具体工具决定） */\n    result: AiAgentFunctionCallResult<unknown>;\n    /** 调用耗时（毫秒），从发起调用到收到结果 */\n    durationMs: number;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -529,7 +529,7 @@
           "attributes": [
             {
               "name": "toolName",
-              "jsdoc": "工具名称（如 model_script / editNodeTree）",
+              "jsdoc": "工具名称（如 model_script / module_action）",
               "readable": true,
               "writable": false
             },

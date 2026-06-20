@@ -108,7 +108,8 @@ pageDesign：`DevSystem` 顶栏「AI 编辑」。projectPlanning：仅 headless 
 
 ```text
 AI Agent Host
-  -> ensurePageDesignBusiness() | ensureProjectPlanningBusiness()
+  -> readWorkflowDefinition(...)
+  -> activatePageDesignAgentWorkflow() | activateProjectPlanningAgentWorkflow()
   -> ProjectWorkspace.project
   -> ProjectModel.openPageDesign(pageId)
   -> ConfigPageNode 子模型

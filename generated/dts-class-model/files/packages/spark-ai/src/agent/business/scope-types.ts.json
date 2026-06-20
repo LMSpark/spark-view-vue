@@ -50,6 +50,12 @@
       "type": "object",
       "title": "AiAgentScope",
       "properties": {
+        "businessRegistrationId": {
+          "type": "string"
+        },
+        "businessInstanceId": {
+          "type": "string"
+        },
         "instanceId": {
           "type": "string"
         },
@@ -118,6 +124,15 @@
       "type": "object",
       "title": "AiAgentAppendMessageOptions",
       "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
         "role": {
           "$ref": "../session/session-types.ts.json#/$defs/AiAgentMessageRole"
         },
@@ -135,7 +150,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.901Z",
+  "generatedAt": "2026-06-20T04:47:21.059Z",
   "models": {
     "AiAgentTarget": {
       "name": "AiAgentTarget",
@@ -144,7 +159,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Target 实例。",
-          "signatureText": "constructor(\n    /** 业务注册 ID，对应 BusinessRegistry 中的顶层注册项。 */\n    businessRegistrationId: string, \n    /** 业务实例 ID，用于定位同一注册项下的具体实例。 */\n    businessInstanceId: string)",
+          "signatureText": "constructor(businessRegistrationId: string, businessInstanceId: string)",
           "parameters": [
             {
               "name": "businessRegistrationId",
@@ -166,13 +181,11 @@
           "attributes": [
             {
               "name": "businessRegistrationId",
-              "jsdoc": "业务注册 ID，对应 BusinessRegistry 中的顶层注册项。",
               "readable": true,
               "writable": false
             },
             {
               "name": "businessInstanceId",
-              "jsdoc": "业务实例 ID，用于定位同一注册项下的具体实例。",
               "readable": true,
               "writable": false
             }
@@ -187,7 +200,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Scope 实例。",
-          "signatureText": "constructor(businessRegistrationId: string, businessInstanceId: string, \n    /** 顶层实例 ID，参与生成后端 sessionId。 */\n    instanceId: string, \n    /** 工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。 */\n    runtimeInstanceId: string)",
+          "signatureText": "constructor(businessRegistrationId: string, businessInstanceId: string, instanceId: string, runtimeInstanceId: string)",
           "parameters": [
             {
               "name": "businessRegistrationId",
@@ -230,13 +243,11 @@
           "attributes": [
             {
               "name": "instanceId",
-              "jsdoc": "顶层实例 ID，参与生成后端 sessionId。",
               "readable": true,
               "writable": false
             },
             {
               "name": "runtimeInstanceId",
-              "jsdoc": "工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。",
               "readable": true,
               "writable": false
             }
@@ -251,7 +262,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Ai Agent Runtime Context 实例。",
-          "signatureText": "constructor(\n    /** 业务模块 ID，对应 registration.moduleId。 */\n    moduleId: string, \n    /** 顶层模块实例 ID，例如 pageId 或业务草稿 ID。 */\n    moduleInstanceId: string, \n    /** 顶层实例 ID，参与生成后端 sessionId。 */\n    instanceId: string)",
+          "signatureText": "constructor(moduleId: string, moduleInstanceId: string, instanceId: string)",
           "parameters": [
             {
               "name": "moduleId",
@@ -280,19 +291,16 @@
           "attributes": [
             {
               "name": "moduleId",
-              "jsdoc": "业务模块 ID，对应 registration.moduleId。",
               "readable": true,
               "writable": false
             },
             {
               "name": "moduleInstanceId",
-              "jsdoc": "顶层模块实例 ID，例如 pageId 或业务草稿 ID。",
               "readable": true,
               "writable": false
             },
             {
               "name": "instanceId",
-              "jsdoc": "顶层实例 ID，参与生成后端 sessionId。",
               "readable": true,
               "writable": false
             }

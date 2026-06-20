@@ -4,22 +4,22 @@
     "packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts": {
       "sourceFile": "packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts",
       "shardFile": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-mapper.ts.json",
-      "sourceModifiedAt": "2026-06-14T11:58:57.660Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.038Z"
     },
     "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts": {
       "sourceFile": "packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts",
       "shardFile": "files/packages/spark-ai/src/agent/ag-ui/ag-ui-types.ts.json",
-      "sourceModifiedAt": "2026-06-14T19:24:22.410Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.041Z"
     },
     "packages/spark-ai/src/agent/ag-ui/index.ts": {
       "sourceFile": "packages/spark-ai/src/agent/ag-ui/index.ts",
       "shardFile": "files/packages/spark-ai/src/agent/ag-ui/index.ts.json",
-      "sourceModifiedAt": "2026-06-14T08:11:51.500Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.044Z"
     },
     "packages/spark-ai/src/agent/business/ai-host.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/ai-host.ts",
       "shardFile": "files/packages/spark-ai/src/agent/business/ai-host.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.020Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.050Z"
     },
     "packages/spark-ai/src/agent/business/business-kit.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/business-kit.ts",
@@ -44,12 +44,12 @@
     "packages/spark-ai/src/agent/business/business-task.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/business-task.ts",
       "shardFile": "files/packages/spark-ai/src/agent/business/business-task.ts.json",
-      "sourceModifiedAt": "2026-06-14T19:37:01.528Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.053Z"
     },
     "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "shardFile": "files/packages/spark-ai/src/agent/business/class-model-agent-adapter.ts.json",
-      "sourceModifiedAt": "2026-06-15T02:30:37.927Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.056Z"
     },
     "packages/spark-ai/src/agent/business/host-options.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/host-options.ts",
@@ -64,22 +64,22 @@
     "packages/spark-ai/src/agent/business/registration-types.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/registration-types.ts",
       "shardFile": "files/packages/spark-ai/src/agent/business/registration-types.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.026Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "packages/spark-ai/src/agent/business/scope-types.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/scope-types.ts",
       "shardFile": "files/packages/spark-ai/src/agent/business/scope-types.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.901Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.059Z"
     },
     "packages/spark-ai/src/agent/chat/chat-types.ts": {
       "sourceFile": "packages/spark-ai/src/agent/chat/chat-types.ts",
       "shardFile": "files/packages/spark-ai/src/agent/chat/chat-types.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:18:12.663Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.063Z"
     },
     "packages/spark-ai/src/agent/index.ts": {
       "sourceFile": "packages/spark-ai/src/agent/index.ts",
       "shardFile": "files/packages/spark-ai/src/agent/index.ts.json",
-      "sourceModifiedAt": "2026-06-14T08:11:51.502Z"
+      "sourceModifiedAt": "2026-06-20T14:08:06.431Z"
     },
     "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts",
@@ -94,17 +94,17 @@
     "packages/spark-ai/src/agent/native-runtime/native-script-context.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/native-script-context.ts",
       "shardFile": "files/packages/spark-ai/src/agent/native-runtime/native-script-context.ts.json",
-      "sourceModifiedAt": "2026-06-14T22:53:19.398Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.080Z"
     },
     "packages/spark-ai/src/agent/native-runtime/native-script-runner.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/native-script-runner.ts",
       "shardFile": "files/packages/spark-ai/src/agent/native-runtime/native-script-runner.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts",
       "shardFile": "files/packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.039Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.296Z"
     },
     "packages/spark-ai/src/agent/session/default-session-store.ts": {
       "sourceFile": "packages/spark-ai/src/agent/session/default-session-store.ts",
@@ -119,7 +119,7 @@
     "packages/spark-ai/src/agent/session/session-run-trace.ts": {
       "sourceFile": "packages/spark-ai/src/agent/session/session-run-trace.ts",
       "shardFile": "files/packages/spark-ai/src/agent/session/session-run-trace.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:19:35.804Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.085Z"
     },
     "packages/spark-ai/src/agent/session/session-types.ts": {
       "sourceFile": "packages/spark-ai/src/agent/session/session-types.ts",
@@ -129,7 +129,7 @@
     "packages/spark-ai/src/agent/tool-loop/diagnostic-events.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-loop/diagnostic-events.ts",
       "shardFile": "files/packages/spark-ai/src/agent/tool-loop/diagnostic-events.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.ts",
@@ -139,7 +139,7 @@
     "packages/spark-ai/src/agent/tool-loop/payload-codec.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-loop/payload-codec.ts",
       "shardFile": "files/packages/spark-ai/src/agent/tool-loop/payload-codec.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:50.913Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.101Z"
     },
     "packages/spark-ai/src/agent/tool-loop/result-mapper.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-loop/result-mapper.ts",
@@ -149,7 +149,7 @@
     "packages/spark-ai/src/agent/tool-loop/tool-call-executor.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-loop/tool-call-executor.ts",
       "shardFile": "files/packages/spark-ai/src/agent/tool-loop/tool-call-executor.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "packages/spark-ai/src/agent/tool-loop/tool-loop-runner.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-loop/tool-loop-runner.ts",
@@ -169,7 +169,7 @@
     "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts": {
       "sourceFile": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
       "shardFile": "files/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts.json",
-      "sourceModifiedAt": "2026-06-14T22:59:24.497Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.106Z"
     },
     "packages/spark-ai/src/agent/transport/app-sse-events.ts": {
       "sourceFile": "packages/spark-ai/src/agent/transport/app-sse-events.ts",
@@ -186,10 +186,35 @@
       "shardFile": "files/packages/spark-ai/src/agent/transport/transport-types.ts.json",
       "sourceModifiedAt": "2026-06-14T20:21:27.490Z"
     },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:05:09.888Z"
+    },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
+      "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json",
+      "sourceModifiedAt": "2026-06-20T04:47:21.114Z"
+    },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
+      "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:05:31.881Z"
+    },
+    "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts",
+      "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:09:18.751Z"
+    },
+    "packages/spark-ai/src/agent/workflow/index.ts": {
+      "sourceFile": "packages/spark-ai/src/agent/workflow/index.ts",
+      "shardFile": "files/packages/spark-ai/src/agent/workflow/index.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:08:06.429Z"
+    },
     "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts.json",
-      "sourceModifiedAt": "2026-06-15T02:27:42.639Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.128Z"
     },
     "packages/spark-ai/src/class-model/class-model/build-index.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts",
@@ -199,7 +224,7 @@
     "packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/class-model-emit-fs.ts.json",
-      "sourceModifiedAt": "2026-06-15T00:04:57.249Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.134Z"
     },
     "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
@@ -214,12 +239,12 @@
     "packages/spark-ai/src/class-model/class-model/class-model-schema-projection.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-schema-projection.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/class-model-schema-projection.ts.json",
-      "sourceModifiedAt": "2026-06-15T00:55:29.706Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.144Z"
     },
     "packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/class-model-to-json-schema.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.012Z"
+      "sourceModifiedAt": "2026-06-15T08:34:58.221Z"
     },
     "packages/spark-ai/src/class-model/class-model/consistency.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/consistency.ts",
@@ -254,7 +279,7 @@
     "packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.ts.json",
-      "sourceModifiedAt": "2026-06-14T13:01:40.895Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.153Z"
     },
     "packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.ts",
@@ -274,7 +299,7 @@
     "packages/spark-ai/src/class-model/class-model/dts-type-schema.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-type-schema.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/dts-type-schema.ts.json",
-      "sourceModifiedAt": "2026-06-15T00:04:57.293Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.162Z"
     },
     "packages/spark-ai/src/class-model/class-model/from-runtime-metadata.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/from-runtime-metadata.ts",
@@ -284,12 +309,12 @@
     "packages/spark-ai/src/class-model/class-model/index.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/index.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/index.ts.json",
-      "sourceModifiedAt": "2026-06-14T13:01:40.910Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.170Z"
     },
     "packages/spark-ai/src/class-model/class-model/json-schema-emit.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/json-schema-emit.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/json-schema-emit.ts.json",
-      "sourceModifiedAt": "2026-06-15T00:55:29.710Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.174Z"
     },
     "packages/spark-ai/src/class-model/class-model/json-schema-to-type.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/json-schema-to-type.ts",
@@ -309,7 +334,7 @@
     "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/project-from-declarations.ts.json",
-      "sourceModifiedAt": "2026-06-15T02:32:35.988Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.179Z"
     },
     "packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.ts",
@@ -324,7 +349,7 @@
     "packages/spark-ai/src/class-model/class-model/signature-renderer.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/signature-renderer.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/class-model/signature-renderer.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.041Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.296Z"
     },
     "packages/spark-ai/src/class-model/class-model/types.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/types.ts",
@@ -334,7 +359,7 @@
     "packages/spark-ai/src/class-model/index.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/index.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/index.ts.json",
-      "sourceModifiedAt": "2026-06-14T13:01:40.666Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.183Z"
     },
     "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
@@ -359,7 +384,7 @@
     "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:00:37.332Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.193Z"
     },
     "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
@@ -394,7 +419,7 @@
     "packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:17:53.783Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.197Z"
     },
     "packages/spark-ai/src/class-model/projection/dts-renderer.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
@@ -419,7 +444,7 @@
     "packages/spark-ai/src/class-model/runtime/class-model-runtime.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/runtime/class-model-runtime.ts",
       "shardFile": "files/packages/spark-ai/src/class-model/runtime/class-model-runtime.ts.json",
-      "sourceModifiedAt": "2026-06-15T02:30:20.156Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.207Z"
     },
     "packages/spark-ai/src/class-model/runtime/index.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/runtime/index.ts",
@@ -479,7 +504,7 @@
     "packages/spark-app/src/ai/ai-run-adapter.ts": {
       "sourceFile": "packages/spark-app/src/ai/ai-run-adapter.ts",
       "shardFile": "files/packages/spark-app/src/ai/ai-run-adapter.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:23:14.619Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.240Z"
     },
     "packages/spark-app/src/ai/index.ts": {
       "sourceFile": "packages/spark-app/src/ai/index.ts",
@@ -799,7 +824,7 @@
     "packages/spark-component/src/ai/types.ts": {
       "sourceFile": "packages/spark-component/src/ai/types.ts",
       "shardFile": "files/packages/spark-component/src/ai/types.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:15:26.415Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.246Z"
     },
     "packages/spark-component/src/components/containers/data-views/data-row-utils.ts": {
       "sourceFile": "packages/spark-component/src/components/containers/data-views/data-row-utils.ts",
@@ -1794,7 +1819,7 @@
     "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts": {
       "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts",
       "shardFile": "files/packages/spark-component/src/components/fields/data-components/composables/useEntityPickerState.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.534Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.251Z"
     },
     "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts": {
       "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
@@ -1804,7 +1829,7 @@
     "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts": {
       "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts",
       "shardFile": "files/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.536Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.256Z"
     },
     "packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.ts": {
       "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.ts",
@@ -2494,7 +2519,7 @@
     "packages/spark-data/src/dataset.ts": {
       "sourceFile": "packages/spark-data/src/dataset.ts",
       "shardFile": "files/packages/spark-data/src/dataset.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.055Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.296Z"
     },
     "packages/spark-data/src/index.ts": {
       "sourceFile": "packages/spark-data/src/index.ts",
@@ -2669,7 +2694,7 @@
     "packages/spark-json-document/src/schema/schema-standardize.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-standardize.ts",
       "shardFile": "files/packages/spark-json-document/src/schema/schema-standardize.ts.json",
-      "sourceModifiedAt": "2026-06-14T13:58:22.059Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.260Z"
     },
     "packages/spark-json-document/src/schema/schema-types.ts": {
       "sourceFile": "packages/spark-json-document/src/schema/schema-types.ts",
@@ -2759,7 +2784,7 @@
     "packages/spark-project-model/src/navigation/navigation-edit.ts": {
       "sourceFile": "packages/spark-project-model/src/navigation/navigation-edit.ts",
       "shardFile": "files/packages/spark-project-model/src/navigation/navigation-edit.ts.json",
-      "sourceModifiedAt": "2026-06-14T19:57:18.357Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.267Z"
     },
     "packages/spark-project-model/src/navigation/navigation-index.ts": {
       "sourceFile": "packages/spark-project-model/src/navigation/navigation-index.ts",
@@ -2769,12 +2794,12 @@
     "packages/spark-project-model/src/navigation/navigation-kinds.ts": {
       "sourceFile": "packages/spark-project-model/src/navigation/navigation-kinds.ts",
       "shardFile": "files/packages/spark-project-model/src/navigation/navigation-kinds.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:24:53.863Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.272Z"
     },
     "packages/spark-project-model/src/navigation/navigation-tree.ts": {
       "sourceFile": "packages/spark-project-model/src/navigation/navigation-tree.ts",
       "shardFile": "files/packages/spark-project-model/src/navigation/navigation-tree.ts.json",
-      "sourceModifiedAt": "2026-06-14T19:57:38.488Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.276Z"
     },
     "packages/spark-project-model/src/navigation/project-node.ts": {
       "sourceFile": "packages/spark-project-model/src/navigation/project-node.ts",
@@ -2799,17 +2824,17 @@
     "packages/spark-project-model/src/page/content/dataset-file.ts": {
       "sourceFile": "packages/spark-project-model/src/page/content/dataset-file.ts",
       "shardFile": "files/packages/spark-project-model/src/page/content/dataset-file.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:51.052Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.281Z"
     },
     "packages/spark-project-model/src/page/content/rule-file.ts": {
       "sourceFile": "packages/spark-project-model/src/page/content/rule-file.ts",
       "shardFile": "files/packages/spark-project-model/src/page/content/rule-file.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.628Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.284Z"
     },
     "packages/spark-project-model/src/page/content/text-file.ts": {
       "sourceFile": "packages/spark-project-model/src/page/content/text-file.ts",
       "shardFile": "files/packages/spark-project-model/src/page/content/text-file.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.629Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.288Z"
     },
     "packages/spark-project-model/src/page/instantiate-project-node.ts": {
       "sourceFile": "packages/spark-project-model/src/page/instantiate-project-node.ts",
@@ -2844,7 +2869,7 @@
     "packages/spark-project-model/src/project/project-types.ts": {
       "sourceFile": "packages/spark-project-model/src/project/project-types.ts",
       "shardFile": "files/packages/spark-project-model/src/project/project-types.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.055Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.296Z"
     },
     "packages/spark-project-model/src/project/project-workspace.ts": {
       "sourceFile": "packages/spark-project-model/src/project/project-workspace.ts",
@@ -2859,7 +2884,7 @@
     "packages/spark-utils/src/capability/core.ts": {
       "sourceFile": "packages/spark-utils/src/capability/core.ts",
       "shardFile": "files/packages/spark-utils/src/capability/core.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:51.059Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.292Z"
     },
     "packages/spark-utils/src/capability/helpers.ts": {
       "sourceFile": "packages/spark-utils/src/capability/helpers.ts",
@@ -2899,7 +2924,7 @@
     "packages/spark-utils/src/http/HttpClientBase.ts": {
       "sourceFile": "packages/spark-utils/src/http/HttpClientBase.ts",
       "shardFile": "files/packages/spark-utils/src/http/HttpClientBase.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:51.064Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.295Z"
     },
     "packages/spark-utils/src/http/HttpClientFactory.ts": {
       "sourceFile": "packages/spark-utils/src/http/HttpClientFactory.ts",
@@ -2924,7 +2949,7 @@
     "packages/spark-utils/src/index.ts": {
       "sourceFile": "packages/spark-utils/src/index.ts",
       "shardFile": "files/packages/spark-utils/src/index.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.259Z"
     },
     "packages/spark-utils/src/internal/guards.ts": {
       "sourceFile": "packages/spark-utils/src/internal/guards.ts",
@@ -2959,12 +2984,12 @@
     "src/App.vue": {
       "sourceFile": "src/App.vue",
       "shardFile": "files/src/App.vue.json",
-      "sourceModifiedAt": "2026-06-12T01:03:01.286Z"
+      "sourceModifiedAt": "2026-06-16T10:08:39.673Z"
     },
     "src/class-model-artifacts/artifact-urls.ts": {
       "sourceFile": "src/class-model-artifacts/artifact-urls.ts",
       "shardFile": "files/src/class-model-artifacts/artifact-urls.ts.json",
-      "sourceModifiedAt": "2026-06-13T23:20:55.900Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.334Z"
     },
     "src/components/ErrorFallback.vue": {
       "sourceFile": "src/components/ErrorFallback.vue",
@@ -3034,7 +3059,7 @@
     "src/layout/demo-nav.ts": {
       "sourceFile": "src/layout/demo-nav.ts",
       "shardFile": "files/src/layout/demo-nav.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.648Z"
+      "sourceModifiedAt": "2026-06-15T08:12:56.465Z"
     },
     "src/layout/NavContextSelector.vue": {
       "sourceFile": "src/layout/NavContextSelector.vue",
@@ -3061,10 +3086,15 @@
       "shardFile": "files/src/registries/vue-page-registry.ts.json",
       "sourceModifiedAt": "2026-06-14T20:21:59.869Z"
     },
+    "src/services/ai/agent-workflow-bindings.ts": {
+      "sourceFile": "src/services/ai/agent-workflow-bindings.ts",
+      "shardFile": "files/src/services/ai/agent-workflow-bindings.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:06:20.046Z"
+    },
     "src/services/ai/ai-delivery-port.ts": {
       "sourceFile": "src/services/ai/ai-delivery-port.ts",
       "shardFile": "files/src/services/ai/ai-delivery-port.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.343Z"
     },
     "src/services/ai/ai-host-run-bridge.ts": {
       "sourceFile": "src/services/ai/ai-host-run-bridge.ts",
@@ -3084,12 +3114,12 @@
     "src/services/ai/spark-ai-agent-bindings.ts": {
       "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
       "shardFile": "files/src/services/ai/spark-ai-agent-bindings.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.039Z"
+      "sourceModifiedAt": "2026-06-20T14:08:06.432Z"
     },
     "src/services/api-paths.ts": {
       "sourceFile": "src/services/api-paths.ts",
       "shardFile": "files/src/services/api-paths.ts.json",
-      "sourceModifiedAt": "2026-06-15T00:04:57.439Z"
+      "sourceModifiedAt": "2026-06-19T02:46:50.989Z"
     },
     "src/services/auth.ts": {
       "sourceFile": "src/services/auth.ts",
@@ -3109,32 +3139,32 @@
     "src/services/page-data-design/page-data-design-host-run-provider.ts": {
       "sourceFile": "src/services/page-data-design/page-data-design-host-run-provider.ts",
       "shardFile": "files/src/services/page-data-design/page-data-design-host-run-provider.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:20:18.812Z"
+      "sourceModifiedAt": "2026-06-20T13:41:22.179Z"
+    },
+    "src/services/page-design/page-design-agent-workflow-binding.ts": {
+      "sourceFile": "src/services/page-design/page-design-agent-workflow-binding.ts",
+      "shardFile": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:06:46.713Z"
     },
     "src/services/page-design/page-design-ai-runner.ts": {
       "sourceFile": "src/services/page-design/page-design-ai-runner.ts",
       "shardFile": "files/src/services/page-design/page-design-ai-runner.ts.json",
-      "sourceModifiedAt": "2026-06-12T01:02:39.579Z"
-    },
-    "src/services/page-design/page-design-business.ts": {
-      "sourceFile": "src/services/page-design/page-design-business.ts",
-      "shardFile": "files/src/services/page-design/page-design-business.ts.json",
-      "sourceModifiedAt": "2026-06-13T23:11:15.498Z"
+      "sourceModifiedAt": "2026-06-20T13:41:04.366Z"
     },
     "src/services/page-design/page-design-gates.ts": {
       "sourceFile": "src/services/page-design/page-design-gates.ts",
       "shardFile": "files/src/services/page-design/page-design-gates.ts.json",
-      "sourceModifiedAt": "2026-06-14T20:13:33.411Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.364Z"
     },
     "src/services/page-design/page-design-headless.ts": {
       "sourceFile": "src/services/page-design/page-design-headless.ts",
       "shardFile": "files/src/services/page-design/page-design-headless.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.012Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.254Z"
     },
     "src/services/page-design/page-design-host-run-provider.ts": {
       "sourceFile": "src/services/page-design/page-design-host-run-provider.ts",
       "shardFile": "files/src/services/page-design/page-design-host-run-provider.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.039Z"
+      "sourceModifiedAt": "2026-06-20T13:41:13.292Z"
     },
     "src/services/project-model-artifacts/index.ts": {
       "sourceFile": "src/services/project-model-artifacts/index.ts",
@@ -3151,45 +3181,55 @@
       "shardFile": "files/src/services/project-model-artifacts/rule-editor.ts.json",
       "sourceModifiedAt": "2026-06-11T12:48:51.083Z"
     },
+    "src/services/project-planning/project-planning-agent-workflow-binding.ts": {
+      "sourceFile": "src/services/project-planning/project-planning-agent-workflow-binding.ts",
+      "shardFile": "files/src/services/project-planning/project-planning-agent-workflow-binding.ts.json",
+      "sourceModifiedAt": "2026-06-20T14:11:17.924Z"
+    },
     "src/services/project-planning/project-planning-ai-runner.ts": {
       "sourceFile": "src/services/project-planning/project-planning-ai-runner.ts",
       "shardFile": "files/src/services/project-planning/project-planning-ai-runner.ts.json",
-      "sourceModifiedAt": "2026-06-14T22:54:27.080Z"
+      "sourceModifiedAt": "2026-06-20T13:41:30.640Z"
     },
-    "src/services/project-planning/project-planning-business.ts": {
-      "sourceFile": "src/services/project-planning/project-planning-business.ts",
-      "shardFile": "files/src/services/project-planning/project-planning-business.ts.json",
-      "sourceModifiedAt": "2026-06-14T22:54:22.904Z"
+    "src/services/project-planning/project-planning-attachments.ts": {
+      "sourceFile": "src/services/project-planning/project-planning-attachments.ts",
+      "shardFile": "files/src/services/project-planning/project-planning-attachments.ts.json",
+      "sourceModifiedAt": "2026-06-19T02:46:50.995Z"
     },
     "src/services/project-planning/project-planning-headless.ts": {
       "sourceFile": "src/services/project-planning/project-planning-headless.ts",
       "shardFile": "files/src/services/project-planning/project-planning-headless.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "src/services/project-planning/project-planning-host-run-provider.ts": {
       "sourceFile": "src/services/project-planning/project-planning-host-run-provider.ts",
       "shardFile": "files/src/services/project-planning/project-planning-host-run-provider.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.039Z"
+      "sourceModifiedAt": "2026-06-20T13:41:38.481Z"
     },
     "src/services/project/project-settings.ts": {
       "sourceFile": "src/services/project/project-settings.ts",
       "shardFile": "files/src/services/project/project-settings.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "src/services/project/project-shell.ts": {
       "sourceFile": "src/services/project/project-shell.ts",
       "shardFile": "files/src/services/project/project-shell.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.014Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.258Z"
     },
     "src/services/sse-events.ts": {
       "sourceFile": "src/services/sse-events.ts",
       "shardFile": "files/src/services/sse-events.ts.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "src/services/tenant-scope.ts": {
       "sourceFile": "src/services/tenant-scope.ts",
       "shardFile": "files/src/services/tenant-scope.ts.json",
       "sourceModifiedAt": "2026-06-11T12:38:13.663Z"
+    },
+    "src/services/workflow-designs.ts": {
+      "sourceFile": "src/services/workflow-designs.ts",
+      "shardFile": "files/src/services/workflow-designs.ts.json",
+      "sourceModifiedAt": "2026-06-20T13:52:03.094Z"
     },
     "src/views/app/CapabilityDemo.vue": {
       "sourceFile": "src/views/app/CapabilityDemo.vue",
@@ -3224,7 +3264,7 @@
     "src/views/app/dev-system/components/NodeBasicInfo.vue": {
       "sourceFile": "src/views/app/dev-system/components/NodeBasicInfo.vue",
       "shardFile": "files/src/views/app/dev-system/components/NodeBasicInfo.vue.json",
-      "sourceModifiedAt": "2026-06-12T04:50:58.218Z"
+      "sourceModifiedAt": "2026-06-20T04:47:21.389Z"
     },
     "src/views/app/dev-system/components/NodeContextConfig.vue": {
       "sourceFile": "src/views/app/dev-system/components/NodeContextConfig.vue",
@@ -3269,7 +3309,7 @@
     "src/views/app/dev-system/DevNodeProps.vue": {
       "sourceFile": "src/views/app/dev-system/DevNodeProps.vue",
       "shardFile": "files/src/views/app/dev-system/DevNodeProps.vue.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.016Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.266Z"
     },
     "src/views/app/dev-system/DevPreviewTab.vue": {
       "sourceFile": "src/views/app/dev-system/DevPreviewTab.vue",
@@ -3279,22 +3319,27 @@
     "src/views/app/dev-system/DevSiteTree.vue": {
       "sourceFile": "src/views/app/dev-system/DevSiteTree.vue",
       "shardFile": "files/src/views/app/dev-system/DevSiteTree.vue.json",
-      "sourceModifiedAt": "2026-06-12T04:50:58.318Z"
+      "sourceModifiedAt": "2026-06-19T02:46:51.022Z"
     },
     "src/views/app/dev-system/DevSystem.vue": {
       "sourceFile": "src/views/app/dev-system/DevSystem.vue",
       "shardFile": "files/src/views/app/dev-system/DevSystem.vue.json",
-      "sourceModifiedAt": "2026-06-12T04:14:39.215Z"
+      "sourceModifiedAt": "2026-06-19T02:46:51.026Z"
     },
     "src/views/app/dev-system/project-model-dev-bindings.ts": {
       "sourceFile": "src/views/app/dev-system/project-model-dev-bindings.ts",
       "shardFile": "files/src/views/app/dev-system/project-model-dev-bindings.ts.json",
       "sourceModifiedAt": "2026-06-11T12:38:13.679Z"
     },
+    "src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue": {
+      "sourceFile": "src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue",
+      "shardFile": "files/src/views/app/dev-system/ProjectPlanningDocumentImportDialog.vue.json",
+      "sourceModifiedAt": "2026-06-20T04:47:21.384Z"
+    },
     "src/views/app/dev-system/useDevState.ts": {
       "sourceFile": "src/views/app/dev-system/useDevState.ts",
       "shardFile": "files/src/views/app/dev-system/useDevState.ts.json",
-      "sourceModifiedAt": "2026-06-12T04:50:58.244Z"
+      "sourceModifiedAt": "2026-06-19T02:46:51.033Z"
     },
     "src/views/app/dev-system/useDevSystem.ts": {
       "sourceFile": "src/views/app/dev-system/useDevSystem.ts",
@@ -3311,6 +3356,11 @@
       "shardFile": "files/src/views/app/TemplateDslDemo.vue.json",
       "sourceModifiedAt": "2026-06-11T12:38:13.682Z"
     },
+    "src/views/app/WorkflowDesigns.vue": {
+      "sourceFile": "src/views/app/WorkflowDesigns.vue",
+      "shardFile": "files/src/views/app/WorkflowDesigns.vue.json",
+      "sourceModifiedAt": "2026-06-20T07:28:20.317Z"
+    },
     "src/views/platform/About.vue": {
       "sourceFile": "src/views/platform/About.vue",
       "shardFile": "files/src/views/platform/About.vue.json",
@@ -3319,7 +3369,7 @@
     "src/views/platform/HomePage.vue": {
       "sourceFile": "src/views/platform/HomePage.vue",
       "shardFile": "files/src/views/platform/HomePage.vue.json",
-      "sourceModifiedAt": "2026-06-11T12:38:13.684Z"
+      "sourceModifiedAt": "2026-06-19T02:46:51.037Z"
     },
     "src/views/platform/LoginView.vue": {
       "sourceFile": "src/views/platform/LoginView.vue",
@@ -3344,7 +3394,7 @@
     "src/views/tenant/AppList.vue": {
       "sourceFile": "src/views/tenant/AppList.vue",
       "shardFile": "files/src/views/tenant/AppList.vue.json",
-      "sourceModifiedAt": "2026-06-15T01:34:31.055Z"
+      "sourceModifiedAt": "2026-06-19T09:58:23.296Z"
     },
     "src/views/tenant/AppProjectSettingsDialog.vue": {
       "sourceFile": "src/views/tenant/AppProjectSettingsDialog.vue",

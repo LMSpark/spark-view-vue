@@ -52,7 +52,7 @@
       }
     }
   },
-  "generatedAt": "2026-06-11T12:48:50.913Z",
+  "generatedAt": "2026-06-20T04:47:21.101Z",
   "models": {
     "ToolArgsParseError": {
       "name": "ToolArgsParseError",
@@ -61,7 +61,7 @@
       "classDecl": {
         "constructorMeta": {
           "jsdoc": "创建 Tool Args Parse Error 实例。",
-          "signatureText": "constructor(\n    /** 参数解析失败的稳定错误码。 */\n    code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT', message: string, \n    /** LLM 返回的原始 function.arguments 字符串。 */\n    raw: string)",
+          "signatureText": "constructor(code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT', message: string, raw: string)",
           "parameters": [
             {
               "name": "code",
@@ -106,13 +106,11 @@
           "attributes": [
             {
               "name": "code",
-              "jsdoc": "参数解析失败的稳定错误码。",
               "readable": true,
               "writable": false
             },
             {
               "name": "raw",
-              "jsdoc": "LLM 返回的原始 function.arguments 字符串。",
               "readable": true,
               "writable": false
             }
