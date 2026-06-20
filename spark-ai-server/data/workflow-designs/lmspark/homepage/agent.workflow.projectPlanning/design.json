@@ -254,9 +254,15 @@
                 "template": "projectPlanning system prompt is interpolated by app binding.",
                 "conditionalHints": []
               },
-              "knowledge": {
+              "modelProjectionRef": {
+                "kind": "dts-class-model",
                 "rootClassName": "ProjectModel",
                 "manifestUrlRef": "dts-class-model"
+              },
+              "executableRef": {
+                "kind": "js-module",
+                "moduleSpecifier": "@spark-appworks/spark-project-model",
+                "exportName": "ProjectModel"
               },
               "toolLoopNudge": {
                 "templates": {
@@ -301,9 +307,6 @@
               "resolveInstance": {
                 "editorSource": "projectPlanning",
                 "identityField": "projectScopeKey"
-              },
-              "moduleClassRef": {
-                "kind": "ProjectModel"
               }
             },
             "state": {},

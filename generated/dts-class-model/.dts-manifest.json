@@ -19,7 +19,7 @@
     "packages/spark-ai/src/agent/business/ai-host.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/ai-host.ts",
       "shardFile": "files/packages/spark-ai/src/agent/business/ai-host.ts.json",
-      "sourceModifiedAt": "2026-06-20T04:47:21.050Z"
+      "sourceModifiedAt": "2026-06-20T14:57:11.209Z"
     },
     "packages/spark-ai/src/agent/business/business-kit.ts": {
       "sourceFile": "packages/spark-ai/src/agent/business/business-kit.ts",
@@ -79,7 +79,7 @@
     "packages/spark-ai/src/agent/index.ts": {
       "sourceFile": "packages/spark-ai/src/agent/index.ts",
       "shardFile": "files/packages/spark-ai/src/agent/index.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:08:06.431Z"
+      "sourceModifiedAt": "2026-06-20T18:53:23.698Z"
     },
     "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts",
@@ -189,7 +189,7 @@
     "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:05:09.888Z"
+      "sourceModifiedAt": "2026-06-20T18:52:23.891Z"
     },
     "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
@@ -199,17 +199,17 @@
     "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
       "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:05:31.881Z"
+      "sourceModifiedAt": "2026-06-20T18:53:09.911Z"
     },
     "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts",
       "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:09:18.751Z"
+      "sourceModifiedAt": "2026-06-20T18:52:41.823Z"
     },
     "packages/spark-ai/src/agent/workflow/index.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/index.ts",
       "shardFile": "files/packages/spark-ai/src/agent/workflow/index.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:08:06.429Z"
+      "sourceModifiedAt": "2026-06-20T18:53:17.603Z"
     },
     "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
@@ -2879,7 +2879,7 @@
     "packages/spark-utils/src/ai-model.ts": {
       "sourceFile": "packages/spark-utils/src/ai-model.ts",
       "shardFile": "files/packages/spark-utils/src/ai-model.ts.json",
-      "sourceModifiedAt": "2026-06-11T12:48:51.058Z"
+      "sourceModifiedAt": "2026-06-20T16:50:42.110Z"
     },
     "packages/spark-utils/src/capability/core.ts": {
       "sourceFile": "packages/spark-utils/src/capability/core.ts",
@@ -3089,7 +3089,7 @@
     "src/services/ai/agent-workflow-bindings.ts": {
       "sourceFile": "src/services/ai/agent-workflow-bindings.ts",
       "shardFile": "files/src/services/ai/agent-workflow-bindings.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:06:20.046Z"
+      "sourceModifiedAt": "2026-06-20T18:57:05.807Z"
     },
     "src/services/ai/ai-delivery-port.ts": {
       "sourceFile": "src/services/ai/ai-delivery-port.ts",
@@ -3144,7 +3144,7 @@
     "src/services/page-design/page-design-agent-workflow-binding.ts": {
       "sourceFile": "src/services/page-design/page-design-agent-workflow-binding.ts",
       "shardFile": "files/src/services/page-design/page-design-agent-workflow-binding.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:06:46.713Z"
+      "sourceModifiedAt": "2026-06-20T14:57:11.212Z"
     },
     "src/services/page-design/page-design-ai-runner.ts": {
       "sourceFile": "src/services/page-design/page-design-ai-runner.ts",
@@ -3359,7 +3359,7 @@
     "src/views/app/WorkflowDesigns.vue": {
       "sourceFile": "src/views/app/WorkflowDesigns.vue",
       "shardFile": "files/src/views/app/WorkflowDesigns.vue.json",
-      "sourceModifiedAt": "2026-06-20T07:28:20.317Z"
+      "sourceModifiedAt": "2026-06-20T14:57:11.212Z"
     },
     "src/views/platform/About.vue": {
       "sourceFile": "src/views/platform/About.vue",

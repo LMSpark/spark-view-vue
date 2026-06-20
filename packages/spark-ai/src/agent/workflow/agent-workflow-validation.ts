@@ -568,15 +568,32 @@ function validateRuntimeBinding(
     })
   }
 
-  const knowledge = expectObject({
+  const modelProjectionRef = expectObject({
     record: runtimeBinding,
-    field: 'knowledge',
-    path: `${path}.knowledge`,
+    field: 'modelProjectionRef',
+    path: `${path}.modelProjectionRef`,
     issues,
   })
-  if (knowledge !== undefined) {
-    expectNonBlankString({ record: knowledge, field: 'rootClassName', path: `${path}.knowledge.rootClassName`, issues })
-    expectNonBlankString({ record: knowledge, field: 'manifestUrlRef', path: `${path}.knowledge.manifestUrlRef`, issues })
+  if (modelProjectionRef !== undefined) {
+    expectString({
+      record: modelProjectionRef,
+      field: 'kind',
+      expected: 'dts-class-model',
+      path: `${path}.modelProjectionRef.kind`,
+      issues,
+    })
+    expectNonBlankString({
+      record: modelProjectionRef,
+      field: 'rootClassName',
+      path: `${path}.modelProjectionRef.rootClassName`,
+      issues,
+    })
+    expectNonBlankString({
+      record: modelProjectionRef,
+      field: 'manifestUrlRef',
+      path: `${path}.modelProjectionRef.manifestUrlRef`,
+      issues,
+    })
   }
 
   const resolveInstance = expectObject({
@@ -600,15 +617,35 @@ function validateRuntimeBinding(
     })
   }
 
-  const moduleClassRef = expectObject({
+  const executableRef = expectObject({
     record: runtimeBinding,
-    field: 'moduleClassRef',
-    path: `${path}.moduleClassRef`,
+    field: 'executableRef',
+    path: `${path}.executableRef`,
     issues,
   })
-  if (moduleClassRef !== undefined) {
-    expectNonBlankString({ record: moduleClassRef, field: 'kind', path: `${path}.moduleClassRef.kind`, issues })
+  if (executableRef !== undefined) {
+    expectString({
+      record: executableRef,
+      field: 'kind',
+      expected: 'js-module',
+      path: `${path}.executableRef.kind`,
+      issues,
+    })
+    expectNonBlankString({
+      record: executableRef,
+      field: 'moduleSpecifier',
+      path: `${path}.executableRef.moduleSpecifier`,
+      issues,
+    })
+    expectNonBlankString({
+      record: executableRef,
+      field: 'exportName',
+      path: `${path}.executableRef.exportName`,
+      issues,
+    })
   }
+
+  validateForbiddenRuntimeBindingFields(runtimeBinding, context)
 
   validateOptionalToolLoopNudge(runtimeBinding['toolLoopNudge'], {
     path: `${path}.toolLoopNudge`,
@@ -635,6 +672,25 @@ function validateRuntimeBinding(
     nodeId,
     issues,
   })
+}
+
+function validateForbiddenRuntimeBindingFields(
+  runtimeBinding: Readonly<Record<string, unknown>>,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  const { path, nodeId, issues } = context
+  for (const field of ['knowledge', 'moduleClassRef'] as const) {
+    if (Object.prototype.hasOwnProperty.call(runtimeBinding, field)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_LEGACY_RUNTIME_FIELD',
+          message: `${path}.${field} is not allowed in workflow runtimeBinding.`,
+        },
+        `${path}.${field}`,
+        nodeId,
+      ))
+    }
+  }
 }
 
 function validateOptionalConditionalHints(

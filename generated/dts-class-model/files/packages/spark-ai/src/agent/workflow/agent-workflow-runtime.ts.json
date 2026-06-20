@@ -30,9 +30,6 @@
         "provider": {
           "type": "object",
           "title": "ClassModelKnowledgeProvider"
-        },
-        "dtsClassModelManifestUrl": {
-          "type": "string"
         }
       },
       "additionalProperties": false
@@ -110,24 +107,23 @@
       },
       "additionalProperties": false,
       "$defs": {
-        "method.moduleClassResolver.params": {
+        "method.manifestUrlResolver.params": {
           "type": "object",
           "properties": {
             "ref": {
-              "$ref": "agent-workflow-definition.ts.json#/$defs/AgentWorkflowNodeModuleClassRef"
+              "type": "string"
             }
           },
           "additionalProperties": false
         },
-        "method.moduleClassResolver.return": {
-          "type": "object",
-          "title": "AgentWorkflowModuleConstructor<TInstance>"
+        "method.manifestUrlResolver.return": {
+          "type": "string"
         },
         "method.knowledgeProviderFactory.params": {
           "type": "object",
           "properties": {
             "config": {
-              "$ref": "agent-workflow-definition.ts.json#/$defs/AgentWorkflowNodeKnowledge"
+              "$ref": "agent-workflow-definition.ts.json#/$defs/AgentWorkflowNodeModelProjectionRef"
             }
           },
           "additionalProperties": false
@@ -216,7 +212,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-20T14:05:31.881Z",
+  "generatedAt": "2026-06-20T18:53:09.911Z",
   "models": {
     "AgentWorkflowModuleConstructor": {
       "name": "AgentWorkflowModuleConstructor",
@@ -232,11 +228,11 @@
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    provider: ClassModelKnowledgeProvider;\n    dtsClassModelManifestUrl: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    provider: ClassModelKnowledgeProvider;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    provider: ClassModelKnowledgeProvider;\n    dtsClassModelManifestUrl: string;\n}>",
+            "typeText": "Readonly<{\n    provider: ClassModelKnowledgeProvider;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -244,11 +240,6 @@
           "attributes": [
             {
               "name": "provider",
-              "readable": true,
-              "writable": false
-            },
-            {
-              "name": "dtsClassModelManifestUrl",
               "readable": true,
               "writable": false
             }
@@ -368,11 +359,11 @@
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    moduleClassResolver: (ref: AgentWorkflowNodeModuleClassRef) => AgentWorkflowModuleConstructor<TInstance>;\n    editorGetterRegistry: Readonly<Record<string, (context: AiAgentRuntimeContext) => TInstance>>;\n    knowledgeProviderFactory: (config: AgentWorkflowNodeKnowledge) => AgentWorkflowRuntimeKnowledge;\n    gateExecutor?: (command: AgentWorkflowRuntimeGateCommand) => AgentWorkflowRuntimeGateResult;\n    systemPromptInterpolator: (command: AgentWorkflowRuntimeSystemPromptCommand) => string;\n}>",
+        "declarationTypeText": "Readonly<{\n    manifestUrlResolver: (ref: string) => string;\n    editorGetterRegistry: Readonly<Record<string, (context: AiAgentRuntimeContext) => TInstance>>;\n    knowledgeProviderFactory: (config: AgentWorkflowNodeModelProjectionRef) => AgentWorkflowRuntimeKnowledge;\n    gateExecutor?: (command: AgentWorkflowRuntimeGateCommand) => AgentWorkflowRuntimeGateResult;\n    systemPromptInterpolator: (command: AgentWorkflowRuntimeSystemPromptCommand) => string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    moduleClassResolver: (ref: AgentWorkflowNodeModuleClassRef) => AgentWorkflowModuleConstructor<TInstance>;\n    editorGetterRegistry: Readonly<Record<string, (context: AiAgentRuntimeContext) => TInstance>>;\n    knowledgeProviderFactory: (config: AgentWorkflowNodeKnowledge) => AgentWorkflowRuntimeKnowledge;\n    gateExecutor?: (command: AgentWorkflowRuntimeGateCommand) => AgentWorkflowRuntimeGateResult;\n    systemPromptInterpolator: (command: AgentWorkflowRuntimeSystemPromptCommand) => string;\n}>",
+            "typeText": "Readonly<{\n    manifestUrlResolver: (ref: string) => string;\n    editorGetterRegistry: Readonly<Record<string, (context: AiAgentRuntimeContext) => TInstance>>;\n    knowledgeProviderFactory: (config: AgentWorkflowNodeModelProjectionRef) => AgentWorkflowRuntimeKnowledge;\n    gateExecutor?: (command: AgentWorkflowRuntimeGateCommand) => AgentWorkflowRuntimeGateResult;\n    systemPromptInterpolator: (command: AgentWorkflowRuntimeSystemPromptCommand) => string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -386,28 +377,19 @@
           ],
           "methods": [
             {
-              "name": "moduleClassResolver",
+              "name": "manifestUrlResolver",
               "parameters": [
                 {
                   "name": "ref",
                   "type": {
-                    "type": "reference",
-                    "name": "AgentWorkflowNodeModuleClassRef",
-                    "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts"
+                    "type": "intrinsic",
+                    "name": "string"
                   }
                 }
               ],
               "type": {
-                "type": "reference",
-                "name": "AgentWorkflowModuleConstructor",
-                "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "TInstance",
-                    "refersToTypeParameter": true
-                  }
-                ]
+                "type": "intrinsic",
+                "name": "string"
               }
             },
             {
@@ -417,7 +399,7 @@
                   "name": "config",
                   "type": {
                     "type": "reference",
-                    "name": "AgentWorkflowNodeKnowledge",
+                    "name": "AgentWorkflowNodeModelProjectionRef",
                     "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts"
                   }
                 }

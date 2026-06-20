@@ -19,6 +19,16 @@ const OLD_WORKFLOW_IDS = [
 ]
 
 const PUBLISHED_AT = '2026-06-20T00:00:00.000Z'
+const PROJECT_MODEL_PROJECTION_REF = {
+  kind: 'dts-class-model',
+  rootClassName: 'ProjectModel',
+  manifestUrlRef: 'dts-class-model',
+}
+const PROJECT_MODEL_EXECUTABLE_REF = {
+  kind: 'js-module',
+  moduleSpecifier: '@spark-appworks/spark-project-model',
+  exportName: 'ProjectModel',
+}
 
 const stringSchema = { type: 'string' }
 const booleanSchema = { type: 'boolean' }
@@ -246,10 +256,8 @@ function createPageDesignWorkflowDesign() {
             },
           ],
         },
-        knowledge: {
-          rootClassName: 'ProjectModel',
-          manifestUrlRef: 'dts-class-model',
-        },
+        modelProjectionRef: PROJECT_MODEL_PROJECTION_REF,
+        executableRef: PROJECT_MODEL_EXECUTABLE_REF,
         toolLoopNudge: {
           templates: {
             plan_without_tool: 'pageId="{{moduleInstanceId}}"；禁止只输出计划，下一回合必须发起真实 tool_call。',
@@ -273,9 +281,6 @@ function createPageDesignWorkflowDesign() {
         resolveInstance: {
           editorSource: 'pageDesign',
           identityField: 'pageId',
-        },
-        moduleClassRef: {
-          kind: 'ProjectModel',
         },
       },
       capability: {
@@ -398,10 +403,8 @@ function createProjectPlanningWorkflowDesign() {
           template: 'projectPlanning system prompt is interpolated by app binding.',
           conditionalHints: [],
         },
-        knowledge: {
-          rootClassName: 'ProjectModel',
-          manifestUrlRef: 'dts-class-model',
-        },
+        modelProjectionRef: PROJECT_MODEL_PROJECTION_REF,
+        executableRef: PROJECT_MODEL_EXECUTABLE_REF,
         toolLoopNudge: {
           templates: {
             plan_without_tool: 'projectId="{{moduleInstanceId}}"；禁止只输出计划，下一回合必须发起 tool_call。',
@@ -431,9 +434,6 @@ function createProjectPlanningWorkflowDesign() {
         resolveInstance: {
           editorSource: 'projectPlanning',
           identityField: 'projectScopeKey',
-        },
-        moduleClassRef: {
-          kind: 'ProjectModel',
         },
       },
       capability: {

@@ -291,9 +291,15 @@
                   }
                 ]
               },
-              "knowledge": {
+              "modelProjectionRef": {
+                "kind": "dts-class-model",
                 "rootClassName": "ProjectModel",
                 "manifestUrlRef": "dts-class-model"
+              },
+              "executableRef": {
+                "kind": "js-module",
+                "moduleSpecifier": "@spark-appworks/spark-project-model",
+                "exportName": "ProjectModel"
               },
               "toolLoopNudge": {
                 "templates": {
@@ -335,9 +341,6 @@
               "resolveInstance": {
                 "editorSource": "pageDesign",
                 "identityField": "pageId"
-              },
-              "moduleClassRef": {
-                "kind": "ProjectModel"
               }
             },
             "state": {},

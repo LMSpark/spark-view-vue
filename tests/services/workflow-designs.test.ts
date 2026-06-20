@@ -144,16 +144,19 @@ function createDesign(): WorkflowDesignDocument {
                   template: 'Demo prompt: {{ requirement }}',
                   conditionalHints: [],
                 },
-                knowledge: {
+                modelProjectionRef: {
+                  kind: 'dts-class-model',
                   rootClassName: 'DemoModel',
                   manifestUrlRef: 'dts-class-model',
+                },
+                executableRef: {
+                  kind: 'js-module',
+                  moduleSpecifier: './demo-model.js',
+                  exportName: 'DemoModel',
                 },
                 resolveInstance: {
                   editorSource: 'demo',
                   identityField: 'requirement',
-                },
-                moduleClassRef: {
-                  kind: 'DemoModel',
                 },
                 beforeFunctionCall: {
                   gateRules: [

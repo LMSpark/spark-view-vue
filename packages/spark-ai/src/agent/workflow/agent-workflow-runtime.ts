@@ -20,9 +20,9 @@ import type {
   AgentWorkflowBusinessNode,
   AgentWorkflowDefinition,
   AgentWorkflowNodeConditionalHint,
+  AgentWorkflowNodeExecutableRef,
   AgentWorkflowNodeGateRule,
-  AgentWorkflowNodeKnowledge,
-  AgentWorkflowNodeModuleClassRef,
+  AgentWorkflowNodeModelProjectionRef,
   AgentWorkflowNodeRuntimeBinding,
 } from './agent-workflow-definition'
 import { assertAgentWorkflowDefinition } from './agent-workflow-validation'
@@ -31,7 +31,6 @@ export type AgentWorkflowModuleConstructor<TInstance> = new (...args: never[]) =
 
 export type AgentWorkflowRuntimeKnowledge = Readonly<{
   provider: ClassModelKnowledgeProvider
-  dtsClassModelManifestUrl: string
 }>
 
 export type AgentWorkflowRuntimeGateResult = Readonly<{
@@ -54,9 +53,9 @@ export type AgentWorkflowRuntimeSystemPromptCommand = Readonly<{
 }>
 
 export type AgentWorkflowRuntimeBindings<TInstance> = Readonly<{
-  moduleClassResolver: (ref: AgentWorkflowNodeModuleClassRef) => AgentWorkflowModuleConstructor<TInstance>
+  manifestUrlResolver: (ref: string) => string
   editorGetterRegistry: Readonly<Record<string, (context: AiAgentRuntimeContext) => TInstance>>
-  knowledgeProviderFactory: (config: AgentWorkflowNodeKnowledge) => AgentWorkflowRuntimeKnowledge
+  knowledgeProviderFactory: (config: AgentWorkflowNodeModelProjectionRef) => AgentWorkflowRuntimeKnowledge
   gateExecutor?: (command: AgentWorkflowRuntimeGateCommand) => AgentWorkflowRuntimeGateResult
   systemPromptInterpolator: (command: AgentWorkflowRuntimeSystemPromptCommand) => string
 }>
@@ -79,23 +78,26 @@ export type AgentWorkflowInterpretedRegistration = Readonly<{
   registration: AiAgentRegistration
 }>
 
-export function interpretAgentWorkflowDefinition<TInstance>(
+export async function interpretAgentWorkflowDefinition<TInstance>(
   command: InterpretAgentWorkflowDefinitionCommand<TInstance>,
-): AgentWorkflowInterpretedRegistration {
+): Promise<AgentWorkflowInterpretedRegistration> {
   assertAgentWorkflowDefinition(command.definition)
   const node = findSingleBusinessNode(command.definition)
   const runtimeBinding = node.data.runtimeBinding
   if (runtimeBinding === undefined) {
     throw new Error(`Agent workflow runtime requires runtimeBinding on business node "${node.id}".`)
   }
-  const moduleClass = command.bindings.moduleClassResolver(runtimeBinding.moduleClassRef)
+  const moduleClass = await resolveExecutableClass<TInstance>(runtimeBinding.executableRef)
   const editorGetter = resolveEditorGetter(command.bindings, runtimeBinding)
-  const knowledge = command.bindings.knowledgeProviderFactory(runtimeBinding.knowledge)
+  const knowledge = command.bindings.knowledgeProviderFactory(runtimeBinding.modelProjectionRef)
   const dtsClassModelManifestUrl = normalizeRequiredText(
-    knowledge.dtsClassModelManifestUrl,
-    'knowledge.dtsClassModelManifestUrl',
+    command.bindings.manifestUrlResolver(runtimeBinding.modelProjectionRef.manifestUrlRef),
+    'modelProjectionRef.manifestUrlRef',
   )
-  const rootClassName = normalizeRequiredText(runtimeBinding.knowledge.rootClassName, 'knowledge.rootClassName')
+  const rootClassName = normalizeRequiredText(
+    runtimeBinding.modelProjectionRef.rootClassName,
+    'modelProjectionRef.rootClassName',
+  )
   const beforeFunctionCall = createBeforeFunctionCall({
     runtimeBinding,
     bindings: command.bindings,
@@ -149,14 +151,27 @@ export function interpretAgentWorkflowDefinition<TInstance>(
   }
 }
 
-export function activateAgentWorkflowFromDefinition<TInstance>(
+export async function activateAgentWorkflowFromDefinition<TInstance>(
   command: ActivateAgentWorkflowFromDefinitionCommand<TInstance>,
-): AiAgentHost {
-  const interpreted = interpretAgentWorkflowDefinition(command)
+): Promise<AiAgentHost> {
+  const interpreted = await interpretAgentWorkflowDefinition(command)
   return command.host.ensure(interpreted.alias, {
     moduleId: interpreted.moduleId,
     create: () => interpreted.registration,
   })
+}
+
+async function resolveExecutableClass<TInstance>(
+  ref: AgentWorkflowNodeExecutableRef,
+): Promise<AgentWorkflowModuleConstructor<TInstance>> {
+  const moduleSpecifier = normalizeRequiredText(ref.moduleSpecifier, 'executableRef.moduleSpecifier')
+  const exportName = normalizeRequiredText(ref.exportName, 'executableRef.exportName')
+  const moduleExports = await import(moduleSpecifier) as Record<string, unknown>
+  const exported = moduleExports[exportName]
+  if (typeof exported !== 'function') {
+    throw new Error(`Agent workflow executable export not found or not constructable: ${moduleSpecifier}#${exportName}`)
+  }
+  return exported as AgentWorkflowModuleConstructor<TInstance>
 }
 
 function findSingleBusinessNode(definition: AgentWorkflowDefinition): AgentWorkflowBusinessNode {

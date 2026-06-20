@@ -1,3 +1,6 @@
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -16,6 +19,11 @@ import {
   type AiAgentTurnCallbacks,
 } from '../agent'
 import type { ClassModelKnowledgeProvider } from '../class-model'
+import { DemoBusiness } from './fixtures/demo-business-module'
+
+const DEMO_BUSINESS_MODULE_SPECIFIER = pathToFileURL(
+  resolve(__dirname, 'fixtures/demo-business-module.ts'),
+).href
 
 describe('AgentWorkflowDefinition', () => {
   it('validates the workflow graph definition shape', () => {
@@ -176,16 +184,16 @@ describe('AgentWorkflowDefinition', () => {
     })).toThrow('runtime binding not found: demo.workflow')
   })
 
-  it('interprets runtimeBinding with app bindings and activates the host', () => {
+  it('interprets runtimeBinding with app bindings and activates the host', async () => {
     const host = createAiAgentHost({ turnCallbacks: createTurnCallbacks() })
     const definition = createDefinition()
     const bindings = createRuntimeBindings()
 
-    const interpreted = interpretAgentWorkflowDefinition({
+    const interpreted = await interpretAgentWorkflowDefinition({
       definition,
       bindings,
     })
-    const activated = activateAgentWorkflowFromDefinition({
+    const activated = await activateAgentWorkflowFromDefinition({
       host,
       definition,
       bindings,
@@ -208,6 +216,36 @@ describe('AgentWorkflowDefinition', () => {
       expect(dryRun.orchestration.systemPrompt).toContain('Demo system prompt')
       expect(dryRun.orchestration.readonlySteps).toEqual(['Read demo context.'])
     }
+  })
+
+  it('rejects legacy runtimeBinding fields', () => {
+    const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
+    const node = broken.workflow.graph.nodes.find(item => item.id === 'node.demo')
+    if (node?.type !== 'node') throw new Error('test fixture must include node.demo')
+    const runtimeBinding = node.data.runtimeBinding as Record<string, unknown>
+    runtimeBinding['knowledge'] = {
+      rootClassName: 'DemoBusiness',
+      manifestUrlRef: 'dts-class-model',
+    }
+    runtimeBinding['moduleClassRef'] = {
+      kind: 'DemoBusiness',
+    }
+
+    const validation = validateAgentWorkflowDefinition(broken)
+
+    expect(validation.status).toBe('invalid')
+    expect(validation.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_RUNTIME_FIELD',
+        path: 'definition.workflow.graph.nodes[1].data.runtimeBinding.knowledge',
+      }),
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_RUNTIME_FIELD',
+        path: 'definition.workflow.graph.nodes[1].data.runtimeBinding.moduleClassRef',
+      }),
+    ]))
   })
 })
 
@@ -354,9 +392,15 @@ function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nod
             },
           ],
         },
-        knowledge: {
+        modelProjectionRef: {
+          kind: 'dts-class-model',
           rootClassName: 'DemoBusiness',
           manifestUrlRef: 'dts-class-model',
+        },
+        executableRef: {
+          kind: 'js-module',
+          moduleSpecifier: DEMO_BUSINESS_MODULE_SPECIFIER,
+          exportName: 'DemoBusiness',
         },
         toolLoopNudge: {
           templates: {
@@ -377,9 +421,6 @@ function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nod
         resolveInstance: {
           editorSource: 'demo',
           identityField: 'id',
-        },
-        moduleClassRef: {
-          kind: 'DemoBusiness',
         },
       },
       capabilities: [
@@ -425,23 +466,15 @@ function createOutputNode(): AgentWorkflowDefinition['workflow']['graph']['nodes
   }
 }
 
-class DemoBusiness {}
-
 function createRuntimeBindings(): AgentWorkflowRuntimeBindings<DemoBusiness> {
   const instance = new DemoBusiness()
   return {
-    moduleClassResolver: (ref) => {
-      if (ref.kind !== 'DemoBusiness') {
-        throw new Error(`Unexpected module class ref: ${ref.kind}`)
-      }
-      return DemoBusiness
-    },
+    manifestUrlResolver: ref => `/${ref}/manifest.json`,
     editorGetterRegistry: {
       demo: () => instance,
     },
     knowledgeProviderFactory: (config) => ({
       provider: createKnowledgeProvider(config.rootClassName),
-      dtsClassModelManifestUrl: `/${config.manifestUrlRef}/manifest.json`,
     }),
     gateExecutor: (command) => {
       const unknownRule = command.rules.find(rule => rule.kind !== 'demoAllow')

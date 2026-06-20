@@ -112,3 +112,14 @@
 - **30天存活**：（30天后回填）待回填
 - **知识沉淀**：否
 - **人工干预**：用户明确"不是移动是复制，整个文件夹作为其他项目 AI 生成代码的准则和检查脚本"；在被提示 6 个脚本 SPARK 专属不可直接用时，用户仍坚持"保持原样"，由 README 标注通用性。
+
+### 2026-06-21 Agent Workflow runtime 模型投影边界
+
+- **复杂度**：复杂
+- **总耗时**：约 150 分钟
+- **返工次数**：1（根级 typecheck 暴露 workflow-designs 测试 fixture 仍用旧 runtimeBinding 字段后修正）
+- **审查轮次**：1
+- **30天存活**：（30天后回填）待回填
+- **知识沉淀**：待确认
+- **人工干预**：用户确认生产路线采用已编译生成的 ClassModel JSON + JS dynamic import；TypeScript compiler API 只在投产前生成/验证，不进入生产 runtime；函数调用必须落到 JS `model_script`。
+- **验证摘要**：typecheck、spark-ai typecheck、workflow-designs verify、目标 Vitest、verify:class-model、lint、build:fe、AI business boundary 和 direct-turn 可选探针跳过路径均通过；全量 `pnpm run test:run` 另有 2 个未改动 dev-system 测试文件失败，已标注为计划外既有 fixture 风险。

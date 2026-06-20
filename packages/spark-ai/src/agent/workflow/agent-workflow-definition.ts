@@ -131,9 +131,16 @@ export type AgentWorkflowNodeSystemPrompt = Readonly<{
   conditionalHints?: readonly AgentWorkflowNodeConditionalHint[]
 }>
 
-export type AgentWorkflowNodeKnowledge = Readonly<{
+export type AgentWorkflowNodeModelProjectionRef = Readonly<{
+  kind: 'dts-class-model'
   rootClassName: string
   manifestUrlRef: string
+}>
+
+export type AgentWorkflowNodeExecutableRef = Readonly<{
+  kind: 'js-module'
+  moduleSpecifier: string
+  exportName: string
 }>
 
 export type AgentWorkflowNodeToolLoopNudge = Readonly<{
@@ -155,17 +162,13 @@ export type AgentWorkflowNodeResolveInstance = Readonly<{
   identityField: string
 }>
 
-export type AgentWorkflowNodeModuleClassRef = Readonly<{
-  kind: string
-}>
-
 export type AgentWorkflowNodeRuntimeBinding = Readonly<{
   registration: AgentWorkflowNodeRuntimeRegistration
   inputContract: AgentWorkflowNodeInputContract
   systemPrompt: AgentWorkflowNodeSystemPrompt
-  knowledge: AgentWorkflowNodeKnowledge
+  modelProjectionRef: AgentWorkflowNodeModelProjectionRef
+  executableRef: AgentWorkflowNodeExecutableRef
   resolveInstance: AgentWorkflowNodeResolveInstance
-  moduleClassRef: AgentWorkflowNodeModuleClassRef
   toolLoopNudge?: AgentWorkflowNodeToolLoopNudge
   beforeFunctionCall?: AgentWorkflowNodeBeforeFunctionCall
   executionToolNames?: readonly string[]

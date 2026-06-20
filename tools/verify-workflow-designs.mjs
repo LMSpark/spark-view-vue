@@ -123,15 +123,33 @@ function verifyRuntimeBinding(workflowId, runtimeBinding, label) {
     'inputContract.identityField',
     'inputContract.messageField',
     'systemPrompt.template',
-    'knowledge.rootClassName',
-    'knowledge.manifestUrlRef',
+    'modelProjectionRef.kind',
+    'modelProjectionRef.rootClassName',
+    'modelProjectionRef.manifestUrlRef',
+    'executableRef.kind',
+    'executableRef.moduleSpecifier',
+    'executableRef.exportName',
     'resolveInstance.editorSource',
     'resolveInstance.identityField',
-    'moduleClassRef.kind',
   ]) {
     const value = readPath(runtimeBinding, pathSuffix)
     if (typeof value !== 'string' || value.trim().length === 0) {
       errors.push(`${workflowId} ${label}.runtimeBinding.${pathSuffix} must be a non-empty string`)
+    }
+  }
+  expectEqual(
+    readPath(runtimeBinding, 'modelProjectionRef.kind'),
+    'dts-class-model',
+    `${workflowId} ${label}.runtimeBinding.modelProjectionRef.kind`,
+  )
+  expectEqual(
+    readPath(runtimeBinding, 'executableRef.kind'),
+    'js-module',
+    `${workflowId} ${label}.runtimeBinding.executableRef.kind`,
+  )
+  for (const field of ['knowledge', 'moduleClassRef']) {
+    if (Object.prototype.hasOwnProperty.call(runtimeBinding, field)) {
+      errors.push(`${workflowId} ${label}.runtimeBinding must not contain legacy field ${field}`)
     }
   }
   if (!isRecord(runtimeBinding.inputContract?.paramsSchema)) {

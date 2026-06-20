@@ -17,7 +17,7 @@ import {
   createWorkerDtsClassModelKnowledgeProvider,
   type ClassModelKnowledgeProvider,
 } from '@spark-appworks/spark-ai/class-model'
-import { ProjectModel } from '@spark-appworks/spark-project-model'
+import type { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { AiAgentHost } from '@spark-appworks/spark-ai/agent'
 import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 import { readWorkflowDefinition } from '@/services/workflow-designs'
@@ -44,6 +44,7 @@ const PROJECT_PLANNING_WORKFLOW_ID = 'agent.workflow.projectPlanning'
 const PAGE_DESIGN_EDITOR_SOURCE = 'pageDesign'
 const PAGE_DATA_DESIGN_EDITOR_SOURCE = 'pageDataDesign'
 const PROJECT_PLANNING_EDITOR_SOURCE = 'projectPlanning'
+const DTS_CLASS_MODEL_MANIFEST_REF = 'dts-class-model'
 
 const PAGE_DESIGN_GATE_RULE_KINDS = new Set([
   'pageDesignMutationGate',
@@ -102,11 +103,11 @@ export function createAppAgentWorkflowRuntimeBindings(
   options: CreateAppAgentWorkflowRuntimeBindingsOptions,
 ): AgentWorkflowRuntimeBindings<ProjectModel> {
   return {
-    moduleClassResolver: (ref) => {
-      if (ref.kind !== 'ProjectModel') {
-        throw new Error(`Agent workflow moduleClassRef.kind is not supported: ${ref.kind}`)
+    manifestUrlResolver: (ref) => {
+      if (ref !== DTS_CLASS_MODEL_MANIFEST_REF) {
+        throw new Error(`Agent workflow modelProjectionRef.manifestUrlRef is not supported: ${ref}`)
       }
-      return ProjectModel
+      return getDtsClassModelManifestUrl()
     },
     editorGetterRegistry: {
       [PAGE_DESIGN_EDITOR_SOURCE]: context => resolvePageDesignProject(requirePageDesignOptions(options), context),
@@ -116,8 +117,8 @@ export function createAppAgentWorkflowRuntimeBindings(
         context,
       ),
     },
-    knowledgeProviderFactory: config => createAgentWorkflowKnowledgeProvider(
-      config.rootClassName,
+    knowledgeProviderFactory: modelProjectionRef => createAgentWorkflowKnowledgeProvider(
+      modelProjectionRef.rootClassName,
       options.pageDesign?.knowledge ?? options.projectPlanning?.knowledge,
     ),
     gateExecutor: command => executeAgentWorkflowGate(command, options),
@@ -254,7 +255,6 @@ function createAgentWorkflowKnowledgeProvider(
   injectedKnowledge: ClassModelKnowledgeProvider | undefined,
 ): Readonly<{
   provider: ClassModelKnowledgeProvider
-  dtsClassModelManifestUrl: string
 }> {
   const dtsClassModelManifestUrl = getDtsClassModelManifestUrl()
   return {
@@ -263,7 +263,6 @@ function createAgentWorkflowKnowledgeProvider(
       dtsClassModelManifestUrl,
       rootClassName,
     }),
-    dtsClassModelManifestUrl,
   }
 }
 

@@ -32,12 +32,12 @@
       "AgentWorkflowNodeInputContract",
       "AgentWorkflowNodeConditionalHint",
       "AgentWorkflowNodeSystemPrompt",
-      "AgentWorkflowNodeKnowledge",
+      "AgentWorkflowNodeModelProjectionRef",
+      "AgentWorkflowNodeExecutableRef",
       "AgentWorkflowNodeToolLoopNudge",
       "AgentWorkflowNodeGateRule",
       "AgentWorkflowNodeBeforeFunctionCall",
       "AgentWorkflowNodeResolveInstance",
-      "AgentWorkflowNodeModuleClassRef",
       "AgentWorkflowNodeRuntimeBinding",
       "AgentWorkflowBusinessNodeData",
       "AgentWorkflowGraphNodeBase",
@@ -450,15 +450,35 @@
       },
       "additionalProperties": false
     },
-    "AgentWorkflowNodeKnowledge": {
+    "AgentWorkflowNodeModelProjectionRef": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "AgentWorkflowNodeKnowledge",
+      "title": "AgentWorkflowNodeModelProjectionRef",
       "properties": {
+        "kind": {
+          "const": "dts-class-model"
+        },
         "rootClassName": {
           "type": "string"
         },
         "manifestUrlRef": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentWorkflowNodeExecutableRef": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "AgentWorkflowNodeExecutableRef",
+      "properties": {
+        "kind": {
+          "const": "js-module"
+        },
+        "moduleSpecifier": {
+          "type": "string"
+        },
+        "exportName": {
           "type": "string"
         }
       },
@@ -521,17 +541,6 @@
       },
       "additionalProperties": false
     },
-    "AgentWorkflowNodeModuleClassRef": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "title": "AgentWorkflowNodeModuleClassRef",
-      "properties": {
-        "kind": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
     "AgentWorkflowNodeRuntimeBinding": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -546,14 +555,14 @@
         "systemPrompt": {
           "$ref": "#/$defs/AgentWorkflowNodeSystemPrompt"
         },
-        "knowledge": {
-          "$ref": "#/$defs/AgentWorkflowNodeKnowledge"
+        "modelProjectionRef": {
+          "$ref": "#/$defs/AgentWorkflowNodeModelProjectionRef"
+        },
+        "executableRef": {
+          "$ref": "#/$defs/AgentWorkflowNodeExecutableRef"
         },
         "resolveInstance": {
           "$ref": "#/$defs/AgentWorkflowNodeResolveInstance"
-        },
-        "moduleClassRef": {
-          "$ref": "#/$defs/AgentWorkflowNodeModuleClassRef"
         },
         "toolLoopNudge": {
           "$ref": "#/$defs/AgentWorkflowNodeToolLoopNudge"
@@ -853,7 +862,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-20T14:05:09.888Z",
+  "generatedAt": "2026-06-20T18:52:23.891Z",
   "models": {
     "AgentWorkflowJsonRecord": {
       "name": "AgentWorkflowJsonRecord",
@@ -1564,21 +1573,26 @@
         }
       }
     },
-    "AgentWorkflowNodeKnowledge": {
-      "name": "AgentWorkflowNodeKnowledge",
+    "AgentWorkflowNodeModelProjectionRef": {
+      "name": "AgentWorkflowNodeModelProjectionRef",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    rootClassName: string;\n    manifestUrlRef: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    kind: 'dts-class-model';\n    rootClassName: string;\n    manifestUrlRef: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    rootClassName: string;\n    manifestUrlRef: string;\n}>",
+            "typeText": "Readonly<{\n    kind: 'dts-class-model';\n    rootClassName: string;\n    manifestUrlRef: string;\n}>",
             "targetName": "Readonly"
           }
         ],
         "members": {
           "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
             {
               "name": "rootClassName",
               "readable": true,
@@ -1586,6 +1600,40 @@
             },
             {
               "name": "manifestUrlRef",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "AgentWorkflowNodeExecutableRef": {
+      "name": "AgentWorkflowNodeExecutableRef",
+      "jsdoc": "",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    kind: 'js-module';\n    moduleSpecifier: string;\n    exportName: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    kind: 'js-module';\n    moduleSpecifier: string;\n    exportName: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "moduleSpecifier",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "exportName",
               "readable": true,
               "writable": false
             }
@@ -1699,40 +1747,16 @@
         }
       }
     },
-    "AgentWorkflowNodeModuleClassRef": {
-      "name": "AgentWorkflowNodeModuleClassRef",
-      "jsdoc": "",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    kind: string;\n}>",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "Readonly<{\n    kind: string;\n}>",
-            "targetName": "Readonly"
-          }
-        ],
-        "members": {
-          "attributes": [
-            {
-              "name": "kind",
-              "readable": true,
-              "writable": false
-            }
-          ]
-        }
-      }
-    },
     "AgentWorkflowNodeRuntimeBinding": {
       "name": "AgentWorkflowNodeRuntimeBinding",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    registration: AgentWorkflowNodeRuntimeRegistration;\n    inputContract: AgentWorkflowNodeInputContract;\n    systemPrompt: AgentWorkflowNodeSystemPrompt;\n    knowledge: AgentWorkflowNodeKnowledge;\n    resolveInstance: AgentWorkflowNodeResolveInstance;\n    moduleClassRef: AgentWorkflowNodeModuleClassRef;\n    toolLoopNudge?: AgentWorkflowNodeToolLoopNudge;\n    beforeFunctionCall?: AgentWorkflowNodeBeforeFunctionCall;\n    executionToolNames?: readonly string[];\n    planWithoutToolMarkers?: readonly string[];\n    agentCompleteMethodName?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    registration: AgentWorkflowNodeRuntimeRegistration;\n    inputContract: AgentWorkflowNodeInputContract;\n    systemPrompt: AgentWorkflowNodeSystemPrompt;\n    modelProjectionRef: AgentWorkflowNodeModelProjectionRef;\n    executableRef: AgentWorkflowNodeExecutableRef;\n    resolveInstance: AgentWorkflowNodeResolveInstance;\n    toolLoopNudge?: AgentWorkflowNodeToolLoopNudge;\n    beforeFunctionCall?: AgentWorkflowNodeBeforeFunctionCall;\n    executionToolNames?: readonly string[];\n    planWithoutToolMarkers?: readonly string[];\n    agentCompleteMethodName?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    registration: AgentWorkflowNodeRuntimeRegistration;\n    inputContract: AgentWorkflowNodeInputContract;\n    systemPrompt: AgentWorkflowNodeSystemPrompt;\n    knowledge: AgentWorkflowNodeKnowledge;\n    resolveInstance: AgentWorkflowNodeResolveInstance;\n    moduleClassRef: AgentWorkflowNodeModuleClassRef;\n    toolLoopNudge?: AgentWorkflowNodeToolLoopNudge;\n    beforeFunctionCall?: AgentWorkflowNodeBeforeFunctionCall;\n    executionToolNames?: readonly string[];\n    planWithoutToolMarkers?: readonly string[];\n    agentCompleteMethodName?: string;\n}>",
+            "typeText": "Readonly<{\n    registration: AgentWorkflowNodeRuntimeRegistration;\n    inputContract: AgentWorkflowNodeInputContract;\n    systemPrompt: AgentWorkflowNodeSystemPrompt;\n    modelProjectionRef: AgentWorkflowNodeModelProjectionRef;\n    executableRef: AgentWorkflowNodeExecutableRef;\n    resolveInstance: AgentWorkflowNodeResolveInstance;\n    toolLoopNudge?: AgentWorkflowNodeToolLoopNudge;\n    beforeFunctionCall?: AgentWorkflowNodeBeforeFunctionCall;\n    executionToolNames?: readonly string[];\n    planWithoutToolMarkers?: readonly string[];\n    agentCompleteMethodName?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1754,17 +1778,17 @@
               "writable": false
             },
             {
-              "name": "knowledge",
+              "name": "modelProjectionRef",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "executableRef",
               "readable": true,
               "writable": false
             },
             {
               "name": "resolveInstance",
-              "readable": true,
-              "writable": false
-            },
-            {
-              "name": "moduleClassRef",
               "readable": true,
               "writable": false
             },
