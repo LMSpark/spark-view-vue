@@ -78,7 +78,6 @@
         "@spark-appworks/spark-data": "workspace:*",
         "@spark-appworks/spark-project-model": "workspace:*",
         "element-plus": "catalog:",
-        "mammoth": "^1.8.0",
         "vue": "catalog:",
         "vue-router": "catalog:",
         "vxe-table": "catalog:"
