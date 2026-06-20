@@ -2,7 +2,7 @@
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-definition
  * 职责：定义可序列化 Agent Workflow Definition 契约，发布态只表达 workflow graph。
  * 边界：只描述 workflow 定义，不持有函数、class 实例、APP、注册对象、delivery port 或 UI 状态。
- * AI用途：需要判断 workflow definition 字段、节点、边、Tool Node 或 Chatflow Node 格式时，用本模块确认契约。
+ * AI用途：需要判断 workflow definition 字段、业务节点、边投影或验证 action 格式时，用本模块确认契约。
  */
 
 export type AgentWorkflowJsonRecord = Readonly<Record<string, unknown>>
@@ -60,51 +60,63 @@ export type AgentWorkflowNodePosition = Readonly<{
 }>
 
 export type AgentWorkflowStartNodeData = Readonly<{
+  type?: 'start'
   title?: string
+  inputs?: AgentWorkflowJsonRecord
+  projection?: AgentWorkflowJsonRecord
+  validation?: AgentWorkflowJsonRecord
+  state?: AgentWorkflowJsonRecord
   capabilities?: readonly AgentWorkflowCapability[]
 }>
 
 export type AgentWorkflowOutputNodeData = Readonly<{
+  type?: 'output'
   title?: string
   outputs: AgentWorkflowJsonRecord
+  upstreamValidation?: AgentWorkflowJsonRecord
+  validation?: AgentWorkflowJsonRecord
+  state?: AgentWorkflowJsonRecord
+  result?: AgentWorkflowJsonRecord
   capabilities?: readonly AgentWorkflowCapability[]
 }>
 
-export type AgentWorkflowToolNodeData = Readonly<{
+export type AgentWorkflowModelContext = Readonly<{
+  rootClassName: string
+  className: string
+  contextPath?: string
+}>
+
+export type AgentWorkflowLlmWork = Readonly<{
+  task: AgentWorkflowJsonRecord
+  knowledge: AgentWorkflowJsonRecord
+  functionCalling: AgentWorkflowJsonRecord
+  output: AgentWorkflowJsonRecord
+}>
+
+export type AgentWorkflowNodeValidationAction = Readonly<{
+  className: string
+  actionName: string
+  inputProjection: AgentWorkflowJsonRecord
+  expectedResult: AgentWorkflowJsonRecord
+}>
+
+export type AgentWorkflowNodeValidation = Readonly<{
+  action: AgentWorkflowNodeValidationAction
+  status?: string
+  issues?: readonly AgentWorkflowJsonRecord[]
+}>
+
+export type AgentWorkflowBusinessNodeData = Readonly<{
+  type?: 'node'
   title?: string
-  provider: string
-  toolName: string
+  model: AgentWorkflowModelContext
   inputs: AgentWorkflowJsonRecord
   outputs: AgentWorkflowJsonRecord
-  capabilities: readonly AgentWorkflowCapability[]
-}>
-
-export type AgentWorkflowReference = Readonly<{
-  workflowId: string
-  version?: number
-  definitionPath?: string
-}>
-
-export type AgentWorkflowChatflowNodeData = Readonly<{
-  title?: string
-  workflowRef: AgentWorkflowReference
-  inputs: AgentWorkflowJsonRecord
-  outputs: AgentWorkflowJsonRecord
+  llm: AgentWorkflowLlmWork
+  validation: AgentWorkflowNodeValidation
+  state?: AgentWorkflowJsonRecord
+  result?: AgentWorkflowJsonRecord
   capabilities?: readonly AgentWorkflowCapability[]
-}>
-
-export type AgentWorkflowSubWorkflowNodeData = Readonly<{
-  title?: string
-  workflowRef: AgentWorkflowReference
-  inputs: AgentWorkflowJsonRecord
-  outputs: AgentWorkflowJsonRecord
-  capabilities?: readonly AgentWorkflowCapability[]
-}>
-
-export type AgentWorkflowGenericNodeData = Readonly<{
-  title?: string
-  capabilities?: readonly AgentWorkflowCapability[]
-  [key: string]: unknown
 }>
 
 export type AgentWorkflowGraphNodeBase<
@@ -121,32 +133,39 @@ export type AgentWorkflowStartNode = AgentWorkflowGraphNodeBase<'start', AgentWo
 
 export type AgentWorkflowOutputNode = AgentWorkflowGraphNodeBase<'output', AgentWorkflowOutputNodeData>
 
-export type AgentWorkflowToolNode = AgentWorkflowGraphNodeBase<'tool', AgentWorkflowToolNodeData>
-
-export type AgentWorkflowChatflowNode = AgentWorkflowGraphNodeBase<'chatflow', AgentWorkflowChatflowNodeData>
-
-export type AgentWorkflowSubWorkflowNode = AgentWorkflowGraphNodeBase<'workflow', AgentWorkflowSubWorkflowNodeData>
-
-export type AgentWorkflowConditionNode = AgentWorkflowGraphNodeBase<'condition', AgentWorkflowGenericNodeData>
-
-export type AgentWorkflowCodeNode = AgentWorkflowGraphNodeBase<'code', AgentWorkflowGenericNodeData>
-
-export type AgentWorkflowLlmNode = AgentWorkflowGraphNodeBase<'llm', AgentWorkflowGenericNodeData>
-
-export type AgentWorkflowAgentNode = AgentWorkflowGraphNodeBase<'agent', AgentWorkflowGenericNodeData>
+export type AgentWorkflowBusinessNode = AgentWorkflowGraphNodeBase<'node', AgentWorkflowBusinessNodeData>
 
 export type AgentWorkflowGraphNode =
   | AgentWorkflowStartNode
+  | AgentWorkflowBusinessNode
   | AgentWorkflowOutputNode
-  | AgentWorkflowToolNode
-  | AgentWorkflowChatflowNode
-  | AgentWorkflowSubWorkflowNode
-  | AgentWorkflowConditionNode
-  | AgentWorkflowCodeNode
-  | AgentWorkflowLlmNode
-  | AgentWorkflowAgentNode
 
 export type AgentWorkflowGraphNodeType = AgentWorkflowGraphNode['type']
+
+export type AgentWorkflowEdgeProjection = Readonly<{
+  sourceRef: string
+  targetRef: string
+  transform?: AgentWorkflowJsonRecord
+}>
+
+export type AgentWorkflowEdgeBranch = Readonly<{
+  condition?: string
+  label?: string
+  priority?: number
+  default?: boolean
+}>
+
+export type AgentWorkflowEdgeValidation = Readonly<{
+  status?: string
+  issues?: readonly AgentWorkflowJsonRecord[]
+}>
+
+export type AgentWorkflowGraphEdgeData = Readonly<{
+  projection?: AgentWorkflowEdgeProjection
+  branch?: AgentWorkflowEdgeBranch
+  validation?: AgentWorkflowEdgeValidation
+  [key: string]: unknown
+}>
 
 export type AgentWorkflowGraphEdge = Readonly<{
   id: string
@@ -154,7 +173,7 @@ export type AgentWorkflowGraphEdge = Readonly<{
   target: string
   sourceHandle?: string
   targetHandle?: string
-  data?: AgentWorkflowJsonRecord
+  data?: AgentWorkflowGraphEdgeData
 }>
 
 export type AgentWorkflowGraph = Readonly<{
@@ -191,12 +210,6 @@ export const AGENT_WORKFLOW_DEFINITION_SCHEMA: AgentWorkflowDefinitionSchema = '
 
 export const AGENT_WORKFLOW_GRAPH_NODE_TYPES = Object.freeze([
   'start',
-  'tool',
-  'chatflow',
-  'workflow',
-  'condition',
-  'code',
-  'llm',
-  'agent',
+  'node',
   'output',
 ] satisfies readonly AgentWorkflowGraphNodeType[])

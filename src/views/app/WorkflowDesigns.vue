@@ -2,7 +2,7 @@
 @module app:views/app/WorkflowDesigns
 职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与 workflow definition 发布。
 边界：只处理设计态 JSON，不执行 Agent workflow 运行时。
-AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 Chatflow Node 时，用本页面定位。
+AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel model context 或步骤线投影时，用本页面定位。
 -->
 <template>
   <div class="workflow-design-page">
@@ -90,8 +90,7 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
           </div>
           <div class="document-stats">
             <span>节点 {{ allNodes.length }}</span>
-            <span>工具 {{ classModelToolNodes.length }}</span>
-            <span>Chatflow {{ chatflowNodes.length }}</span>
+            <span>业务节点 {{ businessNodes.length }}</span>
             <span v-if="currentTimestamp">ts {{ currentTimestamp }}</span>
           </div>
         </div>
@@ -164,25 +163,9 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
                         link
                         size="small"
                         :icon="DocumentAdd"
-                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'class-model-tool')"
+                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'node')"
                       >
-                        加工具
-                      </el-button>
-                      <el-button
-                        link
-                        size="small"
-                        :icon="DocumentAdd"
-                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'chatflow')"
-                      >
-                        加 Chatflow
-                      </el-button>
-                      <el-button
-                        link
-                        size="small"
-                        :icon="DocumentAdd"
-                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'custom')"
-                      >
-                        加节点
+                        加业务节点
                       </el-button>
                     </span>
                   </div>
@@ -229,8 +212,8 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
                         <template #node-workflow="{ data, selected, id }">
                           <div class="workflow-node" :class="{
                             'is-selected': selected || selectedNodeKey === data.viewKey,
-                            'is-tool': data.isClassModelToolNode,
-                            'is-chatflow': data.isChatflowNode,
+                            'is-business': data.isBusinessNode,
+                            'is-boundary': data.isBoundaryNode,
                             'is-loop': data.nodeType === 'loop',
                           }">
                             <Handle
@@ -248,8 +231,8 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
                             <span class="node-kind">{{ data.nodeType }}</span>
                             <strong>{{ data.title }}</strong>
                             <small>{{ data.scopePath }} / {{ id }}</small>
-                            <span v-if="data.isClassModelToolNode" class="tool-name">ClassModel Tool</span>
-                            <span v-if="data.isChatflowNode" class="tool-name">Chatflow</span>
+                            <span v-if="data.isBusinessNode" class="tool-name">{{ data.modelClassName }}</span>
+                            <span v-if="data.validationActionName" class="tool-name">{{ data.validationActionName }}</span>
                           </div>
                         </template>
                       </VueFlow>
@@ -306,7 +289,7 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
           <el-tag
             v-else-if="selectedNode"
             size="small"
-            :type="selectedNode.isClassModelToolNode ? 'success' : selectedNode.isChatflowNode ? 'warning' : 'info'"
+            :type="selectedNode.isBusinessNode ? 'success' : selectedNode.isBoundaryNode ? 'info' : 'warning'"
           >
             {{ selectedNode.nodeType }}
           </el-tag>
@@ -462,7 +445,59 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
           </details>
 
           <details
-            v-if="selectedNode.isClassModelToolNode || selectedNode.isChatflowNode || selectedNode.isWorkflowNode"
+            v-if="selectedNode.isBusinessNode"
+            class="editor-section collapsible-section"
+            open
+          >
+            <summary>ClassModel</summary>
+            <div class="collapsible-body class-model-editor">
+              <el-form label-position="top">
+                <el-form-item label="Root Class">
+                  <el-input v-model="modelRootClassText" @input="markEditorDirty" />
+                </el-form-item>
+                <el-form-item label="Model Class">
+                  <select v-model="modelClassText" class="native-select" @change="handleModelClassSelectionChange">
+                    <option :value="modelClassText">{{ modelClassText || '未绑定' }}</option>
+                    <option v-for="item in classModelOptions" :key="item.kind" :value="item.kind">
+                      {{ item.kind }}
+                    </option>
+                  </select>
+                </el-form-item>
+                <el-form-item label="Validation Class">
+                  <el-input v-model="validationActionClassText" @input="markEditorDirty" />
+                </el-form-item>
+                <el-form-item label="Validation Action">
+                  <select v-model="validationActionNameText" class="native-select" @change="markEditorDirty">
+                    <option :value="validationActionNameText">{{ validationActionNameText || '未绑定' }}</option>
+                    <option v-for="method in selectedClassModelMethods" :key="method.name" :value="method.name">
+                      {{ method.name }}
+                    </option>
+                  </select>
+                </el-form-item>
+              </el-form>
+              <el-alert v-if="classModelError" :title="classModelError" type="error" :closable="false" />
+              <div v-if="selectedClassModelOption" class="class-model-catalog">
+                <strong>{{ selectedClassModelOption.kind }}</strong>
+                <span>attributes {{ selectedClassModelOption.attributes.length }}</span>
+                <span>actions {{ selectedClassModelOption.methods.length }}</span>
+              </div>
+              <pre v-if="classModelGuideText" class="class-model-guide">{{ classModelGuideText }}</pre>
+              <div class="editor-actions">
+                <el-button :loading="classModelLoading" :icon="Refresh" @click="refreshClassModelOptions">
+                  刷新知识
+                </el-button>
+                <el-button :loading="classModelLoading" :icon="DocumentCopy" @click="loadValidationActionGuide">
+                  Action Guide
+                </el-button>
+                <el-button :icon="CircleCheck" @click="applyBusinessModelEditorToSelected">
+                  应用模型绑定
+                </el-button>
+              </div>
+            </div>
+          </details>
+
+          <details
+            v-if="shouldEditNodeConfig(selectedNode)"
             class="editor-section collapsible-section"
             open
           >
@@ -519,12 +554,9 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
         </el-form-item>
         <el-form-item label="节点类型">
           <select v-model="nodeCreateForm.nodeKind" class="native-select" @change="syncNodeCreateKindDefaults">
-            <option value="class-model-tool">ClassModel Tool</option>
-            <option value="chatflow">Chatflow</option>
-            <option value="workflow">Workflow</option>
+            <option value="node">Business Node</option>
             <option value="start">Start</option>
             <option value="output">Output</option>
-            <option value="custom">Custom</option>
           </select>
         </el-form-item>
         <el-form-item label="节点 ID">
@@ -583,7 +615,7 @@ AI用途：需要验证 workflow 编辑器如何配置 ClassModel Tool Node 或 
 
 <script setup lang="ts">
 /**
- * @description 工作流设计稿可视化编辑页。编辑 Dify-like graph 中的 ClassModel Tool / Chatflow 节点，并通过后端文件 API 保存 design.json。
+ * @description 工作流设计稿可视化编辑页。编辑 Dify-like graph 中的业务节点和步骤线，并通过后端文件 API 保存 design.json。
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -607,6 +639,10 @@ import {
   type ViewportTransform,
 } from '@vue-flow/core'
 import { MiniMap } from '@vue-flow/minimap'
+import {
+  createWorkerDtsClassModelKnowledgeProvider,
+  type ClassModelKnowledgeProvider,
+} from '@spark-appworks/spark-ai/class-model'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
@@ -654,6 +690,7 @@ import {
   type WorkflowDesignNodeCreateKind,
   type WorkflowDesignSummary,
 } from '@/services/workflow-designs'
+import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 type LayoutResizeState = {
   side: 'left' | 'right'
@@ -682,12 +719,27 @@ type WorkflowFlowNodeData = {
   title: string
   nodeType: string
   scopePath: string
-  isClassModelToolNode: boolean
-  isChatflowNode: boolean
+  isBusinessNode: boolean
+  isBoundaryNode: boolean
+  modelClassName: string
+  validationActionName: string
 }
 
 type WorkflowFlowEdgeData = {
   edgeKey: string
+}
+
+type ClassModelMethodOption = {
+  name: string
+  summary: string
+  signature: string
+}
+
+type ClassModelOption = {
+  kind: string
+  summary: string
+  attributes: string[]
+  methods: ClassModelMethodOption[]
 }
 
 type WorkflowFlowNode = Node<WorkflowFlowNodeData, Record<string, never>, 'workflow'>
@@ -756,6 +808,14 @@ const nodeTitleText = ref('')
 const nodeDescText = ref('')
 const modelJsonText = ref('{}')
 const modelJsonError = ref('')
+const modelRootClassText = ref('')
+const modelClassText = ref('')
+const validationActionClassText = ref('')
+const validationActionNameText = ref('')
+const classModelLoading = ref(false)
+const classModelError = ref('')
+const classModelGuideText = ref('')
+const classModelOptions = ref<ClassModelOption[]>([])
 const nodeX = computed({
   get: () => selectedNode.value?.node.position?.x ?? 0,
   set: (value: number) => { applyNodePosition(value, nodeY.value) },
@@ -781,7 +841,7 @@ const createForm = ref({
 
 const nodeCreateForm = ref<NodeCreateForm>({
   graphKey: '',
-  nodeKind: 'class-model-tool',
+  nodeKind: 'node',
   id: '',
   title: '',
   desc: '',
@@ -790,10 +850,13 @@ const nodeCreateForm = ref<NodeCreateForm>({
 const allNodes = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignNodes(currentDocument.value))
 const graphViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignGraphs(currentDocument.value))
 const edgeViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignEdges(currentDocument.value))
-const classModelToolNodes = computed(() => allNodes.value.filter(node => node.isClassModelToolNode))
-const chatflowNodes = computed(() => allNodes.value.filter(node => node.isChatflowNode))
+const businessNodes = computed(() => allNodes.value.filter(node => node.isBusinessNode))
 const selectedNode = computed(() => allNodes.value.find(node => node.key === selectedNodeKey.value) ?? null)
 const selectedEdge = computed(() => edgeViews.value.find(edge => edge.key === selectedEdgeKey.value) ?? null)
+const selectedClassModelOption = computed(() => {
+  return classModelOptions.value.find(item => item.kind === modelClassText.value.trim()) ?? null
+})
+const selectedClassModelMethods = computed(() => selectedClassModelOption.value?.methods ?? [])
 const selectedEdgeGraphNodes = computed(() => {
   const edge = selectedEdge.value
   if (edge === null) return []
@@ -960,8 +1023,7 @@ async function openDesign(workflowId: string): Promise<void> {
     currentChildGraphKey.value = ''
     loadGraphSplitState(normalizedWorkflowId)
     const nodes = collectWorkflowDesignNodes(result.document)
-    selectedNodeKey.value = nodes.find(node => node.isClassModelToolNode)?.key
-      ?? nodes.find(node => node.isChatflowNode)?.key
+    selectedNodeKey.value = nodes.find(node => node.isBusinessNode)?.key
       ?? nodes[0]?.key
       ?? ''
   } catch (error: unknown) {
@@ -1062,21 +1124,17 @@ function syncNodeCreateKindDefaults(): void {
 }
 
 function defaultCreateNodeId(nodeKind: WorkflowDesignNodeCreateKind): string {
-  if (nodeKind === 'class-model-tool') return 'tool.classModel'
-  if (nodeKind === 'chatflow') return 'chatflow.clarify'
-  if (nodeKind === 'workflow') return 'workflow.call'
+  if (nodeKind === 'node') return 'node.model'
   if (nodeKind === 'start') return 'start'
   if (nodeKind === 'output') return 'output'
-  return 'node.custom'
+  return 'node.model'
 }
 
 function defaultCreateNodeTitle(nodeKind: WorkflowDesignNodeCreateKind): string {
-  if (nodeKind === 'class-model-tool') return 'ClassModel Tool'
-  if (nodeKind === 'chatflow') return 'Chatflow'
-  if (nodeKind === 'workflow') return 'Workflow'
+  if (nodeKind === 'node') return 'Business Node'
   if (nodeKind === 'start') return 'Start'
   if (nodeKind === 'output') return 'Output'
-  return 'Custom Node'
+  return 'Business Node'
 }
 
 function createNodeInSelectedGraph(): void {
@@ -1320,8 +1378,10 @@ function isWorkflowFlowNodeData(value: unknown): value is WorkflowFlowNodeData {
     && typeof value['title'] === 'string'
     && typeof value['nodeType'] === 'string'
     && typeof value['scopePath'] === 'string'
-    && typeof value['isClassModelToolNode'] === 'boolean'
-    && typeof value['isChatflowNode'] === 'boolean'
+    && typeof value['isBusinessNode'] === 'boolean'
+    && typeof value['isBoundaryNode'] === 'boolean'
+    && typeof value['modelClassName'] === 'string'
+    && typeof value['validationActionName'] === 'string'
 }
 
 function isWorkflowFlowEdgeData(value: unknown): value is WorkflowFlowEdgeData {
@@ -1370,8 +1430,10 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
         title: view.title,
         nodeType: view.nodeType,
         scopePath: view.scopePath,
-        isClassModelToolNode: view.isClassModelToolNode,
-        isChatflowNode: view.isChatflowNode,
+        isBusinessNode: view.isBusinessNode,
+        isBoundaryNode: view.isBoundaryNode,
+        modelClassName: readBusinessNodeModelClassName(view),
+        validationActionName: readBusinessNodeValidationActionName(view),
       },
     }
   })
@@ -1603,6 +1665,12 @@ function syncEditorFromSelected(): void {
     nodeTitleText.value = ''
     nodeDescText.value = ''
     modelJsonText.value = '{}'
+    modelRootClassText.value = ''
+    modelClassText.value = ''
+    validationActionClassText.value = ''
+    validationActionNameText.value = ''
+    classModelError.value = ''
+    classModelGuideText.value = ''
     loopModeText.value = ''
     loopMaxCountValue.value = 10
     loopExitNodeText.value = ''
@@ -1612,6 +1680,7 @@ function syncEditorFromSelected(): void {
   nodeTitleText.value = view.title
   nodeDescText.value = typeof view.node.data?.desc === 'string' ? view.node.data.desc : ''
   modelJsonText.value = shouldEditNodeConfig(view) ? formatJson(view.node.data ?? {}) : '{}'
+  syncBusinessModelEditorFromSelected(view)
   const loop = view.node.data?.loop
   loopModeText.value = typeof loop?.mode === 'string' && loop.mode.length > 0 ? loop.mode : 'progressive'
   loopMaxCountValue.value = typeof loop?.maxLoopCount === 'number' && Number.isFinite(loop.maxLoopCount) ? loop.maxLoopCount : 1
@@ -1641,6 +1710,27 @@ function syncEdgeEditorFromSelected(): void {
   edgeRelationText.value = typeof relation === 'string' ? relation : 'sequence'
 }
 
+function syncBusinessModelEditorFromSelected(view: WorkflowDesignNodeView): void {
+  if (!view.isBusinessNode) {
+    modelRootClassText.value = ''
+    modelClassText.value = ''
+    validationActionClassText.value = ''
+    validationActionNameText.value = ''
+    classModelError.value = ''
+    classModelGuideText.value = ''
+    return
+  }
+  const model = view.node.data?.model
+  modelRootClassText.value = readTextField(model, 'rootClassName')
+  modelClassText.value = readTextField(model, 'className')
+  const validation = view.node.data?.validation
+  const action = isJsonRecord(validation) ? validation['action'] : undefined
+  validationActionClassText.value = readTextField(action, 'className') || modelClassText.value
+  validationActionNameText.value = readTextField(action, 'actionName')
+  classModelError.value = ''
+  classModelGuideText.value = ''
+}
+
 function applyNodePosition(x: number, y: number): void {
   const view = selectedNode.value
   const document = currentDocument.value
@@ -1664,7 +1754,97 @@ function applyNodeBasicEditorToSelected(): boolean {
 }
 
 function shouldEditNodeConfig(view: WorkflowDesignNodeView): boolean {
-  return view.isClassModelToolNode || view.isChatflowNode || view.isWorkflowNode
+  return view.isBusinessNode
+}
+
+function readBusinessNodeModelClassName(view: WorkflowDesignNodeView): string {
+  if (!view.isBusinessNode) return ''
+  const model = view.node.data?.model
+  if (!isJsonRecord(model)) return 'unbound model'
+  const className = model['className']
+  return typeof className === 'string' && className.trim().length > 0 ? className.trim() : 'unbound model'
+}
+
+function readBusinessNodeValidationActionName(view: WorkflowDesignNodeView): string {
+  if (!view.isBusinessNode) return ''
+  const validation = view.node.data?.validation
+  if (!isJsonRecord(validation)) return ''
+  const action = validation['action']
+  if (!isJsonRecord(action)) return ''
+  const actionName = action['actionName']
+  return typeof actionName === 'string' && actionName.trim().length > 0 ? actionName.trim() : ''
+}
+
+function createClassModelKnowledgeProvider(rootClassName: string): ClassModelKnowledgeProvider {
+  return createWorkerDtsClassModelKnowledgeProvider({
+    workerUrl: new URL('../../services/class-model-knowledge.worker.ts', import.meta.url),
+    dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
+    rootClassName,
+  })
+}
+
+function readClassModelOptions(value: unknown): ClassModelOption[] {
+  if (!isJsonRecord(value) || !Array.isArray(value['models'])) return []
+  return value['models']
+    .filter(isJsonRecord)
+    .map((model): ClassModelOption | null => {
+      const kind = readTextField(model, 'kind') || readTextField(model, 'name')
+      if (kind.length === 0) return null
+      return {
+        kind,
+        summary: readTextField(model, 'summary'),
+        attributes: readNamedItems(model['attributes']),
+        methods: readMethodOptions(model['methods']),
+      }
+    })
+    .filter((item): item is ClassModelOption => item !== null)
+}
+
+function readNamedItems(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(isJsonRecord)
+    .map(item => readTextField(item, 'name'))
+    .filter(item => item.length > 0)
+}
+
+function readMethodOptions(value: unknown): ClassModelMethodOption[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(isJsonRecord)
+    .map((method): ClassModelMethodOption | null => {
+      const name = readTextField(method, 'name')
+      if (name.length === 0) return null
+      return {
+        name,
+        summary: readTextField(method, 'summary'),
+        signature: readTextField(method, 'signature'),
+      }
+    })
+    .filter((item): item is ClassModelMethodOption => item !== null)
+}
+
+function normalizeBusinessNodeValidationEditorValue(value: unknown): Record<string, unknown> {
+  const validation = isJsonRecord(value) ? { ...value } : {}
+  validation['action'] = isJsonRecord(validation['action']) ? { ...validation['action'] } : {}
+  return validation
+}
+
+function normalizeBusinessNodeLlmEditorValue(value: unknown): Record<string, unknown> {
+  const llm = isJsonRecord(value) ? { ...value } : {}
+  llm['task'] = isJsonRecord(llm['task']) ? llm['task'] : {}
+  llm['knowledge'] = isJsonRecord(llm['knowledge']) ? { ...llm['knowledge'] } : {}
+  llm['functionCalling'] = isJsonRecord(llm['functionCalling']) ? llm['functionCalling'] : {
+    mode: 'freeWithinModelContext',
+  }
+  llm['output'] = isJsonRecord(llm['output']) ? llm['output'] : {}
+  return llm
+}
+
+function readTextField(value: unknown, field: string): string {
+  if (!isJsonRecord(value)) return ''
+  const text = value[field]
+  return typeof text === 'string' ? text.trim() : ''
 }
 
 function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
@@ -1700,6 +1880,94 @@ function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
   return true
 }
 
+function applyBusinessModelEditorToSelected(options: { silent?: boolean } = {}): boolean {
+  const view = selectedNode.value
+  const document = currentDocument.value
+  if (view === null || document === null || !view.isBusinessNode) return true
+  view.node.data ??= {}
+  view.node.data.model = {
+    rootClassName: modelRootClassText.value.trim(),
+    className: modelClassText.value.trim(),
+    contextPath: readTextField(view.node.data.model, 'contextPath') || '$',
+  }
+  view.node.data.validation = normalizeBusinessNodeValidationEditorValue(view.node.data.validation)
+  const validation = view.node.data.validation
+  const action = isJsonRecord(validation['action']) ? validation['action'] : {}
+  validation['action'] = {
+    ...action,
+    className: validationActionClassText.value.trim() || modelClassText.value.trim(),
+    actionName: validationActionNameText.value.trim(),
+    inputProjection: isJsonRecord(action['inputProjection']) ? action['inputProjection'] : {},
+    expectedResult: isJsonRecord(action['expectedResult']) ? action['expectedResult'] : {},
+  }
+  view.node.data.llm = normalizeBusinessNodeLlmEditorValue(view.node.data.llm)
+  const llm = view.node.data.llm
+  llm['knowledge'] = {
+    ...(isJsonRecord(llm['knowledge']) ? llm['knowledge'] : {}),
+    rootClassName: modelRootClassText.value.trim(),
+    className: modelClassText.value.trim(),
+  }
+  modelJsonText.value = formatJson(view.node.data)
+  markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
+  editorDirty.value = false
+  if (options.silent !== true) ElMessage.success('模型绑定已应用')
+  return true
+}
+
+function handleModelClassSelectionChange(): void {
+  if (validationActionClassText.value.trim().length === 0) {
+    validationActionClassText.value = modelClassText.value.trim()
+  }
+  markEditorDirty()
+}
+
+async function refreshClassModelOptions(): Promise<void> {
+  const rootClassName = modelRootClassText.value.trim()
+  if (rootClassName.length === 0) {
+    classModelError.value = 'Root Class 不能为空'
+    return
+  }
+  classModelLoading.value = true
+  classModelError.value = ''
+  classModelGuideText.value = ''
+  try {
+    const provider = createClassModelKnowledgeProvider(rootClassName)
+    const result = await provider.query({ includeMembers: true })
+    classModelOptions.value = readClassModelOptions(result)
+    if (modelClassText.value.trim().length === 0 && classModelOptions.value[0] !== undefined) {
+      modelClassText.value = classModelOptions.value[0].kind
+      validationActionClassText.value = modelClassText.value
+    }
+  } catch (error: unknown) {
+    classModelError.value = `ClassModel 读取失败: ${errorMessage(error)}`
+  } finally {
+    classModelLoading.value = false
+  }
+}
+
+async function loadValidationActionGuide(): Promise<void> {
+  const rootClassName = modelRootClassText.value.trim()
+  const className = validationActionClassText.value.trim() || modelClassText.value.trim()
+  const methodName = validationActionNameText.value.trim()
+  if (rootClassName.length === 0 || className.length === 0 || methodName.length === 0) {
+    classModelError.value = 'Root Class、Validation Class、Validation Action 都不能为空'
+    return
+  }
+  classModelLoading.value = true
+  classModelError.value = ''
+  try {
+    const provider = createClassModelKnowledgeProvider(rootClassName)
+    classModelGuideText.value = await provider.methodGuide({
+      kind: className,
+      methodName,
+    })
+  } catch (error: unknown) {
+    classModelError.value = `Action Guide 读取失败: ${errorMessage(error)}`
+  } finally {
+    classModelLoading.value = false
+  }
+}
+
 function applyLoopEditorToSelected(options: { silent?: boolean } = {}): boolean {
   const view = selectedNode.value
   const document = currentDocument.value
@@ -1725,7 +1993,10 @@ function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
     editorDirty.value = false
     return true
   }
-  if (shouldEditNodeConfig(view)) return applyEditorToSelected(options)
+  if (shouldEditNodeConfig(view)) {
+    if (!applyEditorToSelected(options)) return false
+    return applyBusinessModelEditorToSelected({ silent: true })
+  }
   if (view.nodeType === 'loop') return applyLoopEditorToSelected(options)
   applyNodeBasicEditorToSelected()
   editorDirty.value = false
@@ -2269,8 +2540,12 @@ function errorMessage(error: unknown): string {
   box-shadow: 0 0 0 2px rgb(15 118 110 / 18%);
 }
 
-.workflow-node.is-tool {
+.workflow-node.is-business {
   background: #f4fbf9;
+}
+
+.workflow-node.is-boundary {
+  background: #f5f9ff;
 }
 
 .workflow-node.is-loop {
@@ -2334,9 +2609,32 @@ function errorMessage(error: unknown): string {
 }
 
 .node-editor-form,
-.loop-editor-form {
+.loop-editor-form,
+.class-model-editor {
   display: grid;
   gap: 10px;
+}
+
+.class-model-catalog {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #334155;
+  font-size: 12px;
+}
+
+.class-model-guide {
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .position-editor :deep(.el-input-number) {

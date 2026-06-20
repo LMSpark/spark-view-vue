@@ -62,3 +62,13 @@
 - **30天存活**：（30天后回填）待回填
 - **知识沉淀**：否
 - **人工干预**：阶段 1.5 确认清理范围（分支+依赖）、红线（允许动 lockfile、删 master、保留今天 backup、删旧 backup/checkpoint、删未合并分支、删已合并本地分支）；执行中确认移除 agents-clear-cache worktree；origin/master 因 gitee 默认分支设置暂留。
+
+### 2026-06-20 Agent Workflow Designer 单一业务节点契约落地
+
+- **复杂度**：复杂
+- **总耗时**：约 120 分钟
+- **返工次数**：1（`lint` 发现类型收窄后的多余条件判断，已修正）
+- **审查轮次**：1
+- **30天存活**：（30天后回填）待回填
+- **知识沉淀**：是（后端 Maven 测试必须使用 JDK 17）
+- **人工干预**：阶段2-4 多次纠正产品口径：只保留一种业务节点、Chat/LLM/workflow invocation 作为能力配置、validation action 必须绑定、分支和属性投影属于步骤线，本轮不改运行时。

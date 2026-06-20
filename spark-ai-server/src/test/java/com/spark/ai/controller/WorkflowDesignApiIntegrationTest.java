@@ -100,8 +100,8 @@ class WorkflowDesignApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.document.kind").value("agent.workflow.design"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.nodes[0].data.type").value("start"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("tool"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.provider").value("class-model"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("node"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.model.className").value("spark.placeholder.Model"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.nodes[2].data.type").value("output"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.edges.length()").value(2))
                 .andReturn();
@@ -109,8 +109,8 @@ class WorkflowDesignApiIntegrationTest {
         ObjectNode document = readDocumentFromEnvelope(readResult);
         ((ObjectNode) document.path("x_spark").path("designer")).put("title", "API Workflow Saved");
         JsonNode graphNodes = document.at("/workflow/graph/nodes");
-        ObjectNode toolData = (ObjectNode) graphNodes.get(1).get("data");
-        toolData.put("title", "updated-from-api");
+        ObjectNode nodeData = (ObjectNode) graphNodes.get(1).get("data");
+        nodeData.put("title", "updated-from-api");
 
         mockMvc.perform(put("/api/tenants/t1/projects/p1/workflow-designs/{workflowId}/design.json", workflowId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,15 +196,41 @@ class WorkflowDesignApiIntegrationTest {
         ObjectNode graph = workflow.putObject("graph");
         ArrayNode nodes = graph.putArray("nodes");
         addDefinitionNode(nodes, "start", "start", "Start");
-        ObjectNode tool = addDefinitionNode(nodes, "tool.classModel", "tool", "ClassModel Tool");
-        ObjectNode toolData = (ObjectNode) tool.path("data");
-        toolData.put("provider", "class-model");
-        toolData.put("toolName", "apiModule");
-        ObjectNode inputs = toolData.putObject("inputs");
+        ObjectNode businessNode = addDefinitionNode(nodes, "node.model", "node", "Business Node");
+        ObjectNode nodeData = (ObjectNode) businessNode.path("data");
+        ObjectNode model = nodeData.putObject("model");
+        model.put("rootClassName", "ApiModel");
+        model.put("className", "ApiModel");
+        model.put("contextPath", "$");
+        ObjectNode inputs = nodeData.putObject("inputs");
         inputs.put("prompt", "${workflow.input.prompt}");
-        ObjectNode outputs = toolData.putObject("outputs");
+        ObjectNode outputs = nodeData.putObject("outputs");
         outputs.put("result", "api.result");
-        ObjectNode nodeCapability = toolData.putArray("capabilities").addObject();
+        ObjectNode llm = nodeData.putObject("llm");
+        ObjectNode task = llm.putObject("task");
+        task.put("goal", "Run API workflow.");
+        task.putObject("requirements");
+        task.putObject("contextInputs");
+        ObjectNode knowledge = llm.putObject("knowledge");
+        knowledge.put("rootClassName", "ApiModel");
+        knowledge.put("className", "ApiModel");
+        knowledge.putArray("allowedActions").add("validateApi");
+        knowledge.putArray("readableAttributes").add("result");
+        ObjectNode functionCalling = llm.putObject("functionCalling");
+        functionCalling.put("mode", "freeWithinModelContext");
+        functionCalling.putArray("constraints");
+        ObjectNode llmOutput = llm.putObject("output");
+        llmOutput.putObject("structuredResult");
+        llmOutput.put("handoffToValidation", true);
+        ObjectNode nodeValidation = nodeData.putObject("validation");
+        ObjectNode action = nodeValidation.putObject("action");
+        action.put("className", "ApiModel");
+        action.put("actionName", "validateApi");
+        action.putObject("inputProjection");
+        action.putObject("expectedResult");
+        nodeValidation.put("status", "draft");
+        nodeValidation.putArray("issues");
+        ObjectNode nodeCapability = nodeData.putArray("capabilities").addObject();
         nodeCapability.put("id", "api.execute");
         nodeCapability.put("title", "Execute API Workflow");
         nodeCapability.put("scope", "node");
@@ -215,8 +241,8 @@ class WorkflowDesignApiIntegrationTest {
         ((ObjectNode) output.path("data")).putArray("capabilities");
 
         ArrayNode edges = graph.putArray("edges");
-        addDefinitionEdge(edges, "edge.start.tool", "start", "tool.classModel");
-        addDefinitionEdge(edges, "edge.tool.output", "tool.classModel", "output");
+        addDefinitionEdge(edges, "edge.start.node", "start", "node.model");
+        addDefinitionEdge(edges, "edge.node.output", "node.model", "output");
 
         ObjectNode spark = document.putObject("x_spark");
         spark.put("schema", "spark.agent.workflow.definition.v1");

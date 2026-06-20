@@ -41,3 +41,10 @@
 - **场景**：需要查看后端运行日志排查问题
 - **规则**：Spring Boot 运行日志输出到 `spark-ai-server/target/spring-boot-run.log`。这是 `.gitignore` 中的文件，不应提交。
 - **违反后果**：找不到日志 → 排查问题效率低；误提交日志 → 仓库体积膨胀
+
+### 后端测试必须使用 JDK 17
+
+- **场景**：在 `spark-ai-server/` 运行 Maven 测试或打包，尤其本机默认 `java` 指向 JDK 11 时。
+- **规则**：先确认 `java -version` 是 17。当前本机可临时执行 `$env:JAVA_HOME='C:\Program Files\Microsoft\jdk-17.0.16.8-hotspot'; $env:PATH="$env:JAVA_HOME\bin;$env:PATH"` 后再运行 `mvn test`。
+- **违反后果**：Maven 测试会因为 Java 版本不匹配失败，例如遇到 Java 17 class file version 61.0 但当前运行时只支持到 55.0。
+- **发现来源**：Agent Workflow Designer 单一业务节点契约落地任务中运行 `WorkflowDesignServiceTest` / `WorkflowDesignApiIntegrationTest` 时发现。

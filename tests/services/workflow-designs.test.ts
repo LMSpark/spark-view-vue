@@ -66,18 +66,60 @@ function createDesign(): WorkflowDesignDocument {
             data: { type: 'start', title: 'Start' },
           },
           {
-            id: 'tool.classModel',
-            type: 'tool',
+            id: 'node.model',
+            type: 'node',
             data: {
-              type: 'tool',
-              title: 'ClassModel Tool',
-              provider: 'class-model',
-              toolName: 'demoModule',
+              type: 'node',
+              title: 'Business Node',
+              model: {
+                rootClassName: 'DemoModel',
+                className: 'DemoModel',
+                contextPath: '$',
+              },
               inputs: {
                 requirement: '{{ start.requirement }}',
               },
               outputs: {
-                result: 'tool.result',
+                result: 'node.result',
+              },
+              llm: {
+                task: {
+                  goal: 'Run demo requirement.',
+                  requirements: {
+                    requirement: '{{ start.requirement }}',
+                  },
+                  contextInputs: {},
+                },
+                knowledge: {
+                  rootClassName: 'DemoModel',
+                  className: 'DemoModel',
+                  allowedActions: ['runDemo', 'validateDemo'],
+                  readableAttributes: ['result'],
+                },
+                functionCalling: {
+                  mode: 'freeWithinModelContext',
+                  constraints: [],
+                },
+                output: {
+                  structuredResult: {
+                    result: 'node.result',
+                  },
+                  handoffToValidation: true,
+                },
+              },
+              validation: {
+                action: {
+                  className: 'DemoModel',
+                  actionName: 'validateDemo',
+                  inputProjection: {
+                    result: 'node.result',
+                  },
+                  expectedResult: {
+                    ok: true,
+                  },
+                },
+                status: 'draft',
+                issues: [],
               },
               capabilities: [
                 {
@@ -89,7 +131,7 @@ function createDesign(): WorkflowDesignDocument {
                     requirement: '{{ start.requirement }}',
                   },
                   outputs: {
-                    result: 'tool.result',
+                    result: 'node.result',
                   },
                   constraints: [],
                 },
@@ -103,15 +145,15 @@ function createDesign(): WorkflowDesignDocument {
               type: 'output',
               title: 'Output',
               outputs: {
-                result: '{{ tool.classModel.result }}',
+                result: '{{ node.model.result }}',
               },
               capabilities: [],
             },
           },
         ],
         edges: [
-          { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
-          { id: 'edge.tool.output', source: 'tool.classModel', target: 'output' },
+          { id: 'edge.start.node', source: 'start', target: 'node.model' },
+          { id: 'edge.node.output', source: 'node.model', target: 'output' },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
@@ -130,14 +172,14 @@ describe('workflow design helpers', () => {
     vi.clearAllMocks()
   })
 
-  it('collects ClassModel Tool nodes from the workflow graph', () => {
+  it('collects business nodes from the workflow graph', () => {
     const nodes = collectWorkflowDesignNodes(createDesign())
-    const tool = nodes.find(node => node.id === 'tool.classModel')
+    const businessNode = nodes.find(node => node.id === 'node.model')
 
-    expect(nodes.map(node => node.id)).toEqual(['start', 'tool.classModel', 'output'])
-    expect(tool?.isClassModelToolNode).toBe(true)
-    expect(tool?.isChatflowNode).toBe(false)
-    expect(tool?.depth).toBe(0)
+    expect(nodes.map(node => node.id)).toEqual(['start', 'node.model', 'output'])
+    expect(businessNode?.isBusinessNode).toBe(true)
+    expect(businessNode?.isBoundaryNode).toBe(false)
+    expect(businessNode?.depth).toBe(0)
   })
 
   it('marks workflow design dirty paths', () => {
@@ -156,7 +198,7 @@ describe('workflow design helpers', () => {
 
     expect(graphs.map(graph => graph.scopePath)).toEqual(['workflow.graph'])
     expect(graphs[0]?.carrier).toBe('root')
-    expect(edges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.output'])
+    expect(edges.map(edge => edge.id)).toEqual(['edge.start.node', 'edge.node.output'])
   })
 
   it('adds and removes edges in a selected graph', () => {
@@ -171,36 +213,45 @@ describe('workflow design helpers', () => {
     expect(graph.edges.some(item => item === edge)).toBe(false)
   })
 
-  it('creates ClassModel Tool and Chatflow nodes in the selected graph', () => {
+  it('creates business and boundary nodes in the selected graph', () => {
     const design = createDesign()
     const graph = design.workflow.graph
 
-    const tool = createWorkflowDesignNode(graph, {
-      nodeKind: 'class-model-tool',
-      id: 'tool.next',
-      title: 'Next Tool',
+    const node = createWorkflowDesignNode(graph, {
+      nodeKind: 'node',
+      id: 'node.next',
+      title: 'Next Business Node',
     })
-    const chatflow = createWorkflowDesignNode(graph, {
-      nodeKind: 'chatflow',
-      id: 'chatflow.clarify',
-      title: 'Clarify',
+    const output = createWorkflowDesignNode(graph, {
+      nodeKind: 'output',
+      id: 'output.next',
+      title: 'Next Output',
     })
 
-    expect(tool.type).toBe('tool')
-    expect(tool.data).toMatchObject({
-      type: 'tool',
-      provider: 'class-model',
-      inputs: {},
-      outputs: {},
-      capabilities: [],
-    })
-    expect(chatflow.type).toBe('chatflow')
-    expect(chatflow.data).toMatchObject({
-      type: 'chatflow',
-      workflowRef: {
-        workflowId: 'chatflow.chatflow.clarify',
+    expect(node.type).toBe('node')
+    expect(node.data).toMatchObject({
+      type: 'node',
+      model: {
+        rootClassName: 'spark.placeholder.RootModel',
+        className: 'spark.placeholder.Model',
       },
       inputs: {},
+      outputs: {},
+      llm: expect.objectContaining({
+        functionCalling: expect.objectContaining({
+          mode: 'freeWithinModelContext',
+        }),
+      }),
+      validation: expect.objectContaining({
+        action: expect.objectContaining({
+          actionName: 'spark.placeholder.validate',
+        }),
+      }),
+      capabilities: [],
+    })
+    expect(output.type).toBe('output')
+    expect(output.data).toMatchObject({
+      type: 'output',
       outputs: {},
       capabilities: [],
     })
@@ -210,10 +261,10 @@ describe('workflow design helpers', () => {
     const design = createDesign()
     const rootGraph = design.workflow.graph
 
-    const result = removeWorkflowDesignNode(rootGraph, 'tool.classModel')
+    const result = removeWorkflowDesignNode(rootGraph, 'node.model')
 
     expect(result.removed).toBe(true)
-    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.tool', 'edge.tool.output'])
+    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.node', 'edge.node.output'])
     expect(rootGraph.nodes.map(node => node.id)).toEqual(['start', 'output'])
     expect(rootGraph.edges).toEqual([])
   })
@@ -224,7 +275,7 @@ describe('workflow design helpers', () => {
     if (edge === undefined) throw new Error('missing edge')
 
     updateWorkflowDesignEdge(edge, {
-      source: 'tool.classModel',
+      source: 'node.model',
       target: 'output',
       sourceHandle: 'next',
       targetHandle: 'entry',
@@ -233,7 +284,7 @@ describe('workflow design helpers', () => {
     })
 
     expect(edge).toEqual(expect.objectContaining({
-      source: 'tool.classModel',
+      source: 'node.model',
       target: 'output',
       sourceHandle: 'next',
       targetHandle: 'entry',
@@ -270,24 +321,38 @@ describe('workflow design helpers', () => {
           nodes: [
             expect.objectContaining({ id: 'start', type: 'start' }),
             expect.objectContaining({
-              id: 'tool.classModel',
-              type: 'tool',
+              id: 'node.model',
+              type: 'node',
               data: expect.objectContaining({
-                provider: 'class-model',
-                toolName: 'demoModule',
+                model: {
+                  rootClassName: 'DemoModel',
+                  className: 'DemoModel',
+                  contextPath: '$',
+                },
                 inputs: {
                   requirement: '{{ start.requirement }}',
                 },
                 outputs: {
-                  result: 'tool.result',
+                  result: 'node.result',
                 },
+                llm: expect.objectContaining({
+                  functionCalling: expect.objectContaining({
+                    mode: 'freeWithinModelContext',
+                  }),
+                }),
+                validation: expect.objectContaining({
+                  action: expect.objectContaining({
+                    className: 'DemoModel',
+                    actionName: 'validateDemo',
+                  }),
+                }),
               }),
             }),
             expect.objectContaining({ id: 'output', type: 'output' }),
           ],
           edges: [
-            { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
-            { id: 'edge.tool.output', source: 'tool.classModel', target: 'output' },
+            { id: 'edge.start.node', source: 'start', target: 'node.model' },
+            { id: 'edge.node.output', source: 'node.model', target: 'output' },
           ],
         },
       },
@@ -325,7 +390,7 @@ describe('workflow design helpers', () => {
       expect.objectContaining({
         severity: 'error',
         code: 'AGENT_WORKFLOW_LEGACY_NODE',
-        nodeId: 'tool.classModel',
+        nodeId: 'node.model',
       }),
     ]))
   })

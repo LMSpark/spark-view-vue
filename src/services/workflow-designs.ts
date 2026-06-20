@@ -2,7 +2,7 @@
  * @module app:services/workflow-designs
  * 职责：提供 workflow 设计稿的 JSON 文件读写与 Dify-like graph 节点解析能力。
  * 边界：只处理编辑态 workflow design，不执行 Agent workflow 运行时。
- * AI用途：排查 workflow design、ClassModel Tool Node 或 Chatflow Node 时，用本模块确认前端接线。
+ * AI用途：排查 workflow design、业务节点、ClassModel model context 或边投影时，用本模块确认前端接线。
  */
 import {
   assertAgentWorkflowDefinition,
@@ -136,23 +136,17 @@ export type WorkflowDesignNodeData = {
   type?: string
   title?: string
   desc?: string
-  provider?: string
-  toolName?: string
   inputs?: JsonRecord
-  workflowRef?: WorkflowDesignWorkflowReference
   outputs?: JsonRecord
   capabilities?: WorkflowDesignCapability[]
   model?: JsonRecord
+  llm?: JsonRecord
+  validation?: JsonRecord
+  state?: JsonRecord
+  result?: JsonRecord
   loop?: WorkflowDesignNestedGraphCarrier
   iteration?: WorkflowDesignNestedGraphCarrier
   x_spark?: WorkflowDesignSparkNodeMeta
-  [key: string]: unknown
-}
-
-export type WorkflowDesignWorkflowReference = {
-  workflowId: string
-  version?: number
-  definitionPath?: string
   [key: string]: unknown
 }
 
@@ -179,8 +173,8 @@ export type WorkflowDesignNodeView = {
   ancestry: string[]
   node: WorkflowDesignGraphNode
   graph: WorkflowDesignGraph
-  isClassModelToolNode: boolean
-  isChatflowNode: boolean
+  isBusinessNode: boolean
+  isBoundaryNode: boolean
   isWorkflowNode: boolean
   isSingleModelEditTool: boolean
   isProcessStageNode: boolean
@@ -211,17 +205,7 @@ export type WorkflowDesignEdgeView = {
   targetNode?: WorkflowDesignGraphNode
 }
 
-export type WorkflowDesignNodeCreateKind =
-  | 'class-model-tool'
-  | 'chatflow'
-  | 'workflow'
-  | 'start'
-  | 'output'
-  | 'condition'
-  | 'code'
-  | 'llm'
-  | 'agent'
-  | 'custom'
+export type WorkflowDesignNodeCreateKind = 'node' | 'start' | 'output'
 
 export type WorkflowDesignNodeCreateInput = {
   nodeKind: WorkflowDesignNodeCreateKind
@@ -276,7 +260,9 @@ type CreateWorkflowDefinitionNodeCommand<
   position: WorkflowDesignGraphNode['position']
 }>
 
-const PLACEHOLDER_CLASS_MODEL_TOOL_NAME = 'spark.placeholder.tool'
+const PLACEHOLDER_MODEL_ROOT_CLASS_NAME = 'spark.placeholder.RootModel'
+const PLACEHOLDER_MODEL_CLASS_NAME = 'spark.placeholder.Model'
+const PLACEHOLDER_VALIDATION_ACTION_NAME = 'spark.placeholder.validate'
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
   return http.get<WorkflowDesignSummary[]>(`${getWorkflowDesignApi()}/__list`)
@@ -469,7 +455,17 @@ export function addWorkflowDesignEdge(
     sourceHandle: 'source',
     targetHandle: 'target',
     type: 'custom',
-    data: { relation: 'sequence' },
+    data: {
+      projection: {
+        sourceRef: `${source}.outputs`,
+        targetRef: `${target}.inputs`,
+      },
+      branch: {
+        label: 'default',
+        default: true,
+      },
+      validation: {},
+    },
   }
   graph.edges.push(edge)
   return edge
@@ -485,7 +481,7 @@ export function createWorkflowDesignNode(
     id: nodeId,
     type: resolveCreatedGraphNodeType(input.nodeKind),
     position,
-    data: createNodeData(nodeId, input),
+    data: createNodeData(input),
   }
   graph.nodes.push(node)
   return node
@@ -561,6 +557,16 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Spark
   for (const view of collectWorkflowDesignNodes(document)) {
     const data = view.node.data
     if (data === undefined) continue
+    const nodeType = typeof data.type === 'string' ? data.type : view.node.type
+    if (!isDefinitionNodeType(nodeType)) {
+      issues.push({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_LEGACY_NODE_TYPE',
+        message: `Structural node type "${nodeType}" is not allowed on "${view.id}".`,
+        nodeId: view.id,
+        path: `${view.scopePath}.${view.id}.type`,
+      })
+    }
     if (Object.prototype.hasOwnProperty.call(data, 'tool_name') || data['toolName'] === 'single_model_edit') {
       issues.push({
         severity: 'error',
@@ -570,7 +576,7 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Spark
         path: `${view.scopePath}.${view.id}.data`,
       })
     }
-    for (const field of ['toolParameters', 'inputMapping', 'outputMapping'] as const) {
+    for (const field of ['provider', 'toolName', 'workflowRef', 'toolParameters', 'inputMapping', 'outputMapping'] as const) {
       if (Object.prototype.hasOwnProperty.call(data, field)) {
         issues.push({
           severity: 'error',
@@ -599,8 +605,61 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Spark
         path: `${view.scopePath}.${view.id}.data`,
       })
     }
+    if (nodeType === 'node') {
+      validateBusinessNodePublishReadiness(view, data, issues)
+    }
   }
   return issues
+}
+
+function validateBusinessNodePublishReadiness(
+  view: WorkflowDesignNodeView,
+  data: WorkflowDesignNodeData,
+  issues: SparkAgent.AgentWorkflowDefinitionValidationIssue[],
+): void {
+  const model = isJsonRecord(data.model) ? data.model : undefined
+  const rootClassName = readNonBlankText(model?.['rootClassName'])
+  const className = readNonBlankText(model?.['className'])
+  const validation = isJsonRecord(data.validation) ? data.validation : undefined
+  const action = isJsonRecord(validation?.['action']) ? validation['action'] : undefined
+  const actionClassName = readNonBlankText(action?.['className'])
+  const actionName = readNonBlankText(action?.['actionName'])
+  if (rootClassName === undefined || rootClassName === PLACEHOLDER_MODEL_ROOT_CLASS_NAME) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_MODEL_ROOT_MISSING',
+      message: `Business node "${view.id}" must bind a real model.rootClassName before publishing.`,
+      nodeId: view.id,
+      path: `${view.scopePath}.${view.id}.data.model.rootClassName`,
+    })
+  }
+  if (className === undefined || className === PLACEHOLDER_MODEL_CLASS_NAME) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_MODEL_CLASS_MISSING',
+      message: `Business node "${view.id}" must bind a real model.className before publishing.`,
+      nodeId: view.id,
+      path: `${view.scopePath}.${view.id}.data.model.className`,
+    })
+  }
+  if (actionClassName === undefined || actionClassName === PLACEHOLDER_MODEL_CLASS_NAME) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_VALIDATION_CLASS_MISSING',
+      message: `Business node "${view.id}" must bind validation.action.className before publishing.`,
+      nodeId: view.id,
+      path: `${view.scopePath}.${view.id}.data.validation.action.className`,
+    })
+  }
+  if (actionName === undefined || actionName === PLACEHOLDER_VALIDATION_ACTION_NAME) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_VALIDATION_ACTION_MISSING',
+      message: `Business node "${view.id}" must bind validation.action.actionName before publishing.`,
+      nodeId: view.id,
+      path: `${view.scopePath}.${view.id}.data.validation.action.actionName`,
+    })
+  }
 }
 
 function normalizeDefinitionWorkflowExtras(workflow: WorkflowDesignDocument['workflow']): JsonRecord {
@@ -641,30 +700,6 @@ function toDefinitionNode(node: WorkflowDesignGraphNode): SparkAgent.AgentWorkfl
       position: node.position,
     })
   }
-  if (type === 'tool') {
-    return createWorkflowDefinitionNode({
-      id: node.id,
-      type,
-      data: normalizeNodeDataForDefinition(type, node.data),
-      position: node.position,
-    })
-  }
-  if (type === 'chatflow') {
-    return createWorkflowDefinitionNode({
-      id: node.id,
-      type,
-      data: normalizeNodeDataForDefinition(type, node.data),
-      position: node.position,
-    })
-  }
-  if (type === 'workflow') {
-    return createWorkflowDefinitionNode({
-      id: node.id,
-      type,
-      data: normalizeNodeDataForDefinition(type, node.data),
-      position: node.position,
-    })
-  }
   if (type === 'output') {
     return createWorkflowDefinitionNode({
       id: node.id,
@@ -675,8 +710,8 @@ function toDefinitionNode(node: WorkflowDesignGraphNode): SparkAgent.AgentWorkfl
   }
   return createWorkflowDefinitionNode({
     id: node.id,
-    type,
-    data: normalizeNodeDataForDefinition(type, node.data),
+    type: 'node',
+    data: normalizeNodeDataForDefinition('node', node.data),
     position: node.position,
   })
 }
@@ -728,25 +763,13 @@ function normalizeNodeDataForDefinition(
   value: WorkflowDesignNodeData | undefined,
 ): SparkAgent.AgentWorkflowStartNodeData
 function normalizeNodeDataForDefinition(
-  type: 'tool',
+  type: 'node',
   value: WorkflowDesignNodeData | undefined,
-): SparkAgent.AgentWorkflowToolNodeData
-function normalizeNodeDataForDefinition(
-  type: 'chatflow',
-  value: WorkflowDesignNodeData | undefined,
-): SparkAgent.AgentWorkflowChatflowNodeData
-function normalizeNodeDataForDefinition(
-  type: 'workflow',
-  value: WorkflowDesignNodeData | undefined,
-): SparkAgent.AgentWorkflowSubWorkflowNodeData
+): SparkAgent.AgentWorkflowBusinessNodeData
 function normalizeNodeDataForDefinition(
   type: 'output',
   value: WorkflowDesignNodeData | undefined,
 ): SparkAgent.AgentWorkflowOutputNodeData
-function normalizeNodeDataForDefinition(
-  type: 'condition' | 'code' | 'llm' | 'agent',
-  value: WorkflowDesignNodeData | undefined,
-): SparkAgent.AgentWorkflowGenericNodeData
 function normalizeNodeDataForDefinition(
   type: SparkAgent.AgentWorkflowGraphNodeType,
   value: WorkflowDesignNodeData | undefined,
@@ -757,56 +780,105 @@ function normalizeNodeDataForDefinition(
   delete data['toolParameters']
   delete data['inputMapping']
   delete data['outputMapping']
+  delete data['provider']
+  delete data['toolName']
+  delete data['workflowRef']
   delete data.x_spark
   const title = readTitle(data, defaultNodeTitleForType(type))
   const optionalCapabilities = normalizeOptionalCapabilities(data['capabilities'], 'node')
   if (type === 'start') {
     return {
+      type,
       title,
+      ...(isJsonRecord(data['inputs']) ? { inputs: data['inputs'] } : {}),
+      ...(isJsonRecord(data['projection']) ? { projection: data['projection'] } : {}),
+      ...(isJsonRecord(data['validation']) ? { validation: data['validation'] } : {}),
+      ...(isJsonRecord(data['state']) ? { state: data['state'] } : {}),
       ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
     }
   }
-  if (type === 'tool') {
+  if (type === 'node') {
+    const model = normalizeBusinessNodeModel(data['model'])
     return {
+      type,
       title,
-      provider: readNonBlankText(data['provider']) ?? 'class-model',
-      toolName: readNonBlankText(data['toolName']) ?? PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
+      model,
       inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
       outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
-      capabilities: normalizeCapabilities(data['capabilities'], 'node'),
-    }
-  }
-  if (type === 'chatflow' || type === 'workflow') {
-    return {
-      title,
-      workflowRef: normalizeDefinitionWorkflowReference(data['workflowRef']),
-      inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
-      outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
-      ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
-    }
-  }
-  if (type === 'output') {
-    return {
-      title,
-      outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
+      llm: normalizeBusinessNodeLlm(data['llm'], model),
+      validation: normalizeBusinessNodeValidation(data['validation'], model.className),
+      ...(isJsonRecord(data['state']) ? { state: data['state'] } : {}),
+      ...(isJsonRecord(data['result']) ? { result: data['result'] } : {}),
       ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
     }
   }
   return {
-    ...data,
     type,
     title,
+    outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
+    ...(isJsonRecord(data['upstreamValidation']) ? { upstreamValidation: data['upstreamValidation'] } : {}),
+    ...(isJsonRecord(data['validation']) ? { validation: data['validation'] } : {}),
+    ...(isJsonRecord(data['state']) ? { state: data['state'] } : {}),
+    ...(isJsonRecord(data['result']) ? { result: data['result'] } : {}),
     ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
   }
 }
 
-function normalizeDefinitionWorkflowReference(value: unknown): SparkAgent.AgentWorkflowReference {
-  if (!isWorkflowReference(value)) return { workflowId: '', version: 1 }
-  const definitionPath = readNonBlankText(value.definitionPath)
+function normalizeBusinessNodeModel(value: unknown): SparkAgent.AgentWorkflowModelContext {
+  const model = isJsonRecord(value) ? value : {}
   return {
-    workflowId: value.workflowId.trim(),
-    ...(typeof value.version === 'number' ? { version: value.version } : {}),
-    ...(definitionPath === undefined ? {} : { definitionPath }),
+    rootClassName: readNonBlankText(model['rootClassName']) ?? PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
+    className: readNonBlankText(model['className']) ?? PLACEHOLDER_MODEL_CLASS_NAME,
+    contextPath: readNonBlankText(model['contextPath']) ?? '$',
+  }
+}
+
+function normalizeBusinessNodeLlm(
+  value: unknown,
+  model: SparkAgent.AgentWorkflowModelContext,
+): SparkAgent.AgentWorkflowLlmWork {
+  const llm = isJsonRecord(value) ? value : {}
+  return {
+    task: isJsonRecord(llm['task']) ? llm['task'] : {
+      goal: '',
+      requirements: {},
+      contextInputs: {},
+    },
+    knowledge: isJsonRecord(llm['knowledge']) ? llm['knowledge'] : {
+      rootClassName: model.rootClassName,
+      className: model.className,
+      allowedActions: [],
+      readableAttributes: [],
+    },
+    functionCalling: isJsonRecord(llm['functionCalling']) ? llm['functionCalling'] : {
+      mode: 'freeWithinModelContext',
+      constraints: [],
+    },
+    output: isJsonRecord(llm['output']) ? llm['output'] : {
+      structuredResult: {},
+      handoffToValidation: true,
+    },
+  }
+}
+
+function normalizeBusinessNodeValidation(
+  value: unknown,
+  fallbackClassName: string,
+): SparkAgent.AgentWorkflowNodeValidation {
+  const validation = isJsonRecord(value) ? value : {}
+  const action = isJsonRecord(validation['action']) ? validation['action'] : {}
+  const status = readNonBlankText(validation['status'])
+  return {
+    action: {
+      className: readNonBlankText(action['className']) ?? fallbackClassName,
+      actionName: readNonBlankText(action['actionName']) ?? PLACEHOLDER_VALIDATION_ACTION_NAME,
+      inputProjection: isJsonRecord(action['inputProjection']) ? action['inputProjection'] : {},
+      expectedResult: isJsonRecord(action['expectedResult']) ? action['expectedResult'] : {},
+    },
+    ...(status === undefined ? {} : { status }),
+    ...(Array.isArray(validation['issues'])
+      ? { issues: validation['issues'].filter(isJsonRecord) }
+      : {}),
   }
 }
 
@@ -814,45 +886,21 @@ function resolveDefinitionNodeType(node: WorkflowDesignGraphNode): SparkAgent.Ag
   const dataType = node.data?.type
   if (isDefinitionNodeType(dataType)) return dataType
   if (isDefinitionNodeType(node.type)) return node.type
-  return 'tool'
+  return 'node'
 }
 
 function resolveCreatedGraphNodeType(kind: WorkflowDesignNodeCreateKind): string {
-  return kind === 'class-model-tool' ? 'tool' : kind
+  return kind
 }
 
-function createNodeData(nodeId: string, input: WorkflowDesignNodeCreateInput): WorkflowDesignNodeData {
+function createNodeData(input: WorkflowDesignNodeCreateInput): WorkflowDesignNodeData {
   const normalizedTitle = input.title?.trim()
   const title = normalizedTitle === undefined || normalizedTitle.length === 0
     ? defaultNodeTitle(input.nodeKind)
     : normalizedTitle
   const desc = input.desc?.trim()
-  if (input.nodeKind === 'class-model-tool') {
-    return {
-      type: 'tool',
-      title,
-      ...(desc === undefined || desc.length === 0 ? {} : { desc }),
-      provider: 'class-model',
-      toolName: PLACEHOLDER_CLASS_MODEL_TOOL_NAME,
-      inputs: {},
-      outputs: {},
-      capabilities: [],
-    }
-  }
-  if (input.nodeKind === 'chatflow' || input.nodeKind === 'workflow') {
-    return {
-      type: input.nodeKind,
-      title,
-      ...(desc === undefined || desc.length === 0 ? {} : { desc }),
-      workflowRef: {
-        workflowId: `${input.nodeKind}.${nodeId}`,
-        version: 1,
-        definitionPath: '',
-      },
-      inputs: {},
-      outputs: {},
-      capabilities: [],
-    }
+  if (input.nodeKind === 'node') {
+    return createDefaultBusinessNodeData(title, desc)
   }
   if (input.nodeKind === 'output') {
     return {
@@ -860,13 +908,70 @@ function createNodeData(nodeId: string, input: WorkflowDesignNodeCreateInput): W
       title,
       ...(desc === undefined || desc.length === 0 ? {} : { desc }),
       outputs: {},
+      upstreamValidation: {},
+      validation: {},
+      state: {},
+      result: {},
       capabilities: [],
     }
   }
   return {
-    type: input.nodeKind,
+    type: 'start',
     title,
     ...(desc === undefined || desc.length === 0 ? {} : { desc }),
+    inputs: {},
+    projection: {},
+    validation: {},
+    state: {},
+  }
+}
+
+function createDefaultBusinessNodeData(title: string, desc: string | undefined): WorkflowDesignNodeData {
+  return {
+    type: 'node',
+    title,
+    ...(desc === undefined || desc.length === 0 ? {} : { desc }),
+    model: {
+      rootClassName: PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
+      className: PLACEHOLDER_MODEL_CLASS_NAME,
+      contextPath: '$',
+    },
+    inputs: {},
+    outputs: {},
+    llm: {
+      task: {
+        goal: '',
+        requirements: {},
+        contextInputs: {},
+      },
+      knowledge: {
+        rootClassName: PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
+        className: PLACEHOLDER_MODEL_CLASS_NAME,
+        allowedActions: [],
+        readableAttributes: [],
+      },
+      functionCalling: {
+        mode: 'freeWithinModelContext',
+        constraints: [],
+      },
+      output: {
+        structuredResult: {},
+        handoffToValidation: true,
+      },
+    },
+    validation: {
+      action: {
+        className: PLACEHOLDER_MODEL_CLASS_NAME,
+        actionName: PLACEHOLDER_VALIDATION_ACTION_NAME,
+        inputProjection: {},
+        expectedResult: {},
+      },
+      status: 'draft',
+      issues: [],
+    },
+    state: {},
+    result: {},
+    capabilities: [],
   }
 }
 
@@ -876,7 +981,7 @@ function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowD
   for (const node of graph.nodes) {
     const nodeType = typeof node.data?.type === 'string' ? node.data.type : node.type
     const title = typeof node.data?.title === 'string' && node.data.title.length > 0 ? node.data.title : node.id
-    const isClassModelTool = isClassModelToolNode(node)
+    const isBusinessNode = nodeType === 'node'
     const view: WorkflowDesignNodeView = {
       key: `${scopePath}:${node.id}`,
       id: node.id,
@@ -887,9 +992,9 @@ function collectGraphNodes(command: CollectWorkflowDesignNodeCommand): WorkflowD
       ancestry,
       node,
       graph,
-      isClassModelToolNode: isClassModelTool,
-      isChatflowNode: nodeType === 'chatflow',
-      isWorkflowNode: nodeType === 'workflow',
+      isBusinessNode,
+      isBoundaryNode: nodeType === 'start' || nodeType === 'output',
+      isWorkflowNode: false,
       isSingleModelEditTool: false,
       isProcessStageNode: false,
     }
@@ -986,11 +1091,6 @@ function collectGraphEdges(view: WorkflowDesignGraphView): WorkflowDesignEdgeVie
   })
 }
 
-function isClassModelToolNode(node: WorkflowDesignGraphNode): boolean {
-  const data = node.data
-  return (data?.type === 'tool' || node.type === 'tool') && data?.provider === 'class-model'
-}
-
 function ensureDocumentSpark(document: WorkflowDesignDocument): JsonRecord {
   const spark = document.x_spark
   if (isJsonRecord(spark)) return spark
@@ -1039,59 +1139,28 @@ function nextEdgeId(graph: WorkflowDesignGraph, source: string, target: string):
 
 function defaultNodeId(kind: WorkflowDesignNodeCreateKind): string {
   switch (kind) {
-    case 'class-model-tool':
-      return 'tool.classModel'
-    case 'chatflow':
-      return 'chatflow.clarify'
-    case 'workflow':
-      return 'workflow.call'
+    case 'node':
+      return 'node.model'
     case 'start':
       return 'start'
     case 'output':
       return 'output'
-    case 'condition':
-      return 'condition'
-    case 'code':
-      return 'code'
-    case 'llm':
-      return 'llm'
-    case 'agent':
-      return 'agent'
-    case 'custom':
-      return 'node.custom'
   }
 }
 
 function defaultNodeTitle(kind: WorkflowDesignNodeCreateKind): string {
   switch (kind) {
-    case 'class-model-tool':
-      return 'ClassModel Tool'
-    case 'chatflow':
-      return 'Chatflow'
-    case 'workflow':
-      return 'Workflow'
+    case 'node':
+      return 'Business Node'
     case 'start':
       return 'Start'
     case 'output':
       return 'Output'
-    case 'condition':
-      return 'Condition'
-    case 'code':
-      return 'Code'
-    case 'llm':
-      return 'LLM'
-    case 'agent':
-      return 'Agent'
-    case 'custom':
-      return 'Custom'
   }
 }
 
 function defaultNodeTitleForType(type: SparkAgent.AgentWorkflowGraphNodeType): string {
-  if (type === 'tool') return 'ClassModel Tool'
-  if (type === 'chatflow') return 'Chatflow'
-  if (type === 'workflow') return 'Workflow'
-  if (type === 'llm') return 'LLM'
+  if (type === 'node') return 'Business Node'
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
 
@@ -1158,18 +1227,8 @@ function readNonBlankText(value: unknown): string | undefined {
 
 function isDefinitionNodeType(value: unknown): value is SparkAgent.AgentWorkflowGraphNodeType {
   return value === 'start'
-    || value === 'tool'
-    || value === 'chatflow'
-    || value === 'workflow'
-    || value === 'condition'
-    || value === 'code'
-    || value === 'llm'
-    || value === 'agent'
+    || value === 'node'
     || value === 'output'
-}
-
-function isWorkflowReference(value: unknown): value is WorkflowDesignWorkflowReference {
-  return isJsonRecord(value) && typeof value['workflowId'] === 'string'
 }
 
 function isJsonRecord(value: unknown): value is JsonRecord {

@@ -206,12 +206,16 @@ export function createPageDesignAgentWorkflowDefinition(): AgentWorkflowDefiniti
             },
           },
           {
-            id: 'tool.pageDesign',
-            type: 'tool',
+            id: 'node.pageDesign',
+            type: 'node',
             data: {
+              type: 'node',
               title: 'Page Design Module',
-              provider: 'class-model',
-              toolName: PAGE_DESIGN_MODULE_ID,
+              model: {
+                rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
+                className: 'ProjectModel',
+                contextPath: '$',
+              },
               inputs: {
                 pageId: '{{ start.pageId }}',
                 description: '{{ start.description }}',
@@ -220,6 +224,59 @@ export function createPageDesignAgentWorkflowDefinition(): AgentWorkflowDefiniti
               outputs: {
                 result: 'pageDesign.result',
               },
+              llm: {
+                task: {
+                  goal: 'Compose and deliver page design changes for the requested page.',
+                  requirements: {
+                    pageId: '{{ start.pageId }}',
+                    description: '{{ start.description }}',
+                    effectiveDescription: '{{ start.effectiveDescription }}',
+                  },
+                  contextInputs: {
+                    planningProjection: '{{ start.effectiveDescription }}',
+                  },
+                },
+                knowledge: {
+                  rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
+                  className: 'ProjectModel',
+                  allowedActions: [
+                    'openPageDesign',
+                    'editNodeTree',
+                    'editDataSet',
+                  ],
+                  readableAttributes: [
+                    'activePage',
+                  ],
+                },
+                functionCalling: {
+                  mode: 'freeWithinModelContext',
+                  constraints: [
+                    'Runtime binding owns ClassModel knowledge lookup, script generation, and file delivery.',
+                  ],
+                },
+                output: {
+                  structuredResult: {
+                    result: 'pageDesign.result',
+                  },
+                  handoffToValidation: true,
+                },
+              },
+              validation: {
+                action: {
+                  className: 'ProjectModel',
+                  actionName: 'agent_complete',
+                  inputProjection: {
+                    summary: '{{ node.pageDesign.result }}',
+                  },
+                  expectedResult: {
+                    completed: true,
+                  },
+                },
+                status: 'draft',
+                issues: [],
+              },
+              state: {},
+              result: {},
               capabilities: [
                 {
                   id: 'page-design.compose',
@@ -245,17 +302,18 @@ export function createPageDesignAgentWorkflowDefinition(): AgentWorkflowDefiniti
             id: 'output',
             type: 'output',
             data: {
+              type: 'output',
               title: 'Output',
               outputs: {
-                result: '{{ tool.pageDesign.result }}',
+                result: '{{ node.pageDesign.result }}',
               },
               capabilities: [],
             },
           },
         ],
         edges: [
-          { id: 'edge.start.tool', source: 'start', target: 'tool.pageDesign' },
-          { id: 'edge.tool.output', source: 'tool.pageDesign', target: 'output' },
+          { id: 'edge.start.pageDesign', source: 'start', target: 'node.pageDesign' },
+          { id: 'edge.pageDesign.output', source: 'node.pageDesign', target: 'output' },
         ],
       },
     },

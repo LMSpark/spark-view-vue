@@ -247,20 +247,62 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
             data: { type: 'start', title: 'Start' },
           },
           {
-            id: 'tool.classModel',
-            type: 'tool',
+            id: 'node.model',
+            type: 'node',
             position: { x: 280, y: 160 },
             data: {
-              type: 'tool',
-              title: 'ClassModel Tool',
-              desc: 'Run class model script',
-              provider: 'class-model',
-              toolName: 'pageDesign',
+              type: 'node',
+              title: 'Business Node',
+              desc: 'Run model context work',
+              model: {
+                rootClassName: 'ProjectModel',
+                className: 'ProjectModel',
+                contextPath: '$',
+              },
               inputs: {
                 prompt: 'initial',
               },
               outputs: {
                 result: '$.result',
+              },
+              llm: {
+                task: {
+                  goal: 'Run page design work.',
+                  requirements: {
+                    prompt: 'initial',
+                  },
+                  contextInputs: {},
+                },
+                knowledge: {
+                  rootClassName: 'ProjectModel',
+                  className: 'ProjectModel',
+                  allowedActions: ['openPageDesign', 'agent_complete'],
+                  readableAttributes: ['activePage'],
+                },
+                functionCalling: {
+                  mode: 'freeWithinModelContext',
+                  constraints: [],
+                },
+                output: {
+                  structuredResult: {
+                    result: '$.result',
+                  },
+                  handoffToValidation: true,
+                },
+              },
+              validation: {
+                action: {
+                  className: 'ProjectModel',
+                  actionName: 'agent_complete',
+                  inputProjection: {
+                    summary: '$.result',
+                  },
+                  expectedResult: {
+                    completed: true,
+                  },
+                },
+                status: 'draft',
+                issues: [],
               },
               capabilities: [
                 {
@@ -287,15 +329,15 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
               type: 'output',
               title: 'Output',
               outputs: {
-                result: '{{ tool.classModel.result }}',
+                result: '{{ node.model.result }}',
               },
               capabilities: [],
             },
           },
         ],
         edges: [
-          { id: 'edge.start.tool', source: 'start', target: 'tool.classModel' },
-          { id: 'edge.tool.output', source: 'tool.classModel', target: 'output' },
+          { id: 'edge.start.node', source: 'start', target: 'node.model' },
+          { id: 'edge.node.output', source: 'node.model', target: 'output' },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
@@ -511,27 +553,47 @@ describe('WorkflowDesigns visual editor', () => {
     expect(mocks.message.error).not.toHaveBeenCalled()
   })
 
-  it('opens, edits, and saves a ClassModel Tool node config', async () => {
+  it('opens, edits, and saves a business node config', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
     expect(mocks.listWorkflowDesigns).toHaveBeenCalledOnce()
     expect(mocks.readWorkflowDesign).toHaveBeenCalledWith('agent.workflow.demo')
-    expect(wrapper.text()).toContain('ClassModel Tool')
+    expect(wrapper.text()).toContain('Business Node')
 
     const modelEditor = wrapper.find('textarea.model-json-input')
     expect(modelEditor.exists()).toBe(true)
-    expect((modelEditor.element as HTMLTextAreaElement).value).toContain('"toolName": "pageDesign"')
+    expect((modelEditor.element as HTMLTextAreaElement).value).toContain('"className": "ProjectModel"')
 
     await modelEditor.setValue(JSON.stringify({
-      type: 'tool',
-      title: 'ClassModel Tool',
-      provider: 'class-model',
-      toolName: 'pageDesign',
+      type: 'node',
+      title: 'Business Node',
+      model: {
+        rootClassName: 'ProjectModel',
+        className: 'ProjectModel',
+        contextPath: '$',
+      },
       inputs: {
         prompt: 'edited',
       },
       outputs: {},
+      llm: {
+        task: {},
+        knowledge: {},
+        functionCalling: {
+          mode: 'freeWithinModelContext',
+        },
+        output: {},
+      },
+      validation: {
+        action: {
+          className: 'ProjectModel',
+          actionName: 'agent_complete',
+          inputProjection: {},
+          expectedResult: {},
+        },
+        issues: [],
+      },
       capabilities: [],
     }))
     await findButton(wrapper, '应用节点配置').trigger('click')
@@ -549,7 +611,7 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const dragButton = wrapper.find('[title="移动 ClassModel Tool"]')
+    const dragButton = wrapper.find('[title="移动 Business Node"]')
     expect(dragButton.exists()).toBe(true)
     await dragButton.trigger('click')
     await findButton(wrapper, '保存').trigger('click')
@@ -559,11 +621,11 @@ describe('WorkflowDesigns visual editor', () => {
     expect(savedDocument.workflow.graph.nodes[1]?.position).toEqual({ x: 70, y: 30 })
   })
 
-  it('creates a Chatflow node in the workflow graph', async () => {
+  it('creates a business node in the workflow graph', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    await findButton(wrapper, '加 Chatflow').trigger('click')
+    await findButton(wrapper, '加业务节点').trigger('click')
     await findButton(wrapper, '创建节点').trigger('click')
     await findButton(wrapper, '保存').trigger('click')
     await flushPromises()
@@ -572,11 +634,11 @@ describe('WorkflowDesigns visual editor', () => {
     expect(savedDocument.workflow.graph.nodes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'chatflow.clarify',
+          id: 'node.model-2',
           data: expect.objectContaining({
-            type: 'chatflow',
-            workflowRef: expect.objectContaining({
-              workflowId: 'chatflow.chatflow.clarify',
+            type: 'node',
+            model: expect.objectContaining({
+              className: 'spark.placeholder.Model',
             }),
           }),
         }),
@@ -584,7 +646,7 @@ describe('WorkflowDesigns visual editor', () => {
     )
   })
 
-  it('keeps start and output nodes protected while allowing tool deletion', async () => {
+  it('keeps start and output nodes protected while allowing business node deletion', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
@@ -625,7 +687,7 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const edgeUpdateButton = wrapper.find('[title="改连线 start -> tool.classModel 到 output"]')
+    const edgeUpdateButton = wrapper.find('[title="改连线 start -> node.model 到 output"]')
     expect(edgeUpdateButton.exists()).toBe(true)
     await edgeUpdateButton.trigger('click')
     await findButton(wrapper, '保存').trigger('click')
@@ -666,9 +728,9 @@ describe('WorkflowDesigns visual editor', () => {
       environment_variables: [],
       conversation_variables: [],
     })
-    const toolData = document.workflow.graph.nodes[1]?.data
-    if (toolData === undefined) throw new Error('missing tool node data')
-    toolData.x_spark = {
+    const nodeData = document.workflow.graph.nodes[1]?.data
+    if (nodeData === undefined) throw new Error('missing business node data')
+    nodeData.x_spark = {
       classModel: {
         manifestPath: 'generated/dts-class-model/manifest.json',
         sourcePath: 'packages/spark-project-model/src/project/project-model.ts',
@@ -687,10 +749,12 @@ describe('WorkflowDesigns visual editor', () => {
     })
 
     expect(definition.workflow.graph.nodes[1]?.data).toMatchObject({
-      type: 'tool',
-      desc: 'Run class model script',
-      provider: 'class-model',
-      toolName: 'pageDesign',
+      type: 'node',
+      model: {
+        rootClassName: 'ProjectModel',
+        className: 'ProjectModel',
+        contextPath: '$',
+      },
     })
     expect(definition.workflow.graph.nodes[1]?.data).not.toHaveProperty('x_spark')
     expect(definition.x_spark.validation).toMatchObject({
@@ -698,7 +762,7 @@ describe('WorkflowDesigns visual editor', () => {
       issues: expect.arrayContaining([
         expect.objectContaining({
           code: 'AGENT_WORKFLOW_LEGACY_CLASS_MODEL_META',
-          nodeId: 'tool.classModel',
+          nodeId: 'node.model',
         }),
       ]),
     })

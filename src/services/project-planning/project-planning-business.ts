@@ -318,12 +318,16 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
             },
           },
           {
-            id: 'tool.projectPlanning',
-            type: 'tool',
+            id: 'node.projectPlanning',
+            type: 'node',
             data: {
+              type: 'node',
               title: 'Project Planning Module',
-              provider: 'class-model',
-              toolName: PROJECT_PLANNING_MODULE_ID,
+              model: {
+                rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
+                className: 'ProjectModel',
+                contextPath: '$',
+              },
               inputs: {
                 projectScopeKey: '{{ start.projectScopeKey }}',
                 projectId: '{{ start.projectId }}',
@@ -333,6 +337,63 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
               outputs: {
                 result: 'projectPlanning.result',
               },
+              llm: {
+                task: {
+                  goal: 'Compose project planning navigation from requirement and navigation inputs.',
+                  requirements: {
+                    projectScopeKey: '{{ start.projectScopeKey }}',
+                    projectId: '{{ start.projectId }}',
+                    requirement: '{{ start.requirement }}',
+                    navigationNodes: '{{ start.navigationNodes }}',
+                  },
+                  contextInputs: {
+                    projectRequirement: '{{ start.requirement }}',
+                    navigationNodes: '{{ start.navigationNodes }}',
+                  },
+                },
+                knowledge: {
+                  rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
+                  className: 'ProjectModel',
+                  allowedActions: [
+                    'readProjectPlanningInput',
+                    'readNavigationPlanningInputs',
+                    'replaceNavigationChildren',
+                    'completeProjectPlanning',
+                  ],
+                  readableAttributes: [
+                    'navigationRoot',
+                  ],
+                },
+                functionCalling: {
+                  mode: 'freeWithinModelContext',
+                  constraints: [
+                    'Runtime binding owns ClassModel knowledge lookup, script generation, and navigation mutation.',
+                    'Completion must go through completeProjectPlanning via agent_complete.',
+                  ],
+                },
+                output: {
+                  structuredResult: {
+                    result: 'projectPlanning.result',
+                  },
+                  handoffToValidation: true,
+                },
+              },
+              validation: {
+                action: {
+                  className: 'ProjectModel',
+                  actionName: 'completeProjectPlanning',
+                  inputProjection: {
+                    summary: '{{ node.projectPlanning.result.summary }}',
+                  },
+                  expectedResult: {
+                    completed: true,
+                  },
+                },
+                status: 'draft',
+                issues: [],
+              },
+              state: {},
+              result: {},
               capabilities: [
                 {
                   id: 'project-planning.compose',
@@ -359,17 +420,18 @@ export function createProjectPlanningAgentWorkflowDefinition(): AgentWorkflowDef
             id: 'output',
             type: 'output',
             data: {
+              type: 'output',
               title: 'Output',
               outputs: {
-                result: '{{ tool.projectPlanning.result }}',
+                result: '{{ node.projectPlanning.result }}',
               },
               capabilities: [],
             },
           },
         ],
         edges: [
-          { id: 'edge.start.tool', source: 'start', target: 'tool.projectPlanning' },
-          { id: 'edge.tool.output', source: 'tool.projectPlanning', target: 'output' },
+          { id: 'edge.start.projectPlanning', source: 'start', target: 'node.projectPlanning' },
+          { id: 'edge.projectPlanning.output', source: 'node.projectPlanning', target: 'output' },
         ],
       },
     },

@@ -2,14 +2,14 @@
 
 > 状态：2026-06-19。本文只做平台级入口索引，不再独立定义 Agent Workflow / 业务工厂。
 >
-> Agent Workflow、Chatflow、业务工厂、`design.json`、`definition.json`、ClassModel Tool Node、Published App 复用等概念，只以 [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) 为准。
+> Agent Workflow Designer、`design.json`、`definition.json`、业务节点、ClassModel model context、LLM 工作、验证 action、步骤线投影等概念，只以 [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) 为准。
 
 ## 核心边界
 
 | 层 | 权威说明 |
 | -- | -------- |
 | ClassModel JSON 与知识体系 | [`class-model-knowledge-system-zh-cn.md`](class-model-knowledge-system-zh-cn.md) |
-| Agent Workflow / Chatflow / 业务工厂 | [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) |
+| Agent Workflow Designer | [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) |
 | 传输与会话 | [`transport-and-session-zh-cn.md`](transport-and-session-zh-cn.md) |
 | native runtime / tool loop 速查 | [`native-runtime-and-agent-flow-zh-cn.md`](native-runtime-and-agent-flow-zh-cn.md) |
 | pageDesign × DevSystem | [`pagedesign-devsystem-zh-cn.md`](pagedesign-devsystem-zh-cn.md) |
@@ -20,7 +20,7 @@
 TS / Vue source
   -> generated/dts-class-model JSON
   -> ClassModel knowledge / runtime
-  -> Agent Workflow / Chatflow Designer
+  -> Agent Workflow Designer
   -> design.json
   -> definition.json
   -> runtime binding
@@ -28,7 +28,7 @@ TS / Vue source
   -> delivery
 ```
 
-这条链路中，Agent Workflow / Chatflow 的唯一概念源是 `business-factory-workflow-zh-cn.md`。其它文档不得复制一套业务工厂定义，只能链接该文件。
+这条链路中，Agent Workflow Designer 的唯一概念源是 `business-factory-workflow-zh-cn.md`。其它文档不得复制一套流程/节点定义，只能链接该文件。
 
 ## 代码索引
 

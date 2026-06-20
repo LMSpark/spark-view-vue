@@ -46,11 +46,14 @@ class WorkflowDesignServiceTest {
         JsonNode nodes = document.path("workflow").path("graph").path("nodes");
         assertEquals(3, nodes.size());
         assertEquals("start", nodes.get(0).path("type").asText());
-        assertEquals("tool", nodes.get(1).path("type").asText());
-        assertEquals("class-model", nodes.get(1).path("data").path("provider").asText());
-        assertEquals("spark.placeholder.tool", nodes.get(1).path("data").path("toolName").asText());
+        assertEquals("node", nodes.get(1).path("type").asText());
+        assertEquals("spark.placeholder.RootModel", nodes.get(1).path("data").path("model").path("rootClassName").asText());
+        assertEquals("spark.placeholder.Model", nodes.get(1).path("data").path("model").path("className").asText());
+        assertEquals("spark.placeholder.validate",
+                nodes.get(1).path("data").path("validation").path("action").path("actionName").asText());
         assertTrue(nodes.get(1).path("data").path("inputs").isObject());
         assertTrue(nodes.get(1).path("data").path("outputs").isObject());
+        assertTrue(nodes.get(1).path("data").path("llm").isObject());
         assertTrue(nodes.get(1).path("data").path("capabilities").isArray());
         assertEquals("output", nodes.get(2).path("type").asText());
         assertTrue(nodes.get(2).path("data").path("outputs").isObject());
@@ -134,8 +137,8 @@ class WorkflowDesignServiceTest {
         JsonNode saved = objectMapper.readTree(file.toFile());
         assertEquals("agent.workflow", saved.path("kind").asText());
         assertEquals("spark.workflow.demo", saved.path("workflowId").asText());
-        assertEquals("demoModule",
-                saved.at("/workflow/graph/nodes/1/data/toolName").asText());
+        assertEquals("validateDemo",
+                saved.at("/workflow/graph/nodes/1/data/validation/action/actionName").asText());
         assertFalse(saved.has("factory"));
     }
 
@@ -166,15 +169,15 @@ class WorkflowDesignServiceTest {
         WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
         service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
         ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
-        ObjectNode toolData = (ObjectNode) definition.at("/workflow/graph/nodes/1/data");
-        toolData.put("toolName", "demoModuleUpdated");
+        ObjectNode action = (ObjectNode) definition.at("/workflow/graph/nodes/1/data/validation/action");
+        action.put("actionName", "validateDemoUpdated");
 
         Map<String, Object> result = service.writeDefinition("t1", "p1", "spark.workflow.demo", definition);
 
         assertEquals(true, result.get("ok"));
         assertEquals("definition.json", result.get("filename"));
         JsonNode saved = objectMapper.readTree(tempDir.resolve("t1/p1/spark.workflow.demo/definition.json").toFile());
-        assertEquals("demoModuleUpdated", saved.at("/workflow/graph/nodes/1/data/toolName").asText());
+        assertEquals("validateDemoUpdated", saved.at("/workflow/graph/nodes/1/data/validation/action/actionName").asText());
     }
 
     @Test
@@ -202,17 +205,17 @@ class WorkflowDesignServiceTest {
     }
 
     @Test
-    void publishDefinition_rejectsPlaceholderToolName() throws Exception {
+    void publishDefinition_rejectsPlaceholderModelBinding() throws Exception {
         WorkflowDesignService service = new WorkflowDesignService(objectMapper, tempDir);
         service.createDesign("t1", "p1", "spark.workflow.demo", "Demo Workflow");
         ObjectNode definition = createDefinition("spark.workflow.demo", "valid");
-        ObjectNode toolData = (ObjectNode) definition.at("/workflow/graph/nodes/1/data");
-        toolData.put("toolName", "spark.placeholder.tool");
+        ObjectNode model = (ObjectNode) definition.at("/workflow/graph/nodes/1/data/model");
+        model.put("className", "spark.placeholder.Model");
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.publishDefinition("t1", "p1", "spark.workflow.demo", definition));
 
-        assertTrue(error.getMessage().contains("real toolName"));
+        assertTrue(error.getMessage().contains("real model"));
     }
 
     @Test
@@ -331,19 +334,45 @@ class WorkflowDesignServiceTest {
             startData.put("type", "start");
             startData.put("title", "Start");
 
-            ObjectNode tool = nodes.addObject();
-            tool.put("id", "tool.classModel");
-            tool.put("type", "tool");
-            ObjectNode toolData = tool.putObject("data");
-            toolData.put("type", "tool");
-            toolData.put("title", "ClassModel Tool");
-            toolData.put("provider", "class-model");
-            toolData.put("toolName", "demoModule");
-            ObjectNode inputs = toolData.putObject("inputs");
+            ObjectNode businessNode = nodes.addObject();
+            businessNode.put("id", "node.model");
+            businessNode.put("type", "node");
+            ObjectNode nodeData = businessNode.putObject("data");
+            nodeData.put("type", "node");
+            nodeData.put("title", "Business Node");
+            ObjectNode model = nodeData.putObject("model");
+            model.put("rootClassName", "DemoModel");
+            model.put("className", "DemoModel");
+            model.put("contextPath", "$");
+            ObjectNode inputs = nodeData.putObject("inputs");
             inputs.put("prompt", "{{ start.prompt }}");
-            ObjectNode outputs = toolData.putObject("outputs");
+            ObjectNode outputs = nodeData.putObject("outputs");
             outputs.put("result", "demo.result");
-            ObjectNode capability = toolData.putArray("capabilities").addObject();
+            ObjectNode llm = nodeData.putObject("llm");
+            ObjectNode task = llm.putObject("task");
+            task.put("goal", "Run demo workflow.");
+            task.putObject("requirements");
+            task.putObject("contextInputs");
+            ObjectNode knowledge = llm.putObject("knowledge");
+            knowledge.put("rootClassName", "DemoModel");
+            knowledge.put("className", "DemoModel");
+            knowledge.putArray("allowedActions").add("validateDemo");
+            knowledge.putArray("readableAttributes").add("result");
+            ObjectNode functionCalling = llm.putObject("functionCalling");
+            functionCalling.put("mode", "freeWithinModelContext");
+            functionCalling.putArray("constraints");
+            ObjectNode llmOutput = llm.putObject("output");
+            llmOutput.putObject("structuredResult");
+            llmOutput.put("handoffToValidation", true);
+            ObjectNode validation = nodeData.putObject("validation");
+            ObjectNode action = validation.putObject("action");
+            action.put("className", "DemoModel");
+            action.put("actionName", "validateDemo");
+            action.putObject("inputProjection");
+            action.putObject("expectedResult");
+            validation.put("status", "draft");
+            validation.putArray("issues");
+            ObjectNode capability = nodeData.putArray("capabilities").addObject();
             capability.put("id", "demo.execute");
             capability.put("title", "Execute Demo");
             capability.put("scope", "node");
@@ -363,13 +392,13 @@ class WorkflowDesignServiceTest {
         static void addEdges(ObjectNode graph) {
             var edges = graph.putArray("edges");
             ObjectNode first = edges.addObject();
-            first.put("id", "edge.start.tool");
+            first.put("id", "edge.start.node");
             first.put("source", "start");
-            first.put("target", "tool.classModel");
+            first.put("target", "node.model");
 
             ObjectNode second = edges.addObject();
-            second.put("id", "edge.tool.output");
-            second.put("source", "tool.classModel");
+            second.put("id", "edge.node.output");
+            second.put("source", "node.model");
             second.put("target", "output");
         }
     }

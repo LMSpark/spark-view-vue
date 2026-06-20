@@ -41,11 +41,11 @@ describe('AgentWorkflowDefinition', () => {
     ]))
   })
 
-  it('rejects legacy tool parameter fields', () => {
+  it('rejects legacy tool parameter fields on business nodes', () => {
     const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
-    const tool = broken.workflow.graph.nodes.find(node => node.id === 'tool.demo')
-    if (tool?.type !== 'tool') throw new Error('test fixture must include tool.demo')
-    ;(tool.data as Record<string, unknown>)['toolParameters'] = {
+    const node = broken.workflow.graph.nodes.find(item => item.id === 'node.demo')
+    if (node?.type !== 'node') throw new Error('test fixture must include node.demo')
+    ;(node.data as Record<string, unknown>)['toolParameters'] = {
       prompt: '{{ start.prompt }}',
     }
 
@@ -56,52 +56,48 @@ describe('AgentWorkflowDefinition', () => {
       expect.objectContaining({
         severity: 'error',
         code: 'AGENT_WORKFLOW_LEGACY_NODE_FIELD',
-        nodeId: 'tool.demo',
+        nodeId: 'node.demo',
         path: 'definition.workflow.graph.nodes[1].data.toolParameters',
       }),
     ]))
   })
 
-  it('validates chatflow references through a definition loader', () => {
-    const definition = createDefinition({
-      nodes: [
-        createStartNode(),
-        {
-          id: 'chatflow.clarify',
-          type: 'chatflow',
-          data: {
-            title: 'Clarify',
-            workflowRef: {
-              workflowId: 'demo.clarify',
-              version: 1,
-              definitionPath: 'workflows/demo.clarify/definition.json',
-            },
-            inputs: {
-              context: '{{ start.prompt }}',
-            },
-            outputs: {
-              answers: 'clarify.answers',
-            },
+  it('rejects old structural chatflow nodes', () => {
+    const definition = JSON.parse(JSON.stringify(createDefinition())) as Record<string, unknown>
+    const workflow = definition['workflow'] as Record<string, unknown>
+    const graph = workflow['graph'] as Record<string, unknown>
+    graph['nodes'] = [
+      createStartNode(),
+      {
+        id: 'chatflow.clarify',
+        type: 'chatflow',
+        data: {
+          title: 'Clarify',
+          workflowRef: {
+            workflowId: 'demo.clarify',
           },
+          inputs: {},
+          outputs: {},
         },
-        createOutputNode(),
-      ],
-      edges: [
-        { id: 'edge.start.chatflow', source: 'start', target: 'chatflow.clarify' },
-        { id: 'edge.chatflow.output', source: 'chatflow.clarify', target: 'output' },
-      ],
-    })
+      },
+      createOutputNode(),
+    ]
+    graph['edges'] = [
+      { id: 'edge.start.chatflow', source: 'start', target: 'chatflow.clarify' },
+      { id: 'edge.chatflow.output', source: 'chatflow.clarify', target: 'output' },
+    ]
 
-    const validation = validateAgentWorkflowDefinition(definition, {
-      loadWorkflowDefinition: ref => ref.workflowId === 'demo.clarify'
-        ? createDefinition({ workflowId: 'demo.clarify' })
-        : undefined,
-    })
+    const validation = validateAgentWorkflowDefinition(definition)
 
-    expect(validation).toEqual({
-      status: 'valid',
-      issues: [],
-    })
+    expect(validation.status).toBe('invalid')
+    expect(validation.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_UNKNOWN_NODE_TYPE',
+        nodeId: 'chatflow.clarify',
+        path: 'definition.workflow.graph.nodes[1].type',
+      }),
+    ]))
   })
 
   it('uses workflowId binding to ensure the runtime carrier and run host dryRun', () => {
@@ -192,43 +188,12 @@ function createDefinition(options: {
       graph: {
         nodes: options.nodes ?? [
           createStartNode(),
-          {
-            id: 'tool.demo',
-            type: 'tool',
-            data: {
-              title: 'Demo Tool',
-              provider: 'class-model',
-              toolName: 'demoModule',
-              inputs: {
-                id: '{{ start.id }}',
-                prompt: '{{ start.prompt }}',
-              },
-              outputs: {
-                result: 'demo.result',
-              },
-              capabilities: [
-                {
-                  id: 'demo.execute',
-                  title: 'Execute Demo',
-                  scope: 'node',
-                  description: 'Let the demo module plan and execute the requested work.',
-                  inputs: {
-                    id: '{{ start.id }}',
-                    prompt: '{{ start.prompt }}',
-                  },
-                  outputs: {
-                    result: 'demo.result',
-                  },
-                  constraints: [],
-                },
-              ],
-            },
-          },
+          createBusinessNode(),
           createOutputNode(),
         ],
         edges: options.edges ?? [
-          { id: 'edge.start.tool', source: 'start', target: 'tool.demo' },
-          { id: 'edge.tool.output', source: 'tool.demo', target: 'output' },
+          { id: 'edge.start.node', source: 'start', target: 'node.demo' },
+          { id: 'edge.node.output', source: 'node.demo', target: 'output' },
         ],
       },
     },
@@ -239,6 +204,85 @@ function createDefinition(options: {
         status: 'valid',
         issues: [],
       },
+    },
+  }
+}
+
+function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nodes'][number] {
+  return {
+    id: 'node.demo',
+    type: 'node',
+    data: {
+      title: 'Demo Node',
+      model: {
+        rootClassName: 'DemoBusiness',
+        className: 'DemoBusiness',
+        contextPath: '$',
+      },
+      inputs: {
+        id: '{{ start.id }}',
+        prompt: '{{ start.prompt }}',
+      },
+      outputs: {
+        result: 'demo.result',
+      },
+      llm: {
+        task: {
+          goal: 'Plan and execute the requested demo work.',
+          requirements: {
+            prompt: '{{ start.prompt }}',
+          },
+          contextInputs: {
+            id: '{{ start.id }}',
+          },
+        },
+        knowledge: {
+          rootClassName: 'DemoBusiness',
+          className: 'DemoBusiness',
+          allowedActions: ['runDemo', 'validateDemo'],
+          readableAttributes: ['result'],
+        },
+        functionCalling: {
+          mode: 'freeWithinModelContext',
+          constraints: [],
+        },
+        output: {
+          structuredResult: {
+            result: 'demo.result',
+          },
+          handoffToValidation: true,
+        },
+      },
+      validation: {
+        action: {
+          className: 'DemoBusiness',
+          actionName: 'validateDemo',
+          inputProjection: {
+            result: 'demo.result',
+          },
+          expectedResult: {
+            ok: true,
+          },
+        },
+        status: 'draft',
+        issues: [],
+      },
+      capabilities: [
+        {
+          id: 'demo.execute',
+          title: 'Execute Demo',
+          scope: 'node',
+          description: 'Let the demo node plan and execute the requested work.',
+          inputs: {
+            id: '{{ start.id }}',
+            prompt: '{{ start.prompt }}',
+          },
+          outputs: {
+            result: 'demo.result',
+          },
+          constraints: [],
+        },
+      ],
     },
   }
 }
@@ -260,7 +304,7 @@ function createOutputNode(): AgentWorkflowDefinition['workflow']['graph']['nodes
     data: {
       title: 'Output',
       outputs: {
-        result: '{{ tool.demo.result }}',
+        result: '{{ node.demo.result }}',
       },
     },
   }

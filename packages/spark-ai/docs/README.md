@@ -4,8 +4,8 @@
 
 | 文档 | 说明 |
 |------|------|
-| [`spark-ai-platform.md`](spark-ai-platform.md) | 平台级入口索引：ClassModel、Agent Workflow / Chatflow、传输、runtime、pageDesign 专题跳转 |
-| [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) | **Agent Workflow / Chatflow / 业务工厂唯一权威文件**：对齐 Dify Workflow、Chatflow、Tool Node、Published App |
+| [`spark-ai-platform.md`](spark-ai-platform.md) | 平台级入口索引：ClassModel、Agent Workflow Designer、传输、runtime、pageDesign 专题跳转 |
+| [`business-factory-workflow-zh-cn.md`](business-factory-workflow-zh-cn.md) | **Agent Workflow Designer 权威文件**：流程、业务节点、ClassModel model context、LLM 工作、验证 action 和步骤线投影 |
 | [`../ARCHITECTURE.md`](../ARCHITECTURE.md) | 包边界与生成命令（薄版） |
 
 ## 专题深潜
@@ -22,4 +22,4 @@
 |------|------|
 | [`native-runtime-and-agent-flow-zh-cn.md`](native-runtime-and-agent-flow-zh-cn.md) | native-runtime 文件索引与排错表 |
 
-**阅读顺序：** `ARCHITECTURE.md` → `spark-ai-platform.md` →（查 ClassModel / JSON / componentIndex）`class-model-knowledge-system-zh-cn.md` →（查 Agent Workflow / Chatflow / 业务工厂）**`business-factory-workflow-zh-cn.md`** →（按需）transport / runtime / pagedesign 专题。
+**阅读顺序：** `ARCHITECTURE.md` → `spark-ai-platform.md` →（查 ClassModel / JSON / componentIndex）`class-model-knowledge-system-zh-cn.md` →（查 Agent Workflow Designer）**`business-factory-workflow-zh-cn.md`** →（按需）transport / runtime / pagedesign 专题。

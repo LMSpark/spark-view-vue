@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:agent/workflow/agent-workflow-validation
  * 职责：校验 Agent Workflow Definition 的结构完整性，供发布和运行前验收复用。
- * 边界：默认只做同步 JSON 结构检查；外部解析 ClassModel Tool 或 Chatflow 文件时通过 options 注入。
+ * 边界：默认只做同步 JSON 结构检查；不解析 ClassModel 运行时、不加载外部 workflow 文件。
  * AI用途：需要判断 definition 是否可发布或可进入 dryRun 链路时，用本模块确认校验规则。
  */
 
@@ -13,7 +13,6 @@ import {
   type AgentWorkflowDefinition,
   type AgentWorkflowDefinitionValidation,
   type AgentWorkflowDefinitionValidationIssue,
-  type AgentWorkflowReference,
 } from './agent-workflow-definition'
 
 type AgentWorkflowValidationIssueSink = AgentWorkflowDefinitionValidationIssue[]
@@ -68,8 +67,7 @@ type AgentWorkflowErrorIssueDetail = Readonly<{
 }>
 
 export type ValidateAgentWorkflowDefinitionOptions = Readonly<{
-  loadWorkflowDefinition?: (ref: AgentWorkflowReference) => unknown
-  validateReferencedWorkflows?: boolean
+  strict?: boolean
 }>
 
 export function createAgentWorkflowDefinitionValidation(
@@ -363,6 +361,7 @@ function validateGraph(
       ))
     }
     if (source === undefined || target === undefined) return
+    validateEdgeData(edge['data'], `${path}.data`, issues)
     const targets = adjacency.get(source) ?? []
     targets.push(target)
     adjacency.set(source, targets)
@@ -380,8 +379,19 @@ function validateGraph(
 }
 
 function validateNodeData(command: AgentWorkflowNodeDataValidationCommand): void {
-  const { type, data, context, options } = command
+  const { type, data, context } = command
   const { path, nodeId, issues } = context
+  const dataType = data['type']
+  if (dataType !== undefined && dataType !== type) {
+    issues.push(errorIssue(
+      {
+        code: 'AGENT_WORKFLOW_NODE_DATA_TYPE_MISMATCH',
+        message: `${path}.type must equal node type "${type}" when provided.`,
+      },
+      `${path}.type`,
+      nodeId,
+    ))
+  }
   validateForbiddenNodeDataFields({ data, context })
   if (Object.prototype.hasOwnProperty.call(data, 'tool_name') || data['toolName'] === 'single_model_edit') {
     issues.push(errorIssue(
@@ -393,76 +403,87 @@ function validateNodeData(command: AgentWorkflowNodeDataValidationCommand): void
       nodeId,
     ))
   }
-  if (type === 'tool') {
-    validateToolNodeData({ data, context })
+  if (type === 'start') {
+    validateStartNodeData({ data, context })
   }
-  if (type === 'chatflow') {
-    validateChatflowNodeData({ type, data, context, options })
-  }
-  if (type === 'workflow') {
-    validateWorkflowRefNodeData({ data, context })
+  if (type === 'node') {
+    validateBusinessNodeData({ data, context })
   }
   if (type === 'output') {
     validateOutputNodeData({ data, context })
   }
 }
 
-function validateToolNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
+function validateStartNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
   const { data, context } = command
   const { path, nodeId, issues } = context
-  expectNonBlankString({ record: data, field: 'provider', path: `${path}.provider`, issues })
-  expectNonBlankString({ record: data, field: 'toolName', path: `${path}.toolName`, issues })
-  expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
-  expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
-  validateCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'inputs', context: { path: `${path}.inputs`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'projection', context: { path: `${path}.projection`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'validation', context: { path: `${path}.validation`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'state', context: { path: `${path}.state`, nodeId, issues } })
+  validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
 }
 
-function validateChatflowNodeData(command: AgentWorkflowNodeDataValidationCommand): void {
-  const { data, context, options } = command
+function validateBusinessNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
+  const { data, context } = command
   const { path, nodeId, issues } = context
-  const workflowRef = expectObject({ record: data, field: 'workflowRef', path: `${path}.workflowRef`, issues })
+  const model = expectObject({ record: data, field: 'model', path: `${path}.model`, issues })
   expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
+  const llm = expectObject({ record: data, field: 'llm', path: `${path}.llm`, issues })
+  const validation = expectObject({ record: data, field: 'validation', path: `${path}.validation`, issues })
   validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
-  if (workflowRef === undefined) return
-  const reference = validateWorkflowReference(workflowRef, `${path}.workflowRef`, issues)
-  if (reference === undefined) return
-  const shouldValidateReference = options.validateReferencedWorkflows ?? true
-  if (!shouldValidateReference || options.loadWorkflowDefinition === undefined) return
-  const loaded = options.loadWorkflowDefinition(reference)
-  if (loaded === undefined) {
-    issues.push(errorIssue(
-      {
-        code: 'AGENT_WORKFLOW_CHATFLOW_DEFINITION_NOT_FOUND',
-        message: 'Chatflow node must reference a loadable workflow definition.',
-      },
-      `${path}.workflowRef`,
-      nodeId,
-    ))
-    return
+  validateOptionalObject({ record: data, field: 'state', context: { path: `${path}.state`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'result', context: { path: `${path}.result`, nodeId, issues } })
+
+  if (model !== undefined) {
+    expectNonBlankString({ record: model, field: 'rootClassName', path: `${path}.model.rootClassName`, issues })
+    expectNonBlankString({ record: model, field: 'className', path: `${path}.model.className`, issues })
+    validateOptionalText({ record: model, field: 'contextPath', path: `${path}.model.contextPath`, nodeId, issues })
   }
-  const nested = validateAgentWorkflowDefinition(loaded, {
-    ...options,
-    validateReferencedWorkflows: false,
-  })
-  for (const issue of nested.issues) {
-    issues.push({
-      ...issue,
-      path: issue.path === undefined ? `${path}.workflowRef` : `${path}.workflowRef.${issue.path}`,
-      ...(nodeId === undefined ? {} : { nodeId }),
+
+  if (llm !== undefined) {
+    expectObject({ record: llm, field: 'task', path: `${path}.llm.task`, issues })
+    expectObject({ record: llm, field: 'knowledge', path: `${path}.llm.knowledge`, issues })
+    expectObject({ record: llm, field: 'functionCalling', path: `${path}.llm.functionCalling`, issues })
+    expectObject({ record: llm, field: 'output', path: `${path}.llm.output`, issues })
+  }
+
+  if (validation !== undefined) {
+    const action = expectObject({
+      record: validation,
+      field: 'action',
+      path: `${path}.validation.action`,
+      issues,
     })
-  }
-}
-
-function validateWorkflowRefNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
-  const { data, context } = command
-  const { path, nodeId, issues } = context
-  const workflowRef = expectObject({ record: data, field: 'workflowRef', path: `${path}.workflowRef`, issues })
-  expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
-  expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
-  validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
-  if (workflowRef !== undefined) {
-    validateWorkflowReference(workflowRef, `${path}.workflowRef`, issues)
+    validateOptionalText({ record: validation, field: 'status', path: `${path}.validation.status`, nodeId, issues })
+    validateOptionalIssueArray({ value: validation['issues'], context: { path: `${path}.validation.issues`, nodeId, issues } })
+    if (action !== undefined) {
+      expectNonBlankString({
+        record: action,
+        field: 'className',
+        path: `${path}.validation.action.className`,
+        issues,
+      })
+      expectNonBlankString({
+        record: action,
+        field: 'actionName',
+        path: `${path}.validation.action.actionName`,
+        issues,
+      })
+      expectObject({
+        record: action,
+        field: 'inputProjection',
+        path: `${path}.validation.action.inputProjection`,
+        issues,
+      })
+      expectObject({
+        record: action,
+        field: 'expectedResult',
+        path: `${path}.validation.action.expectedResult`,
+        issues,
+      })
+    }
   }
 }
 
@@ -470,13 +491,17 @@ function validateOutputNodeData(command: AgentWorkflowNodeFieldValidationCommand
   const { data, context } = command
   const { path, nodeId, issues } = context
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
+  validateOptionalObject({ record: data, field: 'upstreamValidation', context: { path: `${path}.upstreamValidation`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'validation', context: { path: `${path}.validation`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'state', context: { path: `${path}.state`, nodeId, issues } })
+  validateOptionalObject({ record: data, field: 'result', context: { path: `${path}.result`, nodeId, issues } })
   validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
 }
 
 function validateForbiddenNodeDataFields(command: AgentWorkflowNodeFieldValidationCommand): void {
   const { data, context } = command
   const { path, nodeId, issues } = context
-  for (const field of ['inputMapping', 'outputMapping', 'toolParameters'] as const) {
+  for (const field of ['provider', 'toolName', 'workflowRef', 'inputMapping', 'outputMapping', 'toolParameters'] as const) {
     if (Object.prototype.hasOwnProperty.call(data, field)) {
       issues.push(errorIssue(
         {
@@ -498,6 +523,90 @@ function validateForbiddenNodeDataFields(command: AgentWorkflowNodeFieldValidati
       `${path}.x_spark.classModel`,
       nodeId,
     ))
+  }
+}
+
+function validateEdgeData(
+  value: unknown,
+  path: string,
+  issues: AgentWorkflowDefinitionValidationIssue[],
+): void {
+  if (value === undefined) return
+  if (!isJsonRecord(value)) {
+    issues.push(errorIssue(
+      {
+        code: 'AGENT_WORKFLOW_EDGE_DATA_INVALID',
+        message: `${path} must be an object when provided.`,
+      },
+      path,
+    ))
+    return
+  }
+  const projection = value['projection']
+  if (projection !== undefined) {
+    if (!isJsonRecord(projection)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_EDGE_PROJECTION_INVALID',
+          message: `${path}.projection must be an object when provided.`,
+        },
+        `${path}.projection`,
+      ))
+    } else {
+      expectNonBlankString({ record: projection, field: 'sourceRef', path: `${path}.projection.sourceRef`, issues })
+      expectNonBlankString({ record: projection, field: 'targetRef', path: `${path}.projection.targetRef`, issues })
+      validateOptionalObject({ record: projection, field: 'transform', context: { path: `${path}.projection.transform`, nodeId: undefined, issues } })
+    }
+  }
+  const branch = value['branch']
+  if (branch !== undefined) {
+    if (!isJsonRecord(branch)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_EDGE_BRANCH_INVALID',
+          message: `${path}.branch must be an object when provided.`,
+        },
+        `${path}.branch`,
+      ))
+    } else {
+      validateOptionalText({ record: branch, field: 'condition', path: `${path}.branch.condition`, nodeId: undefined, issues })
+      validateOptionalText({ record: branch, field: 'label', path: `${path}.branch.label`, nodeId: undefined, issues })
+      const priority = branch['priority']
+      if (priority !== undefined && typeof priority !== 'number') {
+        issues.push(errorIssue(
+          {
+            code: 'AGENT_WORKFLOW_EDGE_BRANCH_PRIORITY_INVALID',
+            message: `${path}.branch.priority must be a number when provided.`,
+          },
+          `${path}.branch.priority`,
+        ))
+      }
+      const defaultValue = branch['default']
+      if (defaultValue !== undefined && typeof defaultValue !== 'boolean') {
+        issues.push(errorIssue(
+          {
+            code: 'AGENT_WORKFLOW_EDGE_BRANCH_DEFAULT_INVALID',
+            message: `${path}.branch.default must be a boolean when provided.`,
+          },
+          `${path}.branch.default`,
+        ))
+      }
+    }
+  }
+  const validation = value['validation']
+  if (validation !== undefined) {
+    if (!isJsonRecord(validation)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_EDGE_VALIDATION_INVALID',
+          message: `${path}.validation must be an object when provided.`,
+        },
+        `${path}.validation`,
+      ))
+    } else {
+      validateOptionalText({ record: validation, field: 'status', path: `${path}.validation.status`, nodeId: undefined, issues })
+      validateOptionalIssueArray({ value: validation['issues'], context: { path: `${path}.validation.issues`, nodeId: undefined, issues } })
+    }
   }
 }
 
@@ -559,6 +668,45 @@ function validateOptionalObject(command: AgentWorkflowOptionalObjectValidationCo
   }
 }
 
+function validateOptionalText(command: AgentWorkflowRequiredFieldCommand & Readonly<{ nodeId: string | undefined }>): void {
+  const { record, field, path, issues, nodeId } = command
+  const value = record[field]
+  if (value === undefined) return
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_OPTIONAL_TEXT_INVALID', message: `${path} must be a non-empty string when provided.` },
+      path,
+      nodeId,
+    ))
+  }
+}
+
+function validateOptionalIssueArray(command: AgentWorkflowCapabilitiesValidationCommand): void {
+  const { value, context } = command
+  const { path, nodeId, issues } = context
+  if (value === undefined) return
+  if (!Array.isArray(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_ISSUES_NOT_ARRAY', message: `${path} must be an array when provided.` },
+      path,
+      nodeId,
+    ))
+    return
+  }
+  value.forEach((item, index) => {
+    if (!isJsonRecord(item)) {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_ISSUE_INVALID',
+          message: `${path}[${index}] must be an object.`,
+        },
+        `${path}[${index}]`,
+        nodeId,
+      ))
+    }
+  })
+}
+
 function validateOptionalStringArray(command: AgentWorkflowCapabilitiesValidationCommand): void {
   const { value, context } = command
   const { path, nodeId, issues } = context
@@ -583,42 +731,6 @@ function validateOptionalStringArray(command: AgentWorkflowCapabilitiesValidatio
       ))
     }
   })
-}
-
-function validateWorkflowReference(
-  workflowRef: Readonly<Record<string, unknown>>,
-  path: string,
-  issues: AgentWorkflowDefinitionValidationIssue[],
-): AgentWorkflowReference | undefined {
-  const workflowId = expectNonBlankString({ record: workflowRef, field: 'workflowId', path: `${path}.workflowId`, issues })
-  let referenceValid = workflowId !== undefined
-  const version = workflowRef['version']
-  if (version !== undefined && typeof version !== 'number') {
-    referenceValid = false
-    issues.push(errorIssue(
-      { code: 'AGENT_WORKFLOW_REFERENCE_VERSION_INVALID', message: `${path}.version must be a number.` },
-      `${path}.version`,
-    ))
-  }
-  const definitionPath = workflowRef['definitionPath']
-  if (definitionPath !== undefined && (typeof definitionPath !== 'string' || definitionPath.trim().length === 0)) {
-    referenceValid = false
-    issues.push(errorIssue(
-      {
-        code: 'AGENT_WORKFLOW_REFERENCE_PATH_INVALID',
-        message: `${path}.definitionPath must be a non-empty string when provided.`,
-      },
-      `${path}.definitionPath`,
-    ))
-  }
-  if (!referenceValid || workflowId === undefined) return undefined
-  return {
-    workflowId,
-    ...(typeof version === 'number' ? { version } : {}),
-    ...(typeof definitionPath === 'string' && definitionPath.trim().length > 0
-      ? { definitionPath: definitionPath.trim() }
-      : {}),
-  }
 }
 
 function canReachOutput(
