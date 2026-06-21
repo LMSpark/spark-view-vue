@@ -41,18 +41,18 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
   },
   "dependencies": {
-    "@codemirror/commands": "^6.10.3",
-    "@codemirror/lang-css": "^6.3.1",
-    "@codemirror/lang-javascript": "^6.2.5",
-    "@codemirror/language": "^6.12.3",
-    "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.43.0",
+    "@codemirror/commands": "catalog:",
+    "@codemirror/lang-css": "catalog:",
+    "@codemirror/lang-javascript": "catalog:",
+    "@codemirror/language": "catalog:",
+    "@codemirror/state": "catalog:",
+    "@codemirror/view": "catalog:",
     "@spark-appworks/spark-data": "workspace:*",
     "@spark-appworks/spark-json-document": "workspace:*",
     "@spark-appworks/spark-project-model": "workspace:*",
     "@spark-appworks/spark-utils": "workspace:*",
-    "codemirror": "^6.0.2",
-    "vanilla-jsoneditor": "^3.12.0"
+    "codemirror": "catalog:",
+    "vanilla-jsoneditor": "catalog:"
   },
   "peerDependencies": {
     "@element-plus/icons-vue": "catalog:",

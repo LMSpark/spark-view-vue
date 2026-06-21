@@ -4,10 +4,10 @@
     "description": "SPARK 配置平台 - 深度配置 × 稳定运行时 × 受约束 AI 生成",
     "type": "module",
     "engines": {
-        "node": ">=20.0.0",
+        "node": ">=22.13.0",
         "pnpm": ">=10.0.0"
     },
-    "packageManager": "pnpm@10.34.1",
+    "packageManager": "pnpm@11.8.0",
     "scripts": {
         "dev": "node scripts/start-dev.mjs",
         "dev:fe": "vite",
@@ -102,19 +102,5 @@
         "vitest": "catalog:",
         "vue-eslint-parser": "catalog:",
         "vue-tsc": "catalog:"
-    },
-    "pnpm": {
-        "overrides": {
-            "rollup": "^4.61.1",
-            "vue": "3.5.35",
-            "@vue/runtime-core": "3.5.35",
-            "@vue/runtime-dom": "3.5.35",
-            "@vue/reactivity": "3.5.35",
-            "@vue/shared": "3.5.35",
-            "@vue/compiler-core": "3.5.35",
-            "@vue/compiler-dom": "3.5.35",
-            "@vue/compiler-sfc": "3.5.35",
-            "@vue/server-renderer": "3.5.35"
-        }
     }
 }

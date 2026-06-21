@@ -43,3 +43,38 @@
 - **规则**：`legacyMarkdownAllowlist` 不仅是"放行非 kebab-case 文件名"的白名单，`checkLegacyAllowlist` 还会反向校验 allowlist 里的文件**必须存在**。删除任一 allowlist 文档时，必须同步从 `legacyMarkdownAllowlist` 集合中移除对应条目，否则 `pnpm run verify:docs` 报 `legacy markdown allowlist entry no longer exists; remove it from tools/verify-docs.mjs`。
 - **违反后果**：`verify:rules` / `verify` 门禁失败，CI 红
 - **发现来源**：2026-06 合并 AI 编码标准、删除 `docs/ai/AI_CODE_CHANGE_PROTOCOL.md` 等三个重复文档时
+
+### pnpm 11 要求 Node ≥22.13
+
+- **场景**：升级 pnpm 10 → 11，或在 Node 20 环境运行 pnpm 11
+- **规则**：pnpm 11.8.0 依赖 `node:sqlite` 内置模块，要求 Node.js ≥22.13。升级 pnpm 11 时必须同步升级 Node 并更新 `package.json` 的 `engines.node`（本项目改为 `>=22.13.0`）
+- **违反后果**：Node 20 下运行 pnpm 11 报 `No such built-in module: node:sqlite`；corepack 启用 pnpm 11 报 `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`
+- **发现来源**：2026-06 升级全部基础依赖时
+
+### pnpm 11 不再读取 package.json 的 pnpm.overrides
+
+- **场景**：从 pnpm 10 升级到 11，原有 `package.json` 的 `pnpm.overrides` 字段
+- **规则**：pnpm 11 起，`overrides` 必须放在 `pnpm-workspace.yaml` 顶层 `overrides:` 字段。`package.json` 的 `pnpm.overrides` 会被静默忽略（启动时输出 warning）。迁移时版本号直接写死或用 `catalog:` 协议引用均可。同时应从 `package.json` 删除整个 `pnpm` 块避免误导
+- **违反后果**：vue 全家桶、rollup 等版本锁定失效，子依赖可能拉入不一致版本
+- **发现来源**：2026-06 升级全部基础依赖时
+
+### pnpm 11 默认拦截依赖 postinstall 脚本
+
+- **场景**：pnpm 11 install 后某些依赖（esbuild、vue-demi）的 postinstall 未执行
+- **规则**：pnpm 11 默认 `strictDepBuilds` 为 true，需在 `pnpm-workspace.yaml` 的 `allowBuilds:` 块显式放行需要执行 postinstall 的依赖（设为 `true`）。pnpm 会在 install 时自动插入占位条目，需手动设为 `true`/`false`。`onlyBuiltDependencies`/`neverBuiltDependencies`/`ignoredBuiltDependencies` 等 v10 设置在 v11 已移除，统一用 `allowBuilds`
+- **违反后果**：`ERR_PNPM_IGNORED_BUILDS` 退出码 1，esbuild 平台二进制未安装导致构建失败
+- **发现来源**：2026-06 升级全部基础依赖时
+
+### @types/node 主版本升级的适配成本
+
+- **场景**：升级 @types/node 25 → 26（或其他主版本跳变）
+- **规则**：@types/node 主版本跳变不一定导致 typecheck 失败。本项目 25→26 升级后 typecheck 一次通过，零代码适配。下次升级 Node 类型可降低风险预期，但仍需跑 typecheck 确认
+- **违反后果**：无（记录此结论用于降低未来升级的风险预期）
+- **发现来源**：2026-06 升级全部基础依赖时
+
+### 动态 import() 在 eslint strict 下的类型接收约束
+
+- **场景**：在 eslint strict 配置（`no-unsafe-assignment: error`）下用 `await import()` 动态加载模块并接收导出
+- **规则**：`await import()` 返回 `Promise<any>`，用显式类型注解（如 `const x: Record<string, unknown> = await import(...)`）会触发 `no-unsafe-assignment`。必须用类型守卫函数接收 `unknown` 参数窄化（如 `isModuleExports(value: unknown): value is Record<string, unknown>`），或局部 `eslint-disable-next-line`（项目有先例 `state.ts:65`、`zero-code.ts:15`）
+- **违反后果**：typecheck 或 lint 失败；用 `as` 断言虽能消 `no-unsafe-assignment` 但会触发 `verify:ai-codegen` 的 type assertion 禁令
+- **发现来源**：2026-06 修复 verify:ai-codegen 违规时

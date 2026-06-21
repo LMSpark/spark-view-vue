@@ -123,3 +123,23 @@
 - **知识沉淀**：待确认
 - **人工干预**：用户确认生产路线采用已编译生成的 ClassModel JSON + JS dynamic import；TypeScript compiler API 只在投产前生成/验证，不进入生产 runtime；函数调用必须落到 JS `model_script`。
 - **验证摘要**：typecheck、spark-ai typecheck、workflow-designs verify、目标 Vitest、verify:class-model、lint、build:fe、AI business boundary 和 direct-turn 可选探针跳过路径均通过；全量 `pnpm run test:run` 另有 2 个未改动 dev-system 测试文件失败，已标注为计划外既有 fixture 风险。
+
+### 2026-06-21 升级全部基础依赖到最新稳定版
+
+- **复杂度**：复杂
+- **总耗时**：约 90 分钟（3:14 - 4:08，含阻塞等待）
+- **返工次数**：2（pnpm 11 要求 Node 22 阻塞、pnpm 11 忽略 package.json overrides 阻塞）
+- **审查轮次**：1（方案一次通过）
+- **30天存活**：（30天后回填）
+- **知识沉淀**：是（5 条，pnpm 11 约束 3 条 + @types/node 适配结论 1 条 + 动态 import eslint 约束 1 条）
+- **人工干预**：阶段 2 提问 8 题全答；阶段 6 两次阻塞需用户决策 Node 版本和 overrides 迁移路径
+
+### 2026-06-21 修复 verify:ai-codegen 3 个违规
+
+- **复杂度**：中等
+- **总耗时**：约 17 分钟（3:51 - 4:08）
+- **返工次数**：1（消费面研读遗漏上层 barrel 二次 re-export，typecheck 阶段暴露后修复）
+- **审查轮次**：1（方案一次通过）
+- **30天存活**：（30天后回填）
+- **知识沉淀**：是（1 条，动态 import eslint 约束，与依赖升级合并记录）
+- **人工干预**：阶段 2 提问 4 题全答；阶段 6 方案 D 实施遇 eslint no-unsafe-assignment 障碍，调整为守卫 + 局部 disable
