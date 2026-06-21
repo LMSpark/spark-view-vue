@@ -20,7 +20,6 @@ export type {
   AgentWorkflowDefinition,
   AgentWorkflowGraphNode,
   AgentWorkflowInterpretedRegistration,
-  AgentWorkflowModuleConstructor,
   AgentWorkflowRuntimeBindings,
   AgentWorkflowRuntimeBinding,
   AgentWorkflowRuntimeGateCommand,

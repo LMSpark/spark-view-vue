@@ -166,12 +166,17 @@ async function resolveExecutableClass<TInstance>(
 ): Promise<AgentWorkflowModuleConstructor<TInstance>> {
   const moduleSpecifier = normalizeRequiredText(ref.moduleSpecifier, 'executableRef.moduleSpecifier')
   const exportName = normalizeRequiredText(ref.exportName, 'executableRef.exportName')
-  const moduleExports = await import(moduleSpecifier) as Record<string, unknown>
+  // import() 返回 Promise<any>，无法用类型注解安全接收；经 isModuleExports 守卫收窄后使用。
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const moduleExports = await import(moduleSpecifier)
+  if (!isModuleExports(moduleExports)) {
+    throw new Error(`Agent workflow executable module did not export an object: ${moduleSpecifier}`)
+  }
   const exported = moduleExports[exportName]
-  if (typeof exported !== 'function') {
+  if (!isFunctionConstructor<TInstance>(exported)) {
     throw new Error(`Agent workflow executable export not found or not constructable: ${moduleSpecifier}#${exportName}`)
   }
-  return exported as AgentWorkflowModuleConstructor<TInstance>
+  return exported
 }
 
 function findSingleBusinessNode(definition: AgentWorkflowDefinition): AgentWorkflowBusinessNode {
@@ -258,4 +263,16 @@ function normalizeRequiredText(value: string, field: string): string {
     throw new Error(`Agent workflow runtime ${field} must not be empty.`)
   }
   return normalized
+}
+
+function isFunctionConstructor<T>(
+  value: unknown,
+): value is new (...args: never[]) => T {
+  return typeof value === 'function'
+}
+
+function isModuleExports(
+  module: unknown,
+): module is Record<string, unknown> {
+  return module !== null && typeof module === 'object'
 }

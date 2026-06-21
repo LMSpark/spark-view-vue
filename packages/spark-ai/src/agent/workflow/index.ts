@@ -89,10 +89,8 @@ export type {
 
 export type {
   AgentWorkflowInterpretedRegistration,
-  AgentWorkflowModuleConstructor,
   AgentWorkflowRuntimeBindings,
   AgentWorkflowRuntimeGateCommand,
   AgentWorkflowRuntimeGateResult,
-  AgentWorkflowRuntimeKnowledge,
   AgentWorkflowRuntimeSystemPromptCommand,
 } from './agent-workflow-runtime'
