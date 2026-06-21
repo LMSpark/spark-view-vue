@@ -39,6 +39,12 @@ vi.mock('@spark-appworks/spark-app', () => ({
     isRunning: vi.fn(() => false),
     abort: vi.fn(),
     run: vi.fn(async () => 'completed' as const),
+    subscribe: vi.fn(() => () => {}),
+    snapshot: vi.fn(() => ({
+      trace: { messages: [], entries: [], toolCalls: [] },
+      agUiEvents: [],
+      timeline: [],
+    })),
   })),
   createAiToolApprovalBridge: vi.fn(() => ({
     beforeFunctionCall: vi.fn(async () => ({ status: 'allow' })),

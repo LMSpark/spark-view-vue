@@ -39,6 +39,16 @@ function createDevSystemCtx(overrides: Record<string, unknown> = {}) {
     approveAiTool: vi.fn(),
     rejectAiTool: vi.fn(),
     abortAiTool: vi.fn(),
+    projectPlanningDocumentImportDialogVisible: ref(false),
+    projectPlanningDocumentUploading: ref(false),
+    projectPlanningAiRunning: ref(false),
+    projectPlanningDocumentFileName: ref(''),
+    projectPlanningAttachmentRef: ref(''),
+    projectPlanningAiTimeline: ref([]),
+    openProjectPlanningDocumentImportDialog: vi.fn(),
+    closeProjectPlanningDocumentImportDialog: vi.fn(),
+    handleProjectPlanningDocumentFileSelected: vi.fn(),
+    runProjectPlanningDocumentImportAi: vi.fn(),
   }
 
   return {
@@ -110,6 +120,7 @@ function mountDevSystem() {
         DevNodeProps: true,
         DevFileEditor: true,
         DevPreviewTab: true,
+        ProjectPlanningDocumentImportDialog: true,
         ElButton: ButtonStub,
         ElEmpty: true,
         ElInput: true,
