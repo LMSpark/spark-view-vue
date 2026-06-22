@@ -14,6 +14,14 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
         <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
         <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
+        <el-button
+          :icon="RefreshLeft"
+          :loading="autoLayoutSaving"
+          :disabled="!canAutoLayout"
+          @click="autoLayoutCurrentDesign"
+        >
+          自动排版
+        </el-button>
         <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
           Definition
         </el-button>
@@ -296,16 +304,31 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         </div>
 
         <el-empty v-if="selectedNode === null && selectedLine === null" description="No node or line selected" />
+        <div v-else class="properties-summary">
+          <el-descriptions v-if="selectedLine" :column="1" size="small" border>
+            <el-descriptions-item label="ID">{{ selectedLine.id }}</el-descriptions-item>
+            <el-descriptions-item label="From">{{ selectedLine.fromNodeId }}</el-descriptions-item>
+            <el-descriptions-item label="To">{{ selectedLine.toNodeId }}</el-descriptions-item>
+          </el-descriptions>
+          <el-descriptions v-else-if="selectedNode" :column="1" size="small" border>
+            <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
+            <el-descriptions-item label="Type">{{ selectedNode.nodeType }}</el-descriptions-item>
+            <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
+          </el-descriptions>
+          <el-button type="primary" :icon="DocumentCopy" @click="openPropertiesDrawer">
+            打开属性
+          </el-button>
+        </div>
 
-        <template v-else-if="selectedLine">
+        <template v-if="selectedLine !== null && false">
           <details class="editor-section collapsible-section" open>
             <summary>连线信息</summary>
             <div class="collapsible-body">
               <el-descriptions :column="1" size="small" border>
-                <el-descriptions-item label="ID">{{ selectedLine.id }}</el-descriptions-item>
-                <el-descriptions-item label="Scope">{{ selectedLine.scopePath }}</el-descriptions-item>
-                <el-descriptions-item label="From">{{ selectedLine.fromNodeId }}</el-descriptions-item>
-                <el-descriptions-item label="To">{{ selectedLine.toNodeId }}</el-descriptions-item>
+                <el-descriptions-item label="ID">{{ selectedLine?.id }}</el-descriptions-item>
+                <el-descriptions-item label="Scope">{{ selectedLine?.scopePath }}</el-descriptions-item>
+                <el-descriptions-item label="From">{{ selectedLine?.fromNodeId }}</el-descriptions-item>
+                <el-descriptions-item label="To">{{ selectedLine?.toNodeId }}</el-descriptions-item>
               </el-descriptions>
             </div>
           </details>
@@ -385,7 +408,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           </details>
         </template>
 
-        <template v-else-if="selectedNode">
+        <template v-if="selectedNode !== null && false">
           <details class="editor-section collapsible-section" open>
             <summary>节点信息</summary>
             <div class="collapsible-body">
@@ -501,9 +524,9 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               </el-form>
               <el-alert v-if="classModelError" :title="classModelError" type="error" :closable="false" />
               <div v-if="selectedClassModelOption" class="class-model-catalog">
-                <strong>{{ selectedClassModelOption.kind }}</strong>
-                <span>attributes {{ selectedClassModelOption.attributes.length }}</span>
-                <span>actions {{ selectedClassModelOption.methods.length }}</span>
+                <strong>{{ selectedClassModelOption?.kind }}</strong>
+                <span>attributes {{ selectedClassModelOption?.attributes.length }}</span>
+                <span>actions {{ selectedClassModelOption?.methods.length }}</span>
               </div>
               <pre v-if="classModelGuideText" class="class-model-guide">{{ classModelGuideText }}</pre>
               <div class="editor-actions">
@@ -520,32 +543,6 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             </div>
           </details>
 
-          <details
-            v-if="selectedNode !== null && shouldEditNodeConfig(selectedNode)"
-            class="editor-section collapsible-section"
-            open
-          >
-            <summary>节点配置 JSON</summary>
-            <div class="collapsible-body node-editor-form">
-              <el-form label-position="top">
-                <el-form-item label="data JSON">
-                  <el-input
-                    v-model="modelJsonText"
-                    class="model-json-input"
-                    type="textarea"
-                    :rows="18"
-                    spellcheck="false"
-                    @input="markEditorDirty"
-                  />
-                </el-form-item>
-              </el-form>
-              <el-alert v-if="modelJsonError" :title="modelJsonError" type="error" :closable="false" />
-              <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applyEditorToSelected">应用节点配置</el-button>
-              </div>
-            </div>
-          </details>
-
           <details class="editor-section collapsible-section">
             <summary>危险操作</summary>
             <div class="collapsible-body editor-actions">
@@ -555,6 +552,526 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         </template>
       </aside>
     </div>
+
+    <el-drawer
+      v-model="propertiesDrawerVisible"
+      class="properties-drawer"
+      direction="rtl"
+      :size="'80vw'"
+      :title="propertiesDrawerTitle"
+    >
+      <template v-if="selectedLine">
+        <details class="editor-section collapsible-section" open>
+          <summary>连线信息</summary>
+          <div class="collapsible-body">
+            <el-descriptions :column="1" size="small" border>
+              <el-descriptions-item label="ID">{{ selectedLine.id }}</el-descriptions-item>
+              <el-descriptions-item label="Scope">{{ selectedLine.scopePath }}</el-descriptions-item>
+              <el-descriptions-item label="From">{{ selectedLine.fromNodeId }}</el-descriptions-item>
+              <el-descriptions-item label="To">{{ selectedLine.toNodeId }}</el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>连线编辑</summary>
+          <div class="collapsible-body">
+            <el-form label-position="top">
+              <el-form-item label="From Node">
+                <select v-model="lineFromNodeText" class="native-select" @change="handleLineEditorChange">
+                  <option v-for="node in selectedLineGraphNodes" :key="node.key" :value="node.id">
+                    {{ node.title }} / {{ node.id }}
+                  </option>
+                </select>
+              </el-form-item>
+              <el-row :gutter="8">
+                <el-col :span="12">
+                  <el-form-item label="From Model">
+                    <select v-model="lineFromModelText" class="native-select" @change="handleLineEditorChange">
+                      <option
+                        v-for="option in lineModelOptions(lineFromNodeText, lineFromModelText)"
+                        :key="option"
+                        :value="option"
+                      >
+                        {{ option }}
+                      </option>
+                    </select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="From Member">
+                    <select v-model="lineFromMemberText" class="native-select" @change="handleLineEditorChange">
+                      <option
+                        v-for="option in lineMemberOptions(lineFromNodeText, lineFromMemberText)"
+                        :key="option"
+                        :value="option"
+                      >
+                        {{ option }}
+                      </option>
+                    </select>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-form-item label="To Node">
+                <select v-model="lineToNodeText" class="native-select line-to-node-select" @change="handleLineEditorChange">
+                  <option v-for="node in selectedLineGraphNodes" :key="node.key" :value="node.id">
+                    {{ node.title }} / {{ node.id }}
+                  </option>
+                </select>
+              </el-form-item>
+              <el-row :gutter="8">
+                <el-col :span="12">
+                  <el-form-item label="To Model">
+                    <select v-model="lineToModelText" class="native-select" @change="handleLineEditorChange">
+                      <option
+                        v-for="option in lineModelOptions(lineToNodeText, lineToModelText)"
+                        :key="option"
+                        :value="option"
+                      >
+                        {{ option }}
+                      </option>
+                    </select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="To Member">
+                    <select v-model="lineToMemberText" class="native-select" @change="handleLineEditorChange">
+                      <option
+                        v-for="option in lineMemberOptions(lineToNodeText, lineToMemberText)"
+                        :key="option"
+                        :value="option"
+                      >
+                        {{ option }}
+                      </option>
+                    </select>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row :gutter="8">
+                <el-col :span="12">
+                  <el-form-item label="Type">
+                    <el-input v-model="lineTypeText" @input="handleLineEditorChange" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="Relation">
+                    <el-input v-model="lineRelationText" @input="handleLineEditorChange" />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-form>
+            <div class="editor-actions" style="justify-content: space-between">
+              <el-button type="danger" :icon="Delete" @click="deleteSelectedLine">删除连线</el-button>
+            </div>
+          </div>
+        </details>
+      </template>
+
+      <template v-else-if="selectedNode">
+        <details class="editor-section collapsible-section" open>
+          <summary>节点信息</summary>
+          <div class="collapsible-body">
+            <el-descriptions :column="1" size="small" border>
+              <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
+              <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>基础编辑</summary>
+          <div class="collapsible-body">
+            <el-form label-position="top">
+              <el-form-item label="Type">
+                <el-input v-model="nodeTypeText" @input="markEditorDirty" />
+              </el-form-item>
+              <el-form-item label="标题">
+                <el-input v-model="nodeTitleText" @input="markEditorDirty" />
+              </el-form-item>
+              <el-form-item label="描述">
+                <el-input v-model="nodeDescText" type="textarea" :rows="2" @input="markEditorDirty" />
+              </el-form-item>
+            </el-form>
+            <div class="editor-actions">
+              <el-button :icon="CircleCheck" @click="applySelectedDraft">应用节点</el-button>
+            </div>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>位置</summary>
+          <div class="collapsible-body position-editor">
+            <el-form label-position="top">
+              <el-row :gutter="8">
+                <el-col :span="12">
+                  <el-form-item label="X">
+                    <el-input-number v-model="nodeX" :step="20" controls-position="right" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="Y">
+                    <el-input-number v-model="nodeY" :step="20" controls-position="right" />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-form>
+          </div>
+        </details>
+
+        <details v-if="selectedNode.nodeType === 'loop'" class="editor-section collapsible-section" open>
+          <summary>循环分组</summary>
+          <div class="collapsible-body loop-editor-form">
+            <el-form label-position="top">
+              <el-form-item label="Mode">
+                <el-input v-model="loopModeText" @input="markEditorDirty" />
+              </el-form-item>
+              <el-form-item label="Exit Node">
+                <select v-model="loopExitNodeText" class="native-select" @change="markEditorDirty">
+                  <option v-for="node in selectedLineGraphNodes" :key="node.key" :value="node.id">
+                    {{ node.title }} / {{ node.id }}
+                  </option>
+                </select>
+              </el-form-item>
+            </el-form>
+          </div>
+        </details>
+
+        <template v-if="selectedNode.isBusinessNode">
+          <details class="editor-section collapsible-section" open>
+            <summary>ClassModel</summary>
+            <div class="collapsible-body class-model-editor">
+              <el-form label-position="top">
+                <el-form-item label="Root Class">
+                  <select v-model="modelRootClassText" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in rootClassOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+                <el-form-item label="Model Class">
+                  <select v-model="modelClassText" class="native-select" @change="handleModelClassSelectionChange">
+                    <option v-for="option in modelClassOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+                <el-form-item label="Completion Class">
+                  <select
+                    v-model="validationActionClassText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in modelClassOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+                <el-form-item label="Completion Member">
+                  <select
+                    v-model="validationActionNameText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in completionMemberOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+              </el-form>
+              <el-alert v-if="classModelError" :title="classModelError" type="error" :closable="false" />
+              <div v-if="selectedClassModelOption" class="class-model-catalog">
+                <strong>{{ selectedClassModelOption?.kind }}</strong>
+                <span>attributes {{ selectedClassModelOption?.attributes.length }}</span>
+                <span>actions {{ selectedClassModelOption?.methods.length }}</span>
+              </div>
+              <pre v-if="classModelGuideText" class="class-model-guide">{{ classModelGuideText }}</pre>
+              <div class="editor-actions">
+                <el-button :loading="classModelLoading" :icon="Refresh" @click="refreshClassModelOptions">
+                  刷新知识
+                </el-button>
+                <el-button :loading="classModelLoading" :icon="DocumentCopy" @click="loadValidationActionGuide">
+                  Action Guide
+                </el-button>
+              </div>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section" open>
+            <summary>输入</summary>
+            <div class="collapsible-body structured-editor">
+              <div
+                v-for="row in businessInputRows"
+                :key="row.id"
+                class="structured-field-row structured-field-row--inputs"
+              >
+                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in structuredPathOptions(businessInputRows)" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <select
+                  v-if="row.valueKind === 'reference'"
+                  v-model="row.valueText"
+                  class="native-select structured-field-value"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <input
+                  v-else-if="row.valueKind === 'boolean'"
+                  v-model="row.valueBoolean"
+                  class="structured-checkbox"
+                  type="checkbox"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(businessInputRows, row)">
+                  删除
+                </el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(businessInputRows, 'input')">添加输入</el-button>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section" open>
+            <summary>输出</summary>
+            <div class="collapsible-body structured-editor">
+              <div
+                v-for="row in businessOutputRows"
+                :key="row.id"
+                class="structured-field-row structured-field-row--outputs"
+              >
+                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in structuredPathOptions(businessOutputRows)" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <select
+                  v-if="row.valueKind === 'reference'"
+                  v-model="row.valueText"
+                  class="native-select structured-field-value"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <input
+                  v-else-if="row.valueKind === 'boolean'"
+                  v-model="row.valueBoolean"
+                  class="structured-checkbox"
+                  type="checkbox"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(businessOutputRows, row)">
+                  删除
+                </el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(businessOutputRows, 'output')">添加输出</el-button>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section" open>
+            <summary>LLM 任务</summary>
+            <div class="collapsible-body structured-editor">
+              <el-form label-position="top">
+                <el-form-item label="Goal">
+                  <el-input v-model="taskGoalText" type="textarea" :rows="2" @input="handleBusinessNodeStructuredChange" />
+                </el-form-item>
+              </el-form>
+              <strong>Requirements</strong>
+              <div v-for="row in taskRequirementRows" :key="row.id" class="structured-field-row">
+                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in structuredPathOptions(taskRequirementRows)" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <select
+                  v-if="row.valueKind === 'reference'"
+                  v-model="row.valueText"
+                  class="native-select structured-field-value"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(taskRequirementRows, row)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(taskRequirementRows, 'task.requirement')">添加需求</el-button>
+              <strong>Context Inputs</strong>
+              <div v-for="row in taskContextInputRows" :key="row.id" class="structured-field-row">
+                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in structuredPathOptions(taskContextInputRows)" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <select
+                  v-if="row.valueKind === 'reference'"
+                  v-model="row.valueText"
+                  class="native-select structured-field-value"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(taskContextInputRows, row)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(taskContextInputRows, 'task.context')">添加上下文</el-button>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section" open>
+            <summary>知识和调用</summary>
+            <div class="collapsible-body structured-editor">
+              <strong>Allowed Actions</strong>
+              <div v-for="card in allowedActionCards" :key="card.id" class="structured-card">
+                <select v-model="card.value" class="native-select" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in completionMemberOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <el-button link type="danger" :icon="Delete" @click="removeSelectCard(allowedActionCards, card)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addSelectCard(allowedActionCards, completionMemberOptions, 'knowledge.action')">
+                添加 Action
+              </el-button>
+              <strong>Readable Attributes</strong>
+              <div v-for="card in readableAttributeCards" :key="card.id" class="structured-card">
+                <select v-model="card.value" class="native-select" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in modelAttributeOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <el-button link type="danger" :icon="Delete" @click="removeSelectCard(readableAttributeCards, card)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addSelectCard(readableAttributeCards, modelAttributeOptions, 'knowledge.attribute')">
+                添加属性
+              </el-button>
+              <el-form label-position="top">
+                <el-form-item label="Function Calling Mode">
+                  <select v-model="functionCallingModeText" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option value="freeWithinModelContext">freeWithinModelContext</option>
+                    <option value="restricted">restricted</option>
+                    <option value="disabled">disabled</option>
+                  </select>
+                </el-form-item>
+              </el-form>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section" open>
+            <summary>校验</summary>
+            <div class="collapsible-body structured-editor">
+              <el-descriptions :column="1" size="small" border>
+                <el-descriptions-item label="Status">{{ validationStatusText || 'draft' }}</el-descriptions-item>
+              </el-descriptions>
+              <strong>Input Projection</strong>
+              <div v-for="row in validationInputProjectionRows" :key="row.id" class="structured-field-row">
+                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in structuredPathOptions(validationInputProjectionRows)" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <select
+                  v-if="row.valueKind === 'reference'"
+                  v-model="row.valueText"
+                  class="native-select structured-field-value"
+                  @change="handleBusinessNodeStructuredChange"
+                >
+                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                </select>
+                <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(validationInputProjectionRows, row)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(validationInputProjectionRows, 'validation.input')">添加输入投影</el-button>
+              <strong>Expected Result</strong>
+              <div v-for="row in validationExpectedResultRows" :key="row.id" class="structured-field-row">
+                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
+                  <option v-for="option in structuredPathOptions(validationExpectedResultRows)" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <el-input v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(validationExpectedResultRows, row)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(validationExpectedResultRows, 'validation.expected')">添加期望结果</el-button>
+              <strong>Issues</strong>
+              <pre class="readonly-json-preview">{{ validationIssuesPreview }}</pre>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section" open>
+            <summary>能力</summary>
+            <div class="collapsible-body structured-editor">
+              <details v-for="card in capabilityCards" :key="card.id" class="structured-card" open>
+                <summary>{{ card.title || card.id }}</summary>
+                <el-form label-position="top">
+                  <el-form-item label="Title">
+                    <el-input v-model="card.title" @input="handleBusinessNodeStructuredChange" />
+                  </el-form-item>
+                  <el-form-item label="Scope">
+                    <select v-model="card.scope" class="native-select" @change="handleBusinessNodeStructuredChange">
+                      <option value="node">node</option>
+                      <option value="workflow">workflow</option>
+                    </select>
+                  </el-form-item>
+                  <el-form-item label="Description">
+                    <el-input v-model="card.description" type="textarea" :rows="2" @input="handleBusinessNodeStructuredChange" />
+                  </el-form-item>
+                </el-form>
+                <el-button link type="danger" :icon="Delete" @click="removeCapabilityCard(card)">删除能力</el-button>
+              </details>
+              <el-button :icon="DocumentAdd" @click="addCapabilityCard">添加能力</el-button>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section">
+            <summary>运行时只读</summary>
+            <div class="collapsible-body structured-editor">
+              <strong>State</strong>
+              <pre class="readonly-json-preview">{{ runtimeStatePreview }}</pre>
+              <strong>Result</strong>
+              <pre class="readonly-json-preview">{{ runtimeResultPreview }}</pre>
+            </div>
+          </details>
+
+          <details class="editor-section collapsible-section">
+            <summary>JSON 只读预览</summary>
+            <pre class="readonly-json-preview">{{ modelJsonText }}</pre>
+          </details>
+        </template>
+
+        <details class="editor-section collapsible-section">
+          <summary>危险操作</summary>
+          <div class="collapsible-body editor-actions">
+            <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">删除节点</el-button>
+          </div>
+        </details>
+      </template>
+    </el-drawer>
 
     <el-dialog v-model="createDialogVisible" title="新建工作流设计稿" width="460px">
       <el-form label-position="top">
@@ -686,6 +1203,7 @@ import {
 } from '@element-plus/icons-vue'
 import {
   addWorkflowDesignLine,
+  autoLayoutWorkflowDesignGraphs,
   collectWorkflowDesignNodes,
   collectWorkflowDesignLines,
   collectWorkflowDesignGraphs,
@@ -707,6 +1225,7 @@ import {
   saveWorkflowDefinition,
   saveWorkflowDesign,
   updateWorkflowDesignLine,
+  type WorkflowDesignCapability,
   type WorkflowDesignDocument,
   type WorkflowDesignLineEndpoint,
   type WorkflowDesignLineView,
@@ -787,6 +1306,35 @@ type NodeCreateForm = {
   desc: string
 }
 
+type StructuredValueKind = 'text' | 'number' | 'boolean' | 'reference'
+
+type StructuredFieldRow = {
+  id: string
+  path: string
+  valueKind: StructuredValueKind
+  valueText: string
+  valueBoolean: boolean
+}
+
+type StructuredSelectCard = {
+  id: string
+  value: string
+}
+
+type StructuredCapabilityCard = {
+  id: string
+  title: string
+  scope: string
+  description: string
+  inputRows: StructuredFieldRow[]
+  outputRows: StructuredFieldRow[]
+  constraintCards: StructuredSelectCard[]
+}
+
+type ApplyStructuredEditorOptions = {
+  silent?: boolean
+}
+
 const MIN_LEFT_PANEL_WIDTH = 220
 const MAX_LEFT_PANEL_WIDTH = 480
 const MIN_RIGHT_PANEL_WIDTH = 300
@@ -797,6 +1345,7 @@ const GRAPH_SPLIT_SNAP_RATIO = 12
 const GRAPH_SPLIT_STORAGE_PREFIX = 'spark.workflow-design.graph-split.'
 const UNREADABLE_WORKFLOW_DESIGN_STATUS = 'unreadable'
 const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '设计稿格式不兼容或文件不可读'
+let structuredEditorId = 0
 
 const designs = ref<WorkflowDesignSummary[]>([])
 const currentWorkflowId = ref('')
@@ -804,6 +1353,7 @@ const currentTimestamp = ref('')
 const currentDocument = ref<WorkflowDesignDocument | null>(null)
 const selectedNodeKey = ref('')
 const selectedLineKey = ref('')
+const propertiesDrawerVisible = ref(false)
 const layoutResizeState = ref<LayoutResizeState | null>(null)
 const graphSplitResizeState = ref<GraphSplitResizeState | null>(null)
 const leftPanelWidth = ref(280)
@@ -816,6 +1366,7 @@ const graphSplitCollapsed = ref<GraphSplitCollapse>(null)
 const loadingList = ref(false)
 const opening = ref(false)
 const saving = ref(false)
+const autoLayoutSaving = ref(false)
 const publishing = ref(false)
 const openingDefinition = ref(false)
 const savingDefinition = ref(false)
@@ -832,7 +1383,6 @@ const nodeTypeText = ref('')
 const nodeTitleText = ref('')
 const nodeDescText = ref('')
 const modelJsonText = ref('{}')
-const modelJsonError = ref('')
 const modelRootClassText = ref('')
 const modelClassText = ref('')
 const validationActionClassText = ref('')
@@ -862,6 +1412,24 @@ const lineTypeText = ref('')
 const lineFromDockText = ref('')
 const lineToDockText = ref('')
 const lineRelationText = ref('')
+const businessInputRows = ref<StructuredFieldRow[]>([])
+const businessOutputRows = ref<StructuredFieldRow[]>([])
+const taskGoalText = ref('')
+const taskRequirementRows = ref<StructuredFieldRow[]>([])
+const taskContextInputRows = ref<StructuredFieldRow[]>([])
+const allowedActionCards = ref<StructuredSelectCard[]>([])
+const readableAttributeCards = ref<StructuredSelectCard[]>([])
+const functionCallingModeText = ref('freeWithinModelContext')
+const functionCallingConstraintCards = ref<StructuredSelectCard[]>([])
+const structuredResultRows = ref<StructuredFieldRow[]>([])
+const handoffToValidationValue = ref(true)
+const validationInputProjectionRows = ref<StructuredFieldRow[]>([])
+const validationExpectedResultRows = ref<StructuredFieldRow[]>([])
+const validationStatusText = ref('')
+const capabilityCards = ref<StructuredCapabilityCard[]>([])
+const runtimeStatePreview = ref('{}')
+const runtimeResultPreview = ref('{}')
+const validationIssuesPreview = ref('[]')
 
 const createForm = ref({
   workflowId: '',
@@ -886,10 +1454,62 @@ const selectedClassModelOption = computed(() => {
   return classModelOptions.value.find(item => item.kind === modelClassText.value.trim()) ?? null
 })
 const selectedClassModelMethods = computed(() => selectedClassModelOption.value?.methods ?? [])
+const propertiesDrawerTitle = computed(() => {
+  if (selectedLine.value !== null) return `连线属性 / ${selectedLine.value.id}`
+  if (selectedNode.value !== null) return `节点属性 / ${selectedNode.value.title}`
+  return 'Properties'
+})
 const selectedLineGraphNodes = computed(() => {
   const line = selectedLine.value
   if (line === null) return []
   return allNodes.value.filter(node => node.graph === line.graph)
+})
+const rootClassOptions = computed(() => {
+  const runtimeRoot = currentDocument.value?.workflow.runtimeBinding?.modelProjectionRef?.rootClassName
+  return uniqueTexts([
+    typeof runtimeRoot === 'string' ? runtimeRoot : '',
+    modelRootClassText.value,
+  ])
+})
+const modelClassOptions = computed(() => {
+  return uniqueTexts([
+    modelClassText.value,
+    validationActionClassText.value,
+    ...classModelOptions.value.map(item => item.kind),
+  ])
+})
+const completionMemberOptions = computed(() => {
+  return uniqueTexts([
+    validationActionNameText.value,
+    ...selectedClassModelMethods.value.map(method => method.name),
+  ])
+})
+const modelAttributeOptions = computed(() => {
+  return uniqueTexts(selectedClassModelOption.value?.attributes ?? [])
+})
+const workflowVariableOptions = computed(() => {
+  return uniqueTexts(currentDocument.value?.workflow.variables?.map(variable => variable.name) ?? [])
+})
+const structuredBasePathOptions = computed(() => {
+  return uniqueTexts([
+    ...workflowVariableOptions.value,
+    ...modelAttributeOptions.value,
+    ...selectedLineGraphNodes.value.flatMap(node => recordKeys(node.node.data?.outputs)),
+  ])
+})
+const structuredReferenceOptions = computed(() => {
+  const selected = selectedNode.value
+  const incomingReferenceOptions = selected === null
+    ? []
+    : lineViews.value
+      .filter(line => line.graph === selected.graph && line.toNodeId === selected.id)
+      .flatMap(line => referenceOptionsForNodeId(line.fromNodeId, line.graph))
+  return uniqueTexts([
+    ...workflowVariableOptions.value.map(name => `{{ start.${name} }}`),
+    ...modelAttributeOptions.value.map(name => `$model.${name}`),
+    ...incomingReferenceOptions,
+    ...allStructuredRows().map(row => row.valueText),
+  ])
 })
 const workflowShellStyle = computed<CSSProperties>(() => ({
   gridTemplateColumns: `${leftPanelWidth.value}px 12px minmax(520px, 1fr) 12px ${rightPanelWidth.value}px`,
@@ -954,6 +1574,7 @@ const flowDefaultEdgeOptions: DefaultEdgeOptions = {
   interactionWidth: 18,
 }
 const canSave = computed(() => currentDocument.value !== null && currentWorkflowId.value.length > 0 && !opening.value)
+const canAutoLayout = computed(() => canSave.value && !saving.value && !autoLayoutSaving.value)
 const canPublish = computed(() => canSave.value && !saving.value && !publishing.value)
 const canOpenDefinition = computed(() => canSave.value && !openingDefinition.value)
 const canSaveDefinition = computed(() => (
@@ -1421,6 +2042,219 @@ function isJsonRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function uniqueTexts(values: readonly unknown[]): string[] {
+  const result: string[] = []
+  for (const value of values) {
+    if (typeof value !== 'string') continue
+    const normalized = value.trim()
+    if (normalized.length > 0 && !result.includes(normalized)) result.push(normalized)
+  }
+  return result
+}
+
+function nextStructuredEditorId(prefix: string): string {
+  structuredEditorId += 1
+  return `${prefix}.${structuredEditorId}`
+}
+
+function recordKeys(value: unknown): string[] {
+  return isJsonRecord(value) ? Object.keys(value).filter(key => key.trim().length > 0) : []
+}
+
+function allStructuredRows(): StructuredFieldRow[] {
+  return [
+    ...businessInputRows.value,
+    ...businessOutputRows.value,
+    ...taskRequirementRows.value,
+    ...taskContextInputRows.value,
+    ...structuredResultRows.value,
+    ...validationInputProjectionRows.value,
+    ...validationExpectedResultRows.value,
+    ...capabilityCards.value.flatMap(card => [...card.inputRows, ...card.outputRows]),
+  ]
+}
+
+function structuredPathOptions(rows: readonly StructuredFieldRow[]): string[] {
+  return uniqueTexts([...structuredBasePathOptions.value, ...rows.map(row => row.path)])
+}
+
+function structuredValueOptions(row: StructuredFieldRow): string[] {
+  return uniqueTexts([row.valueText, ...structuredReferenceOptions.value])
+}
+
+function lineModelOptions(nodeId: string, currentValue: string): string[] {
+  const node = selectedLineGraphNodes.value.find(item => item.id === nodeId)
+  if (node === undefined || node.isBoundaryNode) return uniqueTexts([currentValue, '$workflow'])
+  const data = node.node.data
+  const models = Array.isArray(data?.models) ? data.models.filter(isJsonRecord) : []
+  return uniqueTexts([
+    currentValue,
+    ...models.map(model => readTextField(model, 'id')),
+  ])
+}
+
+function lineMemberOptions(nodeId: string, currentValue: string): string[] {
+  const line = selectedLine.value
+  const graph = line?.graph
+  const node = graph?.nodes.find(item => item.id === nodeId)
+  if (node === undefined) return uniqueTexts([currentValue])
+  return uniqueTexts([currentValue, ...referenceMemberOptionsForNode(node)])
+}
+
+function referenceOptionsForNodeId(nodeId: string, graph: WorkflowDesignGraphView['graph']): string[] {
+  const node = graph.nodes.find(item => item.id === nodeId)
+  if (node === undefined) return []
+  return referenceMemberOptionsForNode(node).map(member => `{{ ${node.id}.${member} }}`)
+}
+
+function referenceMemberOptionsForNode(node: WorkflowDesignNodeView['node']): string[] {
+  const nodeType = typeof node.data?.type === 'string' ? node.data.type : node.type
+  if (nodeType === 'start') {
+    return workflowVariableOptions.value
+  }
+  if (nodeType === 'output') {
+    return recordKeys(node.data?.outputs)
+  }
+  return uniqueTexts([
+    ...recordKeys(node.data?.outputs),
+    ...modelAttributeOptions.value,
+  ])
+}
+
+function structuredRowsFromRecord(value: unknown, prefix: string): StructuredFieldRow[] {
+  if (!isJsonRecord(value)) return []
+  const rows: StructuredFieldRow[] = []
+  collectStructuredRows(value, '', rows, prefix)
+  return rows
+}
+
+function collectStructuredRows(
+  value: unknown,
+  path: string,
+  rows: StructuredFieldRow[],
+  prefix: string,
+): void {
+  if (isJsonRecord(value)) {
+    for (const [key, child] of Object.entries(value)) {
+      collectStructuredRows(child, path.length === 0 ? key : `${path}.${key}`, rows, prefix)
+    }
+    return
+  }
+  if (Array.isArray(value)) {
+    for (const [index, child] of value.entries()) {
+      collectStructuredRows(child, path.length === 0 ? String(index) : `${path}.${index}`, rows, prefix)
+    }
+    return
+  }
+  rows.push(structuredRowFromValue(path, value, prefix))
+}
+
+function structuredRowFromValue(path: string, value: unknown, prefix: string): StructuredFieldRow {
+  if (typeof value === 'boolean') {
+    return {
+      id: nextStructuredEditorId(prefix),
+      path,
+      valueKind: 'boolean',
+      valueText: '',
+      valueBoolean: value,
+    }
+  }
+  if (typeof value === 'number') {
+    return {
+      id: nextStructuredEditorId(prefix),
+      path,
+      valueKind: 'number',
+      valueText: Number.isFinite(value) ? String(value) : '0',
+      valueBoolean: false,
+    }
+  }
+  const text = typeof value === 'string' ? value : String(value ?? '')
+  return {
+    id: nextStructuredEditorId(prefix),
+    path,
+    valueKind: text.includes('{{') || text.startsWith('$') ? 'reference' : 'text',
+    valueText: text,
+    valueBoolean: false,
+  }
+}
+
+function structuredRowsToRecord(rows: readonly StructuredFieldRow[]): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const row of rows) {
+    const path = row.path.trim()
+    if (path.length === 0) continue
+    assignStructuredPath(result, path.split('.'), structuredRowValue(row))
+  }
+  return result
+}
+
+function structuredRowValue(row: StructuredFieldRow): unknown {
+  if (row.valueKind === 'boolean') return row.valueBoolean
+  if (row.valueKind === 'number') {
+    const value = Number(row.valueText)
+    return Number.isFinite(value) ? value : 0
+  }
+  return row.valueText
+}
+
+function assignStructuredPath(target: Record<string, unknown>, parts: string[], value: unknown): void {
+  let cursor = target
+  for (const [index, part] of parts.entries()) {
+    if (part.length === 0) return
+    if (index === parts.length - 1) {
+      cursor[part] = value
+      return
+    }
+    const existing = cursor[part]
+    if (isJsonRecord(existing)) {
+      cursor = existing
+    } else {
+      const created: Record<string, unknown> = {}
+      cursor[part] = created
+      cursor = created
+    }
+  }
+}
+
+function structuredCardsFromStrings(value: unknown, prefix: string): StructuredSelectCard[] {
+  return Array.isArray(value)
+    ? value
+      .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      .map(item => ({ id: nextStructuredEditorId(prefix), value: item.trim() }))
+    : []
+}
+
+function structuredCardsToStrings(cards: readonly StructuredSelectCard[]): string[] {
+  return uniqueTexts(cards.map(card => card.value))
+}
+
+function capabilityCardsFromData(value: unknown): StructuredCapabilityCard[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(isJsonRecord)
+    .map((capability): StructuredCapabilityCard => ({
+      id: readTextField(capability, 'id') || nextStructuredEditorId('capability'),
+      title: readTextField(capability, 'title'),
+      scope: readTextField(capability, 'scope') || 'node',
+      description: readTextField(capability, 'description'),
+      inputRows: structuredRowsFromRecord(capability['inputs'], 'capability.input'),
+      outputRows: structuredRowsFromRecord(capability['outputs'], 'capability.output'),
+      constraintCards: structuredCardsFromStrings(capability['constraints'], 'capability.constraint'),
+    }))
+}
+
+function capabilityCardsToData(cards: readonly StructuredCapabilityCard[]): WorkflowDesignCapability[] {
+  return cards.map(card => ({
+    id: card.id,
+    title: card.title,
+    scope: card.scope,
+    description: card.description,
+    inputs: structuredRowsToRecord(card.inputRows),
+    outputs: structuredRowsToRecord(card.outputRows),
+    constraints: structuredCardsToStrings(card.constraintCards),
+  }))
+}
+
 function dockHandle(dock: number | undefined, fallback: string): string {
   return typeof dock === 'number' && Number.isInteger(dock) && dock >= 0 ? `dock-${dock}` : fallback
 }
@@ -1493,12 +2327,26 @@ function selectNode(key: string): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
   selectedLineKey.value = ''
   selectedNodeKey.value = key
+  openPropertiesDrawer()
 }
 
 function selectLine(key: string): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
   selectedNodeKey.value = ''
   selectedLineKey.value = key
+  openPropertiesDrawer()
+}
+
+function openPropertiesDrawer(): void {
+  if (selectedNode.value === null && selectedLine.value === null) return
+  propertiesDrawerVisible.value = true
+  if (selectedNode.value?.isBusinessNode === true && classModelOptions.value.length === 0) {
+    void refreshClassModelOptions()
+  }
+}
+
+function handleLineEditorChange(): void {
+  void applyLineEditorToSelected({ silent: true })
 }
 
 function nodesForGraph(graphView: WorkflowDesignGraphView): WorkflowDesignNodeView[] {
@@ -1730,15 +2578,15 @@ function applyLineEditorToSelected(options: { silent?: boolean } = {}): boolean 
   if (line === null || document === null) return true
 
   const from = createEditorLineEndpoint(
-    lineFromNodeText.value.trim(),
-    lineFromModelText.value.trim(),
-    lineFromMemberText.value.trim(),
+    String(lineFromNodeText.value ?? '').trim(),
+    String(lineFromModelText.value ?? '').trim(),
+    String(lineFromMemberText.value ?? '').trim(),
     lineFromDockText.value,
   )
   const to = createEditorLineEndpoint(
-    lineToNodeText.value.trim(),
-    lineToModelText.value.trim(),
-    lineToMemberText.value.trim(),
+    String(lineToNodeText.value ?? '').trim(),
+    String(lineToModelText.value ?? '').trim(),
+    String(lineToMemberText.value ?? '').trim(),
     lineToDockText.value,
   )
   if (!validateLineEndpointPatch({ line, from, to, options })) return false
@@ -1746,8 +2594,8 @@ function applyLineEditorToSelected(options: { silent?: boolean } = {}): boolean 
   updateWorkflowDesignLine(line.line, {
     from,
     to,
-    type: lineTypeText.value.trim() || 'custom',
-    relation: lineRelationText.value.trim() || 'sequence',
+    type: String(lineTypeText.value ?? '').trim() || 'custom',
+    relation: String(lineRelationText.value ?? '').trim() || 'sequence',
   })
   markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
   editorDirty.value = false
@@ -1757,13 +2605,32 @@ function applyLineEditorToSelected(options: { silent?: boolean } = {}): boolean 
 
 function markEditorDirty(): void {
   editorDirty.value = true
-  modelJsonError.value = ''
+}
+
+function clearBusinessNodeStructuredEditor(): void {
+  businessInputRows.value = []
+  businessOutputRows.value = []
+  taskGoalText.value = ''
+  taskRequirementRows.value = []
+  taskContextInputRows.value = []
+  allowedActionCards.value = []
+  readableAttributeCards.value = []
+  functionCallingModeText.value = 'freeWithinModelContext'
+  functionCallingConstraintCards.value = []
+  structuredResultRows.value = []
+  handoffToValidationValue.value = true
+  validationInputProjectionRows.value = []
+  validationExpectedResultRows.value = []
+  validationStatusText.value = ''
+  capabilityCards.value = []
+  runtimeStatePreview.value = '{}'
+  runtimeResultPreview.value = '{}'
+  validationIssuesPreview.value = '[]'
 }
 
 function syncEditorFromSelected(): void {
   const view = selectedNode.value
   editorDirty.value = false
-  modelJsonError.value = ''
   if (view === null) {
     nodeTypeText.value = ''
     nodeTitleText.value = ''
@@ -1778,6 +2645,7 @@ function syncEditorFromSelected(): void {
     loopModeText.value = ''
     loopMaxCountValue.value = 10
     loopExitNodeText.value = ''
+    clearBusinessNodeStructuredEditor()
     return
   }
   nodeTypeText.value = view.nodeType
@@ -1785,6 +2653,7 @@ function syncEditorFromSelected(): void {
   nodeDescText.value = typeof view.node.data?.desc === 'string' ? view.node.data.desc : ''
   modelJsonText.value = shouldEditNodeConfig(view) ? formatJson(view.node.data ?? {}) : '{}'
   syncBusinessModelEditorFromSelected(view)
+  syncBusinessNodeStructuredEditorFromSelected(view)
   const loop = view.node.data?.loop
   loopModeText.value = typeof loop?.mode === 'string' && loop.mode.length > 0 ? loop.mode : 'progressive'
   loopMaxCountValue.value = typeof loop?.maxLoopCount === 'number' && Number.isFinite(loop.maxLoopCount) ? loop.maxLoopCount : 1
@@ -1795,7 +2664,6 @@ function syncEditorFromSelected(): void {
 function syncLineEditorFromSelected(): void {
   const line = selectedLine.value
   editorDirty.value = false
-  modelJsonError.value = ''
   if (line === null) {
     lineFromNodeText.value = ''
     lineFromModelText.value = ''
@@ -1840,6 +2708,43 @@ function syncBusinessModelEditorFromSelected(view: WorkflowDesignNodeView): void
   validationActionNameText.value = readTextField(completion, 'memberName')
   classModelError.value = ''
   classModelGuideText.value = ''
+}
+
+function syncBusinessNodeStructuredEditorFromSelected(view: WorkflowDesignNodeView): void {
+  if (!view.isBusinessNode) {
+    clearBusinessNodeStructuredEditor()
+    return
+  }
+  const data = isJsonRecord(view.node.data) ? view.node.data : {}
+  businessInputRows.value = structuredRowsFromRecord(data['inputs'], 'input')
+  businessOutputRows.value = structuredRowsFromRecord(data['outputs'], 'output')
+  const llm = isJsonRecord(data['llm']) ? data['llm'] : {}
+  const task = isJsonRecord(llm['task']) ? llm['task'] : {}
+  taskGoalText.value = readTextField(task, 'goal')
+  taskRequirementRows.value = structuredRowsFromRecord(task['requirements'], 'task.requirement')
+  taskContextInputRows.value = structuredRowsFromRecord(task['contextInputs'], 'task.context')
+  const knowledge = isJsonRecord(llm['knowledge']) ? llm['knowledge'] : {}
+  allowedActionCards.value = structuredCardsFromStrings(knowledge['allowedActions'], 'knowledge.action')
+  readableAttributeCards.value = structuredCardsFromStrings(knowledge['readableAttributes'], 'knowledge.attribute')
+  const functionCalling = isJsonRecord(llm['functionCalling']) ? llm['functionCalling'] : {}
+  functionCallingModeText.value = readTextField(functionCalling, 'mode') || 'freeWithinModelContext'
+  functionCallingConstraintCards.value = structuredCardsFromStrings(functionCalling['constraints'], 'function.constraint')
+  const output = isJsonRecord(llm['output']) ? llm['output'] : {}
+  structuredResultRows.value = structuredRowsFromRecord(output['structuredResult'], 'output.structured')
+  handoffToValidationValue.value = typeof output['handoffToValidation'] === 'boolean'
+    ? output['handoffToValidation']
+    : true
+  const validation = isJsonRecord(data['validation']) ? data['validation'] : {}
+  const action = isJsonRecord(validation['action']) ? validation['action'] : {}
+  validationActionClassText.value = readTextField(action, 'className') || validationActionClassText.value
+  validationActionNameText.value = readTextField(action, 'actionName') || validationActionNameText.value
+  validationInputProjectionRows.value = structuredRowsFromRecord(action['inputProjection'], 'validation.input')
+  validationExpectedResultRows.value = structuredRowsFromRecord(action['expectedResult'], 'validation.expected')
+  validationStatusText.value = readTextField(validation, 'status')
+  validationIssuesPreview.value = formatJson(Array.isArray(validation['issues']) ? validation['issues'] : [])
+  capabilityCards.value = capabilityCardsFromData(data['capabilities'])
+  runtimeStatePreview.value = formatJson(isJsonRecord(data['state']) ? data['state'] : {})
+  runtimeResultPreview.value = formatJson(isJsonRecord(data['result']) ? data['result'] : {})
 }
 
 function applyNodePosition(x: number, y: number): void {
@@ -1958,45 +2863,68 @@ function ensurePrimaryBusinessNodeModel(data: Record<string, unknown>, nodeId: s
   return primary
 }
 
-function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
-  const view = selectedNode.value
-  const document = currentDocument.value
-  if (view === null || document === null || !shouldEditNodeConfig(view)) return true
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(modelJsonText.value.trim().length > 0 ? modelJsonText.value : '{}')
-  } catch (error: unknown) {
-    modelJsonError.value = `JSON 鏃犳晥: ${errorMessage(error)}`
-    if (options.silent !== true) ElMessage.warning(modelJsonError.value)
-    return false
-  }
-
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    modelJsonError.value = 'Node config JSON must be an object.'
-    if (options.silent !== true) ElMessage.warning(modelJsonError.value)
-    return false
-  }
-
-  applyNodeBasicEditorToSelected()
-  view.node.data ??= {}
-  Object.assign(view.node.data, parsed)
-  view.node.data.type = nodeTypeText.value.trim() || view.nodeType || view.node.type || 'custom'
-  view.node.data.title = nodeTitleText.value.trim() || view.id
-  view.node.data.desc = nodeDescText.value.trim()
-  markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
-  editorDirty.value = false
-  modelJsonError.value = ''
-  if (options.silent !== true) ElMessage.success('已应用到节点')
-  return true
+function handleBusinessNodeStructuredChange(): void {
+  applyBusinessNodeStructuredEditorToSelected({ silent: true })
 }
 
-function applyBusinessModelEditorToSelected(options: { silent?: boolean } = {}): boolean {
+function addStructuredFieldRow(rows: StructuredFieldRow[], prefix: string): void {
+  const path = structuredPathOptions(rows)[0] ?? ''
+  rows.push({
+    id: nextStructuredEditorId(prefix),
+    path,
+    valueKind: 'reference',
+    valueText: structuredReferenceOptions.value[0] ?? '',
+    valueBoolean: false,
+  })
+  handleBusinessNodeStructuredChange()
+}
+
+function removeStructuredFieldRow(rows: StructuredFieldRow[], row: StructuredFieldRow): void {
+  const index = rows.indexOf(row)
+  if (index >= 0) rows.splice(index, 1)
+  handleBusinessNodeStructuredChange()
+}
+
+function addSelectCard(cards: StructuredSelectCard[], options: readonly string[], prefix: string): void {
+  cards.push({
+    id: nextStructuredEditorId(prefix),
+    value: options[0] ?? '',
+  })
+  handleBusinessNodeStructuredChange()
+}
+
+function removeSelectCard(cards: StructuredSelectCard[], card: StructuredSelectCard): void {
+  const index = cards.indexOf(card)
+  if (index >= 0) cards.splice(index, 1)
+  handleBusinessNodeStructuredChange()
+}
+
+function addCapabilityCard(): void {
+  capabilityCards.value.push({
+    id: nextStructuredEditorId('capability'),
+    title: 'Capability',
+    scope: 'node',
+    description: '',
+    inputRows: [],
+    outputRows: [],
+    constraintCards: [],
+  })
+  handleBusinessNodeStructuredChange()
+}
+
+function removeCapabilityCard(card: StructuredCapabilityCard): void {
+  const index = capabilityCards.value.indexOf(card)
+  if (index >= 0) capabilityCards.value.splice(index, 1)
+  handleBusinessNodeStructuredChange()
+}
+
+function applyBusinessNodeStructuredEditorToSelected(options: ApplyStructuredEditorOptions = {}): boolean {
   const view = selectedNode.value
   const document = currentDocument.value
   if (view === null || document === null || !view.isBusinessNode) return true
   view.node.data ??= {}
-  const primaryModel = ensurePrimaryBusinessNodeModel(view.node.data, view.id)
+  const data = view.node.data
+  const primaryModel = ensurePrimaryBusinessNodeModel(data, view.id)
   primaryModel['rootClassName'] = modelRootClassText.value.trim()
   primaryModel['className'] = modelClassText.value.trim()
   const completionMemberName = validationActionNameText.value.trim()
@@ -2010,18 +2938,56 @@ function applyBusinessModelEditorToSelected(options: { silent?: boolean } = {}):
   } else {
     delete primaryModel['completion']
   }
-  modelJsonText.value = formatJson(view.node.data)
+  data.inputs = structuredRowsToRecord(businessInputRows.value)
+  data.outputs = structuredRowsToRecord(businessOutputRows.value)
+  data.llm = {
+    task: {
+      goal: taskGoalText.value.trim(),
+      requirements: structuredRowsToRecord(taskRequirementRows.value),
+      contextInputs: structuredRowsToRecord(taskContextInputRows.value),
+    },
+    knowledge: {
+      rootClassName: modelRootClassText.value.trim(),
+      className: modelClassText.value.trim(),
+      allowedActions: structuredCardsToStrings(allowedActionCards.value),
+      readableAttributes: structuredCardsToStrings(readableAttributeCards.value),
+    },
+    functionCalling: {
+      mode: functionCallingModeText.value.trim() || 'freeWithinModelContext',
+      constraints: structuredCardsToStrings(functionCallingConstraintCards.value),
+    },
+    output: {
+      structuredResult: structuredRowsToRecord(structuredResultRows.value),
+      handoffToValidation: handoffToValidationValue.value,
+    },
+  }
+  const existingValidation = isJsonRecord(data.validation) ? data.validation : {}
+  data.validation = {
+    ...existingValidation,
+    action: {
+      className: validationActionClassText.value.trim() || modelClassText.value.trim(),
+      actionName: validationActionNameText.value.trim(),
+      inputProjection: structuredRowsToRecord(validationInputProjectionRows.value),
+      expectedResult: structuredRowsToRecord(validationExpectedResultRows.value),
+    },
+  }
+  data.capabilities = capabilityCardsToData(capabilityCards.value)
+  modelJsonText.value = formatJson(data)
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('模型绑定已应用')
+  if (options.silent !== true) ElMessage.success('节点配置已更新')
   return true
+}
+
+function applyBusinessModelEditorToSelected(options: { silent?: boolean } = {}): boolean {
+  return applyBusinessNodeStructuredEditorToSelected(options)
 }
 
 function handleModelClassSelectionChange(): void {
   if (validationActionClassText.value.trim().length === 0) {
     validationActionClassText.value = modelClassText.value.trim()
   }
-  markEditorDirty()
+  handleBusinessNodeStructuredChange()
 }
 
 async function refreshClassModelOptions(): Promise<void> {
@@ -2097,8 +3063,8 @@ function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
     return true
   }
   if (shouldEditNodeConfig(view)) {
-    if (!applyEditorToSelected(options)) return false
-    return applyBusinessModelEditorToSelected({ silent: true })
+    applyNodeBasicEditorToSelected()
+    return applyBusinessNodeStructuredEditorToSelected({ silent: true })
   }
   if (view.nodeType === 'loop') return applyLoopEditorToSelected(options)
   applyNodeBasicEditorToSelected()
@@ -2126,6 +3092,29 @@ async function saveCurrentDesign(): Promise<boolean> {
     return false
   } finally {
     saving.value = false
+  }
+}
+
+async function autoLayoutCurrentDesign(): Promise<void> {
+  const document = currentDocument.value
+  if (document === null || currentWorkflowId.value.length === 0) return
+  if (!applySelectedDraft({ silent: true })) return
+
+  const result = autoLayoutWorkflowDesignGraphs(document)
+  for (const graph of result.graphs) {
+    if (graph.changedNodePositions) markWorkflowDesignDirty(document, `${graph.scopePath}.nodes`)
+    if (graph.changedViewport) markWorkflowDesignDirty(document, `${graph.scopePath}.viewport`)
+  }
+  if (!result.changed && !hasUnsavedChanges.value) {
+    ElMessage.info('当前工作流图已无需自动排版')
+    return
+  }
+
+  autoLayoutSaving.value = true
+  try {
+    await saveCurrentDesign()
+  } finally {
+    autoLayoutSaving.value = false
   }
 }
 
@@ -2713,9 +3702,40 @@ function errorMessage(error: unknown): string {
 
 .node-editor-form,
 .loop-editor-form,
-.class-model-editor {
+.class-model-editor,
+.structured-editor,
+.properties-summary {
   display: grid;
   gap: 10px;
+}
+
+.properties-drawer :deep(.el-drawer__body) {
+  overflow: auto;
+  padding-top: 8px;
+}
+
+.structured-field-row,
+.structured-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.structured-field-row {
+  grid-template-columns: minmax(160px, 1fr) 130px minmax(220px, 2fr) auto;
+  align-items: center;
+}
+
+.structured-card {
+  padding: 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.structured-checkbox {
+  width: 18px;
+  height: 18px;
 }
 
 .class-model-catalog {
@@ -2754,10 +3774,18 @@ function errorMessage(error: unknown): string {
   background: #ffffff;
 }
 
-.model-json-input :deep(textarea) {
+.readonly-json-preview {
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #0f172a;
   font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .definition-editor {

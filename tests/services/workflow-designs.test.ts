@@ -22,6 +22,7 @@ vi.mock('@/services/auth', () => ({
 
 import {
   addWorkflowDesignLine,
+  autoLayoutWorkflowDesignGraphs,
   collectWorkflowDesignLines,
   collectWorkflowDesignGraphs,
   collectWorkflowDesignNodes,
@@ -228,6 +229,12 @@ function createDesign(): WorkflowDesignDocument {
   }
 }
 
+function findRootGraphNode(design: WorkflowDesignDocument, nodeId: string) {
+  const node = design.workflow.graph.nodes.find(item => item.id === nodeId)
+  if (node === undefined) throw new Error(`missing graph node: ${nodeId}`)
+  return node
+}
+
 describe('workflow design helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -260,6 +267,106 @@ describe('workflow design helpers', () => {
     expect(graphs.map(graph => graph.scopePath)).toEqual(['workflow.graph'])
     expect(graphs[0]?.carrier).toBe('root')
     expect(lines.map(line => line.id)).toEqual(['line.start.node', 'line.node.output'])
+  })
+
+  it('auto-layouts all graphs from upper-left by workflow order', () => {
+    const design = createDesign()
+    design.workflow.graph.nodes = [
+      { id: 'start', type: 'start', position: { x: 999, y: 999 }, data: { type: 'start', title: 'Start' } },
+      { id: 'output', type: 'output', position: { x: 999, y: 999 }, data: { type: 'output', title: 'Output' } },
+      {
+        id: 'node.a',
+        type: 'node',
+        position: { x: 999, y: 999 },
+        data: {
+          type: 'node',
+          title: 'A',
+          loop: {
+            subGraph: {
+              nodes: [
+                { id: 'loop.start', type: 'start', position: { x: 8, y: 8 }, data: { type: 'start' } },
+                { id: 'loop.node', type: 'node', position: { x: 8, y: 8 }, data: { type: 'node' } },
+                { id: 'loop.output', type: 'output', position: { x: 8, y: 8 }, data: { type: 'output' } },
+              ],
+              lines: [
+                {
+                  id: 'line.loop.start.node',
+                  from: { nodeId: 'loop.start', modelId: '$workflow', memberName: 'out' },
+                  to: { nodeId: 'loop.node', modelId: 'node', memberName: 'in' },
+                },
+                {
+                  id: 'line.loop.node.output',
+                  from: { nodeId: 'loop.node', modelId: 'node', memberName: 'out' },
+                  to: { nodeId: 'loop.output', modelId: '$workflow', memberName: 'in' },
+                },
+              ],
+              viewport: { x: 20, y: 30, zoom: 0.5 },
+            },
+          },
+        },
+      },
+      { id: 'node.b', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'B' } },
+      { id: 'node.c', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'C' } },
+      { id: 'node.d', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'D' } },
+      { id: 'node.e', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'E' } },
+    ]
+    design.workflow.graph.lines = [
+      {
+        id: 'line.start.a',
+        from: { nodeId: 'start', modelId: '$workflow', memberName: 'out' },
+        to: { nodeId: 'node.a', modelId: 'node.a', memberName: 'in' },
+      },
+      {
+        id: 'line.a.b',
+        from: { nodeId: 'node.a', modelId: 'node.a', memberName: 'out' },
+        to: { nodeId: 'node.b', modelId: 'node.b', memberName: 'in' },
+      },
+      {
+        id: 'line.b.c',
+        from: { nodeId: 'node.b', modelId: 'node.b', memberName: 'out' },
+        to: { nodeId: 'node.c', modelId: 'node.c', memberName: 'in' },
+      },
+      {
+        id: 'line.c.d',
+        from: { nodeId: 'node.c', modelId: 'node.c', memberName: 'out' },
+        to: { nodeId: 'node.d', modelId: 'node.d', memberName: 'in' },
+      },
+      {
+        id: 'line.d.e',
+        from: { nodeId: 'node.d', modelId: 'node.d', memberName: 'out' },
+        to: { nodeId: 'node.e', modelId: 'node.e', memberName: 'in' },
+      },
+      {
+        id: 'line.e.output',
+        from: { nodeId: 'node.e', modelId: 'node.e', memberName: 'out' },
+        to: { nodeId: 'output', modelId: '$workflow', memberName: 'in' },
+      },
+    ]
+    design.workflow.graph.viewport = { x: 100, y: 100, zoom: 0.75 }
+
+    const result = autoLayoutWorkflowDesignGraphs(design)
+    const nestedGraph = findRootGraphNode(design, 'node.a').data?.loop?.subGraph
+    if (nestedGraph === undefined) throw new Error('missing nested graph')
+
+    expect(result.changed).toBe(true)
+    expect(result.graphs.map(graph => graph.scopePath)).toEqual([
+      'workflow.graph',
+      'workflow.graph.node.a.loop.subGraph',
+    ])
+    expect(findRootGraphNode(design, 'start').position).toEqual({ x: 40, y: 40 })
+    expect(findRootGraphNode(design, 'node.a').position).toEqual({ x: 380, y: 40 })
+    expect(findRootGraphNode(design, 'node.b').position).toEqual({ x: 720, y: 40 })
+    expect(findRootGraphNode(design, 'node.c').position).toEqual({ x: 1060, y: 40 })
+    expect(findRootGraphNode(design, 'node.d').position).toEqual({ x: 40, y: 250 })
+    expect(findRootGraphNode(design, 'node.e').position).toEqual({ x: 380, y: 250 })
+    expect(findRootGraphNode(design, 'output').position).toEqual({ x: 720, y: 250 })
+    expect(design.workflow.graph.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
+    expect(nestedGraph.nodes.map(node => node.position)).toEqual([
+      { x: 40, y: 40 },
+      { x: 380, y: 40 },
+      { x: 720, y: 40 },
+    ])
+    expect(nestedGraph.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
   })
 
   it('adds and removes lines in a selected graph', () => {

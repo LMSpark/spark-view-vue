@@ -239,8 +239,25 @@ export type WorkflowDesignLinePatch = {
   relation?: string
 }
 
+export type WorkflowDesignAutoLayoutGraphResult = {
+  scopePath: string
+  changedNodePositions: boolean
+  changedViewport: boolean
+}
+
+export type WorkflowDesignAutoLayoutResult = {
+  changed: boolean
+  graphs: WorkflowDesignAutoLayoutGraphResult[]
+}
+
 export type CreateAgentWorkflowDefinitionFromDesignOptions = {
   publishedAt?: string
+}
+
+type WorkflowDesignAutoLayoutNode = {
+  node: WorkflowDesignGraphNode
+  originalIndex: number
+  rank: number
 }
 
 type CollectWorkflowDesignNodeCommand = Readonly<{
@@ -272,6 +289,11 @@ const PLACEHOLDER_MODEL_CLASS_NAME = 'spark.placeholder.Model'
 const PLACEHOLDER_MODEL_ID = 'spark.placeholder.model'
 const PLACEHOLDER_VALIDATION_ACTION_NAME = 'spark.placeholder.validate'
 const PLACEHOLDER_RUNTIME_ID = 'spark.placeholder.workflow'
+const WORKFLOW_AUTO_LAYOUT_START_X = 40
+const WORKFLOW_AUTO_LAYOUT_START_Y = 40
+const WORKFLOW_AUTO_LAYOUT_STEP_X = 340
+const WORKFLOW_AUTO_LAYOUT_STEP_Y = 210
+const WORKFLOW_AUTO_LAYOUT_MAX_COLUMNS = 6
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
   return http.get<WorkflowDesignSummary[]>(`${getWorkflowDesignApi()}/__list`)
@@ -410,6 +432,14 @@ export function collectWorkflowDesignGraphs(document: WorkflowDesignDocument): W
 
 export function collectWorkflowDesignLines(document: WorkflowDesignDocument): WorkflowDesignLineView[] {
   return collectWorkflowDesignGraphs(document).flatMap(view => collectGraphLines(view))
+}
+
+export function autoLayoutWorkflowDesignGraphs(document: WorkflowDesignDocument): WorkflowDesignAutoLayoutResult {
+  const graphs = collectWorkflowDesignGraphs(document).map(view => autoLayoutWorkflowDesignGraph(view))
+  return {
+    changed: graphs.some(graph => graph.changedNodePositions || graph.changedViewport),
+    graphs,
+  }
 }
 
 export function isSingleModelEditToolNode(_node: WorkflowDesignGraphNode): boolean {
@@ -1233,6 +1263,106 @@ function collectGraphLines(view: WorkflowDesignGraphView): WorkflowDesignLineVie
       ...(toNode === undefined ? {} : { toNode }),
     }
   })
+}
+
+function autoLayoutWorkflowDesignGraph(view: WorkflowDesignGraphView): WorkflowDesignAutoLayoutGraphResult {
+  const orderedNodes = orderWorkflowDesignGraphNodes(view.graph)
+  const columnCount = autoLayoutColumnCount(orderedNodes.length)
+  let changedNodePositions = false
+
+  for (const [index, layoutNode] of orderedNodes.entries()) {
+    const x = WORKFLOW_AUTO_LAYOUT_START_X + (index % columnCount) * WORKFLOW_AUTO_LAYOUT_STEP_X
+    const y = WORKFLOW_AUTO_LAYOUT_START_Y + Math.floor(index / columnCount) * WORKFLOW_AUTO_LAYOUT_STEP_Y
+    const position = layoutNode.node.position
+    if (position?.x !== x || position.y !== y) {
+      changedNodePositions = true
+    }
+    layoutNode.node.position = { ...position, x, y }
+  }
+
+  const viewport = view.graph.viewport
+  const changedViewport = orderedNodes.length > 0
+    && (viewport?.x !== 0 || viewport.y !== 0 || viewport.zoom !== 1)
+  if (orderedNodes.length > 0) {
+    view.graph.viewport = { ...viewport, x: 0, y: 0, zoom: 1 }
+  }
+
+  return {
+    scopePath: view.scopePath,
+    changedNodePositions,
+    changedViewport,
+  }
+}
+
+function orderWorkflowDesignGraphNodes(graph: WorkflowDesignGraph): WorkflowDesignAutoLayoutNode[] {
+  const layoutNodes = graph.nodes.map((node, originalIndex): WorkflowDesignAutoLayoutNode => ({
+    node,
+    originalIndex,
+    rank: 0,
+  }))
+  const nodesById = new Map(layoutNodes.map(item => [item.node.id, item]))
+  const outgoingNodeIds = new Map(layoutNodes.map(item => [item.node.id, [] as string[]]))
+  const incomingCounts = new Map(layoutNodes.map(item => [item.node.id, 0]))
+
+  for (const line of graph.lines) {
+    const fromNode = nodesById.get(line.from.nodeId)
+    const toNode = nodesById.get(line.to.nodeId)
+    if (fromNode === undefined || toNode === undefined || fromNode.node.id === toNode.node.id) continue
+    outgoingNodeIds.get(fromNode.node.id)?.push(toNode.node.id)
+    incomingCounts.set(toNode.node.id, (incomingCounts.get(toNode.node.id) ?? 0) + 1)
+  }
+
+  const queue = layoutNodes.filter(item => incomingCounts.get(item.node.id) === 0)
+  const visitedNodeIds = new Set<string>()
+  let queueIndex = 0
+  while (queueIndex < queue.length) {
+    const current = queue[queueIndex]
+    queueIndex += 1
+    if (current === undefined || visitedNodeIds.has(current.node.id)) continue
+    visitedNodeIds.add(current.node.id)
+
+    for (const toNodeId of outgoingNodeIds.get(current.node.id) ?? []) {
+      const toNode = nodesById.get(toNodeId)
+      if (toNode === undefined) continue
+      toNode.rank = Math.max(toNode.rank, current.rank + 1)
+      const nextIncomingCount = (incomingCounts.get(toNodeId) ?? 0) - 1
+      incomingCounts.set(toNodeId, nextIncomingCount)
+      if (nextIncomingCount === 0) queue.push(toNode)
+    }
+  }
+
+  const maxVisitedRank = layoutNodes.reduce((maxRank, item) => (
+    visitedNodeIds.has(item.node.id) ? Math.max(maxRank, item.rank) : maxRank
+  ), 0)
+  for (const item of layoutNodes) {
+    if (!visitedNodeIds.has(item.node.id)) {
+      item.rank = Math.max(item.rank, maxVisitedRank + 1)
+    }
+  }
+
+  moveOutputNodesAfterBusinessFlow(layoutNodes)
+  return layoutNodes.sort((left, right) => left.rank - right.rank || left.originalIndex - right.originalIndex)
+}
+
+function moveOutputNodesAfterBusinessFlow(layoutNodes: WorkflowDesignAutoLayoutNode[]): void {
+  const maxNonOutputRank = layoutNodes.reduce((maxRank, item) => (
+    isWorkflowOutputDesignNode(item.node) ? maxRank : Math.max(maxRank, item.rank)
+  ), 0)
+  for (const item of layoutNodes) {
+    if (isWorkflowOutputDesignNode(item.node) && item.rank <= maxNonOutputRank) {
+      item.rank = maxNonOutputRank + 1
+    }
+  }
+}
+
+function isWorkflowOutputDesignNode(node: WorkflowDesignGraphNode): boolean {
+  return node.type === 'output' || node.data?.type === 'output'
+}
+
+function autoLayoutColumnCount(nodeCount: number): number {
+  if (nodeCount <= WORKFLOW_AUTO_LAYOUT_MAX_COLUMNS) return Math.max(1, nodeCount)
+  const rowCount = Math.ceil(nodeCount / WORKFLOW_AUTO_LAYOUT_MAX_COLUMNS)
+  return Math.ceil(nodeCount / rowCount)
 }
 
 function ensureDocumentSpark(document: WorkflowDesignDocument): JsonRecord {

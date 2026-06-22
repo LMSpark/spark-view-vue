@@ -162,3 +162,23 @@
 - **30-day survival**: pending
 - **Knowledge deposition**: pending user confirmation
 - **Human intervention summary**: User clarified that ClassModel projection is the truth, `models[]` replaces single `model`, graph persistence must be nodes + lines, completion belongs on model entries and must not use runtime-only `llm.knowledge.models` or protocol-only `agent_complete` when no projected member exists.
+
+### 2026-06-22 Workflow Designs Auto Layout
+
+- **Complexity**: medium
+- **Total time**: about 75 minutes across the original pass and this repair pass
+- **Rework count**: 1 (current frontend worktree did not contain the expected auto-layout button, so the scoped change was re-applied and revalidated)
+- **Review rounds**: 1 approved plan, with user choices for scope, order, start position, row size, auto-save, and same-rank ordering
+- **30-day survival**: pending
+- **Knowledge deposition**: pending user confirmation
+- **Human intervention summary**: User reported the missing toolbar button with a screenshot, which triggered code verification against the live Vite source and the repair pass.
+
+### 2026-06-22 Workflow Designs Structured Property Drawer
+
+- **Complexity**: complex
+- **Total time**: about 95 minutes
+- **Rework count**: 2 (Vue template narrowing in hidden legacy blocks, then select change handling and tests after replacing apply buttons with draft writes)
+- **Review rounds**: 1 approved plan plus 2 user refinements about runtime-only fields and dynamic model/member/property loading
+- **30-day survival**: pending
+- **Knowledge deposition**: pending user confirmation
+- **Human intervention summary**: User clarified that all runtime-determined data must be read-only and that model/member/property choices must be loaded dynamically rather than typed manually.

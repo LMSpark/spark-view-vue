@@ -445,6 +445,7 @@ function mountWorkflowDesigns() {
         ElDescriptions: PassthroughStub,
         ElDescriptionsItem: DescriptionsItemStub,
         ElDialog: PassthroughStub,
+        ElDrawer: PassthroughStub,
         ElEmpty: true,
         ElForm: PassthroughStub,
         ElFormItem: PassthroughStub,
@@ -620,49 +621,10 @@ describe('WorkflowDesigns visual editor', () => {
     expect(mocks.readWorkflowDesign).toHaveBeenCalledWith('agent.workflow.demo')
     expect(wrapper.text()).toContain('Business Node')
 
-    const modelEditor = wrapper.find('textarea.model-json-input')
-    expect(modelEditor.exists()).toBe(true)
-    expect((modelEditor.element as HTMLTextAreaElement).value).toContain('"className": "ProjectModel"')
-
-    await modelEditor.setValue(JSON.stringify({
-      type: 'node',
-      title: 'Business Node',
-      models: [
-        {
-          id: 'node.model.project',
-          rootClassName: 'ProjectModel',
-          className: 'ProjectModel',
-          sourceRef: '$',
-          completion: {
-            memberName: 'completePageDesign',
-            returnContract: 'boolean-or-reason',
-          },
-        },
-      ],
-      inputs: {
-        prompt: 'edited',
-      },
-      outputs: {},
-      llm: {
-        task: {},
-        knowledge: {},
-        functionCalling: {
-          mode: 'freeWithinModelContext',
-        },
-        output: {},
-      },
-      validation: {
-        action: {
-          className: 'ProjectModel',
-          actionName: 'agent_complete',
-          inputProjection: {},
-          expectedResult: {},
-        },
-        issues: [],
-      },
-      capabilities: [],
-    }))
-    await findButton(wrapper, '应用节点配置').trigger('click')
+    expect(wrapper.find('textarea.model-json-input').exists()).toBe(false)
+    const inputValue = wrapper.find('.structured-field-row--inputs .structured-field-value')
+    expect(inputValue.exists()).toBe(true)
+    await inputValue.setValue('edited')
     await findButton(wrapper, '保存').trigger('click')
     await flushPromises()
 
@@ -685,6 +647,25 @@ describe('WorkflowDesigns visual editor', () => {
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
     expect(savedDocument.workflow.graph.nodes[1]?.position).toEqual({ x: 70, y: 30 })
+  })
+
+  it('auto-layouts the workflow graph and saves immediately', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, '自动排版').trigger('click')
+    await flushPromises()
+
+    expect(mocks.saveWorkflowDesign).toHaveBeenCalledOnce()
+    const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
+    expect(savedDocument.workflow.graph.nodes.map(node => node.position)).toEqual([
+      { x: 40, y: 40 },
+      { x: 380, y: 40 },
+      { x: 720, y: 40 },
+    ])
+    expect(savedDocument.workflow.graph.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
+    expect(savedDocument.x_spark.draft?.['status']).toBe('saved')
+    expect(mocks.message.success).toHaveBeenCalledWith('设计稿已保存')
   })
 
   it('creates a business node in the workflow graph', async () => {
@@ -736,11 +717,9 @@ describe('WorkflowDesigns visual editor', () => {
     expect(firstEdge.exists()).toBe(true)
     await firstEdge.trigger('click')
 
-    const selects = wrapper.findAll('select.native-select')
-      .filter(select => !select.classes().includes('graph-child-select'))
-    expect(selects.length).toBeGreaterThanOrEqual(2)
-    await selects[1]?.setValue('output')
-    await findButton(wrapper, '应用连线').trigger('click')
+    const toNodeSelect = wrapper.find('select.line-to-node-select')
+    expect(toNodeSelect.exists()).toBe(true)
+    await toNodeSelect.setValue('output')
     await findButton(wrapper, '保存').trigger('click')
     await flushPromises()
 
