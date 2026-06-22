@@ -122,7 +122,6 @@ public class TenantService {
      * 从嵌套 Map 拆解写入 Entity 结构化列。
      * 未被结构化列覆盖的字段保存到 configJson 扩展字段。
      */
-    @SuppressWarnings("unchecked")
     private void mapToEntity(Map<String, Object> config, TenantConfigEntity entity) throws IOException {
         // tenant.*
         Map<String, Object> tenant = asMap(config.get("tenant"));
@@ -237,7 +236,7 @@ public class TenantService {
 
     @SuppressWarnings("unchecked")
     private static Map<String, Object> asMap(Object value) {
-        if (value instanceof Map) return (Map<String, Object>) value;
+        if (value instanceof Map<?, ?>) return (Map<String, Object>) value;
         return null;
     }
 

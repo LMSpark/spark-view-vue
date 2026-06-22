@@ -37,7 +37,6 @@ public class ProjectNavigationTreeService {
     private record FlatNode(String nodeId, String parentId, Integer order, Map<String, Object> node) {}
 
     private static final Logger log = LoggerFactory.getLogger(ProjectNavigationTreeService.class);
-    private static final String DEFAULT_HOME_PATH = "/dashboard";
     private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
     private static final Set<String> VALID_NODE_KINDS = Set.of(
             "system-directory", "module", "system-page", "system-action", "page", "link", "sub-page", "ref");
@@ -477,7 +476,7 @@ public class ProjectNavigationTreeService {
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> readChildren(Map<String, Object> node) {
         Object children = node.get("children");
-        if (children instanceof List) {
+        if (children instanceof List<?>) {
             return (List<Map<String, Object>>) children;
         }
         return List.of();
@@ -497,40 +496,7 @@ public class ProjectNavigationTreeService {
         return null;
     }
 
-    /**
-     * 递归删除指定 id 的节点，result[0] 存放被删节点。
-     * 返回是否删除成功。
-     */
-    @SuppressWarnings("unchecked")
-    private boolean removeById(List<Map<String, Object>> nodes,
-                                String id,
-                                Map<String, Object>[] result) {
-        for (int i = 0; i < nodes.size(); i++) {
-            Map<String, Object> node = nodes.get(i);
-            if (id.equals(node.get("id"))) {
-                result[0] = nodes.remove(i);
-                return true;
-            }
-            List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
-            if (children != null && removeById(children, id, result)) return true;
-        }
-        return false;
-    }
-
-    /** 判断 node 的子孙中是否包含 targetId（防止循环移动）。 */
-    @SuppressWarnings("unchecked")
-    private boolean isDescendant(Map<String, Object> node, String targetId) {
-        List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
-        if (children == null) return false;
-        for (Map<String, Object> child : children) {
-            if (targetId.equals(child.get("id"))) return true;
-            if (isDescendant(child, targetId)) return true;
-        }
-        return false;
-    }
-
     /** 递归扁平化，附加 parentId 字段方便前端使用。 */
-    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> flattenNodes(List<Map<String, Object>> nodes,
                                                     String parentId) {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -599,7 +565,6 @@ public class ProjectNavigationTreeService {
         return new ArrayList<>(nodes.subList(0, normalizedLimit));
     }
 
-    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> cloneNodesWithDepthLimit(List<Map<String, Object>> nodes,
                                                                Integer depthLimit,
                                                                int depth) {
@@ -714,7 +679,7 @@ public class ProjectNavigationTreeService {
             placement = "header";
         }
 
-        List<Map<String, Object>> children = root.get("children") instanceof List
+        List<Map<String, Object>> children = root.get("children") instanceof List<?>
                 ? (List<Map<String, Object>>) root.get("children")
                 : new ArrayList<>();
 
@@ -746,7 +711,6 @@ public class ProjectNavigationTreeService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> sanitizeChildren(List<Map<String, Object>> children) {
         List<Map<String, Object>> sanitized = new ArrayList<>();
         for (Map<String, Object> child : children) {
@@ -812,7 +776,7 @@ public class ProjectNavigationTreeService {
 
         String childPlacement = asTrimmedString(raw.get("childPlacement"));
 
-        List<Map<String, Object>> children = raw.get("children") instanceof List
+        List<Map<String, Object>> children = raw.get("children") instanceof List<?>
                 ? sanitizeChildren((List<Map<String, Object>>) raw.get("children"))
                 : List.of();
 
@@ -889,7 +853,7 @@ public class ProjectNavigationTreeService {
 
     @SuppressWarnings("unchecked")
     private void migrateLegacySubPagesInTree(Map<String, Object> root) {
-        List<Map<String, Object>> children = root.get("children") instanceof List
+        List<Map<String, Object>> children = root.get("children") instanceof List<?>
                 ? (List<Map<String, Object>>) root.get("children")
                 : List.of();
         root.put("children", migrateLegacySubPages(children));
@@ -1062,7 +1026,6 @@ public class ProjectNavigationTreeService {
         return row;
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> buildRootFromFlatRows(List<Map<String, Object>> rows) {
         if (rows == null || rows.isEmpty()) {
             return null;

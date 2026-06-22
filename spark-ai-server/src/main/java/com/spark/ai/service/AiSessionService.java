@@ -24,12 +24,23 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,6 +63,7 @@ public class AiSessionService {
     private static final Logger log = LoggerFactory.getLogger(AiSessionService.class);
 
     private static final int DEFAULT_WINDOW_SIZE = 30;
+    private static final int MAX_TOKENS_WITH_TOOLS = 2200;
     private static final String LLM_STREAM_ID = "llm-stream";
     private static final long SESSION_TIMEOUT_MS = 30 * 60 * 1000L;
     private static final String PROJECT_PLANNING_MODULE_ID = "projectPlanning";
@@ -1672,7 +1684,7 @@ public class AiSessionService {
 
     private int effectiveMaxTokens(List<Map<String, Object>> tools) {
         int configured = props.getEffectiveMaxTokens();
-        return hasTools(tools) ? Math.min(configured, 2200) : configured;
+        return hasTools(tools) ? Math.min(configured, MAX_TOKENS_WITH_TOOLS) : configured;
     }
 
     private Double effectiveTemperature(List<Map<String, Object>> tools) {

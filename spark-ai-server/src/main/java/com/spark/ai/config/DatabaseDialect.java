@@ -51,10 +51,6 @@ public enum DatabaseDialect {
         return this == MYSQL;
     }
 
-    public boolean isPostgreSql() {
-        return this == POSTGRESQL;
-    }
-
     public String quote(String identifier) {
         return switch (this) {
             case MYSQL -> "`" + identifier + "`";

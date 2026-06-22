@@ -5,7 +5,15 @@ import com.spark.ai.dto.NavigationNodeEditPatchDto;
 import com.spark.ai.dto.NavigationNodeMoveRequest;
 import com.spark.ai.service.ProjectNavigationTreeService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
@@ -192,8 +200,8 @@ public class NavigationController {
                                          @PathVariable String projectId,
                                          @PathVariable String id) {
         try {
-                Map<String, Object> deleted = navigationTreeService.deleteNode(
-                    tenantId, projectId, id);
+            Map<String, Object> deleted = navigationTreeService.deleteNode(
+                tenantId, projectId, id);
             return ResponseEntity.ok(Map.of("success", true, "deleted", deleted));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

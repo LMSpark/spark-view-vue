@@ -50,7 +50,6 @@ public class DynamicDataModelService {
     public static final String MANAGED_MODE_STRICT = "strict";
 
     private static final Pattern IDENTIFIER = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
-    private static final Set<String> SYSTEM_PHYSICAL_COLUMNS = Set.of("TENANT_ID", "PROJECT_ID");
     private static final Set<String> RESERVED_TABLES = Set.of(
             "DATA_MODEL_TABLE",
             "DATA_MODEL_COLUMN",
@@ -168,7 +167,7 @@ public class DynamicDataModelService {
                 TENANT_ID VARCHAR(255) NOT NULL,
                 PROJECT_ID VARCHAR(255),
                 CONNECTION_MODE VARCHAR(32) NOT NULL DEFAULT 'DIRECT',
-                JNDI_NAME VARCHAR(512),
+                jodi_NAME VARCHAR(512),
                 CREATED_BY VARCHAR(255),
                 STATUS VARCHAR(64) NOT NULL DEFAULT 'active',
                 CREATED_AT TIMESTAMP NOT NULL,
@@ -585,7 +584,7 @@ public class DynamicDataModelService {
         Map<String, Object> requestBody = new LinkedHashMap<>(body);
         requestBody.put("databaseId", databaseId);
         requestBody.put("isolationMode", isolationMode.name());
-        Map<String, Object> result = persistImportedOrCreatedTable(
+        persistImportedOrCreatedTable(
                 tenantId,
                 projectId,
                 logicalName,
@@ -849,10 +848,6 @@ public class DynamicDataModelService {
         }
     }
 
-    private JdbcTemplate targetJdbc(TableInfo table) {
-        return table.databaseId() != null ? dsManager.getJdbcTemplate(table.databaseId()) : jdbcTemplate;
-    }
-
     public static String q(String identifier) {
         return DatabaseDialect.q(identifier);
     }
@@ -922,10 +917,6 @@ public class DynamicDataModelService {
         createIndexIfMissing(targetJdbc, targetDialect, physicalName, "IDX_" + physicalName + "_SCOPE", List.of("TENANT_ID", "PROJECT_ID"));
     }
 
-    private void ensureManagedPhysicalShape(String tenantId, String projectId, IntrospectedTable table) {
-        ensureManagedPhysicalShape(tenantId, projectId, jdbcTemplate, dialect, table);
-    }
-
     private void ensureManagedPhysicalShape(String tenantId, String projectId, JdbcTemplate targetJdbc, DatabaseDialect targetDialect, IntrospectedTable table) {
         boolean hasPrimaryKey = !table.primaryKeyColumns().isEmpty();
         if (!hasColumn(table, "TENANT_ID")) {
@@ -959,10 +950,6 @@ public class DynamicDataModelService {
         targetJdbc.execute(targetDialect.createIndexSql(tableName, indexName, columnNames));
     }
 
-    private void createIndexIfMissing(String tableName, String indexName, List<String> columnNames) {
-        createIndexIfMissing(jdbcTemplate, dialect, tableName, indexName, columnNames);
-    }
-
     private boolean indexExists(JdbcTemplate targetJdbc, String tableName, String indexName) {
         DataSource targetDataSource = targetJdbc.getDataSource();
         if (targetDataSource == null) {
@@ -984,10 +971,6 @@ public class DynamicDataModelService {
         } catch (SQLException e) {
             throw new IllegalStateException("扫描数据库索引失败: " + tableName + "." + indexName, e);
         }
-    }
-
-    private void tryAlter(String sql) {
-        tryAlter(jdbcTemplate, sql);
     }
 
     private void tryAlter(JdbcTemplate targetJdbc, String sql) {

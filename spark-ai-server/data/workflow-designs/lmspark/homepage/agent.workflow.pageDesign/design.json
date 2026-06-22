@@ -221,6 +221,10 @@
         "data" : {
           "type" : "start",
           "title" : "Start"
+        },
+        "position" : {
+          "x" : 210,
+          "y" : 40
         }
       }, {
         "id" : "node.pageEntry",
@@ -291,13 +295,20 @@
               "level" : "warn",
               "code" : "COMPLETION_MEMBER_NOT_BOUND",
               "message" : "No projected no-arg completion member exists for this page design stage yet."
-            } ]
+            } ],
+            "action" : {
+              "className" : "ProjectModel",
+              "actionName" : "",
+              "inputProjection" : { },
+              "expectedResult" : { }
+            }
           },
           "state" : { },
           "result" : { },
           "capabilities" : [ {
             "id" : "page-design.pageEntry.stage",
             "title" : "Page Entry and Intent",
+            "scope" : "node",
             "description" : "100-step stages 1-10: normalize intent, page id, and workflow entry facts.",
             "inputs" : {
               "pageId" : "{{ start.pageId }}",
@@ -308,13 +319,12 @@
               "pageId" : "{{ node.pageEntry.page.pageId }}",
               "pageNode" : "node.pageEntry.page"
             },
-            "scope" : "node",
             "constraints" : [ "Workflow definition names the models and member-level data flow; runtime chooses ClassModel actions and script calls." ]
           } ]
         },
         "position" : {
-          "x" : 90,
-          "y" : 40
+          "x" : 210,
+          "y" : 250
         }
       }, {
         "id" : "node.pageInventory",
@@ -433,8 +443,8 @@
           } ]
         },
         "position" : {
-          "x" : 180,
-          "y" : 220
+          "x" : 210,
+          "y" : 460
         }
       }, {
         "id" : "node.dataShape",
@@ -529,8 +539,8 @@
           } ]
         },
         "position" : {
-          "x" : 270,
-          "y" : 40
+          "x" : 210,
+          "y" : 670
         }
       }, {
         "id" : "node.tableRelations",
@@ -613,8 +623,8 @@
           } ]
         },
         "position" : {
-          "x" : 360,
-          "y" : 220
+          "x" : 210,
+          "y" : 880
         }
       }, {
         "id" : "node.viewDesign",
@@ -689,13 +699,20 @@
               "level" : "warn",
               "code" : "COMPLETION_MEMBER_NOT_BOUND",
               "message" : "No projected no-arg completion member exists for this page design stage yet."
-            } ]
+            } ],
+            "action" : {
+              "className" : "DataSet",
+              "actionName" : "",
+              "inputProjection" : { },
+              "expectedResult" : { }
+            }
           },
           "state" : { },
           "result" : { },
           "capabilities" : [ {
             "id" : "page-design.viewDesign.stage",
             "title" : "Data Views and Dependencies",
+            "scope" : "node",
             "description" : "100-step stages 51-88: plan page data usage, DataViews, and viewDependencies.",
             "inputs" : {
               "tableRelations" : "{{ node.tableRelations.tableRelations }}"
@@ -704,13 +721,12 @@
               "dataViews" : "{{ node.viewDesign.dataSet.getView }}",
               "viewDependencies" : "{{ node.viewDesign.dataSet.viewDependencies }}"
             },
-            "scope" : "node",
             "constraints" : [ "Workflow definition names the models and member-level data flow; runtime chooses ClassModel actions and script calls." ]
           } ]
         },
         "position" : {
-          "x" : 450,
-          "y" : 40
+          "x" : 40,
+          "y" : 1090
         }
       }, {
         "id" : "node.ruleBehaviorAssets",
@@ -784,13 +800,20 @@
               "level" : "warn",
               "code" : "COMPLETION_MEMBER_NOT_BOUND",
               "message" : "No projected no-arg completion member exists for this page design stage yet."
-            } ]
+            } ],
+            "action" : {
+              "className" : "ConfigPageNode",
+              "actionName" : "",
+              "inputProjection" : { },
+              "expectedResult" : { }
+            }
           },
           "state" : { },
           "result" : { },
           "capabilities" : [ {
             "id" : "page-design.ruleBehaviorAssets.stage",
             "title" : "Rule Behavior and Assets",
+            "scope" : "node",
             "description" : "100-step stages 89-96: align structure, behavior, script, and style assets.",
             "inputs" : {
               "dataViews" : "{{ node.viewDesign.dataViews }}",
@@ -801,13 +824,12 @@
               "script" : "{{ node.ruleBehaviorAssets.page.script }}",
               "style" : "{{ node.ruleBehaviorAssets.page.style }}"
             },
-            "scope" : "node",
             "constraints" : [ "Workflow definition names the models and member-level data flow; runtime chooses ClassModel actions and script calls." ]
           } ]
         },
         "position" : {
-          "x" : 540,
-          "y" : 220
+          "x" : 380,
+          "y" : 1090
         }
       }, {
         "id" : "node.renderCloseout",
@@ -868,13 +890,20 @@
               "level" : "warn",
               "code" : "COMPLETION_MEMBER_NOT_BOUND",
               "message" : "No projected no-arg completion member exists for this page design stage yet."
-            } ]
+            } ],
+            "action" : {
+              "className" : "ConfigPageNode",
+              "actionName" : "",
+              "inputProjection" : { },
+              "expectedResult" : { }
+            }
           },
           "state" : { },
           "result" : { },
           "capabilities" : [ {
             "id" : "page-design.renderCloseout.stage",
             "title" : "Render Validation and Closeout",
+            "scope" : "node",
             "description" : "100-step stages 97-100: cross-check render config, preview fix loop, and closeout result.",
             "inputs" : {
               "rule" : "{{ node.ruleBehaviorAssets.rule }}",
@@ -885,13 +914,12 @@
               "renderConfig" : "{{ node.renderCloseout.page.toRenderConfig }}",
               "result" : "pageDesign.result"
             },
-            "scope" : "node",
             "constraints" : [ "Workflow definition names the models and member-level data flow; runtime chooses ClassModel actions and script calls." ]
           } ]
         },
         "position" : {
-          "x" : 630,
-          "y" : 40
+          "x" : 200,
+          "y" : 1310
         }
       }, {
         "id" : "output",
@@ -902,7 +930,12 @@
           "outputs" : {
             "result" : "{{ node.renderCloseout.result }}"
           },
-          "capabilities" : [ ]
+          "capabilities" : [ ],
+          "desc" : ""
+        },
+        "position" : {
+          "x" : 200,
+          "y" : 1590
         }
       } ],
       "lines" : [ {
@@ -1011,69 +1044,6 @@
           "validation" : { }
         }
       }, {
-        "id" : "line.inventory.rule",
-        "from" : {
-          "nodeId" : "node.pageInventory",
-          "modelId" : "node.pageInventory.page",
-          "memberName" : "rule"
-        },
-        "to" : {
-          "nodeId" : "node.ruleBehaviorAssets",
-          "modelId" : "node.ruleBehaviorAssets.ruleFile",
-          "memberName" : "value"
-        },
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence",
-          "branch" : {
-            "label" : "sequence",
-            "default" : true
-          },
-          "validation" : { }
-        }
-      }, {
-        "id" : "line.inventory.script",
-        "from" : {
-          "nodeId" : "node.pageInventory",
-          "modelId" : "node.pageInventory.page",
-          "memberName" : "script"
-        },
-        "to" : {
-          "nodeId" : "node.ruleBehaviorAssets",
-          "modelId" : "node.ruleBehaviorAssets.scriptFile",
-          "memberName" : "js"
-        },
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence",
-          "branch" : {
-            "label" : "sequence",
-            "default" : true
-          },
-          "validation" : { }
-        }
-      }, {
-        "id" : "line.inventory.style",
-        "from" : {
-          "nodeId" : "node.pageInventory",
-          "modelId" : "node.pageInventory.page",
-          "memberName" : "style"
-        },
-        "to" : {
-          "nodeId" : "node.ruleBehaviorAssets",
-          "modelId" : "node.ruleBehaviorAssets.styleFile",
-          "memberName" : "css"
-        },
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence",
-          "branch" : {
-            "label" : "sequence",
-            "default" : true
-          },
-          "validation" : { }
-        }
-      }, {
         "id" : "line.dataShape.tables",
         "from" : {
           "nodeId" : "node.dataShape",
@@ -1105,69 +1075,6 @@
           "nodeId" : "node.tableRelations",
           "modelId" : "node.tableRelations.relations",
           "memberName" : "tableRelations"
-        },
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence",
-          "branch" : {
-            "label" : "sequence",
-            "default" : true
-          },
-          "validation" : { }
-        }
-      }, {
-        "id" : "line.relations.getView",
-        "from" : {
-          "nodeId" : "node.tableRelations",
-          "modelId" : "node.tableRelations.dataSet",
-          "memberName" : "getView"
-        },
-        "to" : {
-          "nodeId" : "node.viewDesign",
-          "modelId" : "node.viewDesign.dataView",
-          "memberName" : "getView"
-        },
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence",
-          "branch" : {
-            "label" : "sequence",
-            "default" : true
-          },
-          "validation" : { }
-        }
-      }, {
-        "id" : "line.relations.viewDependencies",
-        "from" : {
-          "nodeId" : "node.tableRelations",
-          "modelId" : "node.tableRelations.dataSet",
-          "memberName" : "viewDependencies"
-        },
-        "to" : {
-          "nodeId" : "node.viewDesign",
-          "modelId" : "node.viewDesign.dependencies",
-          "memberName" : "viewDependencies"
-        },
-        "type" : "custom",
-        "data" : {
-          "relation" : "sequence",
-          "branch" : {
-            "label" : "sequence",
-            "default" : true
-          },
-          "validation" : { }
-        }
-      }, {
-        "id" : "line.viewDesign.rule",
-        "from" : {
-          "nodeId" : "node.viewDesign",
-          "modelId" : "node.viewDesign.dataSet",
-          "memberName" : "getView"
-        },
-        "to" : {
-          "nodeId" : "node.ruleBehaviorAssets",
-          "modelId" : "node.ruleBehaviorAssets.page",
-          "memberName" : "rule"
         },
         "type" : "custom",
         "data" : {
@@ -1220,11 +1127,71 @@
           },
           "validation" : { }
         }
+      }, {
+        "id" : "line.node.tableRelations.node.ruleBehaviorAssets",
+        "from" : {
+          "nodeId" : "node.tableRelations",
+          "modelId" : "spark.placeholder.model",
+          "memberName" : "out"
+        },
+        "to" : {
+          "nodeId" : "node.ruleBehaviorAssets",
+          "modelId" : "spark.placeholder.model",
+          "memberName" : "in"
+        },
+        "type" : "custom",
+        "data" : {
+          "branch" : {
+            "label" : "default",
+            "default" : true
+          },
+          "validation" : { }
+        }
+      }, {
+        "id" : "line.node.tableRelations.node.viewDesign",
+        "from" : {
+          "nodeId" : "node.tableRelations",
+          "modelId" : "spark.placeholder.model",
+          "memberName" : "out"
+        },
+        "to" : {
+          "nodeId" : "node.viewDesign",
+          "modelId" : "spark.placeholder.model",
+          "memberName" : "in"
+        },
+        "type" : "custom",
+        "data" : {
+          "branch" : {
+            "label" : "default",
+            "default" : true
+          },
+          "validation" : { }
+        }
+      }, {
+        "id" : "line.node.viewDesign.node.renderCloseout",
+        "from" : {
+          "nodeId" : "node.viewDesign",
+          "modelId" : "spark.placeholder.model",
+          "memberName" : "out"
+        },
+        "to" : {
+          "nodeId" : "node.renderCloseout",
+          "modelId" : "spark.placeholder.model",
+          "memberName" : "in"
+        },
+        "type" : "custom",
+        "data" : {
+          "branch" : {
+            "label" : "default",
+            "default" : true
+          },
+          "validation" : { }
+        }
       } ],
       "viewport" : {
-        "x" : 0,
-        "y" : 0,
-        "zoom" : 1
+        "x" : 220,
+        "y" : -268,
+        "zoom" : 0.8
       }
     }
   },

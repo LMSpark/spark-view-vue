@@ -44,6 +44,9 @@ public class DbmsCatalogService {
     private static final Pattern SAFE_ALIAS = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
     private static final Set<String> MYSQL_SYSTEM_DATABASES = Set.of("information_schema", "mysql", "performance_schema", "sys");
     private static final Set<String> POSTGRES_SYSTEM_SCHEMAS = Set.of("information_schema", "pg_catalog", "pg_toast");
+    private static final int DEFAULT_PAGE_SIZE = 50;
+    private static final int MAX_PAGE_SIZE = 200;
+    private static final int MAX_INDEX_PART_LENGTH = 40;
 
     private final JdbcTemplate jdbc;
     private final CryptoUtil cryptoUtil;
@@ -163,7 +166,7 @@ public class DbmsCatalogService {
     public Map<String, Object> objectData(String tenantId, String projectId, long objectId, Integer page, Integer pageSize) {
         DynamicDataModelService.TableDefinition definition = modelService.requireDefinitionById(tenantId, projectId, objectId);
         int safePage = Math.max(page == null ? 1 : page, 1);
-        int safePageSize = Math.min(Math.max(pageSize == null ? 50 : pageSize, 1), 200);
+        int safePageSize = Math.min(Math.max(pageSize == null ? DEFAULT_PAGE_SIZE : pageSize, 1), MAX_PAGE_SIZE);
         int offset = (safePage - 1) * safePageSize;
         String qualifiedName = qualifiedName(definition.dialect(), definition.table().schemaName(), definition.table().physicalTableName());
         String projection = definition.columns().isEmpty()
@@ -1222,7 +1225,7 @@ public class DbmsCatalogService {
 
     private static String sanitizeIndexPart(String text) {
         String normalized = text == null ? "OBJECT" : text.replaceAll("[^A-Za-z0-9_]", "_");
-        return normalized.length() > 40 ? normalized.substring(0, 40) : normalized;
+        return normalized.length() > MAX_INDEX_PART_LENGTH ? normalized.substring(0, MAX_INDEX_PART_LENGTH) : normalized;
     }
 
     private static String sqlLiteral(String text) {

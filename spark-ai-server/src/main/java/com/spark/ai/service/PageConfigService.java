@@ -15,10 +15,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -521,10 +528,10 @@ public class PageConfigService {
 
             for (FileVersionEntity e : dbVersions) {
                 try {
-                if (!storage.pageFileExists(tenantId, projectId, pageId, versionFilename(e.getVersion(), e.getFilename()))) {
-                    issues.add("DB 有版本记录但磁盘快照缺失: " + e.getFilename() + " v" + e.getVersion());
-                }
-                } catch (IOException error) {
+                    if (!storage.pageFileExists(tenantId, projectId, pageId, versionFilename(e.getVersion(), e.getFilename()))) {
+                        issues.add("DB 有版本记录但磁盘快照缺失: " + e.getFilename() + " v" + e.getVersion());
+                    }
+                } catch (IOException ex) {
                     issues.add("检查版本快照失败: " + e.getFilename() + " v" + e.getVersion());
                 }
             }
@@ -565,6 +572,7 @@ public class PageConfigService {
                         existingFiles.add(fname);
                     }
                 } catch (IOException ignored) {
+                    // 文件存在性探测失败时忽略，existingFiles 仅记录可读文件。
                 }
             }
 
@@ -677,9 +685,9 @@ public class PageConfigService {
 
     private Map<String, Map<String, Object>> loadRouteMetaByPageId(String tenantId, String projectId) {
         try {
-        if (!storage.rootFileExists(tenantId, projectId, "routes.json")) {
-            return Map.of();
-        }
+            if (!storage.rootFileExists(tenantId, projectId, "routes.json")) {
+                return Map.of();
+            }
 
             String content = storage.readRootFile(tenantId, projectId, "routes.json");
             List<Map<String, Object>> routeList = objectMapper.readValue(
@@ -693,8 +701,10 @@ public class PageConfigService {
                 if (pageId.isBlank()) {
                     continue;
                 }
-                Map<String, Object> meta = route.get("meta") instanceof Map<?, ?>
-                        ? (Map<String, Object>) route.get("meta")
+                Object rawMeta = route.get("meta");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> meta = rawMeta instanceof Map<?, ?>
+                        ? (Map<String, Object>) rawMeta
                         : Map.of();
 
                 Map<String, Object> merged = new LinkedHashMap<>();

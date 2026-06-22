@@ -29,7 +29,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -941,11 +940,6 @@ public class DynamicDataService {
         return value;
     }
 
-    private Map<String, Object> requireRecord(String tenantId, String projectId, String tableName, Map<String, Object> pk) {
-        DynamicDataModelService.TableDefinition definition = modelService.requireDefinition(tenantId, projectId, tableName);
-        return requireRecord(tenantId, projectId, tableName, definition, pk);
-    }
-
     private Map<String, Object> requireRecord(
             String tenantId,
             String projectId,
@@ -1545,7 +1539,6 @@ public class DynamicDataService {
         }
     }
 
-    @SuppressWarnings("unused")
     private Map<String, Object> readJsonMap(String json) {
         if (json == null || json.isBlank()) return new LinkedHashMap<>();
         try {

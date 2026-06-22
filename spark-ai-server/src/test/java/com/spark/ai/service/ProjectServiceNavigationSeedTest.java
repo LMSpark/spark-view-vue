@@ -319,7 +319,6 @@ class ProjectServiceNavigationSeedTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static boolean containsPath(Map<String, Object> root, String path) {
         return countPath(root, path) > 0;
     }
