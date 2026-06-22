@@ -2529,7 +2529,7 @@ function errorMessage(error: unknown): string {
 }
 
 .collapsible-section > summary::before {
-  content: "鈻?;
+  content: ">";
   flex: 0 0 auto;
   color: #64748b;
   transition: transform 0.16s ease;
