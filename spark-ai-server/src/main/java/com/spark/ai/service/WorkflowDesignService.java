@@ -37,7 +37,7 @@ public class WorkflowDesignService {
     private static final String DEFINITION_SCHEMA = "spark.agent.workflow.definition.v1";
     private static final String PLACEHOLDER_MODEL_ROOT_CLASS_NAME = "spark.placeholder.RootModel";
     private static final String PLACEHOLDER_MODEL_CLASS_NAME = "spark.placeholder.Model";
-    private static final String PLACEHOLDER_VALIDATION_ACTION_NAME = "spark.placeholder.validate";
+    private static final String PLACEHOLDER_RUNTIME_ID = "spark.placeholder.workflow";
 
     private final ObjectMapper objectMapper;
     private final Path root;
@@ -166,7 +166,7 @@ public class WorkflowDesignService {
         }
 
         JsonNode definition = objectMapper.readTree(file.toFile());
-        validateDefinitionDocument(workflowId, definition);
+        validateDefinitionDocument(workflowId, definition, true);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("workflowId", workflowId);
@@ -184,7 +184,7 @@ public class WorkflowDesignService {
         if (!Files.isRegularFile(design)) {
             throw new NoSuchFileException(workflowId + "/" + DESIGN_FILENAME);
         }
-        validateDefinitionDocument(workflowId, definition);
+        validateDefinitionDocument(workflowId, definition, false);
 
         Path file = definitionFile(tenantId, projectId, workflowId);
         writeDocument(file, definition);
@@ -199,7 +199,7 @@ public class WorkflowDesignService {
         if (!Files.isRegularFile(design)) {
             throw new NoSuchFileException(workflowId + "/" + DESIGN_FILENAME);
         }
-        validateDefinitionDocument(workflowId, definition);
+        validateDefinitionDocument(workflowId, definition, false);
 
         Path file = definitionFile(tenantId, projectId, workflowId);
         writeDocument(file, definition);
@@ -244,6 +244,7 @@ public class WorkflowDesignService {
         workflow.put("id", workflowId);
         workflow.put("version", 1);
         workflow.putArray("variables");
+        workflow.set("runtimeBinding", createPlaceholderRuntimeBinding());
         workflow.putArray("capabilities");
         workflow.set("graph", createDefaultWorkflowGraph(workflowId));
 
@@ -272,12 +273,14 @@ public class WorkflowDesignService {
         addStartNode(nodes);
         addBusinessNode(nodes);
         addOutputNode(nodes);
-        ArrayNode edges = objectMapper.createArrayNode();
-        addGraphEdge(edges, "edge.start.node", "start", "node.model", "source", "target");
-        addGraphEdge(edges, "edge.node.output", "node.model", "output", "source", "target");
+        ArrayNode lines = objectMapper.createArrayNode();
+        addGraphLine(lines, "line.start.node", "start", "$workflow", "input",
+                "node.model", "node.model.model", "input");
+        addGraphLine(lines, "line.node.output", "node.model", "node.model.model", "result",
+                "output", "$workflow", "result");
 
         graph.set("nodes", nodes);
-        graph.set("edges", edges);
+        graph.set("lines", lines);
         ObjectNode viewport = graph.putObject("viewport");
         viewport.put("x", 0);
         viewport.put("y", 0);
@@ -331,11 +334,13 @@ public class WorkflowDesignService {
         ObjectNode data = node.putObject("data");
         data.put("type", "node");
         data.put("title", "Business Node");
-        data.put("desc", "Bind model, LLM work, inputs/outputs, and validation action before publishing.");
-        ObjectNode model = data.putObject("model");
+        data.put("desc", "Bind models, inputs, outputs, and a projected completion member before publishing.");
+        ArrayNode models = data.putArray("models");
+        ObjectNode model = models.addObject();
+        model.put("id", "node.model.model");
         model.put("rootClassName", PLACEHOLDER_MODEL_ROOT_CLASS_NAME);
         model.put("className", PLACEHOLDER_MODEL_CLASS_NAME);
-        model.put("contextPath", "$");
+        model.put("sourceRef", "$");
         data.putObject("inputs");
         data.putObject("outputs");
         ObjectNode llm = data.putObject("llm");
@@ -354,36 +359,68 @@ public class WorkflowDesignService {
         ObjectNode output = llm.putObject("output");
         output.putObject("structuredResult");
         output.put("handoffToValidation", true);
-        ObjectNode validation = data.putObject("validation");
-        ObjectNode action = validation.putObject("action");
-        action.put("className", PLACEHOLDER_MODEL_CLASS_NAME);
-        action.put("actionName", PLACEHOLDER_VALIDATION_ACTION_NAME);
-        action.putObject("inputProjection");
-        action.putObject("expectedResult");
-        validation.put("status", "draft");
-        validation.putArray("issues");
+        data.putObject("validation");
         data.putObject("state");
         data.putObject("result");
         data.putArray("capabilities");
     }
 
-    private void addGraphEdge(ArrayNode edges, String id, String source, String target,
-                              String sourceHandle, String targetHandle) {
-        ObjectNode edge = edges.addObject();
-        edge.put("id", id);
-        edge.put("source", source);
-        edge.put("target", target);
-        edge.put("sourceHandle", sourceHandle);
-        edge.put("targetHandle", targetHandle);
-        edge.put("type", "custom");
-        ObjectNode data = edge.putObject("data");
-        ObjectNode projection = data.putObject("projection");
-        projection.put("sourceRef", source + ".outputs");
-        projection.put("targetRef", target + ".inputs");
+    private void addGraphLine(ArrayNode lines, String id,
+                              String fromNodeId, String fromModelId, String fromMemberName,
+                              String toNodeId, String toModelId, String toMemberName) {
+        ObjectNode line = lines.addObject();
+        line.put("id", id);
+        ObjectNode from = line.putObject("from");
+        from.put("nodeId", fromNodeId);
+        from.put("modelId", fromModelId);
+        from.put("memberName", fromMemberName);
+        ObjectNode to = line.putObject("to");
+        to.put("nodeId", toNodeId);
+        to.put("modelId", toModelId);
+        to.put("memberName", toMemberName);
+        line.put("type", "custom");
+        ObjectNode data = line.putObject("data");
+        data.put("relation", "sequence");
         ObjectNode branch = data.putObject("branch");
         branch.put("label", "default");
         branch.put("default", true);
         data.putObject("validation");
+    }
+
+    private ObjectNode createPlaceholderRuntimeBinding() {
+        ObjectNode binding = objectMapper.createObjectNode();
+        ObjectNode registration = binding.putObject("registration");
+        registration.put("alias", PLACEHOLDER_RUNTIME_ID);
+        registration.put("moduleId", PLACEHOLDER_RUNTIME_ID);
+        registration.put("businessId", PLACEHOLDER_RUNTIME_ID);
+
+        ObjectNode inputContract = binding.putObject("inputContract");
+        inputContract.put("identityField", "input");
+        inputContract.put("messageField", "input");
+        ObjectNode paramsSchema = inputContract.putObject("paramsSchema");
+        paramsSchema.put("type", "object");
+        paramsSchema.putObject("properties");
+        paramsSchema.put("additionalProperties", false);
+        inputContract.putArray("readonlySteps");
+
+        ObjectNode systemPrompt = binding.putObject("systemPrompt");
+        systemPrompt.put("template", "spark.placeholder.prompt");
+        systemPrompt.putArray("conditionalHints");
+
+        ObjectNode projectionRef = binding.putObject("modelProjectionRef");
+        projectionRef.put("kind", "dts-class-model");
+        projectionRef.put("rootClassName", PLACEHOLDER_MODEL_ROOT_CLASS_NAME);
+        projectionRef.put("manifestUrlRef", "dts-class-model");
+
+        ObjectNode executableRef = binding.putObject("executableRef");
+        executableRef.put("kind", "js-module");
+        executableRef.put("moduleSpecifier", "spark.placeholder.module");
+        executableRef.put("exportName", PLACEHOLDER_MODEL_CLASS_NAME);
+
+        ObjectNode resolveInstance = binding.putObject("resolveInstance");
+        resolveInstance.put("editorSource", PLACEHOLDER_RUNTIME_ID);
+        resolveInstance.put("identityField", "input");
+        return binding;
     }
 
     private void validateDesignDocument(String workflowId, JsonNode document) {
@@ -411,10 +448,13 @@ public class WorkflowDesignService {
 
         JsonNode graph = requiredObject(workflow, "graph");
         JsonNode nodes = requireArray(graph, "nodes");
-        requireArray(graph, "edges");
+        JsonNode lines = requireArray(graph, "lines");
+        rejectField(graph, "edges");
         validateCapabilities(requireArray(workflow, "capabilities"), "workflow.capabilities");
+        requiredObject(workflow, "runtimeBinding");
         requiredObject(graph, "viewport");
         validateWorkflowNodes(nodes, true);
+        validateWorkflowLines(nodes, lines);
 
         JsonNode spark = requiredObject(document, "x_spark");
         rejectField(spark, "factory");
@@ -423,7 +463,7 @@ public class WorkflowDesignService {
         requiredObject(spark, "validation");
     }
 
-    private void validateDefinitionDocument(String workflowId, JsonNode document) {
+    private void validateDefinitionDocument(String workflowId, JsonNode document, boolean allowInvalidValidationStatus) {
         if (document == null || !document.isObject()) {
             throw new IllegalArgumentException("workflow definition document must be a JSON object");
         }
@@ -449,19 +489,22 @@ public class WorkflowDesignService {
 
         JsonNode workflow = requiredObject(document, "workflow");
         requireArray(workflow, "variables");
+        requiredObject(workflow, "runtimeBinding");
         validateCapabilities(requireArray(workflow, "capabilities"), "workflow.capabilities");
         JsonNode graph = requiredObject(workflow, "graph");
         JsonNode nodes = requireArray(graph, "nodes");
-        JsonNode edges = requireArray(graph, "edges");
+        JsonNode lines = requireArray(graph, "lines");
+        rejectField(graph, "edges");
         validateWorkflowNodes(nodes, false);
-        validateWorkflowEdges(nodes, edges);
+        validateWorkflowLines(nodes, lines);
 
         JsonNode spark = requiredObject(document, "x_spark");
         requireText(spark, "schema", DEFINITION_SCHEMA);
         requireNonBlankText(spark, "publishedAt");
         JsonNode validation = requiredObject(spark, "validation");
         String status = requireNonBlankText(validation, "status");
-        if (!"valid".equals(status) && !"warning".equals(status)) {
+        if (!"valid".equals(status) && !"warning".equals(status)
+                && (!allowInvalidValidationStatus || !"invalid".equals(status))) {
             throw new IllegalArgumentException("invalid workflow definition validation status: " + status);
         }
         requireArray(validation, "issues");
@@ -516,7 +559,7 @@ public class WorkflowDesignService {
         validateOptionalCapabilities(data.get("capabilities"), "node capabilities: " + id);
     }
 
-    private void validateWorkflowEdges(JsonNode nodes, JsonNode edges) {
+    private void validateWorkflowLines(JsonNode nodes, JsonNode lines) {
         List<String> nodeIds = new ArrayList<>();
         List<String> startIds = new ArrayList<>();
         Set<String> outputIds = new HashSet<>();
@@ -531,22 +574,27 @@ public class WorkflowDesignService {
             }
         }
         Map<String, List<String>> adjacency = new LinkedHashMap<>();
-        for (JsonNode edge : edges) {
-            String edgeId = requireNonBlankText(edge, "id");
-            String source = requireNonBlankText(edge, "source");
-            String target = requireNonBlankText(edge, "target");
-            if (!nodeIds.contains(source)) {
-                throw new IllegalArgumentException("workflow edge source missing: " + source);
-            }
-            if (!nodeIds.contains(target)) {
-                throw new IllegalArgumentException("workflow edge target missing: " + target);
-            }
-            validateWorkflowEdgeData(edgeId, edge.get("data"));
+        for (JsonNode line : lines) {
+            String lineId = requireNonBlankText(line, "id");
+            String source = validateWorkflowLineEndpoint(lineId, requiredObject(line, "from"), "from", nodeIds);
+            String target = validateWorkflowLineEndpoint(lineId, requiredObject(line, "to"), "to", nodeIds);
+            validateWorkflowLineData(lineId, line.get("data"));
             adjacency.computeIfAbsent(source, ignored -> new ArrayList<>()).add(target);
         }
         if (!startIds.isEmpty() && !outputIds.isEmpty() && !canReachAnyOutput(startIds, outputIds, adjacency)) {
             throw new IllegalArgumentException("workflow graph must contain a path from start to output");
         }
+    }
+
+    private String validateWorkflowLineEndpoint(String lineId, JsonNode endpoint, String role, List<String> nodeIds) {
+        String nodeId = requireNonBlankText(endpoint, "nodeId");
+        requireNonBlankText(endpoint, "modelId");
+        requireNonBlankText(endpoint, "memberName");
+        requireOptionalObject(endpoint, "dock");
+        if (!nodeIds.contains(nodeId)) {
+            throw new IllegalArgumentException("workflow line " + role + " node missing: " + nodeId + " in " + lineId);
+        }
+        return nodeId;
     }
 
     private boolean canReachAnyOutput(List<String> startIds, Set<String> outputIds,
@@ -570,95 +618,120 @@ public class WorkflowDesignService {
         return false;
     }
 
-    private void validateWorkflowEdgeData(String edgeId, JsonNode data) {
+    private void validateWorkflowLineData(String lineId, JsonNode data) {
         if (data == null) {
             return;
         }
         if (!data.isObject()) {
-            throw new IllegalArgumentException("workflow edge data must be an object: " + edgeId);
+            throw new IllegalArgumentException("workflow line data must be an object: " + lineId);
         }
-        JsonNode projection = data.get("projection");
-        if (projection != null) {
-            if (!projection.isObject()) {
-                throw new IllegalArgumentException("workflow edge projection must be an object: " + edgeId);
-            }
-            requireNonBlankText(projection, "sourceRef");
-            requireNonBlankText(projection, "targetRef");
-            requireOptionalObject(projection, "transform");
+        JsonNode relation = data.get("relation");
+        if (relation != null && (!relation.isTextual() || relation.asText().isBlank())) {
+            throw new IllegalArgumentException("workflow line relation must be non-empty when provided: " + lineId);
         }
         JsonNode branch = data.get("branch");
         if (branch != null) {
             if (!branch.isObject()) {
-                throw new IllegalArgumentException("workflow edge branch must be an object: " + edgeId);
+                throw new IllegalArgumentException("workflow line branch must be an object: " + lineId);
             }
             JsonNode condition = branch.get("condition");
             if (condition != null && (!condition.isTextual() || condition.asText().isBlank())) {
-                throw new IllegalArgumentException("workflow edge branch.condition must be non-empty when provided: " + edgeId);
+                throw new IllegalArgumentException("workflow line branch.condition must be non-empty when provided: " + lineId);
             }
             JsonNode label = branch.get("label");
             if (label != null && (!label.isTextual() || label.asText().isBlank())) {
-                throw new IllegalArgumentException("workflow edge branch.label must be non-empty when provided: " + edgeId);
+                throw new IllegalArgumentException("workflow line branch.label must be non-empty when provided: " + lineId);
             }
             JsonNode priority = branch.get("priority");
             if (priority != null && !priority.isNumber()) {
-                throw new IllegalArgumentException("workflow edge branch.priority must be a number: " + edgeId);
+                throw new IllegalArgumentException("workflow line branch.priority must be a number: " + lineId);
             }
             JsonNode defaultValue = branch.get("default");
             if (defaultValue != null && !defaultValue.isBoolean()) {
-                throw new IllegalArgumentException("workflow edge branch.default must be a boolean: " + edgeId);
+                throw new IllegalArgumentException("workflow line branch.default must be a boolean: " + lineId);
             }
         }
         requireOptionalObject(data, "validation");
     }
 
     private void validateBusinessNode(String id, JsonNode data, boolean allowPlaceholderModelBinding) {
-        JsonNode model = requiredObject(data, "model");
-        String rootClassName = requireNonBlankText(model, "rootClassName");
-        String className = requireNonBlankText(model, "className");
-        JsonNode contextPath = model.get("contextPath");
-        if (contextPath != null && (!contextPath.isTextual() || contextPath.asText().isBlank())) {
-            throw new IllegalArgumentException("workflow node model.contextPath must be non-empty when provided: " + id);
-        }
+        validateBusinessNodeModels(id, requireArray(data, "models"), allowPlaceholderModelBinding);
         requiredObject(data, "inputs");
         requiredObject(data, "outputs");
-        validateLlmNodeData(id, requiredObject(data, "llm"));
-        validateNodeValidation(id, requiredObject(data, "validation"), allowPlaceholderModelBinding);
+        JsonNode llm = data.get("llm");
+        if (llm != null) {
+            validateLlmNodeData(id, llm);
+        }
+        requireOptionalObject(data, "validation");
         requireOptionalObject(data, "state");
         requireOptionalObject(data, "result");
         validateOptionalCapabilities(data.get("capabilities"), "node capabilities: " + id);
-        if (!allowPlaceholderModelBinding
-                && (PLACEHOLDER_MODEL_ROOT_CLASS_NAME.equals(rootClassName)
-                || PLACEHOLDER_MODEL_CLASS_NAME.equals(className))) {
-            throw new IllegalArgumentException("workflow business node must bind a real model: " + id);
-        }
     }
 
     private void validateLlmNodeData(String id, JsonNode llm) {
-        requiredObject(llm, "task");
-        requiredObject(llm, "knowledge");
-        requiredObject(llm, "functionCalling");
-        requiredObject(llm, "output");
+        if (!llm.isObject()) {
+            throw new IllegalArgumentException("workflow node llm must be an object: " + id);
+        }
+        requireOptionalObject(llm, "task");
+        requireOptionalObject(llm, "knowledge");
+        requireOptionalObject(llm, "functionCalling");
+        requireOptionalObject(llm, "output");
     }
 
-    private void validateNodeValidation(String id, JsonNode validation, boolean allowPlaceholderModelBinding) {
-        JsonNode action = requiredObject(validation, "action");
-        String actionClassName = requireNonBlankText(action, "className");
-        String actionName = requireNonBlankText(action, "actionName");
-        requiredObject(action, "inputProjection");
-        requiredObject(action, "expectedResult");
-        JsonNode status = validation.get("status");
-        if (status != null && (!status.isTextual() || status.asText().isBlank())) {
-            throw new IllegalArgumentException("workflow node validation.status must be non-empty when provided: " + id);
+    private void validateBusinessNodeModels(String id, JsonNode models, boolean allowPlaceholderModelBinding) {
+        if (models.size() == 0) {
+            throw new IllegalArgumentException("workflow business node must bind at least one model: " + id);
         }
-        JsonNode issues = validation.get("issues");
-        if (issues != null && !issues.isArray()) {
-            throw new IllegalArgumentException("workflow node validation.issues must be an array: " + id);
+        int index = 0;
+        for (JsonNode model : models) {
+            if (!model.isObject()) {
+                throw new IllegalArgumentException("workflow business node model must be an object: " + id + "[" + index + "]");
+            }
+            requireNonBlankText(model, "id");
+            String rootClassName = requireNonBlankText(model, "rootClassName");
+            String className = requireNonBlankText(model, "className");
+            requireOptionalNonBlankText(model, "sourceRef");
+            requireOptionalNonBlankText(model, "role");
+            validateOptionalModelVia(model.get("via"), id, index);
+            validateOptionalModelCompletion(model.get("completion"), id, index);
+            if (!allowPlaceholderModelBinding
+                    && (PLACEHOLDER_MODEL_ROOT_CLASS_NAME.equals(rootClassName)
+                    || PLACEHOLDER_MODEL_CLASS_NAME.equals(className))) {
+                throw new IllegalArgumentException("workflow business node must bind a real model: " + id);
+            }
+            index += 1;
         }
-        if (!allowPlaceholderModelBinding
-                && (PLACEHOLDER_MODEL_CLASS_NAME.equals(actionClassName)
-                || PLACEHOLDER_VALIDATION_ACTION_NAME.equals(actionName))) {
-            throw new IllegalArgumentException("workflow business node must bind a real validation action: " + id);
+    }
+
+    private void validateOptionalModelVia(JsonNode via, String id, int modelIndex) {
+        if (via == null) {
+            return;
         }
+        if (!via.isArray()) {
+            throw new IllegalArgumentException("workflow business node model.via must be an array: " + id + "[" + modelIndex + "]");
+        }
+        int index = 0;
+        for (JsonNode item : via) {
+            if (!item.isObject()) {
+                throw new IllegalArgumentException("workflow business node model.via entry must be an object: "
+                        + id + "[" + modelIndex + "][" + index + "]");
+            }
+            requireNonBlankText(item, "memberName");
+            requireOptionalNonBlankText(item, "kind");
+            requireOptionalNonBlankText(item, "sourceRef");
+            index += 1;
+        }
+    }
+
+    private void validateOptionalModelCompletion(JsonNode completion, String id, int modelIndex) {
+        if (completion == null) {
+            return;
+        }
+        if (!completion.isObject()) {
+            throw new IllegalArgumentException("workflow business node completion must be an object: " + id + "[" + modelIndex + "]");
+        }
+        requireNonBlankText(completion, "memberName");
+        requireOptionalNonBlankText(completion, "returnContract");
     }
 
     private void rejectLegacyNode(String id, JsonNode data) {
@@ -672,6 +745,9 @@ public class WorkflowDesignService {
         if (data.has("provider") || data.has("toolName") || data.has("workflowRef")
                 || data.has("toolParameters") || data.has("inputMapping") || data.has("outputMapping")) {
             throw new IllegalArgumentException("legacy workflow node fields are not allowed: " + id);
+        }
+        if (data.has("model")) {
+            throw new IllegalArgumentException("legacy workflow node model field is not allowed: " + id);
         }
         if (data.path("x_spark").has("classModel")) {
             throw new IllegalArgumentException("legacy classModel node metadata is not allowed: " + id);

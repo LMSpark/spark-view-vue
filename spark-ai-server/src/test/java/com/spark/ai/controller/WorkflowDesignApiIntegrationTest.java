@@ -101,9 +101,9 @@ class WorkflowDesignApiIntegrationTest {
                 .andExpect(jsonPath("$.data.document.kind").value("agent.workflow.design"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.nodes[0].data.type").value("start"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.type").value("node"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.model.className").value("spark.placeholder.Model"))
+                .andExpect(jsonPath("$.data.document.workflow.graph.nodes[1].data.models[0].className").value("spark.placeholder.Model"))
                 .andExpect(jsonPath("$.data.document.workflow.graph.nodes[2].data.type").value("output"))
-                .andExpect(jsonPath("$.data.document.workflow.graph.edges.length()").value(2))
+                .andExpect(jsonPath("$.data.document.workflow.graph.lines.length()").value(2))
                 .andReturn();
 
         ObjectNode document = readDocumentFromEnvelope(readResult);
@@ -187,6 +187,7 @@ class WorkflowDesignApiIntegrationTest {
 
         ObjectNode workflow = document.putObject("workflow");
         workflow.putArray("variables");
+        addRuntimeBinding(workflow);
         ObjectNode capability = workflow.putArray("capabilities").addObject();
         capability.put("id", "api.workflow");
         capability.put("title", "API Workflow");
@@ -198,10 +199,14 @@ class WorkflowDesignApiIntegrationTest {
         addDefinitionNode(nodes, "start", "start", "Start");
         ObjectNode businessNode = addDefinitionNode(nodes, "node.model", "node", "Business Node");
         ObjectNode nodeData = (ObjectNode) businessNode.path("data");
-        ObjectNode model = nodeData.putObject("model");
+        ObjectNode model = nodeData.putArray("models").addObject();
+        model.put("id", "node.model.model");
         model.put("rootClassName", "ApiModel");
         model.put("className", "ApiModel");
-        model.put("contextPath", "$");
+        model.put("sourceRef", "$");
+        ObjectNode completion = model.putObject("completion");
+        completion.put("memberName", "validateApi");
+        completion.put("returnContract", "boolean-or-reason");
         ObjectNode inputs = nodeData.putObject("inputs");
         inputs.put("prompt", "${workflow.input.prompt}");
         ObjectNode outputs = nodeData.putObject("outputs");
@@ -222,14 +227,7 @@ class WorkflowDesignApiIntegrationTest {
         ObjectNode llmOutput = llm.putObject("output");
         llmOutput.putObject("structuredResult");
         llmOutput.put("handoffToValidation", true);
-        ObjectNode nodeValidation = nodeData.putObject("validation");
-        ObjectNode action = nodeValidation.putObject("action");
-        action.put("className", "ApiModel");
-        action.put("actionName", "validateApi");
-        action.putObject("inputProjection");
-        action.putObject("expectedResult");
-        nodeValidation.put("status", "draft");
-        nodeValidation.putArray("issues");
+        nodeData.putObject("validation");
         ObjectNode nodeCapability = nodeData.putArray("capabilities").addObject();
         nodeCapability.put("id", "api.execute");
         nodeCapability.put("title", "Execute API Workflow");
@@ -240,9 +238,11 @@ class WorkflowDesignApiIntegrationTest {
         ((ObjectNode) output.path("data")).putObject("outputs");
         ((ObjectNode) output.path("data")).putArray("capabilities");
 
-        ArrayNode edges = graph.putArray("edges");
-        addDefinitionEdge(edges, "edge.start.node", "start", "node.model");
-        addDefinitionEdge(edges, "edge.node.output", "node.model", "output");
+        ArrayNode lines = graph.putArray("lines");
+        addDefinitionLine(lines, "line.start.node", "start", "$workflow", "prompt",
+                "node.model", "node.model.model", "prompt");
+        addDefinitionLine(lines, "line.node.output", "node.model", "node.model.model", "result",
+                "output", "$workflow", "result");
 
         ObjectNode spark = document.putObject("x_spark");
         spark.put("schema", "spark.agent.workflow.definition.v1");
@@ -251,6 +251,35 @@ class WorkflowDesignApiIntegrationTest {
         validation.put("status", "valid");
         validation.putArray("issues");
         return document;
+    }
+
+    private void addRuntimeBinding(ObjectNode workflow) {
+        ObjectNode binding = workflow.putObject("runtimeBinding");
+        ObjectNode registration = binding.putObject("registration");
+        registration.put("alias", "api");
+        registration.put("moduleId", "api");
+        registration.put("businessId", "api");
+        ObjectNode inputContract = binding.putObject("inputContract");
+        inputContract.put("identityField", "prompt");
+        inputContract.put("messageField", "prompt");
+        ObjectNode paramsSchema = inputContract.putObject("paramsSchema");
+        paramsSchema.put("type", "object");
+        paramsSchema.putObject("properties");
+        inputContract.putArray("readonlySteps");
+        ObjectNode systemPrompt = binding.putObject("systemPrompt");
+        systemPrompt.put("template", "API prompt");
+        systemPrompt.putArray("conditionalHints");
+        ObjectNode projectionRef = binding.putObject("modelProjectionRef");
+        projectionRef.put("kind", "dts-class-model");
+        projectionRef.put("rootClassName", "ApiModel");
+        projectionRef.put("manifestUrlRef", "dts-class-model");
+        ObjectNode executableRef = binding.putObject("executableRef");
+        executableRef.put("kind", "js-module");
+        executableRef.put("moduleSpecifier", "./api.js");
+        executableRef.put("exportName", "ApiModel");
+        ObjectNode resolveInstance = binding.putObject("resolveInstance");
+        resolveInstance.put("editorSource", "api");
+        resolveInstance.put("identityField", "prompt");
     }
 
     private ObjectNode addDefinitionNode(ArrayNode nodes, String id, String type, String title) {
@@ -263,11 +292,19 @@ class WorkflowDesignApiIntegrationTest {
         return node;
     }
 
-    private void addDefinitionEdge(ArrayNode edges, String id, String source, String target) {
-        ObjectNode edge = edges.addObject();
-        edge.put("id", id);
-        edge.put("source", source);
-        edge.put("target", target);
+    private void addDefinitionLine(ArrayNode lines, String id,
+                                   String fromNodeId, String fromModelId, String fromMemberName,
+                                   String toNodeId, String toModelId, String toMemberName) {
+        ObjectNode line = lines.addObject();
+        line.put("id", id);
+        ObjectNode from = line.putObject("from");
+        from.put("nodeId", fromNodeId);
+        from.put("modelId", fromModelId);
+        from.put("memberName", fromMemberName);
+        ObjectNode to = line.putObject("to");
+        to.put("nodeId", toNodeId);
+        to.put("modelId", toModelId);
+        to.put("memberName", toMemberName);
     }
 
     private static Path createTempDirectory() {

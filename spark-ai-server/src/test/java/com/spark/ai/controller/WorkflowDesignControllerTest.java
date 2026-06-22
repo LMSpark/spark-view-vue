@@ -81,17 +81,14 @@ class WorkflowDesignControllerTest {
                   "kind": "agent.workflow.design",
                   "version": 1,
                   "id": "spark.workflow.demo",
-                  "app": {
-                    "id": "spark.workflow.demo",
-                    "name": "Demo",
-                    "mode": "workflow"
-                  },
                   "workflow": {
                     "id": "spark.workflow.demo",
                     "version": 1,
+                    "runtimeBinding": {},
+                    "capabilities": [],
                     "graph": {
                       "nodes": [],
-                      "edges": [],
+                      "lines": [],
                       "viewport": {}
                     }
                   },
@@ -130,17 +127,14 @@ class WorkflowDesignControllerTest {
                                   "kind": "agent.workflow.design",
                                   "version": 1,
                                   "id": "spark.workflow.demo",
-                                  "app": {
-                                    "id": "spark.workflow.demo",
-                                    "name": "Demo",
-                                    "mode": "workflow"
-                                  },
                                   "workflow": {
                                     "id": "spark.workflow.demo",
                                     "version": 1,
+                                    "runtimeBinding": {},
+                                    "capabilities": [],
                                     "graph": {
                                       "nodes": [],
-                                      "edges": [],
+                                      "lines": [],
                                       "viewport": {}
                                     }
                                   },
