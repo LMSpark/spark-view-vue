@@ -81,6 +81,7 @@ function verifyDesign(workflowId, design) {
   expectEqual(design.kind, 'agent.workflow.design', `${workflowId} design.kind`)
   expectEqual(design.id, workflowId, `${workflowId} design.id`)
   expectEqual(design.workflow?.id, workflowId, `${workflowId} design.workflow.id`)
+  verifyRuntimeBinding(workflowId, design.workflow?.runtimeBinding, 'design')
   verifyGraph(workflowId, design.workflow?.graph, 'design')
   verifyNoRefs(workflowId, design, 'design')
   verifyNoLegacyKeys(workflowId, design, 'design')
@@ -91,6 +92,7 @@ function verifyDefinition(workflowId, definition) {
   expectEqual(definition.kind, 'agent.workflow', `${workflowId} definition.kind`)
   expectEqual(definition.workflowId, workflowId, `${workflowId} definition.workflowId`)
   expectEqual(definition.source?.designId, workflowId, `${workflowId} definition.source.designId`)
+  verifyRuntimeBinding(workflowId, definition.workflow?.runtimeBinding, 'definition')
   verifyGraph(workflowId, definition.workflow?.graph, 'definition')
   verifyNoRefs(workflowId, definition, 'definition')
   verifyNoLegacyKeys(workflowId, definition, 'definition')
@@ -102,13 +104,59 @@ function verifyGraph(workflowId, graph, label) {
     return
   }
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : []
-  const edges = Array.isArray(graph.edges) ? graph.edges : []
-  expectEqual(nodes.length, 3, `${workflowId} ${label}.nodes.length`)
-  expectEqual(edges.length, 2, `${workflowId} ${label}.edges.length`)
+  const lines = Array.isArray(graph.lines) ? graph.lines : []
+  const expectedBusinessNodeCount = workflowId === 'agent.workflow.pageDesign' ? 7 : 1
+  const expectedLineCount = workflowId === 'agent.workflow.pageDesign' ? 15 : 5
+  expectEqual(nodes.length, expectedBusinessNodeCount + 2, `${workflowId} ${label}.nodes.length`)
+  expectEqual(lines.length, expectedLineCount, `${workflowId} ${label}.lines.length`)
   expectEqual(nodes[0]?.type, 'start', `${workflowId} ${label}.nodes[0].type`)
-  expectEqual(nodes[1]?.type, 'node', `${workflowId} ${label}.nodes[1].type`)
-  expectEqual(nodes[2]?.type, 'output', `${workflowId} ${label}.nodes[2].type`)
-  verifyRuntimeBinding(workflowId, nodes[1]?.data?.runtimeBinding, label)
+  expectEqual(nodes.at(-1)?.type, 'output', `${workflowId} ${label}.nodes[last].type`)
+  for (const node of nodes.slice(1, -1)) {
+    expectEqual(node.type, 'node', `${workflowId} ${label}.${node.id}.type`)
+    verifyBusinessNode(workflowId, node, label)
+  }
+  for (const line of lines) {
+    verifyLine(workflowId, line, label)
+  }
+  if (Object.prototype.hasOwnProperty.call(graph, 'edges')) {
+    errors.push(`${workflowId} ${label}.workflow.graph must not contain legacy edges`)
+  }
+}
+
+function verifyBusinessNode(workflowId, node, label) {
+  const data = node?.data
+  if (!isRecord(data)) {
+    errors.push(`${workflowId} ${label}.${node?.id}.data must be an object`)
+    return
+  }
+  if (!Array.isArray(data.models) || data.models.length === 0) {
+    errors.push(`${workflowId} ${label}.${node.id}.data.models must be a non-empty array`)
+  }
+  if (Object.prototype.hasOwnProperty.call(data, 'model')) {
+    errors.push(`${workflowId} ${label}.${node.id}.data must not contain legacy model`)
+  }
+  if (Object.prototype.hasOwnProperty.call(data, 'runtimeBinding')) {
+    errors.push(`${workflowId} ${label}.${node.id}.data must not contain node runtimeBinding`)
+  }
+}
+
+function verifyLine(workflowId, line, label) {
+  if (!isRecord(line)) {
+    errors.push(`${workflowId} ${label}.line must be an object`)
+    return
+  }
+  for (const side of ['from', 'to']) {
+    const endpoint = line[side]
+    if (!isRecord(endpoint)) {
+      errors.push(`${workflowId} ${label}.${line.id}.${side} must be an object`)
+      continue
+    }
+    for (const field of ['nodeId', 'modelId', 'memberName']) {
+      if (typeof endpoint[field] !== 'string' || endpoint[field].trim().length === 0) {
+        errors.push(`${workflowId} ${label}.${line.id}.${side}.${field} must be a non-empty string`)
+      }
+    }
+  }
 }
 
 function verifyRuntimeBinding(workflowId, runtimeBinding, label) {

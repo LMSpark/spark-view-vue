@@ -62,6 +62,7 @@ export type WorkflowDesignDocument = {
     version: number
     variables?: WorkflowDesignVariable[]
     capabilities?: WorkflowDesignCapability[]
+    runtimeBinding?: SparkAgent.AgentWorkflowDefinitionRuntimeBinding
     graph: WorkflowDesignGraph
     [key: string]: unknown
   }
@@ -99,7 +100,7 @@ export type WorkflowDesignCapability = {
 export type WorkflowDesignGraph = {
   id?: string
   nodes: WorkflowDesignGraphNode[]
-  edges: WorkflowDesignGraphEdge[]
+  lines: WorkflowDesignGraphLine[]
   viewport?: {
     x?: number
     y?: number
@@ -121,12 +122,18 @@ export type WorkflowDesignGraphNode = {
   [key: string]: unknown
 }
 
-export type WorkflowDesignGraphEdge = {
+export type WorkflowDesignLineEndpoint = {
+  nodeId: string
+  modelId: string
+  memberName: string
+  dock?: number
+  [key: string]: unknown
+}
+
+export type WorkflowDesignGraphLine = {
   id?: string
-  source: string
-  target: string
-  sourceHandle?: string
-  targetHandle?: string
+  from: WorkflowDesignLineEndpoint
+  to: WorkflowDesignLineEndpoint
   type?: string
   data?: JsonRecord
   [key: string]: unknown
@@ -139,10 +146,9 @@ export type WorkflowDesignNodeData = {
   inputs?: JsonRecord
   outputs?: JsonRecord
   capabilities?: WorkflowDesignCapability[]
-  model?: JsonRecord
+  models?: JsonRecord[]
   llm?: JsonRecord
   validation?: JsonRecord
-  runtimeBinding?: SparkAgent.AgentWorkflowNodeRuntimeBinding
   state?: JsonRecord
   result?: JsonRecord
   loop?: WorkflowDesignNestedGraphCarrier
@@ -193,17 +199,19 @@ export type WorkflowDesignGraphView = {
   ownerNode?: WorkflowDesignGraphNode
 }
 
-export type WorkflowDesignEdgeView = {
+export type WorkflowDesignLineView = {
   key: string
   id: string
-  source: string
-  target: string
+  from: WorkflowDesignLineEndpoint
+  to: WorkflowDesignLineEndpoint
+  fromNodeId: string
+  toNodeId: string
   depth: number
   scopePath: string
   graph: WorkflowDesignGraph
-  edge: WorkflowDesignGraphEdge
-  sourceNode?: WorkflowDesignGraphNode
-  targetNode?: WorkflowDesignGraphNode
+  line: WorkflowDesignGraphLine
+  fromNode?: WorkflowDesignGraphNode
+  toNode?: WorkflowDesignGraphNode
 }
 
 export type WorkflowDesignNodeCreateKind = 'node' | 'start' | 'output'
@@ -221,14 +229,12 @@ export type WorkflowDesignNodeCreateInput = {
 
 export type WorkflowDesignNodeRemoveResult = {
   removed: boolean
-  removedEdges: WorkflowDesignGraphEdge[]
+  removedLines: WorkflowDesignGraphLine[]
 }
 
-export type WorkflowDesignEdgePatch = {
-  source?: string
-  target?: string
-  sourceHandle?: string
-  targetHandle?: string
+export type WorkflowDesignLinePatch = {
+  from?: WorkflowDesignLineEndpoint
+  to?: WorkflowDesignLineEndpoint
   type?: string
   relation?: string
 }
@@ -263,7 +269,9 @@ type CreateWorkflowDefinitionNodeCommand<
 
 const PLACEHOLDER_MODEL_ROOT_CLASS_NAME = 'spark.placeholder.RootModel'
 const PLACEHOLDER_MODEL_CLASS_NAME = 'spark.placeholder.Model'
+const PLACEHOLDER_MODEL_ID = 'spark.placeholder.model'
 const PLACEHOLDER_VALIDATION_ACTION_NAME = 'spark.placeholder.validate'
+const PLACEHOLDER_RUNTIME_ID = 'spark.placeholder.workflow'
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
   return http.get<WorkflowDesignSummary[]>(`${getWorkflowDesignApi()}/__list`)
@@ -346,9 +354,10 @@ export function createAgentWorkflowDefinitionFromDesign(
       ...workflowExtras,
       variables: normalizeDefinitionVariables(document.workflow.variables),
       capabilities: normalizeDefinitionCapabilities(document.workflow.capabilities),
+      runtimeBinding: normalizeWorkflowRuntimeBinding(document.workflow.runtimeBinding),
       graph: {
         nodes: document.workflow.graph.nodes.map(toDefinitionNode),
-        edges: document.workflow.graph.edges.map(toDefinitionEdge),
+        lines: document.workflow.graph.lines.map(toDefinitionLine),
       },
     },
     x_spark: {
@@ -399,8 +408,8 @@ export function collectWorkflowDesignGraphs(document: WorkflowDesignDocument): W
   return [root, ...collectNestedGraphViews(document.workflow.graph, 'workflow.graph', 0)]
 }
 
-export function collectWorkflowDesignEdges(document: WorkflowDesignDocument): WorkflowDesignEdgeView[] {
-  return collectWorkflowDesignGraphs(document).flatMap(view => collectGraphEdges(view))
+export function collectWorkflowDesignLines(document: WorkflowDesignDocument): WorkflowDesignLineView[] {
+  return collectWorkflowDesignGraphs(document).flatMap(view => collectGraphLines(view))
 }
 
 export function isSingleModelEditToolNode(_node: WorkflowDesignGraphNode): boolean {
@@ -441,26 +450,17 @@ export function markWorkflowDesignSaved(document: WorkflowDesignDocument): void 
   draft['dirtyPaths'] = []
 }
 
-export function addWorkflowDesignEdge(
+export function addWorkflowDesignLine(
   graph: WorkflowDesignGraph,
-  source: string,
-  target: string,
-): WorkflowDesignGraphEdge {
-  const existing = graph.edges.find(edge => edge.source === source && edge.target === target)
-  if (existing !== undefined) return existing
-
-  const edge: WorkflowDesignGraphEdge = {
-    id: nextEdgeId(graph, source, target),
-    source,
-    target,
-    sourceHandle: 'source',
-    targetHandle: 'target',
+  fromNodeId: string,
+  toNodeId: string,
+): WorkflowDesignGraphLine {
+  const line: WorkflowDesignGraphLine = {
+    id: nextLineId(graph, fromNodeId, toNodeId),
+    from: createDefaultLineEndpoint(fromNodeId, 'out'),
+    to: createDefaultLineEndpoint(toNodeId, 'in'),
     type: 'custom',
     data: {
-      projection: {
-        sourceRef: `${source}.outputs`,
-        targetRef: `${target}.inputs`,
-      },
       branch: {
         label: 'default',
         default: true,
@@ -468,8 +468,8 @@ export function addWorkflowDesignEdge(
       validation: {},
     },
   }
-  graph.edges.push(edge)
-  return edge
+  graph.lines.push(line)
+  return line
 }
 
 export function createWorkflowDesignNode(
@@ -493,36 +493,34 @@ export function removeWorkflowDesignNode(
   nodeId: string,
 ): WorkflowDesignNodeRemoveResult {
   const index = graph.nodes.findIndex(node => node.id === nodeId)
-  if (index < 0) return { removed: false, removedEdges: [] }
+  if (index < 0) return { removed: false, removedLines: [] }
 
   graph.nodes.splice(index, 1)
-  const removedEdges: WorkflowDesignGraphEdge[] = []
-  graph.edges = graph.edges.filter((edge) => {
-    if (edge.source === nodeId || edge.target === nodeId) {
-      removedEdges.push(edge)
+  const removedLines: WorkflowDesignGraphLine[] = []
+  graph.lines = graph.lines.filter((line) => {
+    if (line.from.nodeId === nodeId || line.to.nodeId === nodeId) {
+      removedLines.push(line)
       return false
     }
     return true
   })
-  return { removed: true, removedEdges }
+  return { removed: true, removedLines }
 }
 
-export function removeWorkflowDesignEdge(graph: WorkflowDesignGraph, edge: WorkflowDesignGraphEdge): boolean {
-  const index = graph.edges.indexOf(edge)
+export function removeWorkflowDesignLine(graph: WorkflowDesignGraph, line: WorkflowDesignGraphLine): boolean {
+  const index = graph.lines.indexOf(line)
   if (index < 0) return false
-  graph.edges.splice(index, 1)
+  graph.lines.splice(index, 1)
   return true
 }
 
-export function updateWorkflowDesignEdge(edge: WorkflowDesignGraphEdge, patch: WorkflowDesignEdgePatch): void {
-  if (patch.source !== undefined) edge.source = patch.source
-  if (patch.target !== undefined) edge.target = patch.target
-  if (patch.sourceHandle !== undefined) edge.sourceHandle = patch.sourceHandle
-  if (patch.targetHandle !== undefined) edge.targetHandle = patch.targetHandle
-  if (patch.type !== undefined) edge.type = patch.type
+export function updateWorkflowDesignLine(line: WorkflowDesignGraphLine, patch: WorkflowDesignLinePatch): void {
+  if (patch.from !== undefined) line.from = patch.from
+  if (patch.to !== undefined) line.to = patch.to
+  if (patch.type !== undefined) line.type = patch.type
   if (patch.relation !== undefined) {
-    edge.data ??= {}
-    edge.data['relation'] = patch.relation
+    line.data ??= {}
+    line.data['relation'] = patch.relation
   }
 }
 
@@ -555,6 +553,7 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Spark
       })
     }
   }
+  validateWorkflowRuntimeBindingPublishReadiness(document, issues)
   for (const view of collectWorkflowDesignNodes(document)) {
     const data = view.node.data
     if (data === undefined) continue
@@ -613,52 +612,105 @@ function collectDefinitionPublishIssues(document: WorkflowDesignDocument): Spark
   return issues
 }
 
+function validateWorkflowRuntimeBindingPublishReadiness(
+  document: WorkflowDesignDocument,
+  issues: SparkAgent.AgentWorkflowDefinitionValidationIssue[],
+): void {
+  const binding = document.workflow.runtimeBinding
+  if (!isJsonRecord(binding)) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_RUNTIME_BINDING_MISSING',
+      message: 'Workflow must bind workflow.runtimeBinding before publishing.',
+      path: 'workflow.runtimeBinding',
+    })
+    return
+  }
+  const registration = isJsonRecord(binding['registration']) ? binding['registration'] : undefined
+  const projectionRef = isJsonRecord(binding['modelProjectionRef']) ? binding['modelProjectionRef'] : undefined
+  const alias = readNonBlankText(registration?.['alias'])
+  const moduleId = readNonBlankText(registration?.['moduleId'])
+  const rootClassName = readNonBlankText(projectionRef?.['rootClassName'])
+  if (alias === undefined || alias === PLACEHOLDER_RUNTIME_ID) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_RUNTIME_ALIAS_MISSING',
+      message: 'Workflow runtimeBinding.registration.alias must be a real workflow alias before publishing.',
+      path: 'workflow.runtimeBinding.registration.alias',
+    })
+  }
+  if (moduleId === undefined || moduleId === PLACEHOLDER_RUNTIME_ID) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_RUNTIME_MODULE_MISSING',
+      message: 'Workflow runtimeBinding.registration.moduleId must be a real module id before publishing.',
+      path: 'workflow.runtimeBinding.registration.moduleId',
+    })
+  }
+  if (rootClassName === undefined || rootClassName === PLACEHOLDER_MODEL_ROOT_CLASS_NAME) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_RUNTIME_ROOT_MISSING',
+      message: 'Workflow runtimeBinding.modelProjectionRef.rootClassName must be a real ClassModel root before publishing.',
+      path: 'workflow.runtimeBinding.modelProjectionRef.rootClassName',
+    })
+  }
+}
+
 function validateBusinessNodePublishReadiness(
   view: WorkflowDesignNodeView,
   data: WorkflowDesignNodeData,
   issues: SparkAgent.AgentWorkflowDefinitionValidationIssue[],
 ): void {
-  const model = isJsonRecord(data.model) ? data.model : undefined
-  const rootClassName = readNonBlankText(model?.['rootClassName'])
-  const className = readNonBlankText(model?.['className'])
-  const validation = isJsonRecord(data.validation) ? data.validation : undefined
-  const action = isJsonRecord(validation?.['action']) ? validation['action'] : undefined
-  const actionClassName = readNonBlankText(action?.['className'])
-  const actionName = readNonBlankText(action?.['actionName'])
+  const models = Array.isArray(data.models) ? data.models.filter(isJsonRecord) : []
+  const primaryModel = models[0]
+  const rootClassName = readNonBlankText(primaryModel?.['rootClassName'])
+  const className = readNonBlankText(primaryModel?.['className'])
+  const completion = isJsonRecord(primaryModel?.['completion']) ? primaryModel['completion'] : undefined
+  const completionMemberName = readNonBlankText(completion?.['memberName'])
+  if (Object.prototype.hasOwnProperty.call(data, 'model')) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_LEGACY_MODEL_FIELD',
+      message: `Business node "${view.id}" must use models[] instead of legacy model.`,
+      nodeId: view.id,
+      path: `${view.scopePath}.${view.id}.data.model`,
+    })
+  }
+  if (models.length === 0) {
+    issues.push({
+      severity: 'error',
+      code: 'AGENT_WORKFLOW_MODELS_MISSING',
+      message: `Business node "${view.id}" must bind at least one models[] entry before publishing.`,
+      nodeId: view.id,
+      path: `${view.scopePath}.${view.id}.data.models`,
+    })
+  }
   if (rootClassName === undefined || rootClassName === PLACEHOLDER_MODEL_ROOT_CLASS_NAME) {
     issues.push({
       severity: 'error',
       code: 'AGENT_WORKFLOW_MODEL_ROOT_MISSING',
-      message: `Business node "${view.id}" must bind a real model.rootClassName before publishing.`,
+      message: `Business node "${view.id}" must bind a real models[0].rootClassName before publishing.`,
       nodeId: view.id,
-      path: `${view.scopePath}.${view.id}.data.model.rootClassName`,
+      path: `${view.scopePath}.${view.id}.data.models[0].rootClassName`,
     })
   }
   if (className === undefined || className === PLACEHOLDER_MODEL_CLASS_NAME) {
     issues.push({
       severity: 'error',
       code: 'AGENT_WORKFLOW_MODEL_CLASS_MISSING',
-      message: `Business node "${view.id}" must bind a real model.className before publishing.`,
+      message: `Business node "${view.id}" must bind a real models[0].className before publishing.`,
       nodeId: view.id,
-      path: `${view.scopePath}.${view.id}.data.model.className`,
+      path: `${view.scopePath}.${view.id}.data.models[0].className`,
     })
   }
-  if (actionClassName === undefined || actionClassName === PLACEHOLDER_MODEL_CLASS_NAME) {
+  if (completionMemberName === undefined) {
     issues.push({
       severity: 'error',
-      code: 'AGENT_WORKFLOW_VALIDATION_CLASS_MISSING',
-      message: `Business node "${view.id}" must bind validation.action.className before publishing.`,
+      code: 'AGENT_WORKFLOW_MODEL_COMPLETION_MISSING',
+      message: `Business node "${view.id}" must bind a projected models[0].completion.memberName before publishing.`,
       nodeId: view.id,
-      path: `${view.scopePath}.${view.id}.data.validation.action.className`,
-    })
-  }
-  if (actionName === undefined || actionName === PLACEHOLDER_VALIDATION_ACTION_NAME) {
-    issues.push({
-      severity: 'error',
-      code: 'AGENT_WORKFLOW_VALIDATION_ACTION_MISSING',
-      message: `Business node "${view.id}" must bind validation.action.actionName before publishing.`,
-      nodeId: view.id,
-      path: `${view.scopePath}.${view.id}.data.validation.action.actionName`,
+      path: `${view.scopePath}.${view.id}.data.models[0].completion.memberName`,
     })
   }
 }
@@ -666,7 +718,14 @@ function validateBusinessNodePublishReadiness(
 function normalizeDefinitionWorkflowExtras(workflow: WorkflowDesignDocument['workflow']): JsonRecord {
   const extras: JsonRecord = {}
   for (const [key, value] of Object.entries(workflow)) {
-    if (key === 'id' || key === 'version' || key === 'variables' || key === 'capabilities' || key === 'graph') continue
+    if (
+      key === 'id'
+      || key === 'version'
+      || key === 'variables'
+      || key === 'capabilities'
+      || key === 'runtimeBinding'
+      || key === 'graph'
+    ) continue
     extras[key] = value
   }
   return extras
@@ -717,14 +776,54 @@ function toDefinitionNode(node: WorkflowDesignGraphNode): SparkAgent.AgentWorkfl
   })
 }
 
-function toDefinitionEdge(edge: WorkflowDesignGraphEdge): SparkAgent.AgentWorkflowGraphEdge {
+function toDefinitionLine(line: WorkflowDesignGraphLine): SparkAgent.AgentWorkflowGraphLine {
   return {
-    id: edge.id ?? `${edge.source}-${edge.target}`,
-    source: edge.source,
-    target: edge.target,
-    ...(edge.sourceHandle === undefined ? {} : { sourceHandle: edge.sourceHandle }),
-    ...(edge.targetHandle === undefined ? {} : { targetHandle: edge.targetHandle }),
-    ...(edge.data === undefined ? {} : { data: edge.data }),
+    id: line.id ?? `${line.from.nodeId}-${line.to.nodeId}`,
+    from: line.from,
+    to: line.to,
+    ...(line.type === undefined ? {} : { type: line.type }),
+    ...(line.data === undefined ? {} : { data: line.data }),
+  }
+}
+
+function normalizeWorkflowRuntimeBinding(
+  value: SparkAgent.AgentWorkflowDefinitionRuntimeBinding | undefined,
+): SparkAgent.AgentWorkflowDefinitionRuntimeBinding {
+  if (value !== undefined) return value
+  return {
+    registration: {
+      alias: PLACEHOLDER_RUNTIME_ID,
+      moduleId: PLACEHOLDER_RUNTIME_ID,
+      businessId: PLACEHOLDER_RUNTIME_ID,
+    },
+    inputContract: {
+      identityField: 'input',
+      messageField: 'input',
+      paramsSchema: {
+        type: 'object',
+        properties: {},
+        additionalProperties: false,
+      },
+      readonlySteps: [],
+    },
+    systemPrompt: {
+      template: 'spark.placeholder.prompt',
+      conditionalHints: [],
+    },
+    modelProjectionRef: {
+      kind: 'dts-class-model',
+      rootClassName: PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
+      manifestUrlRef: 'dts-class-model',
+    },
+    executableRef: {
+      kind: 'js-module',
+      moduleSpecifier: 'spark.placeholder.module',
+      exportName: PLACEHOLDER_MODEL_CLASS_NAME,
+    },
+    resolveInstance: {
+      editorSource: PLACEHOLDER_RUNTIME_ID,
+      identityField: 'input',
+    },
   }
 }
 
@@ -799,16 +898,16 @@ function normalizeNodeDataForDefinition(
     }
   }
   if (type === 'node') {
-    const model = normalizeBusinessNodeModel(data['model'])
+    const models = normalizeBusinessNodeModels(data['models'])
+    const primaryModel = models[0] ?? createPlaceholderBusinessNodeModel()
     return {
       type,
       title,
-      model,
+      models,
       inputs: isJsonRecord(data['inputs']) ? data['inputs'] : {},
       outputs: isJsonRecord(data['outputs']) ? data['outputs'] : {},
-      llm: normalizeBusinessNodeLlm(data['llm'], model),
-      validation: normalizeBusinessNodeValidation(data['validation'], model.className),
-      ...(data.runtimeBinding === undefined ? {} : { runtimeBinding: data.runtimeBinding }),
+      llm: normalizeBusinessNodeLlm(data['llm'], primaryModel),
+      validation: normalizeBusinessNodeValidation(data['validation'], primaryModel.className),
       ...(isJsonRecord(data['state']) ? { state: data['state'] } : {}),
       ...(isJsonRecord(data['result']) ? { result: data['result'] } : {}),
       ...(optionalCapabilities === undefined ? {} : { capabilities: optionalCapabilities }),
@@ -826,12 +925,57 @@ function normalizeNodeDataForDefinition(
   }
 }
 
-function normalizeBusinessNodeModel(value: unknown): SparkAgent.AgentWorkflowModelContext {
-  const model = isJsonRecord(value) ? value : {}
+function normalizeBusinessNodeModels(value: unknown): readonly SparkAgent.AgentWorkflowModelContext[] {
+  if (!Array.isArray(value)) return [createPlaceholderBusinessNodeModel()]
+  const models = value
+    .filter(isJsonRecord)
+    .map(normalizeBusinessNodeModel)
+  return models.length === 0 ? [createPlaceholderBusinessNodeModel()] : models
+}
+
+function normalizeBusinessNodeModel(model: JsonRecord): SparkAgent.AgentWorkflowModelContext {
+  const id = readNonBlankText(model['id']) ?? PLACEHOLDER_MODEL_ID
+  const sourceRef = readNonBlankText(model['sourceRef'])
+  const role = readNonBlankText(model['role'])
+  const completion = isJsonRecord(model['completion']) ? model['completion'] : undefined
+  const completionMemberName = readNonBlankText(completion?.['memberName'])
   return {
+    id,
     rootClassName: readNonBlankText(model['rootClassName']) ?? PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
     className: readNonBlankText(model['className']) ?? PLACEHOLDER_MODEL_CLASS_NAME,
-    contextPath: readNonBlankText(model['contextPath']) ?? '$',
+    ...(sourceRef === undefined ? {} : { sourceRef }),
+    ...(Array.isArray(model['via'])
+      ? { via: model['via'].filter(isJsonRecord).map(normalizeBusinessNodeModelVia) }
+      : {}),
+    ...(role === undefined ? {} : { role }),
+    ...(completionMemberName === undefined
+      ? {}
+      : {
+        completion: {
+          memberName: completionMemberName,
+          ...(completion?.['returnContract'] === 'boolean-or-reason'
+            ? { returnContract: 'boolean-or-reason' as const }
+            : {}),
+        },
+      }),
+  }
+}
+
+function createPlaceholderBusinessNodeModel(): SparkAgent.AgentWorkflowModelContext {
+  return {
+    id: PLACEHOLDER_MODEL_ID,
+    rootClassName: PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
+    className: PLACEHOLDER_MODEL_CLASS_NAME,
+    sourceRef: '$',
+  }
+}
+
+function normalizeBusinessNodeModelVia(value: JsonRecord): SparkAgent.AgentWorkflowModelVia {
+  const sourceRef = readNonBlankText(value['sourceRef'])
+  return {
+    memberName: readNonBlankText(value['memberName']) ?? '',
+    ...(value['kind'] === 'attribute' || value['kind'] === 'method' ? { kind: value['kind'] } : {}),
+    ...(sourceRef === undefined ? {} : { sourceRef }),
   }
 }
 
@@ -933,11 +1077,7 @@ function createDefaultBusinessNodeData(title: string, desc: string | undefined):
     type: 'node',
     title,
     ...(desc === undefined || desc.length === 0 ? {} : { desc }),
-    model: {
-      rootClassName: PLACEHOLDER_MODEL_ROOT_CLASS_NAME,
-      className: PLACEHOLDER_MODEL_CLASS_NAME,
-      contextPath: '$',
-    },
+    models: [createPlaceholderBusinessNodeModel()],
     inputs: {},
     outputs: {},
     llm: {
@@ -1074,21 +1214,23 @@ function collectNestedGraphViews(
   return result
 }
 
-function collectGraphEdges(view: WorkflowDesignGraphView): WorkflowDesignEdgeView[] {
-  return view.graph.edges.map((edge, index) => {
-    const sourceNode = view.graph.nodes.find(node => node.id === edge.source)
-    const targetNode = view.graph.nodes.find(node => node.id === edge.target)
+function collectGraphLines(view: WorkflowDesignGraphView): WorkflowDesignLineView[] {
+  return view.graph.lines.map((line, index) => {
+    const fromNode = view.graph.nodes.find(node => node.id === line.from.nodeId)
+    const toNode = view.graph.nodes.find(node => node.id === line.to.nodeId)
     return {
-      key: `${view.scopePath}:edge:${edge.id ?? index}`,
-      id: edge.id ?? `${edge.source}-${edge.target}`,
-      source: edge.source,
-      target: edge.target,
+      key: `${view.scopePath}:line:${line.id ?? index}`,
+      id: line.id ?? `${line.from.nodeId}-${line.to.nodeId}`,
+      from: line.from,
+      to: line.to,
+      fromNodeId: line.from.nodeId,
+      toNodeId: line.to.nodeId,
       depth: view.depth,
       scopePath: view.scopePath,
       graph: view.graph,
-      edge,
-      ...(sourceNode === undefined ? {} : { sourceNode }),
-      ...(targetNode === undefined ? {} : { targetNode }),
+      line,
+      ...(fromNode === undefined ? {} : { fromNode }),
+      ...(toNode === undefined ? {} : { toNode }),
     }
   })
 }
@@ -1128,15 +1270,23 @@ function nextNodeId(graph: WorkflowDesignGraph, baseId: string): string {
   return `${baseId}-${index}`
 }
 
-function nextEdgeId(graph: WorkflowDesignGraph, source: string, target: string): string {
-  const baseId = `edge.${source}.${target}`.replace(/[^a-zA-Z0-9_.-]/gu, '-')
-  const used = new Set(graph.edges.map(edge => edge.id).filter((id): id is string => typeof id === 'string'))
+function nextLineId(graph: WorkflowDesignGraph, fromNodeId: string, toNodeId: string): string {
+  const baseId = `line.${fromNodeId}.${toNodeId}`.replace(/[^a-zA-Z0-9_.-]/gu, '-')
+  const used = new Set(graph.lines.map(line => line.id).filter((id): id is string => typeof id === 'string'))
   if (!used.has(baseId)) return baseId
   let index = 2
   while (used.has(`${baseId}-${index}`)) {
     index += 1
   }
   return `${baseId}-${index}`
+}
+
+function createDefaultLineEndpoint(nodeId: string, memberName: string): WorkflowDesignLineEndpoint {
+  return {
+    nodeId,
+    modelId: nodeId === 'start' || nodeId === 'output' ? '$workflow' : PLACEHOLDER_MODEL_ID,
+    memberName,
+  }
 }
 
 function defaultNodeId(kind: WorkflowDesignNodeCreateKind): string {

@@ -24,6 +24,7 @@ export type AgentWorkflowDefinitionValidationIssue = Readonly<{
   code: string
   message: string
   nodeId?: string
+  lineId?: string
   path?: string
 }>
 
@@ -82,10 +83,27 @@ export type AgentWorkflowOutputNodeData = Readonly<{
   capabilities?: readonly AgentWorkflowCapability[]
 }>
 
+export type AgentWorkflowModelCompletionReturnContract = 'boolean-or-reason'
+
+export type AgentWorkflowModelCompletion = Readonly<{
+  memberName: string
+  returnContract?: AgentWorkflowModelCompletionReturnContract
+}>
+
+export type AgentWorkflowModelVia = Readonly<{
+  memberName: string
+  kind?: 'attribute' | 'method'
+  sourceRef?: string
+}>
+
 export type AgentWorkflowModelContext = Readonly<{
+  id: string
   rootClassName: string
   className: string
-  contextPath?: string
+  sourceRef?: string
+  via?: readonly AgentWorkflowModelVia[]
+  role?: string
+  completion?: AgentWorkflowModelCompletion
 }>
 
 export type AgentWorkflowLlmWork = Readonly<{
@@ -176,15 +194,16 @@ export type AgentWorkflowNodeRuntimeBinding = Readonly<{
   agentCompleteMethodName?: string
 }>
 
+export type AgentWorkflowDefinitionRuntimeBinding = AgentWorkflowNodeRuntimeBinding
+
 export type AgentWorkflowBusinessNodeData = Readonly<{
   type?: 'node'
   title?: string
-  model: AgentWorkflowModelContext
+  models: readonly AgentWorkflowModelContext[]
   inputs: AgentWorkflowJsonRecord
   outputs: AgentWorkflowJsonRecord
   llm: AgentWorkflowLlmWork
-  validation: AgentWorkflowNodeValidation
-  runtimeBinding?: AgentWorkflowNodeRuntimeBinding
+  validation?: AgentWorkflowNodeValidation
   state?: AgentWorkflowJsonRecord
   result?: AgentWorkflowJsonRecord
   capabilities?: readonly AgentWorkflowCapability[]
@@ -213,48 +232,48 @@ export type AgentWorkflowGraphNode =
 
 export type AgentWorkflowGraphNodeType = AgentWorkflowGraphNode['type']
 
-export type AgentWorkflowEdgeProjection = Readonly<{
-  sourceRef: string
-  targetRef: string
-  transform?: AgentWorkflowJsonRecord
-}>
-
-export type AgentWorkflowEdgeBranch = Readonly<{
+export type AgentWorkflowLineBranch = Readonly<{
   condition?: string
   label?: string
   priority?: number
   default?: boolean
 }>
 
-export type AgentWorkflowEdgeValidation = Readonly<{
+export type AgentWorkflowLineValidation = Readonly<{
   status?: string
   issues?: readonly AgentWorkflowJsonRecord[]
 }>
 
-export type AgentWorkflowGraphEdgeData = Readonly<{
-  projection?: AgentWorkflowEdgeProjection
-  branch?: AgentWorkflowEdgeBranch
-  validation?: AgentWorkflowEdgeValidation
+export type AgentWorkflowLineEndpoint = Readonly<{
+  nodeId: string
+  modelId: string
+  memberName: string
+  dock?: number
+}>
+
+export type AgentWorkflowGraphLineData = Readonly<{
+  branch?: AgentWorkflowLineBranch
+  validation?: AgentWorkflowLineValidation
   [key: string]: unknown
 }>
 
-export type AgentWorkflowGraphEdge = Readonly<{
+export type AgentWorkflowGraphLine = Readonly<{
   id: string
-  source: string
-  target: string
-  sourceHandle?: string
-  targetHandle?: string
-  data?: AgentWorkflowGraphEdgeData
+  from: AgentWorkflowLineEndpoint
+  to: AgentWorkflowLineEndpoint
+  type?: string
+  data?: AgentWorkflowGraphLineData
 }>
 
 export type AgentWorkflowGraph = Readonly<{
   nodes: readonly AgentWorkflowGraphNode[]
-  edges: readonly AgentWorkflowGraphEdge[]
+  lines: readonly AgentWorkflowGraphLine[]
 }>
 
 export type AgentWorkflowBody = Readonly<{
   variables: readonly AgentWorkflowVariable[]
   capabilities: readonly AgentWorkflowCapability[]
+  runtimeBinding: AgentWorkflowDefinitionRuntimeBinding
   graph: AgentWorkflowGraph
 }>
 

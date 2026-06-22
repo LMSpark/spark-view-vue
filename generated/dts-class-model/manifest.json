@@ -671,6 +671,9 @@
           "AgentWorkflowNodePosition",
           "AgentWorkflowStartNodeData",
           "AgentWorkflowOutputNodeData",
+          "AgentWorkflowModelCompletionReturnContract",
+          "AgentWorkflowModelCompletion",
+          "AgentWorkflowModelVia",
           "AgentWorkflowModelContext",
           "AgentWorkflowLlmWork",
           "AgentWorkflowNodeValidationAction",
@@ -686,6 +689,7 @@
           "AgentWorkflowNodeBeforeFunctionCall",
           "AgentWorkflowNodeResolveInstance",
           "AgentWorkflowNodeRuntimeBinding",
+          "AgentWorkflowDefinitionRuntimeBinding",
           "AgentWorkflowBusinessNodeData",
           "AgentWorkflowGraphNodeBase",
           "AgentWorkflowStartNode",
@@ -693,11 +697,11 @@
           "AgentWorkflowBusinessNode",
           "AgentWorkflowGraphNode",
           "AgentWorkflowGraphNodeType",
-          "AgentWorkflowEdgeProjection",
-          "AgentWorkflowEdgeBranch",
-          "AgentWorkflowEdgeValidation",
-          "AgentWorkflowGraphEdgeData",
-          "AgentWorkflowGraphEdge",
+          "AgentWorkflowLineBranch",
+          "AgentWorkflowLineValidation",
+          "AgentWorkflowLineEndpoint",
+          "AgentWorkflowGraphLineData",
+          "AgentWorkflowGraphLine",
           "AgentWorkflowGraph",
           "AgentWorkflowBody",
           "AgentWorkflowDefinitionSparkMeta",
@@ -11225,17 +11229,18 @@
           "WorkflowDesignCapability",
           "WorkflowDesignGraph",
           "WorkflowDesignGraphNode",
-          "WorkflowDesignGraphEdge",
+          "WorkflowDesignLineEndpoint",
+          "WorkflowDesignGraphLine",
           "WorkflowDesignNodeData",
           "WorkflowDesignNestedGraphCarrier",
           "WorkflowDesignSparkNodeMeta",
           "WorkflowDesignNodeView",
           "WorkflowDesignGraphView",
-          "WorkflowDesignEdgeView",
+          "WorkflowDesignLineView",
           "WorkflowDesignNodeCreateKind",
           "WorkflowDesignNodeCreateInput",
           "WorkflowDesignNodeRemoveResult",
-          "WorkflowDesignEdgePatch",
+          "WorkflowDesignLinePatch",
           "CreateAgentWorkflowDefinitionFromDesignOptions"
         ]
       }
@@ -11587,7 +11592,7 @@
         "sourceFile": "src/views/app/WorkflowDesigns.vue",
         "packageName": "app",
         "modulePath": "views/app/WorkflowDesigns",
-        "jsdoc": "@module app:views/app/WorkflowDesigns\n职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与 workflow definition 发布。\n边界：只处理设计态 JSON，不执行 Agent workflow 运行时。\nAI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel model context 或步骤线投影时，用本页面定位。",
+        "jsdoc": "@module app:views/app/WorkflowDesigns\n鑱岃矗锛氭彁渚涘伐浣滄祦璁捐绋跨殑鍙鍖栫紪杈戝叆鍙ｏ紝杩炴帴 Dify-like JSON graph銆佹枃浠朵繚瀛?API 涓?workflow definition 鍙戝竷銆?杈圭晫锛氬彧澶勭悊璁捐鎬?JSON锛屼笉鎵ц Agent workflow 杩愯鏃躲€?AI鐢ㄩ€旓細闇€瑕侀獙璇?workflow 缂栬緫鍣ㄥ浣曢厤缃笟鍔¤妭鐐广€丆lassModel model context 鎴栨楠ょ嚎鎶曞奖鏃讹紝鐢ㄦ湰椤甸潰瀹氫綅銆?",
         "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
@@ -11840,6 +11845,10 @@
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
+    "AgentWorkflowDefinitionRuntimeBinding": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
     "AgentWorkflowDefinitionSchema": {
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
@@ -11880,27 +11889,15 @@
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-dry-run.ts.json"
     },
-    "AgentWorkflowEdgeBranch": {
-      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
-    },
-    "AgentWorkflowEdgeProjection": {
-      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
-    },
-    "AgentWorkflowEdgeValidation": {
-      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
-    },
     "AgentWorkflowGraph": {
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
-    "AgentWorkflowGraphEdge": {
+    "AgentWorkflowGraphLine": {
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
-    "AgentWorkflowGraphEdgeData": {
+    "AgentWorkflowGraphLineData": {
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
@@ -11924,11 +11921,35 @@
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
+    "AgentWorkflowLineBranch": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowLineEndpoint": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowLineValidation": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
     "AgentWorkflowLlmWork": {
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
+    "AgentWorkflowModelCompletion": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowModelCompletionReturnContract": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
     "AgentWorkflowModelContext": {
+      "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
+    },
+    "AgentWorkflowModelVia": {
       "sourcePath": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "file": "files/packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts.json"
     },
@@ -16864,19 +16885,11 @@
       "sourcePath": "src/services/workflow-designs.ts",
       "file": "files/src/services/workflow-designs.ts.json"
     },
-    "WorkflowDesignEdgePatch": {
-      "sourcePath": "src/services/workflow-designs.ts",
-      "file": "files/src/services/workflow-designs.ts.json"
-    },
-    "WorkflowDesignEdgeView": {
-      "sourcePath": "src/services/workflow-designs.ts",
-      "file": "files/src/services/workflow-designs.ts.json"
-    },
     "WorkflowDesignGraph": {
       "sourcePath": "src/services/workflow-designs.ts",
       "file": "files/src/services/workflow-designs.ts.json"
     },
-    "WorkflowDesignGraphEdge": {
+    "WorkflowDesignGraphLine": {
       "sourcePath": "src/services/workflow-designs.ts",
       "file": "files/src/services/workflow-designs.ts.json"
     },
@@ -16885,6 +16898,18 @@
       "file": "files/src/services/workflow-designs.ts.json"
     },
     "WorkflowDesignGraphView": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignLineEndpoint": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignLinePatch": {
+      "sourcePath": "src/services/workflow-designs.ts",
+      "file": "files/src/services/workflow-designs.ts.json"
+    },
+    "WorkflowDesignLineView": {
       "sourcePath": "src/services/workflow-designs.ts",
       "file": "files/src/services/workflow-designs.ts.json"
     },

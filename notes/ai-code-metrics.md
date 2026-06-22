@@ -153,4 +153,12 @@
 - **30天存活**：（30天后回填）
 - **知识沉淀**：是（1 条，工作目录清理时的进程句柄锁定）
 - **人工干预**：阶段 1.5/2 提问 6 题；阶段 4 研读发现 spark-ai-server/data 含 git 追踪配置，纠正用户"整目录删"选择的风险并获明确授权；执行后用户选择 git restore 恢复配置；worker 执行中 2 个 dev-setup 日志被 node 进程锁定未删，未强行 kill。
+### 2026-06-22 Page Design 100-Step Workflow Data Migration
 
+- **Complexity**: complex
+- **Total time**: about 4 hours
+- **Rework count**: 5 (template encoding cleanup, line/model test fixture migration, generator/verifier contract alignment, lint cleanup, static definition validation corrected for missing completion members)
+- **Review rounds**: 1 approved plan, multiple user corrections before implementation
+- **30-day survival**: pending
+- **Knowledge deposition**: pending user confirmation
+- **Human intervention summary**: User clarified that ClassModel projection is the truth, `models[]` replaces single `model`, graph persistence must be nodes + lines, completion belongs on model entries and must not use runtime-only `llm.knowledge.models` or protocol-only `agent_complete` when no projected member exists.

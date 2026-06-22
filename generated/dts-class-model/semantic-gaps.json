@@ -1,5 +1,5 @@
 {
-  "gapCount": 460,
+  "gapCount": 476,
   "notes": [
     ".d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。",
     "module 是单个 DTS shard 的入口语义；必须来自源文件头 JSDoc（职责/边界/AI用途），路径推导只作定位日志。",
@@ -373,12 +373,24 @@
     {
       "kind": "attribute",
       "className": "AgentWorkflowDefinitionValidationIssue",
+      "memberName": "lineId",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowDefinitionValidationIssue.lineId 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 19,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowDefinitionValidationIssue",
       "memberName": "path",
       "reason": "missing-jsdoc",
       "chainBreak": "AgentWorkflowDefinitionValidationIssue.path 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 19,
+      "declarationLine": 20,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -389,7 +401,7 @@
       "chainBreak": "AgentWorkflowDefinitionValidation 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 21,
+      "declarationLine": 22,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -401,7 +413,7 @@
       "chainBreak": "AgentWorkflowDefinitionValidation.status 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 22,
+      "declarationLine": 23,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -413,7 +425,7 @@
       "chainBreak": "AgentWorkflowDefinitionValidation.issues 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 23,
+      "declarationLine": 24,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -424,7 +436,7 @@
       "chainBreak": "AgentWorkflowDefinitionSource 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 25,
+      "declarationLine": 26,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -436,7 +448,7 @@
       "chainBreak": "AgentWorkflowDefinitionSource.designKind 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 26,
+      "declarationLine": 27,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -448,7 +460,7 @@
       "chainBreak": "AgentWorkflowDefinitionSource.designId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 27,
+      "declarationLine": 28,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -460,7 +472,7 @@
       "chainBreak": "AgentWorkflowDefinitionSource.designVersion 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 28,
+      "declarationLine": 29,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -471,7 +483,7 @@
       "chainBreak": "AgentWorkflowVariable 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 30,
+      "declarationLine": 31,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -483,7 +495,7 @@
       "chainBreak": "AgentWorkflowVariable.name 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 31,
+      "declarationLine": 32,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -495,7 +507,7 @@
       "chainBreak": "AgentWorkflowVariable.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 32,
+      "declarationLine": 33,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -507,7 +519,7 @@
       "chainBreak": "AgentWorkflowVariable.required 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 33,
+      "declarationLine": 34,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -519,7 +531,7 @@
       "chainBreak": "AgentWorkflowVariable.schema 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 34,
+      "declarationLine": 35,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -531,7 +543,7 @@
       "chainBreak": "AgentWorkflowVariable.defaultValue 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 35,
+      "declarationLine": 36,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -542,7 +554,7 @@
       "chainBreak": "AgentWorkflowCapability 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 37,
+      "declarationLine": 38,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -554,7 +566,7 @@
       "chainBreak": "AgentWorkflowCapability.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 38,
+      "declarationLine": 39,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -566,7 +578,7 @@
       "chainBreak": "AgentWorkflowCapability.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 39,
+      "declarationLine": 40,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -578,7 +590,7 @@
       "chainBreak": "AgentWorkflowCapability.scope 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 40,
+      "declarationLine": 41,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -590,7 +602,7 @@
       "chainBreak": "AgentWorkflowCapability.description 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 41,
+      "declarationLine": 42,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -602,7 +614,7 @@
       "chainBreak": "AgentWorkflowCapability.inputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 42,
+      "declarationLine": 43,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -614,7 +626,7 @@
       "chainBreak": "AgentWorkflowCapability.outputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 43,
+      "declarationLine": 44,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -626,7 +638,7 @@
       "chainBreak": "AgentWorkflowCapability.constraints 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 44,
+      "declarationLine": 45,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -637,7 +649,7 @@
       "chainBreak": "AgentWorkflowNodePosition 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 46,
+      "declarationLine": 47,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -649,7 +661,7 @@
       "chainBreak": "AgentWorkflowNodePosition.x 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 47,
+      "declarationLine": 48,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -661,7 +673,7 @@
       "chainBreak": "AgentWorkflowNodePosition.y 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 48,
+      "declarationLine": 49,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -672,7 +684,7 @@
       "chainBreak": "AgentWorkflowStartNodeData 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 50,
+      "declarationLine": 51,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -684,7 +696,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.type 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 51,
+      "declarationLine": 52,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -696,7 +708,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 52,
+      "declarationLine": 53,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -708,7 +720,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.inputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 53,
+      "declarationLine": 54,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -720,7 +732,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.projection 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 54,
+      "declarationLine": 55,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -732,7 +744,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 55,
+      "declarationLine": 56,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -744,7 +756,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.state 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 56,
+      "declarationLine": 57,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -756,7 +768,7 @@
       "chainBreak": "AgentWorkflowStartNodeData.capabilities 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 57,
+      "declarationLine": 58,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -767,7 +779,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 59,
+      "declarationLine": 60,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -779,7 +791,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.type 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 60,
+      "declarationLine": 61,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -791,7 +803,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 61,
+      "declarationLine": 62,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -803,7 +815,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.outputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 62,
+      "declarationLine": 63,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -815,7 +827,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.upstreamValidation 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 63,
+      "declarationLine": 64,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -827,7 +839,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 64,
+      "declarationLine": 65,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -839,7 +851,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.state 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 65,
+      "declarationLine": 66,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -851,7 +863,7 @@
       "chainBreak": "AgentWorkflowOutputNodeData.result 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 66,
+      "declarationLine": 67,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -863,7 +875,100 @@
       "chainBreak": "AgentWorkflowOutputNodeData.capabilities 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 67,
+      "declarationLine": 68,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowModelCompletionReturnContract",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelCompletionReturnContract 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 70,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowModelCompletion",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelCompletion 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 71,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelCompletion",
+      "memberName": "memberName",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelCompletion.memberName 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 72,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelCompletion",
+      "memberName": "returnContract",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelCompletion.returnContract 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 73,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowModelVia",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelVia 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 75,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelVia",
+      "memberName": "memberName",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelVia.memberName 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 76,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelVia",
+      "memberName": "kind",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelVia.kind 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 77,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelVia",
+      "memberName": "sourceRef",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelVia.sourceRef 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 78,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -874,9 +979,21 @@
       "chainBreak": "AgentWorkflowModelContext 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 69,
+      "declarationLine": 80,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelContext",
+      "memberName": "id",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelContext.id 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 81,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
     },
     {
       "kind": "attribute",
@@ -886,7 +1003,7 @@
       "chainBreak": "AgentWorkflowModelContext.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 70,
+      "declarationLine": 82,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -898,19 +1015,55 @@
       "chainBreak": "AgentWorkflowModelContext.className 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 71,
+      "declarationLine": 83,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
       "className": "AgentWorkflowModelContext",
-      "memberName": "contextPath",
+      "memberName": "sourceRef",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowModelContext.contextPath 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowModelContext.sourceRef 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 72,
+      "declarationLine": 84,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelContext",
+      "memberName": "via",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelContext.via 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 85,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelContext",
+      "memberName": "role",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelContext.role 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 86,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowModelContext",
+      "memberName": "completion",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowModelContext.completion 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 87,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -921,7 +1074,7 @@
       "chainBreak": "AgentWorkflowLlmWork 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 74,
+      "declarationLine": 89,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -933,7 +1086,7 @@
       "chainBreak": "AgentWorkflowLlmWork.task 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 75,
+      "declarationLine": 90,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -945,7 +1098,7 @@
       "chainBreak": "AgentWorkflowLlmWork.knowledge 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 76,
+      "declarationLine": 91,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -957,7 +1110,7 @@
       "chainBreak": "AgentWorkflowLlmWork.functionCalling 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 77,
+      "declarationLine": 92,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -969,7 +1122,7 @@
       "chainBreak": "AgentWorkflowLlmWork.output 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 78,
+      "declarationLine": 93,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -980,7 +1133,7 @@
       "chainBreak": "AgentWorkflowNodeValidationAction 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 80,
+      "declarationLine": 95,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -992,7 +1145,7 @@
       "chainBreak": "AgentWorkflowNodeValidationAction.className 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 81,
+      "declarationLine": 96,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1004,7 +1157,7 @@
       "chainBreak": "AgentWorkflowNodeValidationAction.actionName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 82,
+      "declarationLine": 97,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1016,7 +1169,7 @@
       "chainBreak": "AgentWorkflowNodeValidationAction.inputProjection 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 83,
+      "declarationLine": 98,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1028,7 +1181,7 @@
       "chainBreak": "AgentWorkflowNodeValidationAction.expectedResult 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 84,
+      "declarationLine": 99,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1039,7 +1192,7 @@
       "chainBreak": "AgentWorkflowNodeValidation 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 86,
+      "declarationLine": 101,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1051,7 +1204,7 @@
       "chainBreak": "AgentWorkflowNodeValidation.action 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 87,
+      "declarationLine": 102,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1063,7 +1216,7 @@
       "chainBreak": "AgentWorkflowNodeValidation.status 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 88,
+      "declarationLine": 103,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1075,7 +1228,7 @@
       "chainBreak": "AgentWorkflowNodeValidation.issues 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 89,
+      "declarationLine": 104,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1086,7 +1239,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeRegistration 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 91,
+      "declarationLine": 106,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1098,7 +1251,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeRegistration.alias 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 92,
+      "declarationLine": 107,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1110,7 +1263,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeRegistration.moduleId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 93,
+      "declarationLine": 108,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1122,7 +1275,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeRegistration.businessId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 94,
+      "declarationLine": 109,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1133,7 +1286,7 @@
       "chainBreak": "AgentWorkflowNodeInputContract 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 96,
+      "declarationLine": 111,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1145,7 +1298,7 @@
       "chainBreak": "AgentWorkflowNodeInputContract.identityField 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 97,
+      "declarationLine": 112,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1157,7 +1310,7 @@
       "chainBreak": "AgentWorkflowNodeInputContract.messageField 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 98,
+      "declarationLine": 113,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1169,7 +1322,7 @@
       "chainBreak": "AgentWorkflowNodeInputContract.paramsSchema 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 99,
+      "declarationLine": 114,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1181,7 +1334,7 @@
       "chainBreak": "AgentWorkflowNodeInputContract.readonlySteps 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 100,
+      "declarationLine": 115,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1192,7 +1345,7 @@
       "chainBreak": "AgentWorkflowNodeConditionalHint 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 102,
+      "declarationLine": 117,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1204,7 +1357,7 @@
       "chainBreak": "AgentWorkflowNodeConditionalHint.when 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 103,
+      "declarationLine": 118,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1216,7 +1369,7 @@
       "chainBreak": "AgentWorkflowNodeConditionalHint.template 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 104,
+      "declarationLine": 119,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1227,7 +1380,7 @@
       "chainBreak": "AgentWorkflowNodeSystemPrompt 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 106,
+      "declarationLine": 121,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1239,7 +1392,7 @@
       "chainBreak": "AgentWorkflowNodeSystemPrompt.template 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 107,
+      "declarationLine": 122,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1251,7 +1404,7 @@
       "chainBreak": "AgentWorkflowNodeSystemPrompt.conditionalHints 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 108,
+      "declarationLine": 123,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1262,7 +1415,7 @@
       "chainBreak": "AgentWorkflowNodeModelProjectionRef 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 110,
+      "declarationLine": 125,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1274,7 +1427,7 @@
       "chainBreak": "AgentWorkflowNodeModelProjectionRef.kind 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 111,
+      "declarationLine": 126,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1286,7 +1439,7 @@
       "chainBreak": "AgentWorkflowNodeModelProjectionRef.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 112,
+      "declarationLine": 127,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1298,7 +1451,7 @@
       "chainBreak": "AgentWorkflowNodeModelProjectionRef.manifestUrlRef 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 113,
+      "declarationLine": 128,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1309,7 +1462,7 @@
       "chainBreak": "AgentWorkflowNodeExecutableRef 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 115,
+      "declarationLine": 130,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1321,7 +1474,7 @@
       "chainBreak": "AgentWorkflowNodeExecutableRef.kind 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 116,
+      "declarationLine": 131,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1333,7 +1486,7 @@
       "chainBreak": "AgentWorkflowNodeExecutableRef.moduleSpecifier 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 117,
+      "declarationLine": 132,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1345,7 +1498,7 @@
       "chainBreak": "AgentWorkflowNodeExecutableRef.exportName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 118,
+      "declarationLine": 133,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1356,7 +1509,7 @@
       "chainBreak": "AgentWorkflowNodeToolLoopNudge 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 120,
+      "declarationLine": 135,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1368,7 +1521,7 @@
       "chainBreak": "AgentWorkflowNodeToolLoopNudge.templates 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 121,
+      "declarationLine": 136,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1380,7 +1533,7 @@
       "chainBreak": "AgentWorkflowNodeToolLoopNudge.contextFields 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 122,
+      "declarationLine": 137,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1391,7 +1544,7 @@
       "chainBreak": "AgentWorkflowNodeGateRule 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 124,
+      "declarationLine": 139,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1403,7 +1556,7 @@
       "chainBreak": "AgentWorkflowNodeGateRule.kind 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 125,
+      "declarationLine": 140,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1414,7 +1567,7 @@
       "chainBreak": "AgentWorkflowNodeBeforeFunctionCall 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 128,
+      "declarationLine": 143,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1426,7 +1579,7 @@
       "chainBreak": "AgentWorkflowNodeBeforeFunctionCall.gateRules 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 129,
+      "declarationLine": 144,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1437,7 +1590,7 @@
       "chainBreak": "AgentWorkflowNodeResolveInstance 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 131,
+      "declarationLine": 146,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1449,7 +1602,7 @@
       "chainBreak": "AgentWorkflowNodeResolveInstance.editorSource 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 132,
+      "declarationLine": 147,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1461,7 +1614,7 @@
       "chainBreak": "AgentWorkflowNodeResolveInstance.identityField 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 133,
+      "declarationLine": 148,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1472,7 +1625,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 135,
+      "declarationLine": 150,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1484,7 +1637,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.registration 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 136,
+      "declarationLine": 151,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1496,7 +1649,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.inputContract 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 137,
+      "declarationLine": 152,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1508,7 +1661,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.systemPrompt 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 138,
+      "declarationLine": 153,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1520,7 +1673,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.modelProjectionRef 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 139,
+      "declarationLine": 154,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1532,7 +1685,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.executableRef 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 140,
+      "declarationLine": 155,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1544,7 +1697,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.resolveInstance 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 141,
+      "declarationLine": 156,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1556,7 +1709,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.toolLoopNudge 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 142,
+      "declarationLine": 157,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1568,7 +1721,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.beforeFunctionCall 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 143,
+      "declarationLine": 158,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1580,7 +1733,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.executionToolNames 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 144,
+      "declarationLine": 159,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1592,7 +1745,7 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.planWithoutToolMarkers 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 145,
+      "declarationLine": 160,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1604,9 +1757,20 @@
       "chainBreak": "AgentWorkflowNodeRuntimeBinding.agentCompleteMethodName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 146,
+      "declarationLine": 161,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowDefinitionRuntimeBinding",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowDefinitionRuntimeBinding 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 163,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "typeAlias"
     },
     {
       "kind": "model",
@@ -1615,7 +1779,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 148,
+      "declarationLine": 164,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1627,7 +1791,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.type 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 149,
+      "declarationLine": 165,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1639,19 +1803,19 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 150,
+      "declarationLine": 166,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
       "className": "AgentWorkflowBusinessNodeData",
-      "memberName": "model",
+      "memberName": "models",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowBusinessNodeData.model 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowBusinessNodeData.models 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 151,
+      "declarationLine": 167,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1663,7 +1827,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.inputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 152,
+      "declarationLine": 168,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1675,7 +1839,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.outputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 153,
+      "declarationLine": 169,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1687,7 +1851,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.llm 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 154,
+      "declarationLine": 170,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1699,19 +1863,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 155,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowBusinessNodeData",
-      "memberName": "runtimeBinding",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowBusinessNodeData.runtimeBinding 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 156,
+      "declarationLine": 171,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1723,7 +1875,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.state 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 157,
+      "declarationLine": 172,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1735,7 +1887,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.result 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 158,
+      "declarationLine": 173,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1747,7 +1899,7 @@
       "chainBreak": "AgentWorkflowBusinessNodeData.capabilities 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 159,
+      "declarationLine": 174,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1758,7 +1910,7 @@
       "chainBreak": "AgentWorkflowGraphNodeBase 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 161,
+      "declarationLine": 176,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1770,7 +1922,7 @@
       "chainBreak": "AgentWorkflowGraphNodeBase.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 162,
+      "declarationLine": 177,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1782,7 +1934,7 @@
       "chainBreak": "AgentWorkflowGraphNodeBase.type 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 163,
+      "declarationLine": 178,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1794,7 +1946,7 @@
       "chainBreak": "AgentWorkflowGraphNodeBase.data 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 164,
+      "declarationLine": 179,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1806,7 +1958,7 @@
       "chainBreak": "AgentWorkflowGraphNodeBase.position 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 165,
+      "declarationLine": 180,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -1817,7 +1969,7 @@
       "chainBreak": "AgentWorkflowStartNode 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 167,
+      "declarationLine": 182,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1828,7 +1980,7 @@
       "chainBreak": "AgentWorkflowOutputNode 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 168,
+      "declarationLine": 183,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1839,7 +1991,7 @@
       "chainBreak": "AgentWorkflowBusinessNode 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 169,
+      "declarationLine": 184,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1850,7 +2002,7 @@
       "chainBreak": "AgentWorkflowGraphNode 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 170,
+      "declarationLine": 185,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -1861,156 +2013,15 @@
       "chainBreak": "AgentWorkflowGraphNodeType 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 171,
+      "declarationLine": 186,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
     {
       "kind": "model",
-      "className": "AgentWorkflowEdgeProjection",
+      "className": "AgentWorkflowLineBranch",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeProjection 的模型语义链在首次声明处断开：声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 172,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "typeAlias"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeProjection",
-      "memberName": "sourceRef",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeProjection.sourceRef 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 173,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeProjection",
-      "memberName": "targetRef",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeProjection.targetRef 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 174,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeProjection",
-      "memberName": "transform",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeProjection.transform 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 175,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "model",
-      "className": "AgentWorkflowEdgeBranch",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeBranch 的模型语义链在首次声明处断开：声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 177,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "typeAlias"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeBranch",
-      "memberName": "condition",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeBranch.condition 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 178,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeBranch",
-      "memberName": "label",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeBranch.label 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 179,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeBranch",
-      "memberName": "priority",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeBranch.priority 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 180,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeBranch",
-      "memberName": "default",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeBranch.default 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 181,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "model",
-      "className": "AgentWorkflowEdgeValidation",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeValidation 的模型语义链在首次声明处断开：声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 183,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "typeAlias"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeValidation",
-      "memberName": "status",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeValidation.status 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 184,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowEdgeValidation",
-      "memberName": "issues",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowEdgeValidation.issues 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 185,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "model",
-      "className": "AgentWorkflowGraphEdgeData",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdgeData 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineBranch 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 187,
@@ -2019,10 +2030,10 @@
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdgeData",
-      "memberName": "projection",
+      "className": "AgentWorkflowLineBranch",
+      "memberName": "condition",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdgeData.projection 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineBranch.condition 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 188,
@@ -2031,10 +2042,10 @@
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdgeData",
-      "memberName": "branch",
+      "className": "AgentWorkflowLineBranch",
+      "memberName": "label",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdgeData.branch 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineBranch.label 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 189,
@@ -2043,10 +2054,10 @@
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdgeData",
-      "memberName": "validation",
+      "className": "AgentWorkflowLineBranch",
+      "memberName": "priority",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdgeData.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineBranch.priority 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 190,
@@ -2054,10 +2065,22 @@
       "declarationKind": "interface"
     },
     {
-      "kind": "model",
-      "className": "AgentWorkflowGraphEdge",
+      "kind": "attribute",
+      "className": "AgentWorkflowLineBranch",
+      "memberName": "default",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineBranch.default 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 191,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowLineValidation",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowLineValidation 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 193,
@@ -2066,10 +2089,10 @@
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdge",
-      "memberName": "id",
+      "className": "AgentWorkflowLineValidation",
+      "memberName": "status",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge.id 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineValidation.status 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 194,
@@ -2078,10 +2101,10 @@
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdge",
-      "memberName": "source",
+      "className": "AgentWorkflowLineValidation",
+      "memberName": "issues",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge.source 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineValidation.issues 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 195,
@@ -2089,35 +2112,22 @@
       "declarationKind": "interface"
     },
     {
-      "kind": "attribute",
-      "className": "AgentWorkflowGraphEdge",
-      "memberName": "target",
+      "kind": "model",
+      "className": "AgentWorkflowLineEndpoint",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge.target 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 196,
-      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "AgentWorkflowGraphEdge",
-      "memberName": "sourceHandle",
-      "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge.sourceHandle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineEndpoint 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 197,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationKind": "interface"
+      "declarationKind": "typeAlias"
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdge",
-      "memberName": "targetHandle",
+      "className": "AgentWorkflowLineEndpoint",
+      "memberName": "nodeId",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge.targetHandle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineEndpoint.nodeId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 198,
@@ -2126,13 +2136,143 @@
     },
     {
       "kind": "attribute",
-      "className": "AgentWorkflowGraphEdge",
-      "memberName": "data",
+      "className": "AgentWorkflowLineEndpoint",
+      "memberName": "modelId",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraphEdge.data 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowLineEndpoint.modelId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationLine": 199,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowLineEndpoint",
+      "memberName": "memberName",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowLineEndpoint.memberName 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 200,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowLineEndpoint",
+      "memberName": "dock",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowLineEndpoint.dock 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 201,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowGraphLineData",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLineData 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 203,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLineData",
+      "memberName": "branch",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLineData.branch 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 204,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLineData",
+      "memberName": "validation",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLineData.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 205,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "model",
+      "className": "AgentWorkflowGraphLine",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLine 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 208,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLine",
+      "memberName": "id",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLine.id 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 209,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLine",
+      "memberName": "from",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLine.from 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 210,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLine",
+      "memberName": "to",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLine.to 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 211,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLine",
+      "memberName": "type",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLine.type 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 212,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowGraphLine",
+      "memberName": "data",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowGraphLine.data 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 213,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2143,7 +2283,7 @@
       "chainBreak": "AgentWorkflowGraph 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 201,
+      "declarationLine": 215,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -2155,19 +2295,19 @@
       "chainBreak": "AgentWorkflowGraph.nodes 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 202,
+      "declarationLine": 216,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
       "className": "AgentWorkflowGraph",
-      "memberName": "edges",
+      "memberName": "lines",
       "reason": "missing-jsdoc",
-      "chainBreak": "AgentWorkflowGraph.edges 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "AgentWorkflowGraph.lines 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 203,
+      "declarationLine": 217,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2178,7 +2318,7 @@
       "chainBreak": "AgentWorkflowBody 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 205,
+      "declarationLine": 219,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -2190,7 +2330,7 @@
       "chainBreak": "AgentWorkflowBody.variables 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 206,
+      "declarationLine": 220,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2202,7 +2342,19 @@
       "chainBreak": "AgentWorkflowBody.capabilities 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 207,
+      "declarationLine": 221,
+      "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "AgentWorkflowBody",
+      "memberName": "runtimeBinding",
+      "reason": "missing-jsdoc",
+      "chainBreak": "AgentWorkflowBody.runtimeBinding 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
+      "declarationLine": 222,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2214,7 +2366,7 @@
       "chainBreak": "AgentWorkflowBody.graph 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 208,
+      "declarationLine": 223,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2225,7 +2377,7 @@
       "chainBreak": "AgentWorkflowDefinitionSparkMeta 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 210,
+      "declarationLine": 225,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -2237,7 +2389,7 @@
       "chainBreak": "AgentWorkflowDefinitionSparkMeta.schema 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 211,
+      "declarationLine": 226,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2249,7 +2401,7 @@
       "chainBreak": "AgentWorkflowDefinitionSparkMeta.publishedAt 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 212,
+      "declarationLine": 227,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2261,7 +2413,7 @@
       "chainBreak": "AgentWorkflowDefinitionSparkMeta.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 213,
+      "declarationLine": 228,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2272,7 +2424,7 @@
       "chainBreak": "AgentWorkflowDefinition 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 215,
+      "declarationLine": 230,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "typeAlias"
     },
@@ -2284,7 +2436,7 @@
       "chainBreak": "AgentWorkflowDefinition.kind 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 216,
+      "declarationLine": 231,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2296,7 +2448,7 @@
       "chainBreak": "AgentWorkflowDefinition.version 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 217,
+      "declarationLine": 232,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2308,7 +2460,7 @@
       "chainBreak": "AgentWorkflowDefinition.workflowId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 218,
+      "declarationLine": 233,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2320,7 +2472,7 @@
       "chainBreak": "AgentWorkflowDefinition.source 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 219,
+      "declarationLine": 234,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2332,7 +2484,7 @@
       "chainBreak": "AgentWorkflowDefinition.workflow 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 220,
+      "declarationLine": 235,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -2344,7 +2496,7 @@
       "chainBreak": "AgentWorkflowDefinition.x_spark 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
-      "declarationLine": 221,
+      "declarationLine": 236,
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-definition.ts",
       "declarationKind": "interface"
     },
@@ -4152,7 +4304,7 @@
       "chainBreak": "WorkflowDesignDocument.x_spark 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 49,
+      "declarationLine": 50,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4163,7 +4315,7 @@
       "chainBreak": "WorkflowDesignVariable 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 59,
+      "declarationLine": 60,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4175,7 +4327,7 @@
       "chainBreak": "WorkflowDesignVariable.name 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 60,
+      "declarationLine": 61,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4187,7 +4339,7 @@
       "chainBreak": "WorkflowDesignVariable.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 61,
+      "declarationLine": 62,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4199,7 +4351,7 @@
       "chainBreak": "WorkflowDesignVariable.required 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 62,
+      "declarationLine": 63,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4211,7 +4363,7 @@
       "chainBreak": "WorkflowDesignVariable.schema 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 63,
+      "declarationLine": 64,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4223,7 +4375,7 @@
       "chainBreak": "WorkflowDesignVariable.defaultValue 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 64,
+      "declarationLine": 65,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4234,7 +4386,7 @@
       "chainBreak": "WorkflowDesignCapability 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 67,
+      "declarationLine": 68,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4246,7 +4398,7 @@
       "chainBreak": "WorkflowDesignCapability.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 68,
+      "declarationLine": 69,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4258,7 +4410,7 @@
       "chainBreak": "WorkflowDesignCapability.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 69,
+      "declarationLine": 70,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4270,7 +4422,7 @@
       "chainBreak": "WorkflowDesignCapability.scope 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 70,
+      "declarationLine": 71,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4282,7 +4434,7 @@
       "chainBreak": "WorkflowDesignCapability.description 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 71,
+      "declarationLine": 72,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4294,7 +4446,7 @@
       "chainBreak": "WorkflowDesignCapability.inputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 72,
+      "declarationLine": 73,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4306,7 +4458,7 @@
       "chainBreak": "WorkflowDesignCapability.outputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 73,
+      "declarationLine": 74,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4318,7 +4470,7 @@
       "chainBreak": "WorkflowDesignCapability.constraints 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 74,
+      "declarationLine": 75,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4329,7 +4481,7 @@
       "chainBreak": "WorkflowDesignGraph 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 77,
+      "declarationLine": 78,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4341,7 +4493,7 @@
       "chainBreak": "WorkflowDesignGraph.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 78,
+      "declarationLine": 79,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4353,19 +4505,19 @@
       "chainBreak": "WorkflowDesignGraph.nodes 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 79,
+      "declarationLine": 80,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
       "className": "WorkflowDesignGraph",
-      "memberName": "edges",
+      "memberName": "lines",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraph.edges 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignGraph.lines 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 80,
+      "declarationLine": 81,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4377,7 +4529,7 @@
       "chainBreak": "WorkflowDesignGraph.viewport 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 81,
+      "declarationLine": 82,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4388,7 +4540,7 @@
       "chainBreak": "WorkflowDesignGraphNode 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 89,
+      "declarationLine": 90,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4400,7 +4552,7 @@
       "chainBreak": "WorkflowDesignGraphNode.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 90,
+      "declarationLine": 91,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4412,7 +4564,7 @@
       "chainBreak": "WorkflowDesignGraphNode.type 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 91,
+      "declarationLine": 92,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4424,7 +4576,7 @@
       "chainBreak": "WorkflowDesignGraphNode.position 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 92,
+      "declarationLine": 93,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4436,39 +4588,27 @@
       "chainBreak": "WorkflowDesignGraphNode.data 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 97,
+      "declarationLine": 98,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "model",
-      "className": "WorkflowDesignGraphEdge",
+      "className": "WorkflowDesignLineEndpoint",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge 的模型语义链在首次声明处断开：声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineEndpoint 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 100,
+      "declarationLine": 101,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "id",
+      "className": "WorkflowDesignLineEndpoint",
+      "memberName": "nodeId",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.id 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 101,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "source",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.source 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineEndpoint.nodeId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 102,
@@ -4477,10 +4617,10 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "target",
+      "className": "WorkflowDesignLineEndpoint",
+      "memberName": "modelId",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.target 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineEndpoint.modelId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 103,
@@ -4489,10 +4629,10 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "sourceHandle",
+      "className": "WorkflowDesignLineEndpoint",
+      "memberName": "memberName",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.sourceHandle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineEndpoint.memberName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 104,
@@ -4501,10 +4641,10 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "targetHandle",
+      "className": "WorkflowDesignLineEndpoint",
+      "memberName": "dock",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.targetHandle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineEndpoint.dock 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 105,
@@ -4512,26 +4652,73 @@
       "declarationKind": "interface"
     },
     {
-      "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "type",
+      "kind": "model",
+      "className": "WorkflowDesignGraphLine",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.type 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignGraphLine 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 106,
+      "declarationLine": 108,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignGraphLine",
+      "memberName": "id",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignGraphLine.id 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 109,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignGraphEdge",
-      "memberName": "data",
+      "className": "WorkflowDesignGraphLine",
+      "memberName": "from",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignGraphEdge.data 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignGraphLine.from 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 107,
+      "declarationLine": 110,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignGraphLine",
+      "memberName": "to",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignGraphLine.to 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 111,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignGraphLine",
+      "memberName": "type",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignGraphLine.type 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 112,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignGraphLine",
+      "memberName": "data",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignGraphLine.data 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 113,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4542,7 +4729,7 @@
       "chainBreak": "WorkflowDesignNodeData 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 110,
+      "declarationLine": 116,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4554,7 +4741,7 @@
       "chainBreak": "WorkflowDesignNodeData.type 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 111,
+      "declarationLine": 117,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4566,7 +4753,7 @@
       "chainBreak": "WorkflowDesignNodeData.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 112,
+      "declarationLine": 118,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4578,7 +4765,7 @@
       "chainBreak": "WorkflowDesignNodeData.desc 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 113,
+      "declarationLine": 119,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4590,7 +4777,7 @@
       "chainBreak": "WorkflowDesignNodeData.inputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 114,
+      "declarationLine": 120,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4602,7 +4789,7 @@
       "chainBreak": "WorkflowDesignNodeData.outputs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 115,
+      "declarationLine": 121,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4614,19 +4801,19 @@
       "chainBreak": "WorkflowDesignNodeData.capabilities 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 116,
+      "declarationLine": 122,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
       "className": "WorkflowDesignNodeData",
-      "memberName": "model",
+      "memberName": "models",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignNodeData.model 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignNodeData.models 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 117,
+      "declarationLine": 123,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4638,7 +4825,7 @@
       "chainBreak": "WorkflowDesignNodeData.llm 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 118,
+      "declarationLine": 124,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4650,19 +4837,7 @@
       "chainBreak": "WorkflowDesignNodeData.validation 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 119,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignNodeData",
-      "memberName": "runtimeBinding",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignNodeData.runtimeBinding 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 120,
+      "declarationLine": 125,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4674,7 +4849,7 @@
       "chainBreak": "WorkflowDesignNodeData.state 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 121,
+      "declarationLine": 126,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4686,7 +4861,7 @@
       "chainBreak": "WorkflowDesignNodeData.result 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 122,
+      "declarationLine": 127,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4698,7 +4873,7 @@
       "chainBreak": "WorkflowDesignNodeData.loop 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 123,
+      "declarationLine": 128,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4710,7 +4885,7 @@
       "chainBreak": "WorkflowDesignNodeData.iteration 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 124,
+      "declarationLine": 129,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4722,7 +4897,7 @@
       "chainBreak": "WorkflowDesignNodeData.x_spark 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 125,
+      "declarationLine": 130,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4733,7 +4908,7 @@
       "chainBreak": "WorkflowDesignNestedGraphCarrier 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 128,
+      "declarationLine": 133,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4745,7 +4920,7 @@
       "chainBreak": "WorkflowDesignNestedGraphCarrier.mode 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 129,
+      "declarationLine": 134,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4757,7 +4932,7 @@
       "chainBreak": "WorkflowDesignNestedGraphCarrier.maxLoopCount 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 130,
+      "declarationLine": 135,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4769,7 +4944,7 @@
       "chainBreak": "WorkflowDesignNestedGraphCarrier.exitNodeId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 131,
+      "declarationLine": 136,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4781,7 +4956,7 @@
       "chainBreak": "WorkflowDesignNestedGraphCarrier.subGraph 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 132,
+      "declarationLine": 137,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4792,7 +4967,7 @@
       "chainBreak": "WorkflowDesignSparkNodeMeta 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 135,
+      "declarationLine": 140,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4804,7 +4979,7 @@
       "chainBreak": "WorkflowDesignSparkNodeMeta.nodeRole 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 136,
+      "declarationLine": 141,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4815,7 +4990,7 @@
       "chainBreak": "WorkflowDesignNodeView 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 139,
+      "declarationLine": 144,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -4827,7 +5002,7 @@
       "chainBreak": "WorkflowDesignNodeView.key 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 140,
+      "declarationLine": 145,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4839,7 +5014,7 @@
       "chainBreak": "WorkflowDesignNodeView.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 141,
+      "declarationLine": 146,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4851,7 +5026,7 @@
       "chainBreak": "WorkflowDesignNodeView.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 142,
+      "declarationLine": 147,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4863,7 +5038,7 @@
       "chainBreak": "WorkflowDesignNodeView.nodeType 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 143,
+      "declarationLine": 148,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4875,7 +5050,7 @@
       "chainBreak": "WorkflowDesignNodeView.depth 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 144,
+      "declarationLine": 149,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4887,7 +5062,7 @@
       "chainBreak": "WorkflowDesignNodeView.scopePath 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 145,
+      "declarationLine": 150,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4899,7 +5074,7 @@
       "chainBreak": "WorkflowDesignNodeView.ancestry 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 146,
+      "declarationLine": 151,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4911,7 +5086,7 @@
       "chainBreak": "WorkflowDesignNodeView.node 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 147,
+      "declarationLine": 152,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4923,7 +5098,7 @@
       "chainBreak": "WorkflowDesignNodeView.graph 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 148,
+      "declarationLine": 153,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4935,7 +5110,7 @@
       "chainBreak": "WorkflowDesignNodeView.isBusinessNode 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 149,
+      "declarationLine": 154,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4947,7 +5122,7 @@
       "chainBreak": "WorkflowDesignNodeView.isBoundaryNode 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 150,
+      "declarationLine": 155,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4959,7 +5134,7 @@
       "chainBreak": "WorkflowDesignNodeView.isWorkflowNode 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 151,
+      "declarationLine": 156,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4971,7 +5146,7 @@
       "chainBreak": "WorkflowDesignNodeView.isSingleModelEditTool 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 152,
+      "declarationLine": 157,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4983,7 +5158,7 @@
       "chainBreak": "WorkflowDesignNodeView.isProcessStageNode 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 153,
+      "declarationLine": 158,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -4994,7 +5169,7 @@
       "chainBreak": "WorkflowDesignGraphView 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 155,
+      "declarationLine": 160,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -5006,7 +5181,7 @@
       "chainBreak": "WorkflowDesignGraphView.key 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 156,
+      "declarationLine": 161,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5018,7 +5193,7 @@
       "chainBreak": "WorkflowDesignGraphView.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 157,
+      "declarationLine": 162,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5030,7 +5205,7 @@
       "chainBreak": "WorkflowDesignGraphView.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 158,
+      "declarationLine": 163,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5042,7 +5217,7 @@
       "chainBreak": "WorkflowDesignGraphView.depth 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 159,
+      "declarationLine": 164,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5054,7 +5229,7 @@
       "chainBreak": "WorkflowDesignGraphView.scopePath 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 160,
+      "declarationLine": 165,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5066,7 +5241,7 @@
       "chainBreak": "WorkflowDesignGraphView.graph 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 161,
+      "declarationLine": 166,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5078,7 +5253,7 @@
       "chainBreak": "WorkflowDesignGraphView.carrier 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 162,
+      "declarationLine": 167,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5090,7 +5265,7 @@
       "chainBreak": "WorkflowDesignGraphView.ownerNodeId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 163,
+      "declarationLine": 168,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5102,87 +5277,27 @@
       "chainBreak": "WorkflowDesignGraphView.ownerNode 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 164,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "model",
-      "className": "WorkflowDesignEdgeView",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView 的模型语义链在首次声明处断开：声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 166,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "typeAlias"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "key",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.key 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 167,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "id",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.id 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 168,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "source",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.source 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 169,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
     {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "target",
+      "kind": "model",
+      "className": "WorkflowDesignLineView",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.target 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 170,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "depth",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.depth 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineView 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 171,
       "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
+      "declarationKind": "typeAlias"
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "scopePath",
+      "className": "WorkflowDesignLineView",
+      "memberName": "key",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.scopePath 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineView.key 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 172,
@@ -5191,10 +5306,10 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "graph",
+      "className": "WorkflowDesignLineView",
+      "memberName": "id",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.graph 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineView.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 173,
@@ -5203,10 +5318,10 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "edge",
+      "className": "WorkflowDesignLineView",
+      "memberName": "from",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.edge 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineView.from 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 174,
@@ -5215,10 +5330,10 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "sourceNode",
+      "className": "WorkflowDesignLineView",
+      "memberName": "to",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.sourceNode 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineView.to 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 175,
@@ -5227,13 +5342,97 @@
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignEdgeView",
-      "memberName": "targetNode",
+      "className": "WorkflowDesignLineView",
+      "memberName": "fromNodeId",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgeView.targetNode 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLineView.fromNodeId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 176,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "toNodeId",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.toNodeId 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 177,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "depth",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.depth 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 178,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "scopePath",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.scopePath 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 179,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "graph",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.graph 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 180,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "line",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.line 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 181,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "fromNode",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.fromNode 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 182,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLineView",
+      "memberName": "toNode",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLineView.toNode 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 183,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5244,7 +5443,7 @@
       "chainBreak": "WorkflowDesignNodeCreateKind 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 178,
+      "declarationLine": 185,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -5255,7 +5454,7 @@
       "chainBreak": "WorkflowDesignNodeCreateInput 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 179,
+      "declarationLine": 186,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -5267,7 +5466,7 @@
       "chainBreak": "WorkflowDesignNodeCreateInput.nodeKind 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 180,
+      "declarationLine": 187,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5279,7 +5478,7 @@
       "chainBreak": "WorkflowDesignNodeCreateInput.id 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 181,
+      "declarationLine": 188,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5291,7 +5490,7 @@
       "chainBreak": "WorkflowDesignNodeCreateInput.title 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 182,
+      "declarationLine": 189,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5303,7 +5502,7 @@
       "chainBreak": "WorkflowDesignNodeCreateInput.desc 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 183,
+      "declarationLine": 190,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5315,7 +5514,7 @@
       "chainBreak": "WorkflowDesignNodeCreateInput.position 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 184,
+      "declarationLine": 191,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5326,7 +5525,7 @@
       "chainBreak": "WorkflowDesignNodeRemoveResult 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 189,
+      "declarationLine": 196,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -5338,87 +5537,16 @@
       "chainBreak": "WorkflowDesignNodeRemoveResult.removed 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 190,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignNodeRemoveResult",
-      "memberName": "removedEdges",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignNodeRemoveResult.removedEdges 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 191,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "model",
-      "className": "WorkflowDesignEdgePatch",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch 的模型语义链在首次声明处断开：声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 193,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "typeAlias"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgePatch",
-      "memberName": "source",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch.source 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 194,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgePatch",
-      "memberName": "target",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch.target 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 195,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgePatch",
-      "memberName": "sourceHandle",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch.sourceHandle 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 196,
-      "sourceFile": "src/services/workflow-designs.ts",
-      "declarationKind": "interface"
-    },
-    {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgePatch",
-      "memberName": "targetHandle",
-      "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch.targetHandle 的成员语义链断开：attribute 声明没有 JSDoc。",
-      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
-      "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 197,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
     {
       "kind": "attribute",
-      "className": "WorkflowDesignEdgePatch",
-      "memberName": "type",
+      "className": "WorkflowDesignNodeRemoveResult",
+      "memberName": "removedLines",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch.type 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignNodeRemoveResult.removedLines 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
       "declarationLine": 198,
@@ -5426,14 +5554,61 @@
       "declarationKind": "interface"
     },
     {
-      "kind": "attribute",
-      "className": "WorkflowDesignEdgePatch",
-      "memberName": "relation",
+      "kind": "model",
+      "className": "WorkflowDesignLinePatch",
       "reason": "missing-jsdoc",
-      "chainBreak": "WorkflowDesignEdgePatch.relation 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "chainBreak": "WorkflowDesignLinePatch 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 199,
+      "declarationLine": 200,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "typeAlias"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLinePatch",
+      "memberName": "from",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLinePatch.from 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 201,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLinePatch",
+      "memberName": "to",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLinePatch.to 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 202,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLinePatch",
+      "memberName": "type",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLinePatch.type 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 203,
+      "sourceFile": "src/services/workflow-designs.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "WorkflowDesignLinePatch",
+      "memberName": "relation",
+      "reason": "missing-jsdoc",
+      "chainBreak": "WorkflowDesignLinePatch.relation 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/services/workflow-designs.ts",
+      "declarationLine": 204,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
     },
@@ -5444,7 +5619,7 @@
       "chainBreak": "CreateAgentWorkflowDefinitionFromDesignOptions 的模型语义链在首次声明处断开：声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 201,
+      "declarationLine": 206,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "typeAlias"
     },
@@ -5456,9 +5631,20 @@
       "chainBreak": "CreateAgentWorkflowDefinitionFromDesignOptions.publishedAt 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 src/services/workflow-designs.ts 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。",
       "declarationFile": "src/services/workflow-designs.ts",
-      "declarationLine": 202,
+      "declarationLine": 207,
       "sourceFile": "src/services/workflow-designs.ts",
       "declarationKind": "interface"
+    },
+    {
+      "kind": "module",
+      "className": "app:views/app/WorkflowDesigns",
+      "moduleName": "app:views/app/WorkflowDesigns",
+      "reason": "weak-module-jsdoc",
+      "chainBreak": "app:views/app/WorkflowDesigns 的模块级语义链过弱：当前说明只复述包名、路径、组件目录或 symbol 列表，没有表达职责、边界和使用场景。",
+      "fixHint": "在 src/views/app/WorkflowDesigns.vue 文件顶部补高质量模块级 JSDoc：说明职责、边界和 AI 选择该模块的用途，然后重新运行 generate:class-model-surface。",
+      "declarationFile": "src/views/app/WorkflowDesigns.vue",
+      "declarationLine": 1,
+      "sourceFile": "src/views/app/WorkflowDesigns.vue"
     }
   ]
 }

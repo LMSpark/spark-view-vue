@@ -17,7 +17,6 @@ import type {
 import type { AiAgentRegistration, AiAgentToolLoopNudgeContext } from '../business/registration-types'
 import type { AiAgentRuntimeContext } from '../business/scope-types'
 import type {
-  AgentWorkflowBusinessNode,
   AgentWorkflowDefinition,
   AgentWorkflowNodeConditionalHint,
   AgentWorkflowNodeExecutableRef,
@@ -82,11 +81,7 @@ export async function interpretAgentWorkflowDefinition<TInstance>(
   command: InterpretAgentWorkflowDefinitionCommand<TInstance>,
 ): Promise<AgentWorkflowInterpretedRegistration> {
   assertAgentWorkflowDefinition(command.definition)
-  const node = findSingleBusinessNode(command.definition)
-  const runtimeBinding = node.data.runtimeBinding
-  if (runtimeBinding === undefined) {
-    throw new Error(`Agent workflow runtime requires runtimeBinding on business node "${node.id}".`)
-  }
+  const runtimeBinding = command.definition.workflow.runtimeBinding
   const moduleClass = await resolveExecutableClass<TInstance>(runtimeBinding.executableRef)
   const editorGetter = resolveEditorGetter(command.bindings, runtimeBinding)
   const knowledge = command.bindings.knowledgeProviderFactory(runtimeBinding.modelProjectionRef)
@@ -177,18 +172,6 @@ async function resolveExecutableClass<TInstance>(
     throw new Error(`Agent workflow executable export not found or not constructable: ${moduleSpecifier}#${exportName}`)
   }
   return exported
-}
-
-function findSingleBusinessNode(definition: AgentWorkflowDefinition): AgentWorkflowBusinessNode {
-  const nodes = definition.workflow.graph.nodes.filter((node): node is AgentWorkflowBusinessNode => node.type === 'node')
-  if (nodes.length !== 1) {
-    throw new Error(`Agent workflow runtime expects exactly one business node, got ${nodes.length}.`)
-  }
-  const node = nodes[0]
-  if (node === undefined) {
-    throw new Error('Agent workflow runtime business node is missing.')
-  }
-  return node
 }
 
 function resolveEditorGetter<TInstance>(

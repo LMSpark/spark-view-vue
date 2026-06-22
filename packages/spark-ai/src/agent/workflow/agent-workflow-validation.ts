@@ -249,6 +249,19 @@ function validateWorkflow(
     value: capabilities,
     context: { path: 'definition.workflow.capabilities', nodeId: undefined, issues },
   })
+  const runtimeBinding = expectObject({
+    record: workflow,
+    field: 'runtimeBinding',
+    path: 'definition.workflow.runtimeBinding',
+    issues,
+  })
+  if (runtimeBinding !== undefined) {
+    validateRuntimeBinding(runtimeBinding, {
+      path: 'definition.workflow.runtimeBinding',
+      nodeId: undefined,
+      issues,
+    })
+  }
 
   const graph = expectObject({ record: workflow, field: 'graph', path: 'definition.workflow.graph', issues })
   if (graph === undefined) return
@@ -261,7 +274,7 @@ function validateGraph(
   options: ValidateAgentWorkflowDefinitionOptions,
 ): void {
   const nodesValue = graph['nodes']
-  const edgesValue = graph['edges']
+  const linesValue = graph['lines']
   if (!Array.isArray(nodesValue)) {
     issues.push(errorIssue(
       {
@@ -272,13 +285,13 @@ function validateGraph(
     ))
     return
   }
-  if (!Array.isArray(edgesValue)) {
+  if (!Array.isArray(linesValue)) {
     issues.push(errorIssue(
       {
-        code: 'AGENT_WORKFLOW_EDGES_NOT_ARRAY',
-        message: 'definition.workflow.graph.edges must be an array.',
+        code: 'AGENT_WORKFLOW_LINES_NOT_ARRAY',
+        message: 'definition.workflow.graph.lines must be an array.',
       },
-      'definition.workflow.graph.edges',
+      'definition.workflow.graph.lines',
     ))
     return
   }
@@ -347,32 +360,21 @@ function validateGraph(
   }
 
   const adjacency = new Map<string, string[]>()
-  edgesValue.forEach((edge, index) => {
-    const path = `definition.workflow.graph.edges[${index}]`
-    if (!isJsonRecord(edge)) {
-      issues.push(errorIssue({ code: 'AGENT_WORKFLOW_EDGE_NOT_OBJECT', message: `${path} must be an object.` }, path))
+  linesValue.forEach((line, index) => {
+    const path = `definition.workflow.graph.lines[${index}]`
+    if (!isJsonRecord(line)) {
+      issues.push(errorIssue({ code: 'AGENT_WORKFLOW_LINE_NOT_OBJECT', message: `${path} must be an object.` }, path))
       return
     }
-    expectNonBlankString({ record: edge, field: 'id', path: `${path}.id`, issues })
-    const source = expectNonBlankString({ record: edge, field: 'source', path: `${path}.source`, issues })
-    const target = expectNonBlankString({ record: edge, field: 'target', path: `${path}.target`, issues })
-    if (source !== undefined && !nodeIds.has(source)) {
-      issues.push(errorIssue(
-        { code: 'AGENT_WORKFLOW_EDGE_SOURCE_MISSING', message: `Edge source "${source}" does not exist.` },
-        `${path}.source`,
-      ))
-    }
-    if (target !== undefined && !nodeIds.has(target)) {
-      issues.push(errorIssue(
-        { code: 'AGENT_WORKFLOW_EDGE_TARGET_MISSING', message: `Edge target "${target}" does not exist.` },
-        `${path}.target`,
-      ))
-    }
-    if (source === undefined || target === undefined) return
-    validateEdgeData(edge['data'], `${path}.data`, issues)
-    const targets = adjacency.get(source) ?? []
-    targets.push(target)
-    adjacency.set(source, targets)
+    expectNonBlankString({ record: line, field: 'id', path: `${path}.id`, issues })
+    const from = validateLineEndpoint(line['from'], `${path}.from`, nodeIds, issues)
+    const to = validateLineEndpoint(line['to'], `${path}.to`, nodeIds, issues)
+    validateOptionalText({ record: line, field: 'type', path: `${path}.type`, nodeId: undefined, issues })
+    validateLineData(line['data'], `${path}.data`, issues)
+    if (from === undefined || to === undefined) return
+    const targets = adjacency.get(from.nodeId) ?? []
+    targets.push(to.nodeId)
+    adjacency.set(from.nodeId, targets)
   })
 
   if (startIds.length > 0 && outputIds.size > 0 && !canReachOutput(startIds, outputIds, adjacency)) {
@@ -381,7 +383,7 @@ function validateGraph(
         code: 'AGENT_WORKFLOW_OUTPUT_NOT_REACHABLE',
         message: 'Workflow graph must contain a path from start to output.',
       },
-      'definition.workflow.graph.edges',
+      'definition.workflow.graph.lines',
     ))
   }
 }
@@ -435,26 +437,27 @@ function validateStartNodeData(command: AgentWorkflowNodeFieldValidationCommand)
 function validateBusinessNodeData(command: AgentWorkflowNodeFieldValidationCommand): void {
   const { data, context } = command
   const { path, nodeId, issues } = context
-  const model = expectObject({ record: data, field: 'model', path: `${path}.model`, issues })
+  const models = expectArray({
+    record: data,
+    field: 'models',
+    path: `${path}.models`,
+    issues,
+    ...(nodeId === undefined ? {} : { nodeId }),
+  })
   expectObject({ record: data, field: 'inputs', path: `${path}.inputs`, issues })
   expectObject({ record: data, field: 'outputs', path: `${path}.outputs`, issues })
   const llm = expectObject({ record: data, field: 'llm', path: `${path}.llm`, issues })
-  const validation = expectObject({ record: data, field: 'validation', path: `${path}.validation`, issues })
-  const runtimeBinding = expectObject({
-    record: data,
-    field: 'runtimeBinding',
-    path: `${path}.runtimeBinding`,
-    issues,
-  })
+  const validation = data['validation']
   validateOptionalCapabilities({ value: data['capabilities'], context: { path: `${path}.capabilities`, nodeId, issues } })
   validateOptionalObject({ record: data, field: 'state', context: { path: `${path}.state`, nodeId, issues } })
   validateOptionalObject({ record: data, field: 'result', context: { path: `${path}.result`, nodeId, issues } })
 
-  if (model !== undefined) {
-    expectNonBlankString({ record: model, field: 'rootClassName', path: `${path}.model.rootClassName`, issues })
-    expectNonBlankString({ record: model, field: 'className', path: `${path}.model.className`, issues })
-    validateOptionalText({ record: model, field: 'contextPath', path: `${path}.model.contextPath`, nodeId, issues })
-  }
+  models?.forEach((model, index) => validateBusinessNodeModel(
+    model,
+    `${path}.models[${index}]`,
+    nodeId,
+    issues,
+  ))
 
   if (llm !== undefined) {
     expectObject({ record: llm, field: 'task', path: `${path}.llm.task`, issues })
@@ -464,15 +467,29 @@ function validateBusinessNodeData(command: AgentWorkflowNodeFieldValidationComma
   }
 
   if (validation !== undefined) {
-    const action = expectObject({
-      record: validation,
-      field: 'action',
-      path: `${path}.validation.action`,
-      issues,
-    })
+    if (!isJsonRecord(validation)) {
+      issues.push(errorIssue(
+        { code: 'AGENT_WORKFLOW_NODE_VALIDATION_INVALID', message: `${path}.validation must be an object when provided.` },
+        `${path}.validation`,
+        nodeId,
+      ))
+      return
+    }
+    const action = validation['action']
     validateOptionalText({ record: validation, field: 'status', path: `${path}.validation.status`, nodeId, issues })
     validateOptionalIssueArray({ value: validation['issues'], context: { path: `${path}.validation.issues`, nodeId, issues } })
     if (action !== undefined) {
+      if (!isJsonRecord(action)) {
+        issues.push(errorIssue(
+          {
+            code: 'AGENT_WORKFLOW_NODE_VALIDATION_ACTION_INVALID',
+            message: `${path}.validation.action must be an object when provided.`,
+          },
+          `${path}.validation.action`,
+          nodeId,
+        ))
+        return
+      }
       expectNonBlankString({
         record: action,
         field: 'className',
@@ -498,10 +515,6 @@ function validateBusinessNodeData(command: AgentWorkflowNodeFieldValidationComma
         issues,
       })
     }
-  }
-
-  if (runtimeBinding !== undefined) {
-    validateRuntimeBinding(runtimeBinding, { path: `${path}.runtimeBinding`, nodeId, issues })
   }
 }
 
@@ -674,6 +687,91 @@ function validateRuntimeBinding(
   })
 }
 
+function validateBusinessNodeModel(
+  value: unknown,
+  path: string,
+  nodeId: string | undefined,
+  issues: AgentWorkflowDefinitionValidationIssue[],
+): void {
+  if (!isJsonRecord(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_MODEL_INVALID', message: `${path} must be an object.` },
+      path,
+      nodeId,
+    ))
+    return
+  }
+  expectNonBlankString({ record: value, field: 'id', path: `${path}.id`, issues })
+  expectNonBlankString({ record: value, field: 'rootClassName', path: `${path}.rootClassName`, issues })
+  expectNonBlankString({ record: value, field: 'className', path: `${path}.className`, issues })
+  validateOptionalText({ record: value, field: 'sourceRef', path: `${path}.sourceRef`, nodeId, issues })
+  validateOptionalText({ record: value, field: 'role', path: `${path}.role`, nodeId, issues })
+  validateOptionalModelVia(value['via'], { path: `${path}.via`, nodeId, issues })
+  validateOptionalModelCompletion(value['completion'], { path: `${path}.completion`, nodeId, issues })
+}
+
+function validateOptionalModelVia(
+  value: unknown,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  if (value === undefined) return
+  const items = expectOptionalArray(value, context)
+  if (items === undefined) return
+  const { path, nodeId, issues } = context
+  items.forEach((item, index) => {
+    const itemPath = `${path}[${index}]`
+    if (!isJsonRecord(item)) {
+      issues.push(errorIssue(
+        { code: 'AGENT_WORKFLOW_MODEL_VIA_INVALID', message: `${itemPath} must be an object.` },
+        itemPath,
+        nodeId,
+      ))
+      return
+    }
+    expectNonBlankString({ record: item, field: 'memberName', path: `${itemPath}.memberName`, issues })
+    validateOptionalText({ record: item, field: 'sourceRef', path: `${itemPath}.sourceRef`, nodeId, issues })
+    const kind = item['kind']
+    if (kind !== undefined && kind !== 'attribute' && kind !== 'method') {
+      issues.push(errorIssue(
+        {
+          code: 'AGENT_WORKFLOW_MODEL_VIA_KIND_INVALID',
+          message: `${itemPath}.kind must be "attribute" or "method" when provided.`,
+        },
+        `${itemPath}.kind`,
+        nodeId,
+      ))
+    }
+  })
+}
+
+function validateOptionalModelCompletion(
+  value: unknown,
+  context: AgentWorkflowValidationPathContext,
+): void {
+  if (value === undefined) return
+  const { path, nodeId, issues } = context
+  if (!isJsonRecord(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_MODEL_COMPLETION_INVALID', message: `${path} must be an object when provided.` },
+      path,
+      nodeId,
+    ))
+    return
+  }
+  expectNonBlankString({ record: value, field: 'memberName', path: `${path}.memberName`, issues })
+  const returnContract = value['returnContract']
+  if (returnContract !== undefined && returnContract !== 'boolean-or-reason') {
+    issues.push(errorIssue(
+      {
+        code: 'AGENT_WORKFLOW_MODEL_COMPLETION_RETURN_CONTRACT_INVALID',
+        message: `${path}.returnContract must be "boolean-or-reason" when provided.`,
+      },
+      `${path}.returnContract`,
+      nodeId,
+    ))
+  }
+}
+
 function validateForbiddenRuntimeBindingFields(
   runtimeBinding: Readonly<Record<string, unknown>>,
   context: AgentWorkflowValidationPathContext,
@@ -806,7 +904,16 @@ function validateOutputNodeData(command: AgentWorkflowNodeFieldValidationCommand
 function validateForbiddenNodeDataFields(command: AgentWorkflowNodeFieldValidationCommand): void {
   const { data, context } = command
   const { path, nodeId, issues } = context
-  for (const field of ['provider', 'toolName', 'workflowRef', 'inputMapping', 'outputMapping', 'toolParameters'] as const) {
+  for (const field of [
+    'provider',
+    'toolName',
+    'workflowRef',
+    'inputMapping',
+    'outputMapping',
+    'toolParameters',
+    'model',
+    'runtimeBinding',
+  ] as const) {
     if (Object.prototype.hasOwnProperty.call(data, field)) {
       issues.push(errorIssue(
         {
@@ -831,7 +938,41 @@ function validateForbiddenNodeDataFields(command: AgentWorkflowNodeFieldValidati
   }
 }
 
-function validateEdgeData(
+function validateLineEndpoint(
+  value: unknown,
+  path: string,
+  nodeIds: ReadonlySet<string>,
+  issues: AgentWorkflowDefinitionValidationIssue[],
+): Readonly<{ nodeId: string }> | undefined {
+  if (!isJsonRecord(value)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_LINE_ENDPOINT_INVALID', message: `${path} must be an object.` },
+      path,
+    ))
+    return undefined
+  }
+  const nodeId = expectNonBlankString({ record: value, field: 'nodeId', path: `${path}.nodeId`, issues })
+  expectNonBlankString({ record: value, field: 'modelId', path: `${path}.modelId`, issues })
+  expectNonBlankString({ record: value, field: 'memberName', path: `${path}.memberName`, issues })
+  const dock = value['dock']
+  if (dock !== undefined && (typeof dock !== 'number' || !Number.isInteger(dock) || dock < 0)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_LINE_DOCK_INVALID', message: `${path}.dock must be a non-negative integer when provided.` },
+      `${path}.dock`,
+    ))
+  }
+  if (nodeId === undefined) return undefined
+  if (!nodeIds.has(nodeId)) {
+    issues.push(errorIssue(
+      { code: 'AGENT_WORKFLOW_LINE_NODE_MISSING', message: `Line endpoint node "${nodeId}" does not exist.` },
+      `${path}.nodeId`,
+    ))
+    return undefined
+  }
+  return { nodeId }
+}
+
+function validateLineData(
   value: unknown,
   path: string,
   issues: AgentWorkflowDefinitionValidationIssue[],
@@ -840,35 +981,19 @@ function validateEdgeData(
   if (!isJsonRecord(value)) {
     issues.push(errorIssue(
       {
-        code: 'AGENT_WORKFLOW_EDGE_DATA_INVALID',
+        code: 'AGENT_WORKFLOW_LINE_DATA_INVALID',
         message: `${path} must be an object when provided.`,
       },
       path,
     ))
     return
   }
-  const projection = value['projection']
-  if (projection !== undefined) {
-    if (!isJsonRecord(projection)) {
-      issues.push(errorIssue(
-        {
-          code: 'AGENT_WORKFLOW_EDGE_PROJECTION_INVALID',
-          message: `${path}.projection must be an object when provided.`,
-        },
-        `${path}.projection`,
-      ))
-    } else {
-      expectNonBlankString({ record: projection, field: 'sourceRef', path: `${path}.projection.sourceRef`, issues })
-      expectNonBlankString({ record: projection, field: 'targetRef', path: `${path}.projection.targetRef`, issues })
-      validateOptionalObject({ record: projection, field: 'transform', context: { path: `${path}.projection.transform`, nodeId: undefined, issues } })
-    }
-  }
   const branch = value['branch']
   if (branch !== undefined) {
     if (!isJsonRecord(branch)) {
       issues.push(errorIssue(
         {
-          code: 'AGENT_WORKFLOW_EDGE_BRANCH_INVALID',
+          code: 'AGENT_WORKFLOW_LINE_BRANCH_INVALID',
           message: `${path}.branch must be an object when provided.`,
         },
         `${path}.branch`,
@@ -880,7 +1005,7 @@ function validateEdgeData(
       if (priority !== undefined && typeof priority !== 'number') {
         issues.push(errorIssue(
           {
-            code: 'AGENT_WORKFLOW_EDGE_BRANCH_PRIORITY_INVALID',
+            code: 'AGENT_WORKFLOW_LINE_BRANCH_PRIORITY_INVALID',
             message: `${path}.branch.priority must be a number when provided.`,
           },
           `${path}.branch.priority`,
@@ -890,7 +1015,7 @@ function validateEdgeData(
       if (defaultValue !== undefined && typeof defaultValue !== 'boolean') {
         issues.push(errorIssue(
           {
-            code: 'AGENT_WORKFLOW_EDGE_BRANCH_DEFAULT_INVALID',
+            code: 'AGENT_WORKFLOW_LINE_BRANCH_DEFAULT_INVALID',
             message: `${path}.branch.default must be a boolean when provided.`,
           },
           `${path}.branch.default`,
@@ -903,7 +1028,7 @@ function validateEdgeData(
     if (!isJsonRecord(validation)) {
       issues.push(errorIssue(
         {
-          code: 'AGENT_WORKFLOW_EDGE_VALIDATION_INVALID',
+          code: 'AGENT_WORKFLOW_LINE_VALIDATION_INVALID',
           message: `${path}.validation must be an object when provided.`,
         },
         `${path}.validation`,

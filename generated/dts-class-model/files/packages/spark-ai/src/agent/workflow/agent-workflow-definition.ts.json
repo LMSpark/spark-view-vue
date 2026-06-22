@@ -24,6 +24,9 @@
       "AgentWorkflowNodePosition",
       "AgentWorkflowStartNodeData",
       "AgentWorkflowOutputNodeData",
+      "AgentWorkflowModelCompletionReturnContract",
+      "AgentWorkflowModelCompletion",
+      "AgentWorkflowModelVia",
       "AgentWorkflowModelContext",
       "AgentWorkflowLlmWork",
       "AgentWorkflowNodeValidationAction",
@@ -39,6 +42,7 @@
       "AgentWorkflowNodeBeforeFunctionCall",
       "AgentWorkflowNodeResolveInstance",
       "AgentWorkflowNodeRuntimeBinding",
+      "AgentWorkflowDefinitionRuntimeBinding",
       "AgentWorkflowBusinessNodeData",
       "AgentWorkflowGraphNodeBase",
       "AgentWorkflowStartNode",
@@ -46,11 +50,11 @@
       "AgentWorkflowBusinessNode",
       "AgentWorkflowGraphNode",
       "AgentWorkflowGraphNodeType",
-      "AgentWorkflowEdgeProjection",
-      "AgentWorkflowEdgeBranch",
-      "AgentWorkflowEdgeValidation",
-      "AgentWorkflowGraphEdgeData",
-      "AgentWorkflowGraphEdge",
+      "AgentWorkflowLineBranch",
+      "AgentWorkflowLineValidation",
+      "AgentWorkflowLineEndpoint",
+      "AgentWorkflowGraphLineData",
+      "AgentWorkflowGraphLine",
       "AgentWorkflowGraph",
       "AgentWorkflowBody",
       "AgentWorkflowDefinitionSparkMeta",
@@ -105,6 +109,9 @@
           "type": "string"
         },
         "nodeId": {
+          "type": "string"
+        },
+        "lineId": {
           "type": "string"
         },
         "path": {
@@ -293,19 +300,73 @@
       },
       "additionalProperties": false
     },
+    "AgentWorkflowModelCompletionReturnContract": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "AgentWorkflowModelCompletionReturnContract",
+      "const": "boolean-or-reason"
+    },
+    "AgentWorkflowModelCompletion": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "AgentWorkflowModelCompletion",
+      "properties": {
+        "memberName": {
+          "type": "string"
+        },
+        "returnContract": {
+          "$ref": "#/$defs/AgentWorkflowModelCompletionReturnContract"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentWorkflowModelVia": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "AgentWorkflowModelVia",
+      "properties": {
+        "memberName": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "attribute",
+            "method"
+          ]
+        },
+        "sourceRef": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "AgentWorkflowModelContext": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "title": "AgentWorkflowModelContext",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "rootClassName": {
           "type": "string"
         },
         "className": {
           "type": "string"
         },
-        "contextPath": {
+        "sourceRef": {
           "type": "string"
+        },
+        "via": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AgentWorkflowModelVia"
+          }
+        },
+        "role": {
+          "type": "string"
+        },
+        "completion": {
+          "$ref": "#/$defs/AgentWorkflowModelCompletion"
         }
       },
       "additionalProperties": false
@@ -599,8 +660,11 @@
         "title": {
           "type": "string"
         },
-        "model": {
-          "$ref": "#/$defs/AgentWorkflowModelContext"
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AgentWorkflowModelContext"
+          }
         },
         "inputs": {
           "type": "object",
@@ -615,9 +679,6 @@
         },
         "validation": {
           "$ref": "#/$defs/AgentWorkflowNodeValidation"
-        },
-        "runtimeBinding": {
-          "$ref": "#/$defs/AgentWorkflowNodeRuntimeBinding"
         },
         "state": {
           "type": "object",
@@ -676,28 +737,10 @@
         }
       ]
     },
-    "AgentWorkflowEdgeProjection": {
+    "AgentWorkflowLineBranch": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "AgentWorkflowEdgeProjection",
-      "properties": {
-        "sourceRef": {
-          "type": "string"
-        },
-        "targetRef": {
-          "type": "string"
-        },
-        "transform": {
-          "type": "object",
-          "title": "AgentWorkflowJsonRecord"
-        }
-      },
-      "additionalProperties": false
-    },
-    "AgentWorkflowEdgeBranch": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "title": "AgentWorkflowEdgeBranch",
+      "title": "AgentWorkflowLineBranch",
       "properties": {
         "condition": {
           "type": "string"
@@ -714,10 +757,10 @@
       },
       "additionalProperties": false
     },
-    "AgentWorkflowEdgeValidation": {
+    "AgentWorkflowLineValidation": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "AgentWorkflowEdgeValidation",
+      "title": "AgentWorkflowLineValidation",
       "properties": {
         "status": {
           "type": "string"
@@ -732,45 +775,59 @@
       },
       "additionalProperties": false
     },
-    "AgentWorkflowGraphEdgeData": {
+    "AgentWorkflowLineEndpoint": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "AgentWorkflowGraphEdgeData",
+      "title": "AgentWorkflowLineEndpoint",
       "properties": {
-        "projection": {
-          "$ref": "#/$defs/AgentWorkflowEdgeProjection"
+        "nodeId": {
+          "type": "string"
         },
-        "branch": {
-          "$ref": "#/$defs/AgentWorkflowEdgeBranch"
+        "modelId": {
+          "type": "string"
         },
-        "validation": {
-          "$ref": "#/$defs/AgentWorkflowEdgeValidation"
+        "memberName": {
+          "type": "string"
+        },
+        "dock": {
+          "type": "number"
         }
       },
       "additionalProperties": false
     },
-    "AgentWorkflowGraphEdge": {
+    "AgentWorkflowGraphLineData": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "title": "AgentWorkflowGraphEdge",
+      "title": "AgentWorkflowGraphLineData",
+      "properties": {
+        "branch": {
+          "$ref": "#/$defs/AgentWorkflowLineBranch"
+        },
+        "validation": {
+          "$ref": "#/$defs/AgentWorkflowLineValidation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentWorkflowGraphLine": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "title": "AgentWorkflowGraphLine",
       "properties": {
         "id": {
           "type": "string"
         },
-        "source": {
-          "type": "string"
+        "from": {
+          "$ref": "#/$defs/AgentWorkflowLineEndpoint"
         },
-        "target": {
-          "type": "string"
+        "to": {
+          "$ref": "#/$defs/AgentWorkflowLineEndpoint"
         },
-        "sourceHandle": {
-          "type": "string"
-        },
-        "targetHandle": {
+        "type": {
           "type": "string"
         },
         "data": {
-          "$ref": "#/$defs/AgentWorkflowGraphEdgeData"
+          "$ref": "#/$defs/AgentWorkflowGraphLineData"
         }
       },
       "additionalProperties": false
@@ -786,10 +843,10 @@
             "$ref": "#/$defs/AgentWorkflowGraphNode"
           }
         },
-        "edges": {
+        "lines": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/AgentWorkflowGraphEdge"
+            "$ref": "#/$defs/AgentWorkflowGraphLine"
           }
         }
       },
@@ -811,6 +868,10 @@
           "items": {
             "$ref": "#/$defs/AgentWorkflowCapability"
           }
+        },
+        "runtimeBinding": {
+          "type": "object",
+          "title": "AgentWorkflowDefinitionRuntimeBinding"
         },
         "graph": {
           "$ref": "#/$defs/AgentWorkflowGraph"
@@ -862,7 +923,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-20T18:52:23.891Z",
+  "generatedAt": "2026-06-22T06:54:22.380Z",
   "models": {
     "AgentWorkflowJsonRecord": {
       "name": "AgentWorkflowJsonRecord",
@@ -954,11 +1015,11 @@
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    severity: AgentWorkflowDefinitionValidationSeverity;\n    code: string;\n    message: string;\n    nodeId?: string;\n    path?: string;\n}>",
+        "declarationTypeText": "Readonly<{\n    severity: AgentWorkflowDefinitionValidationSeverity;\n    code: string;\n    message: string;\n    nodeId?: string;\n    lineId?: string;\n    path?: string;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    severity: AgentWorkflowDefinitionValidationSeverity;\n    code: string;\n    message: string;\n    nodeId?: string;\n    path?: string;\n}>",
+            "typeText": "Readonly<{\n    severity: AgentWorkflowDefinitionValidationSeverity;\n    code: string;\n    message: string;\n    nodeId?: string;\n    lineId?: string;\n    path?: string;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -981,6 +1042,11 @@
             },
             {
               "name": "nodeId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "lineId",
               "readable": true,
               "writable": false
             },
@@ -1296,21 +1362,98 @@
         }
       }
     },
-    "AgentWorkflowModelContext": {
-      "name": "AgentWorkflowModelContext",
+    "AgentWorkflowModelCompletionReturnContract": {
+      "name": "AgentWorkflowModelCompletionReturnContract",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    rootClassName: string;\n    className: string;\n    contextPath?: string;\n}>",
+        "declarationTypeText": "'boolean-or-reason'",
+        "members": {}
+      }
+    },
+    "AgentWorkflowModelCompletion": {
+      "name": "AgentWorkflowModelCompletion",
+      "jsdoc": "",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    memberName: string;\n    returnContract?: AgentWorkflowModelCompletionReturnContract;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    rootClassName: string;\n    className: string;\n    contextPath?: string;\n}>",
+            "typeText": "Readonly<{\n    memberName: string;\n    returnContract?: AgentWorkflowModelCompletionReturnContract;\n}>",
             "targetName": "Readonly"
           }
         ],
         "members": {
           "attributes": [
+            {
+              "name": "memberName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "returnContract",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "AgentWorkflowModelVia": {
+      "name": "AgentWorkflowModelVia",
+      "jsdoc": "",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    memberName: string;\n    kind?: 'attribute' | 'method';\n    sourceRef?: string;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    memberName: string;\n    kind?: 'attribute' | 'method';\n    sourceRef?: string;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "memberName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "kind",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "sourceRef",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "AgentWorkflowModelContext": {
+      "name": "AgentWorkflowModelContext",
+      "jsdoc": "",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    id: string;\n    rootClassName: string;\n    className: string;\n    sourceRef?: string;\n    via?: readonly AgentWorkflowModelVia[];\n    role?: string;\n    completion?: AgentWorkflowModelCompletion;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    id: string;\n    rootClassName: string;\n    className: string;\n    sourceRef?: string;\n    via?: readonly AgentWorkflowModelVia[];\n    role?: string;\n    completion?: AgentWorkflowModelCompletion;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
+            {
+              "name": "id",
+              "readable": true,
+              "writable": false
+            },
             {
               "name": "rootClassName",
               "readable": true,
@@ -1322,7 +1465,22 @@
               "writable": false
             },
             {
-              "name": "contextPath",
+              "name": "sourceRef",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "via",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "role",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "completion",
               "readable": true,
               "writable": false
             }
@@ -1821,16 +1979,32 @@
         }
       }
     },
+    "AgentWorkflowDefinitionRuntimeBinding": {
+      "name": "AgentWorkflowDefinitionRuntimeBinding",
+      "jsdoc": "",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "AgentWorkflowNodeRuntimeBinding",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "AgentWorkflowNodeRuntimeBinding",
+            "targetName": "AgentWorkflowNodeRuntimeBinding"
+          }
+        ],
+        "members": {}
+      }
+    },
     "AgentWorkflowBusinessNodeData": {
       "name": "AgentWorkflowBusinessNodeData",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    type?: 'node';\n    title?: string;\n    model: AgentWorkflowModelContext;\n    inputs: AgentWorkflowJsonRecord;\n    outputs: AgentWorkflowJsonRecord;\n    llm: AgentWorkflowLlmWork;\n    validation: AgentWorkflowNodeValidation;\n    runtimeBinding?: AgentWorkflowNodeRuntimeBinding;\n    state?: AgentWorkflowJsonRecord;\n    result?: AgentWorkflowJsonRecord;\n    capabilities?: readonly AgentWorkflowCapability[];\n}>",
+        "declarationTypeText": "Readonly<{\n    type?: 'node';\n    title?: string;\n    models: readonly AgentWorkflowModelContext[];\n    inputs: AgentWorkflowJsonRecord;\n    outputs: AgentWorkflowJsonRecord;\n    llm: AgentWorkflowLlmWork;\n    validation?: AgentWorkflowNodeValidation;\n    state?: AgentWorkflowJsonRecord;\n    result?: AgentWorkflowJsonRecord;\n    capabilities?: readonly AgentWorkflowCapability[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    type?: 'node';\n    title?: string;\n    model: AgentWorkflowModelContext;\n    inputs: AgentWorkflowJsonRecord;\n    outputs: AgentWorkflowJsonRecord;\n    llm: AgentWorkflowLlmWork;\n    validation: AgentWorkflowNodeValidation;\n    runtimeBinding?: AgentWorkflowNodeRuntimeBinding;\n    state?: AgentWorkflowJsonRecord;\n    result?: AgentWorkflowJsonRecord;\n    capabilities?: readonly AgentWorkflowCapability[];\n}>",
+            "typeText": "Readonly<{\n    type?: 'node';\n    title?: string;\n    models: readonly AgentWorkflowModelContext[];\n    inputs: AgentWorkflowJsonRecord;\n    outputs: AgentWorkflowJsonRecord;\n    llm: AgentWorkflowLlmWork;\n    validation?: AgentWorkflowNodeValidation;\n    state?: AgentWorkflowJsonRecord;\n    result?: AgentWorkflowJsonRecord;\n    capabilities?: readonly AgentWorkflowCapability[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -1847,7 +2021,7 @@
               "writable": false
             },
             {
-              "name": "model",
+              "name": "models",
               "readable": true,
               "writable": false
             },
@@ -1868,11 +2042,6 @@
             },
             {
               "name": "validation",
-              "readable": true,
-              "writable": false
-            },
-            {
-              "name": "runtimeBinding",
               "readable": true,
               "writable": false
             },
@@ -2017,42 +2186,8 @@
         "members": {}
       }
     },
-    "AgentWorkflowEdgeProjection": {
-      "name": "AgentWorkflowEdgeProjection",
-      "jsdoc": "",
-      "declarationKind": "typeAlias",
-      "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    sourceRef: string;\n    targetRef: string;\n    transform?: AgentWorkflowJsonRecord;\n}>",
-        "declarationRelations": [
-          {
-            "kind": "alias",
-            "typeText": "Readonly<{\n    sourceRef: string;\n    targetRef: string;\n    transform?: AgentWorkflowJsonRecord;\n}>",
-            "targetName": "Readonly"
-          }
-        ],
-        "members": {
-          "attributes": [
-            {
-              "name": "sourceRef",
-              "readable": true,
-              "writable": false
-            },
-            {
-              "name": "targetRef",
-              "readable": true,
-              "writable": false
-            },
-            {
-              "name": "transform",
-              "readable": true,
-              "writable": false
-            }
-          ]
-        }
-      }
-    },
-    "AgentWorkflowEdgeBranch": {
-      "name": "AgentWorkflowEdgeBranch",
+    "AgentWorkflowLineBranch": {
+      "name": "AgentWorkflowLineBranch",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
@@ -2090,8 +2225,8 @@
         }
       }
     },
-    "AgentWorkflowEdgeValidation": {
-      "name": "AgentWorkflowEdgeValidation",
+    "AgentWorkflowLineValidation": {
+      "name": "AgentWorkflowLineValidation",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
@@ -2119,26 +2254,60 @@
         }
       }
     },
-    "AgentWorkflowGraphEdgeData": {
-      "name": "AgentWorkflowGraphEdgeData",
+    "AgentWorkflowLineEndpoint": {
+      "name": "AgentWorkflowLineEndpoint",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    projection?: AgentWorkflowEdgeProjection;\n    branch?: AgentWorkflowEdgeBranch;\n    validation?: AgentWorkflowEdgeValidation;\n    [key: string]: unknown;\n}>",
+        "declarationTypeText": "Readonly<{\n    nodeId: string;\n    modelId: string;\n    memberName: string;\n    dock?: number;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    projection?: AgentWorkflowEdgeProjection;\n    branch?: AgentWorkflowEdgeBranch;\n    validation?: AgentWorkflowEdgeValidation;\n    [key: string]: unknown;\n}>",
+            "typeText": "Readonly<{\n    nodeId: string;\n    modelId: string;\n    memberName: string;\n    dock?: number;\n}>",
             "targetName": "Readonly"
           }
         ],
         "members": {
           "attributes": [
             {
-              "name": "projection",
+              "name": "nodeId",
               "readable": true,
               "writable": false
             },
+            {
+              "name": "modelId",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "memberName",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "dock",
+              "readable": true,
+              "writable": false
+            }
+          ]
+        }
+      }
+    },
+    "AgentWorkflowGraphLineData": {
+      "name": "AgentWorkflowGraphLineData",
+      "jsdoc": "",
+      "declarationKind": "typeAlias",
+      "typeAlias": {
+        "declarationTypeText": "Readonly<{\n    branch?: AgentWorkflowLineBranch;\n    validation?: AgentWorkflowLineValidation;\n    [key: string]: unknown;\n}>",
+        "declarationRelations": [
+          {
+            "kind": "alias",
+            "typeText": "Readonly<{\n    branch?: AgentWorkflowLineBranch;\n    validation?: AgentWorkflowLineValidation;\n    [key: string]: unknown;\n}>",
+            "targetName": "Readonly"
+          }
+        ],
+        "members": {
+          "attributes": [
             {
               "name": "branch",
               "readable": true,
@@ -2153,16 +2322,16 @@
         }
       }
     },
-    "AgentWorkflowGraphEdge": {
-      "name": "AgentWorkflowGraphEdge",
+    "AgentWorkflowGraphLine": {
+      "name": "AgentWorkflowGraphLine",
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    id: string;\n    source: string;\n    target: string;\n    sourceHandle?: string;\n    targetHandle?: string;\n    data?: AgentWorkflowGraphEdgeData;\n}>",
+        "declarationTypeText": "Readonly<{\n    id: string;\n    from: AgentWorkflowLineEndpoint;\n    to: AgentWorkflowLineEndpoint;\n    type?: string;\n    data?: AgentWorkflowGraphLineData;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    id: string;\n    source: string;\n    target: string;\n    sourceHandle?: string;\n    targetHandle?: string;\n    data?: AgentWorkflowGraphEdgeData;\n}>",
+            "typeText": "Readonly<{\n    id: string;\n    from: AgentWorkflowLineEndpoint;\n    to: AgentWorkflowLineEndpoint;\n    type?: string;\n    data?: AgentWorkflowGraphLineData;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -2174,22 +2343,17 @@
               "writable": false
             },
             {
-              "name": "source",
+              "name": "from",
               "readable": true,
               "writable": false
             },
             {
-              "name": "target",
+              "name": "to",
               "readable": true,
               "writable": false
             },
             {
-              "name": "sourceHandle",
-              "readable": true,
-              "writable": false
-            },
-            {
-              "name": "targetHandle",
+              "name": "type",
               "readable": true,
               "writable": false
             },
@@ -2207,11 +2371,11 @@
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    nodes: readonly AgentWorkflowGraphNode[];\n    edges: readonly AgentWorkflowGraphEdge[];\n}>",
+        "declarationTypeText": "Readonly<{\n    nodes: readonly AgentWorkflowGraphNode[];\n    lines: readonly AgentWorkflowGraphLine[];\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    nodes: readonly AgentWorkflowGraphNode[];\n    edges: readonly AgentWorkflowGraphEdge[];\n}>",
+            "typeText": "Readonly<{\n    nodes: readonly AgentWorkflowGraphNode[];\n    lines: readonly AgentWorkflowGraphLine[];\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -2223,7 +2387,7 @@
               "writable": false
             },
             {
-              "name": "edges",
+              "name": "lines",
               "readable": true,
               "writable": false
             }
@@ -2236,11 +2400,11 @@
       "jsdoc": "",
       "declarationKind": "typeAlias",
       "typeAlias": {
-        "declarationTypeText": "Readonly<{\n    variables: readonly AgentWorkflowVariable[];\n    capabilities: readonly AgentWorkflowCapability[];\n    graph: AgentWorkflowGraph;\n}>",
+        "declarationTypeText": "Readonly<{\n    variables: readonly AgentWorkflowVariable[];\n    capabilities: readonly AgentWorkflowCapability[];\n    runtimeBinding: AgentWorkflowDefinitionRuntimeBinding;\n    graph: AgentWorkflowGraph;\n}>",
         "declarationRelations": [
           {
             "kind": "alias",
-            "typeText": "Readonly<{\n    variables: readonly AgentWorkflowVariable[];\n    capabilities: readonly AgentWorkflowCapability[];\n    graph: AgentWorkflowGraph;\n}>",
+            "typeText": "Readonly<{\n    variables: readonly AgentWorkflowVariable[];\n    capabilities: readonly AgentWorkflowCapability[];\n    runtimeBinding: AgentWorkflowDefinitionRuntimeBinding;\n    graph: AgentWorkflowGraph;\n}>",
             "targetName": "Readonly"
           }
         ],
@@ -2253,6 +2417,11 @@
             },
             {
               "name": "capabilities",
+              "readable": true,
+              "writable": false
+            },
+            {
+              "name": "runtimeBinding",
               "readable": true,
               "writable": false
             },

@@ -74,11 +74,9 @@ describe('AgentWorkflowDefinition', () => {
     ]))
   })
 
-  it('rejects business nodes without runtimeBinding', () => {
+  it('rejects workflow definitions without runtimeBinding', () => {
     const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
-    const node = broken.workflow.graph.nodes.find(item => item.id === 'node.demo')
-    if (node?.type !== 'node') throw new Error('test fixture must include node.demo')
-    delete (node.data as Record<string, unknown>)['runtimeBinding']
+    delete (broken.workflow as unknown as Record<string, unknown>)['runtimeBinding']
 
     const validation = validateAgentWorkflowDefinition(broken)
 
@@ -87,7 +85,7 @@ describe('AgentWorkflowDefinition', () => {
       expect.objectContaining({
         severity: 'error',
         code: 'AGENT_WORKFLOW_REQUIRED_OBJECT_MISSING',
-        path: 'definition.workflow.graph.nodes[1].data.runtimeBinding',
+        path: 'definition.workflow.runtimeBinding',
       }),
     ]))
   })
@@ -112,9 +110,9 @@ describe('AgentWorkflowDefinition', () => {
       },
       createOutputNode(),
     ]
-    graph['edges'] = [
-      { id: 'edge.start.chatflow', source: 'start', target: 'chatflow.clarify' },
-      { id: 'edge.chatflow.output', source: 'chatflow.clarify', target: 'output' },
+    graph['lines'] = [
+      createLine('line.start.chatflow', 'start', 'chatflow.clarify'),
+      createLine('line.chatflow.output', 'chatflow.clarify', 'output'),
     ]
 
     const validation = validateAgentWorkflowDefinition(definition)
@@ -220,9 +218,7 @@ describe('AgentWorkflowDefinition', () => {
 
   it('rejects legacy runtimeBinding fields', () => {
     const broken = JSON.parse(JSON.stringify(createDefinition())) as AgentWorkflowDefinition
-    const node = broken.workflow.graph.nodes.find(item => item.id === 'node.demo')
-    if (node?.type !== 'node') throw new Error('test fixture must include node.demo')
-    const runtimeBinding = node.data.runtimeBinding as Record<string, unknown>
+    const runtimeBinding = broken.workflow.runtimeBinding as unknown as Record<string, unknown>
     runtimeBinding['knowledge'] = {
       rootClassName: 'DemoBusiness',
       manifestUrlRef: 'dts-class-model',
@@ -238,12 +234,12 @@ describe('AgentWorkflowDefinition', () => {
       expect.objectContaining({
         severity: 'error',
         code: 'AGENT_WORKFLOW_LEGACY_RUNTIME_FIELD',
-        path: 'definition.workflow.graph.nodes[1].data.runtimeBinding.knowledge',
+        path: 'definition.workflow.runtimeBinding.knowledge',
       }),
       expect.objectContaining({
         severity: 'error',
         code: 'AGENT_WORKFLOW_LEGACY_RUNTIME_FIELD',
-        path: 'definition.workflow.graph.nodes[1].data.runtimeBinding.moduleClassRef',
+        path: 'definition.workflow.runtimeBinding.moduleClassRef',
       }),
     ]))
   })
@@ -252,7 +248,7 @@ describe('AgentWorkflowDefinition', () => {
 function createDefinition(options: {
   workflowId?: string
   nodes?: AgentWorkflowDefinition['workflow']['graph']['nodes']
-  edges?: AgentWorkflowDefinition['workflow']['graph']['edges']
+  lines?: AgentWorkflowDefinition['workflow']['graph']['lines']
 } = {}): AgentWorkflowDefinition {
   const workflowId = options.workflowId ?? 'demo.workflow'
   const now = '2026-06-16T00:00:00.000Z'
@@ -279,15 +275,16 @@ function createDefinition(options: {
           constraints: [],
         },
       ],
+      runtimeBinding: createWorkflowRuntimeBinding(),
       graph: {
         nodes: options.nodes ?? [
           createStartNode(),
           createBusinessNode(),
           createOutputNode(),
         ],
-        edges: options.edges ?? [
-          { id: 'edge.start.node', source: 'start', target: 'node.demo' },
-          { id: 'edge.node.output', source: 'node.demo', target: 'output' },
+        lines: options.lines ?? [
+          createLine('line.start.node', 'start', 'node.demo'),
+          createLine('line.node.output', 'node.demo', 'output'),
         ],
       },
     },
@@ -308,11 +305,19 @@ function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nod
     type: 'node',
     data: {
       title: 'Demo Node',
-      model: {
-        rootClassName: 'DemoBusiness',
-        className: 'DemoBusiness',
-        contextPath: '$',
-      },
+      models: [
+        {
+          id: 'demo',
+          rootClassName: 'DemoBusiness',
+          className: 'DemoBusiness',
+          sourceRef: '$',
+          role: 'primary',
+          completion: {
+            memberName: 'completeDemo',
+            returnContract: 'boolean-or-reason',
+          },
+        },
+      ],
       inputs: {
         id: '{{ start.id }}',
         prompt: '{{ start.prompt }}',
@@ -361,68 +366,6 @@ function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nod
         status: 'draft',
         issues: [],
       },
-      runtimeBinding: {
-        registration: {
-          alias: 'demo',
-          moduleId: 'demo.module',
-          businessId: 'demo.module',
-        },
-        inputContract: {
-          identityField: 'id',
-          messageField: 'prompt',
-          paramsSchema: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              prompt: { type: 'string' },
-            },
-            required: ['id', 'prompt'],
-            additionalProperties: false,
-          },
-          readonlySteps: ['Read demo context.'],
-        },
-        systemPrompt: {
-          template: 'Demo system prompt.',
-          conditionalHints: [
-            {
-              when: {
-                promptIncludes: 'demo',
-              },
-              template: 'Prefer the demo path.',
-            },
-          ],
-        },
-        modelProjectionRef: {
-          kind: 'dts-class-model',
-          rootClassName: 'DemoBusiness',
-          manifestUrlRef: 'dts-class-model',
-        },
-        executableRef: {
-          kind: 'js-module',
-          moduleSpecifier: DEMO_BUSINESS_MODULE_SPECIFIER,
-          exportName: 'DemoBusiness',
-        },
-        toolLoopNudge: {
-          templates: {
-            plan_without_tool: 'demo id="{{moduleInstanceId}}" must call a tool.',
-          },
-          contextFields: ['moduleInstanceId'],
-        },
-        beforeFunctionCall: {
-          gateRules: [
-            {
-              kind: 'demoAllow',
-            },
-          ],
-        },
-        executionToolNames: ['model_script'],
-        planWithoutToolMarkers: ['rundemo'],
-        agentCompleteMethodName: 'completeDemo',
-        resolveInstance: {
-          editorSource: 'demo',
-          identityField: 'id',
-        },
-      },
       capabilities: [
         {
           id: 'demo.execute',
@@ -439,6 +382,91 @@ function createBusinessNode(): AgentWorkflowDefinition['workflow']['graph']['nod
           constraints: [],
         },
       ],
+    },
+  }
+}
+
+function createLine(
+  id: string,
+  fromNodeId: string,
+  toNodeId: string,
+): AgentWorkflowDefinition['workflow']['graph']['lines'][number] {
+  return {
+    id,
+    from: {
+      nodeId: fromNodeId,
+      modelId: fromNodeId === 'start' ? '$workflow' : 'demo',
+      memberName: fromNodeId === 'start' ? 'prompt' : 'result',
+    },
+    to: {
+      nodeId: toNodeId,
+      modelId: toNodeId === 'output' ? '$workflow' : 'demo',
+      memberName: toNodeId === 'output' ? 'result' : 'prompt',
+    },
+  }
+}
+
+function createWorkflowRuntimeBinding(): AgentWorkflowDefinition['workflow']['runtimeBinding'] {
+  return {
+    registration: {
+      alias: 'demo',
+      moduleId: 'demo.module',
+      businessId: 'demo.module',
+    },
+    inputContract: {
+      identityField: 'id',
+      messageField: 'prompt',
+      paramsSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          prompt: { type: 'string' },
+        },
+        required: ['id', 'prompt'],
+        additionalProperties: false,
+      },
+      readonlySteps: ['Read demo context.'],
+    },
+    systemPrompt: {
+      template: 'Demo system prompt.',
+      conditionalHints: [
+        {
+          when: {
+            promptIncludes: 'demo',
+          },
+          template: 'Prefer the demo path.',
+        },
+      ],
+    },
+    modelProjectionRef: {
+      kind: 'dts-class-model',
+      rootClassName: 'DemoBusiness',
+      manifestUrlRef: 'dts-class-model',
+    },
+    executableRef: {
+      kind: 'js-module',
+      moduleSpecifier: DEMO_BUSINESS_MODULE_SPECIFIER,
+      exportName: 'DemoBusiness',
+    },
+    toolLoopNudge: {
+      templates: {
+        plan_without_tool: 'demo id="{{moduleInstanceId}}" must call a tool.',
+      },
+      contextFields: ['moduleInstanceId'],
+    },
+    beforeFunctionCall: {
+      gateRules: [
+        {
+          kind: 'demoAllow',
+        },
+      ],
+    },
+    executionToolNames: ['model_script'],
+    planWithoutToolMarkers: ['rundemo'],
+    agentCompleteMethodName: 'completeDemo',
+    resolveInstance: {
+      editorSource: 'demo',
+      identityField: 'id',
     },
   }
 }

@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils'
+﻿import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import WorkflowDesigns from '@/views/app/WorkflowDesigns.vue'
@@ -173,7 +173,7 @@ const VueFlowStub = defineComponent({
         h('button', {
           type: 'button',
           class: 'workflow-flow-drag-node',
-          title: `移动 ${nodeTitle(node)}`,
+          title: `绉诲姩 ${nodeTitle(node)}`,
           onClick: (event: Event) => {
             event.stopPropagation()
             emit('nodeDragStop', {
@@ -190,14 +190,14 @@ const VueFlowStub = defineComponent({
       const renderedEdges = props.edges.map((edge: any) => h('button', {
         type: 'button',
         class: 'vue-flow__edge',
-        title: `选择连线 ${edge.source} -> ${edge.target}`,
+        title: `閫夋嫨杩炵嚎 ${edge.source} -> ${edge.target}`,
         onClick: () => emit('edgesChange', [{ type: 'select', id: edge.id, selected: true }]),
       }, `${edge.source}->${edge.target}`))
 
       const edgeUpdateButtons = props.edges.map((edge: any) => h('button', {
         type: 'button',
         class: 'workflow-flow-edge-update',
-        title: `改连线 ${edge.source} -> ${edge.target} 到 output`,
+        title: `鏀硅繛绾?${edge.source} -> ${edge.target} 鍒?output`,
         onClick: () => emit('edgeUpdate', {
           edge,
           connection: {
@@ -238,6 +238,50 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
           constraints: [],
         },
       ],
+      runtimeBinding: {
+        registration: {
+          alias: 'demo',
+          moduleId: 'demo',
+          businessId: 'demo',
+        },
+        inputContract: {
+          identityField: 'prompt',
+          messageField: 'prompt',
+          paramsSchema: {
+            type: 'object',
+            properties: {
+              prompt: { type: 'string' },
+            },
+            required: ['prompt'],
+            additionalProperties: false,
+          },
+          readonlySteps: [],
+        },
+        systemPrompt: {
+          template: 'Demo prompt: {{ prompt }}',
+          conditionalHints: [],
+        },
+        modelProjectionRef: {
+          kind: 'dts-class-model',
+          rootClassName: 'ProjectModel',
+          manifestUrlRef: 'dts-class-model',
+        },
+        executableRef: {
+          kind: 'js-module',
+          moduleSpecifier: './project-model.js',
+          exportName: 'ProjectModel',
+        },
+        resolveInstance: {
+          editorSource: 'demo',
+          identityField: 'prompt',
+        },
+        beforeFunctionCall: {
+          gateRules: [],
+        },
+        executionToolNames: ['model_script'],
+        planWithoutToolMarkers: ['openPageDesign'],
+        agentCompleteMethodName: 'completePageDesign',
+      },
       graph: {
         nodes: [
           {
@@ -254,11 +298,18 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
               type: 'node',
               title: 'Business Node',
               desc: 'Run model context work',
-              model: {
-                rootClassName: 'ProjectModel',
-                className: 'ProjectModel',
-                contextPath: '$',
-              },
+              models: [
+                {
+                  id: 'node.model.project',
+                  rootClassName: 'ProjectModel',
+                  className: 'ProjectModel',
+                  sourceRef: '$',
+                  completion: {
+                    memberName: 'completePageDesign',
+                    returnContract: 'boolean-or-reason',
+                  },
+                },
+              ],
               inputs: {
                 prompt: 'initial',
               },
@@ -335,9 +386,17 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
             },
           },
         ],
-        edges: [
-          { id: 'edge.start.node', source: 'start', target: 'node.model' },
-          { id: 'edge.node.output', source: 'node.model', target: 'output' },
+        lines: [
+          {
+            id: 'line.start.node',
+            from: { nodeId: 'start', modelId: '$workflow', memberName: 'prompt' },
+            to: { nodeId: 'node.model', modelId: 'node.model.project', memberName: 'prompt' },
+          },
+          {
+            id: 'line.node.output',
+            from: { nodeId: 'node.model', modelId: 'node.model.project', memberName: 'result' },
+            to: { nodeId: 'output', modelId: '$workflow', memberName: 'result' },
+          },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
@@ -361,7 +420,7 @@ function createDefinition() {
       capabilities: [],
       graph: {
         nodes: [],
-        edges: [],
+        lines: [],
       },
     },
     x_spark: {
@@ -529,7 +588,7 @@ describe('WorkflowDesigns visual editor', () => {
 
     expect(mocks.readWorkflowDesign).toHaveBeenCalledOnce()
     expect(mocks.readWorkflowDesign).toHaveBeenCalledWith('agent.workflow.demo')
-    expect(mocks.message.error).toHaveBeenCalledWith('设计稿不可打开: forbidden field: app')
+    expect(mocks.message.error).toHaveBeenCalledWith('璁捐绋夸笉鍙墦寮€: forbidden field: app')
   })
 
   it('keeps the empty state and warns when every design is unreadable', async () => {
@@ -549,7 +608,7 @@ describe('WorkflowDesigns visual editor', () => {
     await flushPromises()
 
     expect(mocks.readWorkflowDesign).not.toHaveBeenCalled()
-    expect(mocks.message.warning).toHaveBeenCalledWith('当前设计稿均不可打开，请新建工作流或删除旧设计稿')
+    expect(mocks.message.warning).toHaveBeenCalledWith('褰撳墠璁捐绋垮潎涓嶅彲鎵撳紑锛岃鏂板缓宸ヤ綔娴佹垨鍒犻櫎鏃ц璁＄')
     expect(mocks.message.error).not.toHaveBeenCalled()
   })
 
@@ -568,11 +627,18 @@ describe('WorkflowDesigns visual editor', () => {
     await modelEditor.setValue(JSON.stringify({
       type: 'node',
       title: 'Business Node',
-      model: {
-        rootClassName: 'ProjectModel',
-        className: 'ProjectModel',
-        contextPath: '$',
-      },
+      models: [
+        {
+          id: 'node.model.project',
+          rootClassName: 'ProjectModel',
+          className: 'ProjectModel',
+          sourceRef: '$',
+          completion: {
+            memberName: 'completePageDesign',
+            returnContract: 'boolean-or-reason',
+          },
+        },
+      ],
       inputs: {
         prompt: 'edited',
       },
@@ -596,8 +662,8 @@ describe('WorkflowDesigns visual editor', () => {
       },
       capabilities: [],
     }))
-    await findButton(wrapper, '应用节点配置').trigger('click')
-    await findButton(wrapper, '保存').trigger('click')
+    await findButton(wrapper, '搴旂敤鑺傜偣閰嶇疆').trigger('click')
+    await findButton(wrapper, '淇濆瓨').trigger('click')
     await flushPromises()
 
     expect(mocks.saveWorkflowDesign).toHaveBeenCalledOnce()
@@ -611,10 +677,10 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const dragButton = wrapper.find('[title="移动 Business Node"]')
+    const dragButton = wrapper.find('[title="绉诲姩 Business Node"]')
     expect(dragButton.exists()).toBe(true)
     await dragButton.trigger('click')
-    await findButton(wrapper, '保存').trigger('click')
+    await findButton(wrapper, '淇濆瓨').trigger('click')
     await flushPromises()
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
@@ -625,9 +691,9 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    await findButton(wrapper, '加业务节点').trigger('click')
-    await findButton(wrapper, '创建节点').trigger('click')
-    await findButton(wrapper, '保存').trigger('click')
+    await findButton(wrapper, 'Add business node').trigger('click')
+    await findButton(wrapper, '鍒涘缓鑺傜偣').trigger('click')
+    await findButton(wrapper, '淇濆瓨').trigger('click')
     await flushPromises()
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
@@ -637,9 +703,11 @@ describe('WorkflowDesigns visual editor', () => {
           id: 'node.model-2',
           data: expect.objectContaining({
             type: 'node',
-            model: expect.objectContaining({
-              className: 'spark.placeholder.Model',
-            }),
+            models: [
+              expect.objectContaining({
+                className: 'spark.placeholder.Model',
+              }),
+            ],
           }),
         }),
       ]),
@@ -650,14 +718,14 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    await findButton(wrapper, '删除节点').trigger('click')
+    await findButton(wrapper, '鍒犻櫎鑺傜偣').trigger('click')
     await flushPromises()
-    await findButton(wrapper, '保存').trigger('click')
+    await findButton(wrapper, '淇濆瓨').trigger('click')
     await flushPromises()
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
     expect(savedDocument.workflow.graph.nodes.map(node => node.id)).toEqual(['start', 'output'])
-    expect(savedDocument.workflow.graph.edges).toHaveLength(0)
+    expect(savedDocument.workflow.graph.lines).toHaveLength(0)
   })
 
   it('updates an edge endpoint from the edge editor and saves it', async () => {
@@ -672,14 +740,14 @@ describe('WorkflowDesigns visual editor', () => {
       .filter(select => !select.classes().includes('graph-child-select'))
     expect(selects.length).toBeGreaterThanOrEqual(2)
     await selects[1]?.setValue('output')
-    await findButton(wrapper, '应用连线').trigger('click')
-    await findButton(wrapper, '保存').trigger('click')
+    await findButton(wrapper, '搴旂敤杩炵嚎').trigger('click')
+    await findButton(wrapper, '淇濆瓨').trigger('click')
     await flushPromises()
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
-    expect(savedDocument.workflow.graph.edges[0]).toEqual(expect.objectContaining({
-      source: 'start',
-      target: 'output',
+    expect(savedDocument.workflow.graph.lines[0]).toEqual(expect.objectContaining({
+      from: expect.objectContaining({ nodeId: 'start' }),
+      to: expect.objectContaining({ nodeId: 'output' }),
     }))
   })
 
@@ -687,16 +755,16 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const edgeUpdateButton = wrapper.find('[title="改连线 start -> node.model 到 output"]')
+    const edgeUpdateButton = wrapper.find('[title="鏀硅繛绾?start -> node.model 鍒?output"]')
     expect(edgeUpdateButton.exists()).toBe(true)
     await edgeUpdateButton.trigger('click')
-    await findButton(wrapper, '保存').trigger('click')
+    await findButton(wrapper, '淇濆瓨').trigger('click')
     await flushPromises()
 
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
-    expect(savedDocument.workflow.graph.edges[0]).toEqual(expect.objectContaining({
-      source: 'start',
-      target: 'output',
+    expect(savedDocument.workflow.graph.lines[0]).toEqual(expect.objectContaining({
+      from: expect.objectContaining({ nodeId: 'start' }),
+      to: expect.objectContaining({ nodeId: 'output' }),
     }))
   })
 
@@ -704,7 +772,7 @@ describe('WorkflowDesigns visual editor', () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    await findButton(wrapper, '发布').trigger('click')
+    await findButton(wrapper, '鍙戝竷').trigger('click')
     await flushPromises()
 
     expect(mocks.createAgentWorkflowDefinitionFromDesign).toHaveBeenCalledOnce()
@@ -715,7 +783,7 @@ describe('WorkflowDesigns visual editor', () => {
         workflowId: 'agent.workflow.demo',
       }),
     )
-    expect(mocks.message.success).toHaveBeenCalledWith('definition.json 已发布')
+    expect(mocks.message.success).toHaveBeenCalledWith('definition.json published')
   })
 
   it('marks ClassModel schema refs as legacy when creating a definition', async () => {
@@ -750,11 +818,12 @@ describe('WorkflowDesigns visual editor', () => {
 
     expect(definition.workflow.graph.nodes[1]?.data).toMatchObject({
       type: 'node',
-      model: {
-        rootClassName: 'ProjectModel',
-        className: 'ProjectModel',
-        contextPath: '$',
-      },
+      models: [
+        expect.objectContaining({
+          rootClassName: 'ProjectModel',
+          className: 'ProjectModel',
+        }),
+      ],
     })
     expect(definition.workflow.graph.nodes[1]?.data).not.toHaveProperty('x_spark')
     expect(definition.x_spark.validation).toMatchObject({
@@ -788,7 +857,7 @@ describe('WorkflowDesigns visual editor', () => {
     expect((definitionEditor.element as HTMLTextAreaElement).value).toContain('"kind": "agent.workflow"')
 
     await definitionEditor.setValue('{"kind":"agent.workflow"}')
-    await findButton(wrapper, '保存 Definition').trigger('click')
+    await findButton(wrapper, '淇濆瓨 Definition').trigger('click')
     await flushPromises()
 
     expect(mocks.parseAgentWorkflowDefinitionJson).toHaveBeenCalledWith('{"kind":"agent.workflow"}')
@@ -799,7 +868,7 @@ describe('WorkflowDesigns visual editor', () => {
         workflowId: 'agent.workflow.demo',
       }),
     )
-    expect(mocks.message.success).toHaveBeenCalledWith('definition.json 已保存')
+    expect(mocks.message.success).toHaveBeenCalledWith('definition.json saved')
   })
 
   it('creates a local definition draft when the backend definition endpoint is missing', async () => {
@@ -816,7 +885,7 @@ describe('WorkflowDesigns visual editor', () => {
     const definitionEditor = wrapper.find('textarea.definition-json-input')
     expect(definitionEditor.exists()).toBe(true)
     expect((definitionEditor.element as HTMLTextAreaElement).value).toContain('"kind": "agent.workflow"')
-    expect(mocks.message.info).toHaveBeenCalledWith('definition.json 不存在，已从当前设计稿生成本地草稿')
+    expect(mocks.message.info).toHaveBeenCalledWith('definition.json does not exist; generated a local draft from the current design')
     expect(mocks.message.error).not.toHaveBeenCalled()
   })
 })

@@ -1,27 +1,24 @@
-<!--
+﻿<!--
 @module app:views/app/WorkflowDesigns
-职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与 workflow definition 发布。
-边界：只处理设计态 JSON，不执行 Agent workflow 运行时。
-AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel model context 或步骤线投影时，用本页面定位。
--->
+鑱岃矗锛氭彁渚涘伐浣滄祦璁捐绋跨殑鍙鍖栫紪杈戝叆鍙ｏ紝杩炴帴 Dify-like JSON graph銆佹枃浠朵繚瀛?API 涓?workflow definition 鍙戝竷銆?杈圭晫锛氬彧澶勭悊璁捐鎬?JSON锛屼笉鎵ц Agent workflow 杩愯鏃躲€?AI鐢ㄩ€旓細闇€瑕侀獙璇?workflow 缂栬緫鍣ㄥ浣曢厤缃笟鍔¤妭鐐广€丆lassModel model context 鎴栨楠ょ嚎鎶曞奖鏃讹紝鐢ㄦ湰椤甸潰瀹氫綅銆?-->
 <template>
   <div class="workflow-design-page">
-    <el-page-header content="工作流设计" @back="$router.go(-1)">
+    <el-page-header content="Workflow Designs" @back="$router.go(-1)">
       <template #icon>
         <el-icon><Share /></el-icon>
       </template>
       <template #extra>
-        <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
-        <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
-        <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
+        <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">鍒锋柊</el-button>
+        <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">鏂板缓</el-button>
+        <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">澶嶅埗 JSON</el-button>
         <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
           Definition
         </el-button>
         <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
-          保存
+          淇濆瓨
         </el-button>
         <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
-          发布
+          鍙戝竷
         </el-button>
       </template>
     </el-page-header>
@@ -29,11 +26,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
     <div class="workflow-design-shell" :style="workflowShellStyle">
       <aside class="workflow-design-sidebar">
         <div class="panel-heading">
-          <span>设计稿</span>
+          <span>Workflow designs</span>
           <el-tag size="small" type="info">{{ designs.length }}</el-tag>
         </div>
         <el-skeleton v-if="loadingList && designs.length === 0" :rows="6" animated />
-        <el-empty v-else-if="designs.length === 0" description="暂无设计稿" />
+        <el-empty v-else-if="designs.length === 0" description="No workflow designs" />
         <div v-else class="workflow-list">
           <div
             v-for="item in designs"
@@ -61,10 +58,10 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             </div>
             <div class="workflow-list-actions">
               <el-button link size="small" :icon="FolderOpened" @click.stop="openDesign(item.workflowId)">
-                打开
+                鎵撳紑
               </el-button>
               <el-button link size="small" type="danger" :icon="Delete" @click.stop="deleteDesign(item.workflowId)">
-                删除
+                鍒犻櫎
               </el-button>
             </div>
           </div>
@@ -73,7 +70,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 
       <div
         class="layout-resize-handle"
-        title="拖拽调整设计稿区域"
+        title="Resize workflow list"
         role="separator"
         aria-orientation="vertical"
         @pointerdown.prevent="startLayoutResize($event, 'left')"
@@ -85,17 +82,17 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             <span>{{ currentDocument.workflow.id }}</span>
             <el-tag size="small">{{ currentDocument.kind }}</el-tag>
             <el-tag size="small" :type="hasUnsavedChanges ? 'warning' : 'success'">
-              {{ hasUnsavedChanges ? '未保存' : '已保存' }}
+              {{ hasUnsavedChanges ? 'unsaved' : 'saved' }}
             </el-tag>
           </div>
           <div class="document-stats">
-            <span>节点 {{ allNodes.length }}</span>
-            <span>业务节点 {{ businessNodes.length }}</span>
+            <span>鑺傜偣 {{ allNodes.length }}</span>
+            <span>涓氬姟鑺傜偣 {{ businessNodes.length }}</span>
             <span v-if="currentTimestamp">ts {{ currentTimestamp }}</span>
           </div>
         </div>
 
-        <el-empty v-if="currentDocument === null && !opening" description="选择或新建工作流" />
+        <el-empty v-if="currentDocument === null && !opening" description="閫夋嫨鎴栨柊寤哄伐浣滄祦" />
         <el-skeleton v-else-if="opening" :rows="12" animated />
 
         <template v-else-if="currentDocument">
@@ -120,7 +117,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                   v-if="panel.collapsed"
                   type="button"
                   class="graph-collapse-edge"
-                  :title="panel.role === 'main' ? '主图已折叠' : '子图已折叠'"
+                  :title="panel.role === 'main' ? 'Main graph collapsed' : 'Child graph collapsed'"
                   @click="resetGraphSplit"
                 />
 
@@ -132,15 +129,15 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                         v-if="panel.role === 'child' && mainChildGraphOptions.length > 1"
                         v-model="currentChildGraphKey"
                         class="native-select graph-child-select"
-                        title="选择下部子图"
+                        title="閫夋嫨涓嬮儴瀛愬浘"
                       >
                         <option v-for="child in mainChildGraphOptions" :key="child.key" :value="child.key">
                           {{ child.title }}
                         </option>
                       </select>
-                      <el-tag v-if="panel.graphView.carrier === 'loop'" size="small" type="warning">循环分组</el-tag>
-                      <el-tag size="small" type="info">节点 {{ nodesForGraph(panel.graphView).length }}</el-tag>
-                      <el-tag size="small" type="info">连线 {{ edgesForGraph(panel.graphView).length }}</el-tag>
+                      <el-tag v-if="panel.graphView.carrier === 'loop'" size="small" type="warning">寰幆鍒嗙粍</el-tag>
+                      <el-tag size="small" type="info">鑺傜偣 {{ nodesForGraph(panel.graphView).length }}</el-tag>
+                      <el-tag size="small" type="info">杩炵嚎 {{ linesForGraph(panel.graphView).length }}</el-tag>
                       <el-button
                         v-if="panel.role === 'main' && currentMainParentGraphView"
                         link
@@ -148,8 +145,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                         :icon="ArrowUp"
                         @click.stop.prevent="returnMainGraphToParent"
                       >
-                        回父级
-                      </el-button>
+                        鍥炵埗绾?                      </el-button>
                       <el-button
                         v-if="panel.role === 'child'"
                         link
@@ -157,7 +153,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                         :icon="ArrowDown"
                         @click.stop.prevent="promoteChildGraphToMain"
                       >
-                        提升为 main
+                        鎻愬崌涓?main
                       </el-button>
                       <el-button
                         link
@@ -165,7 +161,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                         :icon="DocumentAdd"
                         @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'node')"
                       >
-                        加业务节点
+                        Add business node
                       </el-button>
                     </span>
                   </div>
@@ -175,7 +171,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                       v-if="panel.graphView.carrier === 'loop'"
                       class="loop-group-meta"
                       role="group"
-                      aria-label="循环分组配置摘要"
+                      aria-label="寰幆鍒嗙粍閰嶇疆鎽樿"
                     >
                       <span>owner {{ panel.graphView.ownerNodeId }}</span>
                       <span>mode {{ panel.graphView.ownerNode?.data?.loop?.mode || 'progressive' }}</span>
@@ -220,13 +216,13 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                               id="target"
                               type="target"
                               :position="Position.Left"
-                              :title="`连到 ${data.title}`"
+                              :title="`杩炲埌 ${data.title}`"
                             />
                             <Handle
                               id="source"
                               type="source"
                               :position="Position.Right"
-                              :title="`从 ${data.title} 连线`"
+                              :title="`浠?${data.title} 杩炵嚎`"
                             />
                             <span class="node-kind">{{ data.nodeType }}</span>
                             <strong>{{ data.title }}</strong>
@@ -244,7 +240,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               <div
                 v-if="panel.role === 'main'"
                 class="graph-splitter"
-                title="拖拽调整上下图区域"
+                title="Resize graph split"
                 role="separator"
                 aria-orientation="horizontal"
                 @pointerdown.prevent="startGraphSplitResize"
@@ -258,13 +254,13 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                     :disabled="currentChildGraphView === null"
                     @click.stop.prevent="collapseGraphSplit('top')"
                   >
-                    上折
+                    涓婃姌
                   </el-button>
                   <el-button link size="small" :icon="RefreshLeft" @click.stop.prevent="resetGraphSplit">
-                    复位
+                    澶嶄綅
                   </el-button>
                   <el-button link size="small" :icon="ArrowDown" @click.stop.prevent="collapseGraphSplit('bottom')">
-                    下折
+                    涓嬫姌
                   </el-button>
                 </span>
                 <span class="graph-splitter-line" />
@@ -276,7 +272,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 
       <div
         class="layout-resize-handle"
-        title="拖拽调整属性区域"
+        title="Resize properties"
         role="separator"
         aria-orientation="vertical"
         @pointerdown.prevent="startLayoutResize($event, 'right')"
@@ -284,8 +280,8 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 
       <aside class="workflow-design-editor">
         <div class="panel-heading">
-          <span>属性</span>
-          <el-tag v-if="selectedEdge" size="small" type="warning">连线</el-tag>
+          <span>Properties</span>
+          <el-tag v-if="selectedLine" size="small" type="warning">杩炵嚎</el-tag>
           <el-tag
             v-else-if="selectedNode"
             size="small"
@@ -295,67 +291,91 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           </el-tag>
         </div>
 
-        <el-empty v-if="selectedNode === null && selectedEdge === null" description="未选择节点或连线" />
+        <el-empty v-if="selectedNode === null && selectedLine === null" description="No node or line selected" />
 
-        <template v-else-if="selectedEdge">
+        <template v-else-if="selectedLine">
           <details class="editor-section collapsible-section" open>
-            <summary>连线信息</summary>
+            <summary>杩炵嚎淇℃伅</summary>
             <div class="collapsible-body">
               <el-descriptions :column="1" size="small" border>
-                <el-descriptions-item label="ID">{{ selectedEdge.id }}</el-descriptions-item>
-                <el-descriptions-item label="Scope">{{ selectedEdge.scopePath }}</el-descriptions-item>
-                <el-descriptions-item label="Source">{{ selectedEdge.source }}</el-descriptions-item>
-                <el-descriptions-item label="Target">{{ selectedEdge.target }}</el-descriptions-item>
+                <el-descriptions-item label="ID">{{ selectedLine.id }}</el-descriptions-item>
+                <el-descriptions-item label="Scope">{{ selectedLine.scopePath }}</el-descriptions-item>
+                <el-descriptions-item label="From">{{ selectedLine.fromNodeId }}</el-descriptions-item>
+                <el-descriptions-item label="To">{{ selectedLine.toNodeId }}</el-descriptions-item>
               </el-descriptions>
             </div>
           </details>
 
           <details class="editor-section collapsible-section" open>
-            <summary>连线编辑</summary>
+            <summary>杩炵嚎缂栬緫</summary>
             <div class="collapsible-body">
               <el-form label-position="top">
-                <el-form-item label="Source">
-                  <select v-model="edgeSourceText" class="native-select" @change="markEditorDirty">
-                    <option v-for="node in selectedEdgeGraphNodes" :key="node.key" :value="node.id">
-                      {{ node.title }} / {{ node.id }}
-                    </option>
-                  </select>
-                </el-form-item>
-                <el-form-item label="Target">
-                  <select v-model="edgeTargetText" class="native-select" @change="markEditorDirty">
-                    <option v-for="node in selectedEdgeGraphNodes" :key="node.key" :value="node.id">
+                <el-form-item label="From Node">
+                  <select v-model="lineFromNodeText" class="native-select" @change="markEditorDirty">
+                    <option v-for="node in selectedLineGraphNodes" :key="node.key" :value="node.id">
                       {{ node.title }} / {{ node.id }}
                     </option>
                   </select>
                 </el-form-item>
                 <el-row :gutter="8">
                   <el-col :span="12">
-                    <el-form-item label="Type">
-                      <el-input v-model="edgeTypeText" @input="markEditorDirty" />
+                    <el-form-item label="From Model">
+                      <el-input v-model="lineFromModelText" @input="markEditorDirty" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="Relation">
-                      <el-input v-model="edgeRelationText" @input="markEditorDirty" />
+                    <el-form-item label="From Member">
+                      <el-input v-model="lineFromMemberText" @input="markEditorDirty" />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-form-item label="To Node">
+                  <select v-model="lineToNodeText" class="native-select" @change="markEditorDirty">
+                    <option v-for="node in selectedLineGraphNodes" :key="node.key" :value="node.id">
+                      {{ node.title }} / {{ node.id }}
+                    </option>
+                  </select>
+                </el-form-item>
+                <el-row :gutter="8">
+                  <el-col :span="12">
+                    <el-form-item label="To Model">
+                      <el-input v-model="lineToModelText" @input="markEditorDirty" />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="To Member">
+                      <el-input v-model="lineToMemberText" @input="markEditorDirty" />
                     </el-form-item>
                   </el-col>
                 </el-row>
                 <el-row :gutter="8">
                   <el-col :span="12">
-                    <el-form-item label="Source Handle">
-                      <el-input v-model="edgeSourceHandleText" @input="markEditorDirty" />
+                    <el-form-item label="Type">
+                      <el-input v-model="lineTypeText" @input="markEditorDirty" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="Target Handle">
-                      <el-input v-model="edgeTargetHandleText" @input="markEditorDirty" />
+                    <el-form-item label="Relation">
+                      <el-input v-model="lineRelationText" @input="markEditorDirty" />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-row :gutter="8">
+                  <el-col :span="12">
+                    <el-form-item label="From Dock">
+                      <el-input v-model="lineFromDockText" @input="markEditorDirty" />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="To Dock">
+                      <el-input v-model="lineToDockText" @input="markEditorDirty" />
                     </el-form-item>
                   </el-col>
                 </el-row>
               </el-form>
               <div class="editor-actions" style="justify-content: space-between">
-                <el-button :icon="CircleCheck" @click="applyEdgeEditorToSelected">应用连线</el-button>
-                <el-button type="danger" :icon="Delete" @click="deleteSelectedEdge">删除连线</el-button>
+                <el-button :icon="CircleCheck" @click="applyLineEditorToSelected">搴旂敤杩炵嚎</el-button>
+                <el-button type="danger" :icon="Delete" @click="deleteSelectedLine">鍒犻櫎杩炵嚎</el-button>
               </div>
             </div>
           </details>
@@ -363,37 +383,37 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 
         <template v-else-if="selectedNode">
           <details class="editor-section collapsible-section" open>
-            <summary>节点信息</summary>
+            <summary>鑺傜偣淇℃伅</summary>
             <div class="collapsible-body">
                 <el-descriptions :column="1" size="small" border>
-                  <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
-                  <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
+                  <el-descriptions-item label="ID">{{ selectedNode?.id }}</el-descriptions-item>
+                  <el-descriptions-item label="Scope">{{ selectedNode?.scopePath }}</el-descriptions-item>
               </el-descriptions>
             </div>
           </details>
 
           <details class="editor-section collapsible-section" open>
-            <summary>基础编辑</summary>
+            <summary>鍩虹缂栬緫</summary>
             <div class="collapsible-body">
               <el-form label-position="top">
                 <el-form-item label="Type">
                   <el-input v-model="nodeTypeText" @input="markEditorDirty" />
                 </el-form-item>
-                <el-form-item label="标题">
+                <el-form-item label="鏍囬">
                   <el-input v-model="nodeTitleText" @input="markEditorDirty" />
                 </el-form-item>
-                <el-form-item label="描述">
+                <el-form-item label="鎻忚堪">
                   <el-input v-model="nodeDescText" type="textarea" :rows="2" @input="markEditorDirty" />
                 </el-form-item>
               </el-form>
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applySelectedDraft">应用节点</el-button>
+                <el-button :icon="CircleCheck" @click="applySelectedDraft">搴旂敤鑺傜偣</el-button>
               </div>
             </div>
           </details>
 
           <details class="editor-section collapsible-section" open>
-            <summary>位置</summary>
+            <summary>浣嶇疆</summary>
             <div class="collapsible-body position-editor">
               <el-form label-position="top">
                 <el-row :gutter="8">
@@ -412,8 +432,8 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             </div>
           </details>
 
-          <details v-if="selectedNode.nodeType === 'loop'" class="editor-section collapsible-section" open>
-            <summary>循环分组</summary>
+          <details v-if="selectedNode?.nodeType === 'loop'" class="editor-section collapsible-section" open>
+            <summary>寰幆鍒嗙粍</summary>
             <div class="collapsible-body loop-editor-form">
               <el-form label-position="top">
                 <el-form-item label="Mode">
@@ -439,13 +459,13 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 </el-row>
               </el-form>
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applyLoopEditorToSelected">应用循环配置</el-button>
+                <el-button :icon="CircleCheck" @click="applyLoopEditorToSelected">搴旂敤寰幆閰嶇疆</el-button>
               </div>
             </div>
           </details>
 
           <details
-            v-if="selectedNode.isBusinessNode"
+            v-if="selectedNode?.isBusinessNode === true"
             class="editor-section collapsible-section"
             open
           >
@@ -457,18 +477,18 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 </el-form-item>
                 <el-form-item label="Model Class">
                   <select v-model="modelClassText" class="native-select" @change="handleModelClassSelectionChange">
-                    <option :value="modelClassText">{{ modelClassText || '未绑定' }}</option>
+                    <option :value="modelClassText">{{ modelClassText || 'unbound' }}</option>
                     <option v-for="item in classModelOptions" :key="item.kind" :value="item.kind">
                       {{ item.kind }}
                     </option>
                   </select>
                 </el-form-item>
-                <el-form-item label="Validation Class">
+                <el-form-item label="Completion Class">
                   <el-input v-model="validationActionClassText" @input="markEditorDirty" />
                 </el-form-item>
-                <el-form-item label="Validation Action">
+                <el-form-item label="Completion Member">
                   <select v-model="validationActionNameText" class="native-select" @change="markEditorDirty">
-                    <option :value="validationActionNameText">{{ validationActionNameText || '未绑定' }}</option>
+                    <option :value="validationActionNameText">{{ validationActionNameText || 'unbound' }}</option>
                     <option v-for="method in selectedClassModelMethods" :key="method.name" :value="method.name">
                       {{ method.name }}
                     </option>
@@ -484,24 +504,24 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               <pre v-if="classModelGuideText" class="class-model-guide">{{ classModelGuideText }}</pre>
               <div class="editor-actions">
                 <el-button :loading="classModelLoading" :icon="Refresh" @click="refreshClassModelOptions">
-                  刷新知识
+                  鍒锋柊鐭ヨ瘑
                 </el-button>
                 <el-button :loading="classModelLoading" :icon="DocumentCopy" @click="loadValidationActionGuide">
                   Action Guide
                 </el-button>
                 <el-button :icon="CircleCheck" @click="applyBusinessModelEditorToSelected">
-                  应用模型绑定
+                  搴旂敤妯″瀷缁戝畾
                 </el-button>
               </div>
             </div>
           </details>
 
           <details
-            v-if="shouldEditNodeConfig(selectedNode)"
+            v-if="selectedNode !== null && shouldEditNodeConfig(selectedNode)"
             class="editor-section collapsible-section"
             open
           >
-            <summary>节点配置 JSON</summary>
+            <summary>鑺傜偣閰嶇疆 JSON</summary>
             <div class="collapsible-body node-editor-form">
               <el-form label-position="top">
                 <el-form-item label="data JSON">
@@ -517,61 +537,61 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               </el-form>
               <el-alert v-if="modelJsonError" :title="modelJsonError" type="error" :closable="false" />
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applyEditorToSelected">应用节点配置</el-button>
+                <el-button :icon="CircleCheck" @click="applyEditorToSelected">搴旂敤鑺傜偣閰嶇疆</el-button>
               </div>
             </div>
           </details>
 
           <details class="editor-section collapsible-section">
-            <summary>危险操作</summary>
+            <summary>鍗遍櫓鎿嶄綔</summary>
             <div class="collapsible-body editor-actions">
-              <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">删除节点</el-button>
+              <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">鍒犻櫎鑺傜偣</el-button>
             </div>
           </details>
         </template>
       </aside>
     </div>
 
-    <el-dialog v-model="createDialogVisible" title="新建工作流设计稿" width="460px">
+    <el-dialog v-model="createDialogVisible" title="鏂板缓宸ヤ綔娴佽璁＄" width="460px">
       <el-form label-position="top">
         <el-form-item label="Workflow ID">
           <el-input v-model="createForm.workflowId" />
         </el-form-item>
-        <el-form-item label="名称">
+        <el-form-item label="鍚嶇О">
           <el-input v-model="createForm.title" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="createDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="creating" @click="createDesign">创建</el-button>
+        <el-button @click="createDialogVisible = false">鍙栨秷</el-button>
+        <el-button type="primary" :loading="creating" @click="createDesign">鍒涘缓</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="nodeCreateDialogVisible" title="新增节点" width="520px">
+    <el-dialog v-model="nodeCreateDialogVisible" title="鏂板鑺傜偣" width="520px">
       <el-form label-position="top">
-        <el-form-item label="目标分区">
+        <el-form-item label="鐩爣鍒嗗尯">
           <el-input v-model="nodeCreateForm.graphKey" disabled />
         </el-form-item>
-        <el-form-item label="节点类型">
+        <el-form-item label="鑺傜偣绫诲瀷">
           <select v-model="nodeCreateForm.nodeKind" class="native-select" @change="syncNodeCreateKindDefaults">
             <option value="node">Business Node</option>
             <option value="start">Start</option>
             <option value="output">Output</option>
           </select>
         </el-form-item>
-        <el-form-item label="节点 ID">
+        <el-form-item label="鑺傜偣 ID">
           <el-input v-model="nodeCreateForm.id" />
         </el-form-item>
-        <el-form-item label="标题">
+        <el-form-item label="鏍囬">
           <el-input v-model="nodeCreateForm.title" />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item label="鎻忚堪">
           <el-input v-model="nodeCreateForm.desc" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="nodeCreateDialogVisible = false">取消</el-button>
-        <el-button type="primary" :icon="DocumentAdd" @click="createNodeInSelectedGraph">创建节点</el-button>
+        <el-button @click="nodeCreateDialogVisible = false">鍙栨秷</el-button>
+        <el-button type="primary" :icon="DocumentAdd" @click="createNodeInSelectedGraph">鍒涘缓鑺傜偣</el-button>
       </template>
     </el-dialog>
 
@@ -586,7 +606,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           <span>{{ currentWorkflowId }}</span>
           <el-tag size="small">{{ definitionTimestamp ? `ts ${definitionTimestamp}` : 'local' }}</el-tag>
           <el-tag size="small" :type="definitionDirty ? 'warning' : 'success'">
-            {{ definitionDirty ? '未保存' : '已保存' }}
+            {{ definitionDirty ? 'unsaved' : 'saved' }}
           </el-tag>
         </div>
         <el-input
@@ -598,7 +618,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         />
       </div>
       <template #footer>
-        <el-button @click="definitionDialogVisible = false">关闭</el-button>
+        <el-button @click="definitionDialogVisible = false">鍏抽棴</el-button>
         <el-button
           type="primary"
           :icon="Upload"
@@ -606,7 +626,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           :disabled="!canSaveDefinition"
           @click="saveCurrentDefinition"
         >
-          保存 Definition
+          淇濆瓨 Definition
         </el-button>
       </template>
     </el-dialog>
@@ -615,8 +635,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 
 <script setup lang="ts">
 /**
- * @description 工作流设计稿可视化编辑页。编辑 Dify-like graph 中的业务节点和步骤线，并通过后端文件 API 保存 design.json。
- */
+ * @description 宸ヤ綔娴佽璁＄鍙鍖栫紪杈戦〉銆傜紪杈?Dify-like graph 涓殑涓氬姟鑺傜偣鍜屾楠ょ嚎锛屽苟閫氳繃鍚庣鏂囦欢 API 淇濆瓨 design.json銆? */
 import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Background } from '@vue-flow/background'
@@ -661,9 +680,9 @@ import {
   Upload,
 } from '@element-plus/icons-vue'
 import {
-  addWorkflowDesignEdge,
+  addWorkflowDesignLine,
   collectWorkflowDesignNodes,
-  collectWorkflowDesignEdges,
+  collectWorkflowDesignLines,
   collectWorkflowDesignGraphs,
   createWorkflowDesign,
   createAgentWorkflowDefinitionFromDesign,
@@ -678,13 +697,14 @@ import {
   publishWorkflowDefinition,
   readWorkflowDefinition,
   readWorkflowDesign,
-  removeWorkflowDesignEdge,
+  removeWorkflowDesignLine,
   removeWorkflowDesignNode,
   saveWorkflowDefinition,
   saveWorkflowDesign,
-  updateWorkflowDesignEdge,
+  updateWorkflowDesignLine,
   type WorkflowDesignDocument,
-  type WorkflowDesignEdgeView,
+  type WorkflowDesignLineEndpoint,
+  type WorkflowDesignLineView,
   type WorkflowDesignGraphView,
   type WorkflowDesignNodeView,
   type WorkflowDesignNodeCreateKind,
@@ -745,10 +765,10 @@ type ClassModelOption = {
 type WorkflowFlowNode = Node<WorkflowFlowNodeData, Record<string, never>, 'workflow'>
 type WorkflowFlowEdge = Edge<WorkflowFlowEdgeData>
 
-type EdgeEndpointPatchValidationCommand = Readonly<{
-  edge: WorkflowDesignEdgeView
-  source: string
-  target: string
+type LineEndpointPatchValidationCommand = Readonly<{
+  line: WorkflowDesignLineView
+  from: WorkflowDesignLineEndpoint
+  to: WorkflowDesignLineEndpoint
   options: {
     silent?: boolean
   }
@@ -771,14 +791,14 @@ const GRAPH_SPLIT_MAX_RATIO = 78
 const GRAPH_SPLIT_SNAP_RATIO = 12
 const GRAPH_SPLIT_STORAGE_PREFIX = 'spark.workflow-design.graph-split.'
 const UNREADABLE_WORKFLOW_DESIGN_STATUS = 'unreadable'
-const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '设计稿格式不兼容或文件不可读'
+const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '璁捐绋挎牸寮忎笉鍏煎鎴栨枃浠朵笉鍙'
 
 const designs = ref<WorkflowDesignSummary[]>([])
 const currentWorkflowId = ref('')
 const currentTimestamp = ref('')
 const currentDocument = ref<WorkflowDesignDocument | null>(null)
 const selectedNodeKey = ref('')
-const selectedEdgeKey = ref('')
+const selectedLineKey = ref('')
 const layoutResizeState = ref<LayoutResizeState | null>(null)
 const graphSplitResizeState = ref<GraphSplitResizeState | null>(null)
 const leftPanelWidth = ref(280)
@@ -827,12 +847,16 @@ const nodeY = computed({
 const loopModeText = ref('')
 const loopMaxCountValue = ref(10)
 const loopExitNodeText = ref('')
-const edgeSourceText = ref('')
-const edgeTargetText = ref('')
-const edgeTypeText = ref('')
-const edgeSourceHandleText = ref('')
-const edgeTargetHandleText = ref('')
-const edgeRelationText = ref('')
+const lineFromNodeText = ref('')
+const lineFromModelText = ref('')
+const lineFromMemberText = ref('')
+const lineToNodeText = ref('')
+const lineToModelText = ref('')
+const lineToMemberText = ref('')
+const lineTypeText = ref('')
+const lineFromDockText = ref('')
+const lineToDockText = ref('')
+const lineRelationText = ref('')
 
 const createForm = ref({
   workflowId: '',
@@ -849,18 +873,18 @@ const nodeCreateForm = ref<NodeCreateForm>({
 
 const allNodes = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignNodes(currentDocument.value))
 const graphViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignGraphs(currentDocument.value))
-const edgeViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignEdges(currentDocument.value))
+const lineViews = computed(() => currentDocument.value === null ? [] : collectWorkflowDesignLines(currentDocument.value))
 const businessNodes = computed(() => allNodes.value.filter(node => node.isBusinessNode))
 const selectedNode = computed(() => allNodes.value.find(node => node.key === selectedNodeKey.value) ?? null)
-const selectedEdge = computed(() => edgeViews.value.find(edge => edge.key === selectedEdgeKey.value) ?? null)
+const selectedLine = computed(() => lineViews.value.find(line => line.key === selectedLineKey.value) ?? null)
 const selectedClassModelOption = computed(() => {
   return classModelOptions.value.find(item => item.kind === modelClassText.value.trim()) ?? null
 })
 const selectedClassModelMethods = computed(() => selectedClassModelOption.value?.methods ?? [])
-const selectedEdgeGraphNodes = computed(() => {
-  const edge = selectedEdge.value
-  if (edge === null) return []
-  return allNodes.value.filter(node => node.graph === edge.graph)
+const selectedLineGraphNodes = computed(() => {
+  const line = selectedLine.value
+  if (line === null) return []
+  return allNodes.value.filter(node => node.graph === line.graph)
 })
 const workflowShellStyle = computed<CSSProperties>(() => ({
   gridTemplateColumns: `${leftPanelWidth.value}px 12px minmax(520px, 1fr) 12px ${rightPanelWidth.value}px`,
@@ -947,8 +971,8 @@ watch(
 )
 
 watch(
-  () => selectedEdge.value?.key ?? '',
-  () => syncEdgeEditorFromSelected(),
+  () => selectedLine.value?.key ?? '',
+  () => syncLineEditorFromSelected(),
   { immediate: true },
 )
 
@@ -978,7 +1002,7 @@ async function loadDesigns(): Promise<void> {
   try {
     designs.value = await listWorkflowDesigns()
   } catch (error: unknown) {
-    ElMessage.error(`加载工作流设计稿失败: ${errorMessage(error)}`)
+    ElMessage.error(`鍔犺浇宸ヤ綔娴佽璁＄澶辫触: ${errorMessage(error)}`)
   } finally {
     loadingList.value = false
   }
@@ -991,7 +1015,7 @@ async function openInitialDesign(): Promise<void> {
     await openDesign(firstReadableDesign.workflowId)
     return
   }
-  ElMessage.warning('当前设计稿均不可打开，请新建工作流或删除旧设计稿')
+  ElMessage.warning('褰撳墠璁捐绋垮潎涓嶅彲鎵撳紑锛岃鏂板缓宸ヤ綔娴佹垨鍒犻櫎鏃ц璁＄')
 }
 
 async function openDesign(workflowId: string): Promise<void> {
@@ -999,7 +1023,7 @@ async function openDesign(workflowId: string): Promise<void> {
   if (normalizedWorkflowId.length === 0) return
   const summary = findWorkflowDesignSummary(normalizedWorkflowId)
   if (isUnreadableDesign(summary)) {
-    ElMessage.error(`设计稿不可打开: ${workflowDesignErrorMessage(summary)}`)
+    ElMessage.error(`璁捐绋夸笉鍙墦寮€: ${workflowDesignErrorMessage(summary)}`)
     return
   }
   if (normalizedWorkflowId !== currentWorkflowId.value) {
@@ -1011,14 +1035,14 @@ async function openDesign(workflowId: string): Promise<void> {
   try {
     const result = await readWorkflowDesign(normalizedWorkflowId)
     if (result.document === undefined) {
-      ElMessage.info('设计稿未变化')
+      ElMessage.info('璁捐绋挎湭鍙樺寲')
       return
     }
     currentWorkflowId.value = normalizedWorkflowId
     currentTimestamp.value = result.timestamp
     currentDocument.value = result.document
     resetDefinitionEditor()
-    selectedEdgeKey.value = ''
+    selectedLineKey.value = ''
     currentMainGraphKey.value = 'workflow.graph'
     currentChildGraphKey.value = ''
     loadGraphSplitState(normalizedWorkflowId)
@@ -1027,7 +1051,7 @@ async function openDesign(workflowId: string): Promise<void> {
       ?? nodes[0]?.key
       ?? ''
   } catch (error: unknown) {
-    ElMessage.error(`打开失败: ${errorMessage(error)}`)
+    ElMessage.error(`鎵撳紑澶辫触: ${errorMessage(error)}`)
   } finally {
     opening.value = false
   }
@@ -1063,7 +1087,7 @@ async function createDesign(): Promise<void> {
   const workflowId = createForm.value.workflowId.trim()
   const title = createForm.value.title.trim()
   if (workflowId.length === 0) {
-    ElMessage.warning('请输入 Workflow ID')
+    ElMessage.warning('璇疯緭鍏?Workflow ID')
     return
   }
   creating.value = true
@@ -1072,9 +1096,9 @@ async function createDesign(): Promise<void> {
     createDialogVisible.value = false
     await loadDesigns()
     await openDesign(workflowId)
-    ElMessage.success('设计稿已创建')
+    ElMessage.success('璁捐绋垮凡鍒涘缓')
   } catch (error: unknown) {
-    ElMessage.error(`创建失败: ${errorMessage(error)}`)
+    ElMessage.error(`鍒涘缓澶辫触: ${errorMessage(error)}`)
   } finally {
     creating.value = false
   }
@@ -1084,10 +1108,10 @@ async function deleteDesign(workflowId: string): Promise<void> {
   const normalizedWorkflowId = workflowId.trim()
   if (normalizedWorkflowId.length === 0) return
   try {
-    await ElMessageBox.confirm(`确定删除「${normalizedWorkflowId}」？`, '删除设计稿', {
+    await ElMessageBox.confirm(`Delete workflow design ${normalizedWorkflowId}?`, 'Delete workflow design', {
       type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+      confirmButtonText: '鍒犻櫎',
+      cancelButtonText: '鍙栨秷',
     })
     await deleteWorkflowDesign(normalizedWorkflowId)
     if (currentWorkflowId.value === normalizedWorkflowId) {
@@ -1095,13 +1119,13 @@ async function deleteDesign(workflowId: string): Promise<void> {
       currentTimestamp.value = ''
       currentDocument.value = null
       selectedNodeKey.value = ''
-      selectedEdgeKey.value = ''
+      selectedLineKey.value = ''
       resetDefinitionEditor()
     }
     await loadDesigns()
-    ElMessage.success('设计稿已删除')
+    ElMessage.success('璁捐绋垮凡鍒犻櫎')
   } catch (error: unknown) {
-    if (error !== 'cancel') ElMessage.error(`删除失败: ${errorMessage(error)}`)
+    if (error !== 'cancel') ElMessage.error(`鍒犻櫎澶辫触: ${errorMessage(error)}`)
   }
 }
 
@@ -1143,7 +1167,7 @@ function createNodeInSelectedGraph(): void {
   const form = nodeCreateForm.value
   const graphView = graphViews.value.find(view => view.key === form.graphKey)
   if (graphView === undefined) {
-    ElMessage.warning('请选择有效的 graph/subGraph')
+    ElMessage.warning('璇烽€夋嫨鏈夋晥鐨?graph/subGraph')
     return
   }
 
@@ -1155,9 +1179,9 @@ function createNodeInSelectedGraph(): void {
   })
   markWorkflowDesignDirty(document, `${graphView.scopePath}.nodes`)
   nodeCreateDialogVisible.value = false
-  selectedEdgeKey.value = ''
+  selectedLineKey.value = ''
   selectedNodeKey.value = `${graphView.scopePath}:${node.id}`
-  ElMessage.success('节点已创建')
+  ElMessage.success('Node created')
 }
 
 async function deleteSelectedNode(): Promise<void> {
@@ -1165,15 +1189,15 @@ async function deleteSelectedNode(): Promise<void> {
   const document = currentDocument.value
   if (view === null || document === null) return
   if ((view.nodeType === 'start' || view.nodeType === 'output') && allNodes.value.filter(node => node.nodeType === view.nodeType).length <= 1) {
-    ElMessage.warning('至少保留一个 start 和 output 节点')
+    ElMessage.warning('鑷冲皯淇濈暀涓€涓?start 鍜?output 鑺傜偣')
     return
   }
 
   try {
-    await ElMessageBox.confirm(`确定删除节点「${view.title}」？相关连线会一并删除。`, '删除节点', {
+    await ElMessageBox.confirm(`Delete node ${view.title}? Related lines will also be removed.`, 'Delete node', {
       type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+      confirmButtonText: '鍒犻櫎',
+      cancelButtonText: '鍙栨秷',
     })
   } catch {
     return
@@ -1182,11 +1206,11 @@ async function deleteSelectedNode(): Promise<void> {
   const result = removeWorkflowDesignNode(view.graph, view.id)
   if (!result.removed) return
   markWorkflowDesignDirty(document, `${view.scopePath}.nodes`)
-  if (result.removedEdges.length > 0) markWorkflowDesignDirty(document, `${view.scopePath}.edges`)
+  if (result.removedLines.length > 0) markWorkflowDesignDirty(document, `${view.scopePath}.lines`)
   selectedNodeKey.value = ''
-  selectedEdgeKey.value = ''
+  selectedLineKey.value = ''
   editorDirty.value = false
-  ElMessage.success('节点已删除')
+  ElMessage.success('Node deleted')
 }
 
 function startLayoutResize(event: PointerEvent, side: 'left' | 'right'): void {
@@ -1260,7 +1284,7 @@ function promoteChildGraphToMain(): void {
   if (child === null) return
   currentMainGraphKey.value = child.key
   currentChildGraphKey.value = ''
-  selectedEdgeKey.value = ''
+  selectedLineKey.value = ''
   selectedNodeKey.value = child.graph.nodes[0] !== undefined ? `${child.scopePath}:${child.graph.nodes[0].id}` : ''
   normalizeChildGraphSelection()
 }
@@ -1271,7 +1295,7 @@ function returnMainGraphToParent(): void {
   if (main === null || parent === null) return
   currentMainGraphKey.value = parent.key
   currentChildGraphKey.value = main.key
-  selectedEdgeKey.value = ''
+  selectedLineKey.value = ''
   selectedNodeKey.value = main.ownerNodeId !== undefined ? `${parent.scopePath}:${main.ownerNodeId}` : ''
   if (graphSplitCollapsed.value === 'bottom') graphSplitCollapsed.value = null
 }
@@ -1392,25 +1416,92 @@ function isJsonRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function dockHandle(dock: number | undefined, fallback: string): string {
+  return typeof dock === 'number' && Number.isInteger(dock) && dock >= 0 ? `dock-${dock}` : fallback
+}
+
+function dockFromHandle(handle: string | null | undefined): number | undefined {
+  if (typeof handle !== 'string' || handle.trim().length === 0) return undefined
+  const match = /^dock-(\d+)$/u.exec(handle.trim())
+  if (match !== null) return Number(match[1])
+  const parsed = Number(handle)
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : undefined
+}
+
+function readDockText(dock: unknown): string {
+  return typeof dock === 'number' && Number.isInteger(dock) && dock >= 0 ? String(dock) : ''
+}
+
+function parseDockText(value: string): number | undefined {
+  const text = value.trim()
+  if (text.length === 0) return undefined
+  const parsed = Number(text)
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : undefined
+}
+
+function withConnectionEndpoint(
+  endpoint: WorkflowDesignLineEndpoint,
+  nodeId: string,
+  handle: string | null | undefined,
+): WorkflowDesignLineEndpoint {
+  const { dock: _dock, ...rest } = endpoint
+  const dock = dockFromHandle(handle)
+  return {
+    ...rest,
+    nodeId,
+    modelId: rest.modelId.trim().length > 0 ? rest.modelId : '$workflow',
+    memberName: rest.memberName.trim().length > 0 ? rest.memberName : 'value',
+    ...(dock === undefined ? {} : { dock }),
+  }
+}
+
+function lineViewKey(graphView: WorkflowDesignGraphView, line: WorkflowDesignLineView['line']): string {
+  const view = lineViews.value.find(item => item.graph === graphView.graph && item.line === line)
+  if (view !== undefined) return view.key
+  const index = graphView.graph.lines.indexOf(line)
+  return `${graphView.scopePath}:line:${line.id ?? index}`
+}
+
+function createEditorLineEndpoint(
+  nodeId: string,
+  modelId: string,
+  memberName: string,
+  dockText: string,
+): WorkflowDesignLineEndpoint {
+  const dock = parseDockText(dockText)
+  return {
+    nodeId,
+    modelId,
+    memberName,
+    ...(dock === undefined ? {} : { dock }),
+  }
+}
+
+function isSameLineEndpoint(left: WorkflowDesignLineEndpoint, right: WorkflowDesignLineEndpoint): boolean {
+  return left.nodeId === right.nodeId
+    && left.modelId === right.modelId
+    && left.memberName === right.memberName
+}
+
 function selectNode(key: string): void {
   if (key === selectedNodeKey.value) return
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
-  selectedEdgeKey.value = ''
+  selectedLineKey.value = ''
   selectedNodeKey.value = key
 }
 
-function selectEdge(key: string): void {
+function selectLine(key: string): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
   selectedNodeKey.value = ''
-  selectedEdgeKey.value = key
+  selectedLineKey.value = key
 }
 
 function nodesForGraph(graphView: WorkflowDesignGraphView): WorkflowDesignNodeView[] {
   return allNodes.value.filter(node => node.graph === graphView.graph)
 }
 
-function edgesForGraph(graphView: WorkflowDesignGraphView): WorkflowDesignEdgeView[] {
-  return edgeViews.value.filter(edge => edge.graph === graphView.graph)
+function linesForGraph(graphView: WorkflowDesignGraphView): WorkflowDesignLineView[] {
+  return lineViews.value.filter(line => line.graph === graphView.graph)
 }
 
 function flowId(graphView: WorkflowDesignGraphView): string {
@@ -1440,15 +1531,15 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
 }
 
 function flowEdgesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowEdge[] {
-  return edgesForGraph(graphView).map((edge) => {
+  return linesForGraph(graphView).map((line) => {
     return {
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      sourceHandle: edge.edge.sourceHandle ?? 'source',
-      targetHandle: edge.edge.targetHandle ?? 'target',
+      id: line.id,
+      source: line.from.nodeId,
+      target: line.to.nodeId,
+      sourceHandle: dockHandle(line.from.dock, 'source'),
+      targetHandle: dockHandle(line.to.dock, 'target'),
       data: {
-        edgeKey: edge.key,
+        edgeKey: line.key,
       },
     }
   })
@@ -1507,11 +1598,11 @@ function handleFlowEdgesChange(changes: EdgeChange[], graphView: WorkflowDesignG
   for (const change of changes) {
     if (change.type === 'select') {
       if (change.selected) {
-        const edgeView = edgeViews.value.find(e => e.graph === graphView.graph && e.id === change.id)
-        if (edgeView) selectEdge(edgeView.key)
+        const edgeView = lineViews.value.find(e => e.graph === graphView.graph && e.id === change.id)
+        if (edgeView) selectLine(edgeView.key)
       } else {
-        const edgeView = selectedEdge.value
-        if (edgeView?.id === change.id && edgeView.graph === graphView.graph) selectedEdgeKey.value = ''
+        const edgeView = selectedLine.value
+        if (edgeView?.id === change.id && edgeView.graph === graphView.graph) selectedLineKey.value = ''
       }
     }
   }
@@ -1543,32 +1634,25 @@ function handleFlowNodeDragStop(event: NodeDragEvent): void {
 function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGraphView): void {
   const document = currentDocument.value
   if (document === null) return
-  const source = connection.source.trim()
-  const target = connection.target.trim()
-  if (source.length === 0 || target.length === 0) {
-    ElMessage.warning('连线必须包含 Source 和 Target')
+  const fromNodeId = connection.source.trim()
+  const toNodeId = connection.target.trim()
+  if (fromNodeId.length === 0 || toNodeId.length === 0) {
+    ElMessage.warning('杩炵嚎蹇呴』鍖呭惈 From 鍜?To')
     return
   }
-  if (source === target) {
-    ElMessage.warning('不能连接节点自身')
-    return
-  }
-  const existing = graphView.graph.edges.find(edge => edge.source === source && edge.target === target)
-  if (existing !== undefined) {
-    const existingView = edgeViews.value.find(view => view.edge === existing)
-    selectedEdgeKey.value = existingView?.key ?? `${graphView.scopePath}:${existing.id ?? existing.source}`
-    ElMessage.info('连线已存在')
+  if (fromNodeId === toNodeId) {
+    ElMessage.warning('涓嶈兘杩炴帴鑺傜偣鑷韩')
     return
   }
 
-  const edge = addWorkflowDesignEdge(graphView.graph, source, target)
-  updateWorkflowDesignEdge(edge, {
-    sourceHandle: connection.sourceHandle ?? 'source',
-    targetHandle: connection.targetHandle ?? 'target',
+  const line = addWorkflowDesignLine(graphView.graph, fromNodeId, toNodeId)
+  updateWorkflowDesignLine(line, {
+    from: withConnectionEndpoint(line.from, fromNodeId, connection.sourceHandle),
+    to: withConnectionEndpoint(line.to, toNodeId, connection.targetHandle),
   })
-  markWorkflowDesignDirty(document, `${graphView.scopePath}.edges`)
-  selectEdge(`${graphView.scopePath}:${edge.id ?? `${edge.source}.${edge.target}`}`)
-  ElMessage.success('连线已创建')
+  markWorkflowDesignDirty(document, `${graphView.scopePath}.lines`)
+  selectLine(lineViewKey(graphView, line))
+  ElMessage.success('Line created')
 }
 
 function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView): void {
@@ -1576,78 +1660,93 @@ function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignG
   if (document === null) return
   const data = event.edge.data
   if (!isWorkflowFlowEdgeData(data)) return
-  const edge = edgeViews.value.find(item => item.key === data.edgeKey)
-  if (edge === undefined || edge.graph !== graphView.graph) return
+  const line = lineViews.value.find(item => item.key === data.edgeKey)
+  if (line === undefined || line.graph !== graphView.graph) return
 
-  const source = event.connection.source.trim()
-  const target = event.connection.target.trim()
-  if (!validateEdgeEndpointPatch({ edge, source, target, options: { silent: false } })) return
+  const fromNodeId = event.connection.source.trim()
+  const toNodeId = event.connection.target.trim()
+  const from = withConnectionEndpoint(line.from, fromNodeId, event.connection.sourceHandle)
+  const to = withConnectionEndpoint(line.to, toNodeId, event.connection.targetHandle)
+  if (!validateLineEndpointPatch({ line, from, to, options: { silent: false } })) return
 
-  updateWorkflowDesignEdge(edge.edge, {
-    source,
-    target,
-    sourceHandle: event.connection.sourceHandle ?? 'source',
-    targetHandle: event.connection.targetHandle ?? 'target',
+  updateWorkflowDesignLine(line.line, {
+    from,
+    to,
   })
-  markWorkflowDesignDirty(document, `${edge.scopePath}.edges`)
+  markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
   editorDirty.value = false
-  ElMessage.success('连线端点已更新')
-  syncEdgeEditorFromSelected()
+  ElMessage.success('Line endpoints updated')
+  syncLineEditorFromSelected()
 }
 
-function deleteSelectedEdge(): void {
-  const edge = selectedEdge.value
+function deleteSelectedLine(): void {
+  const line = selectedLine.value
   const document = currentDocument.value
-  if (edge === null || document === null) return
-  if (!removeWorkflowDesignEdge(edge.graph, edge.edge)) return
-  markWorkflowDesignDirty(document, `${edge.scopePath}.edges`)
-  selectedEdgeKey.value = ''
-  ElMessage.success('连线已删除')
+  if (line === null || document === null) return
+  if (!removeWorkflowDesignLine(line.graph, line.line)) return
+  markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
+  selectedLineKey.value = ''
+  ElMessage.success('Line deleted')
 }
 
-function validateEdgeEndpointPatch(command: EdgeEndpointPatchValidationCommand): boolean {
-  const { edge, source, target, options } = command
-  const nodeIds = new Set(allNodes.value.filter(node => node.graph === edge.graph).map(node => node.id))
-  if (source.length === 0 || target.length === 0) {
-    if (options.silent !== true) ElMessage.warning('连线必须填写 Source 和 Target')
+function validateLineEndpointPatch(command: LineEndpointPatchValidationCommand): boolean {
+  const { line, from, to, options } = command
+  const nodeIds = new Set(allNodes.value.filter(node => node.graph === line.graph).map(node => node.id))
+  if (
+    from.nodeId.length === 0
+    || from.modelId.length === 0
+    || from.memberName.length === 0
+    || to.nodeId.length === 0
+    || to.modelId.length === 0
+    || to.memberName.length === 0
+  ) {
+    if (options.silent !== true) ElMessage.warning('杩炵嚎蹇呴』濉啓 From/To 鐨?Node銆丮odel 鍜?Member')
     return false
   }
-  if (!nodeIds.has(source) || !nodeIds.has(target)) {
-    if (options.silent !== true) ElMessage.warning('Source/Target 必须是当前 graph/subGraph 内的节点')
+  if (!nodeIds.has(from.nodeId) || !nodeIds.has(to.nodeId)) {
+    if (options.silent !== true) ElMessage.warning('From/To Node 蹇呴』鏄綋鍓?graph/subGraph 鍐呯殑鑺傜偣')
     return false
   }
-  if (source === target) {
-    if (options.silent !== true) ElMessage.warning('连线不能指向节点自身')
+  if (from.nodeId === to.nodeId) {
+    if (options.silent !== true) ElMessage.warning('杩炵嚎涓嶈兘鎸囧悜鑺傜偣鑷韩')
     return false
   }
-  const duplicated = edge.graph.edges.some(item => item !== edge.edge && item.source === source && item.target === target)
+  const duplicated = line.graph.lines.some(item => item !== line.line && isSameLineEndpoint(item.from, from) && isSameLineEndpoint(item.to, to))
   if (duplicated) {
-    if (options.silent !== true) ElMessage.warning('同一 graph/subGraph 内已存在相同 Source -> Target 连线')
+    if (options.silent !== true) ElMessage.warning('鍚屼竴 graph/subGraph 鍐呭凡瀛樺湪鐩稿悓 From -> To 成员连线')
     return false
   }
   return true
 }
 
-function applyEdgeEditorToSelected(options: { silent?: boolean } = {}): boolean {
-  const edge = selectedEdge.value
+function applyLineEditorToSelected(options: { silent?: boolean } = {}): boolean {
+  const line = selectedLine.value
   const document = currentDocument.value
-  if (edge === null || document === null) return true
+  if (line === null || document === null) return true
 
-  const source = edgeSourceText.value.trim()
-  const target = edgeTargetText.value.trim()
-  if (!validateEdgeEndpointPatch({ edge, source, target, options })) return false
+  const from = createEditorLineEndpoint(
+    lineFromNodeText.value.trim(),
+    lineFromModelText.value.trim(),
+    lineFromMemberText.value.trim(),
+    lineFromDockText.value,
+  )
+  const to = createEditorLineEndpoint(
+    lineToNodeText.value.trim(),
+    lineToModelText.value.trim(),
+    lineToMemberText.value.trim(),
+    lineToDockText.value,
+  )
+  if (!validateLineEndpointPatch({ line, from, to, options })) return false
 
-  updateWorkflowDesignEdge(edge.edge, {
-    source,
-    target,
-    sourceHandle: edgeSourceHandleText.value.trim() || 'source',
-    targetHandle: edgeTargetHandleText.value.trim() || 'target',
-    type: edgeTypeText.value.trim() || 'custom',
-    relation: edgeRelationText.value.trim() || 'sequence',
+  updateWorkflowDesignLine(line.line, {
+    from,
+    to,
+    type: lineTypeText.value.trim() || 'custom',
+    relation: lineRelationText.value.trim() || 'sequence',
   })
-  markWorkflowDesignDirty(document, `${edge.scopePath}.edges`)
+  markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('连线已更新')
+  if (options.silent !== true) ElMessage.success('Line updated')
   return true
 }
 
@@ -1688,26 +1787,34 @@ function syncEditorFromSelected(): void {
   loopExitNodeText.value = exitNodeId === '-' ? '' : exitNodeId
 }
 
-function syncEdgeEditorFromSelected(): void {
-  const edge = selectedEdge.value
+function syncLineEditorFromSelected(): void {
+  const line = selectedLine.value
   editorDirty.value = false
   modelJsonError.value = ''
-  if (edge === null) {
-    edgeSourceText.value = ''
-    edgeTargetText.value = ''
-    edgeTypeText.value = ''
-    edgeSourceHandleText.value = ''
-    edgeTargetHandleText.value = ''
-    edgeRelationText.value = ''
+  if (line === null) {
+    lineFromNodeText.value = ''
+    lineFromModelText.value = ''
+    lineFromMemberText.value = ''
+    lineToNodeText.value = ''
+    lineToModelText.value = ''
+    lineToMemberText.value = ''
+    lineTypeText.value = ''
+    lineFromDockText.value = ''
+    lineToDockText.value = ''
+    lineRelationText.value = ''
     return
   }
-  edgeSourceText.value = edge.source
-  edgeTargetText.value = edge.target
-  edgeTypeText.value = typeof edge.edge.type === 'string' ? edge.edge.type : 'custom'
-  edgeSourceHandleText.value = typeof edge.edge.sourceHandle === 'string' ? edge.edge.sourceHandle : 'source'
-  edgeTargetHandleText.value = typeof edge.edge.targetHandle === 'string' ? edge.edge.targetHandle : 'target'
-  const relation = edge.edge.data?.['relation']
-  edgeRelationText.value = typeof relation === 'string' ? relation : 'sequence'
+  lineFromNodeText.value = line.from.nodeId
+  lineFromModelText.value = line.from.modelId
+  lineFromMemberText.value = line.from.memberName
+  lineToNodeText.value = line.to.nodeId
+  lineToModelText.value = line.to.modelId
+  lineToMemberText.value = line.to.memberName
+  lineTypeText.value = typeof line.line.type === 'string' ? line.line.type : 'custom'
+  lineFromDockText.value = readDockText(line.from.dock)
+  lineToDockText.value = readDockText(line.to.dock)
+  const relation = line.line.data?.['relation']
+  lineRelationText.value = typeof relation === 'string' ? relation : 'sequence'
 }
 
 function syncBusinessModelEditorFromSelected(view: WorkflowDesignNodeView): void {
@@ -1720,13 +1827,12 @@ function syncBusinessModelEditorFromSelected(view: WorkflowDesignNodeView): void
     classModelGuideText.value = ''
     return
   }
-  const model = view.node.data?.model
+  const model = readPrimaryBusinessNodeModel(view.node.data)
+  const completion = isJsonRecord(model?.['completion']) ? model['completion'] : undefined
   modelRootClassText.value = readTextField(model, 'rootClassName')
   modelClassText.value = readTextField(model, 'className')
-  const validation = view.node.data?.validation
-  const action = isJsonRecord(validation) ? validation['action'] : undefined
-  validationActionClassText.value = readTextField(action, 'className') || modelClassText.value
-  validationActionNameText.value = readTextField(action, 'actionName')
+  validationActionClassText.value = modelClassText.value
+  validationActionNameText.value = readTextField(completion, 'memberName')
   classModelError.value = ''
   classModelGuideText.value = ''
 }
@@ -1759,7 +1865,7 @@ function shouldEditNodeConfig(view: WorkflowDesignNodeView): boolean {
 
 function readBusinessNodeModelClassName(view: WorkflowDesignNodeView): string {
   if (!view.isBusinessNode) return ''
-  const model = view.node.data?.model
+  const model = readPrimaryBusinessNodeModel(view.node.data)
   if (!isJsonRecord(model)) return 'unbound model'
   const className = model['className']
   return typeof className === 'string' && className.trim().length > 0 ? className.trim() : 'unbound model'
@@ -1767,12 +1873,10 @@ function readBusinessNodeModelClassName(view: WorkflowDesignNodeView): string {
 
 function readBusinessNodeValidationActionName(view: WorkflowDesignNodeView): string {
   if (!view.isBusinessNode) return ''
-  const validation = view.node.data?.validation
-  if (!isJsonRecord(validation)) return ''
-  const action = validation['action']
-  if (!isJsonRecord(action)) return ''
-  const actionName = action['actionName']
-  return typeof actionName === 'string' && actionName.trim().length > 0 ? actionName.trim() : ''
+  const model = readPrimaryBusinessNodeModel(view.node.data)
+  const completion = isJsonRecord(model?.['completion']) ? model['completion'] : undefined
+  const memberName = isJsonRecord(completion) ? completion['memberName'] : undefined
+  return typeof memberName === 'string' && memberName.trim().length > 0 ? memberName.trim() : ''
 }
 
 function createClassModelKnowledgeProvider(rootClassName: string): ClassModelKnowledgeProvider {
@@ -1824,27 +1928,29 @@ function readMethodOptions(value: unknown): ClassModelMethodOption[] {
     .filter((item): item is ClassModelMethodOption => item !== null)
 }
 
-function normalizeBusinessNodeValidationEditorValue(value: unknown): Record<string, unknown> {
-  const validation = isJsonRecord(value) ? { ...value } : {}
-  validation['action'] = isJsonRecord(validation['action']) ? { ...validation['action'] } : {}
-  return validation
-}
-
-function normalizeBusinessNodeLlmEditorValue(value: unknown): Record<string, unknown> {
-  const llm = isJsonRecord(value) ? { ...value } : {}
-  llm['task'] = isJsonRecord(llm['task']) ? llm['task'] : {}
-  llm['knowledge'] = isJsonRecord(llm['knowledge']) ? { ...llm['knowledge'] } : {}
-  llm['functionCalling'] = isJsonRecord(llm['functionCalling']) ? llm['functionCalling'] : {
-    mode: 'freeWithinModelContext',
-  }
-  llm['output'] = isJsonRecord(llm['output']) ? llm['output'] : {}
-  return llm
-}
-
 function readTextField(value: unknown, field: string): string {
   if (!isJsonRecord(value)) return ''
   const text = value[field]
   return typeof text === 'string' ? text.trim() : ''
+}
+
+function readPrimaryBusinessNodeModel(data: unknown): Record<string, unknown> | null {
+  if (!isJsonRecord(data)) return null
+  const models = data['models']
+  if (Array.isArray(models) && isJsonRecord(models[0])) return models[0]
+  const legacyModel = data['model']
+  return isJsonRecord(legacyModel) ? legacyModel : null
+}
+
+function ensurePrimaryBusinessNodeModel(data: Record<string, unknown>, nodeId: string): Record<string, unknown> {
+  const models = Array.isArray(data['models']) ? [...data['models']] : []
+  const primary = isJsonRecord(models[0]) ? models[0] : {}
+  if (readTextField(primary, 'id').length === 0) primary['id'] = `${nodeId}.model`
+  if (readTextField(primary, 'sourceRef').length === 0) primary['sourceRef'] = '$'
+  models[0] = primary
+  data['models'] = models
+  delete data['model']
+  return primary
 }
 
 function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
@@ -1856,13 +1962,13 @@ function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
   try {
     parsed = JSON.parse(modelJsonText.value.trim().length > 0 ? modelJsonText.value : '{}')
   } catch (error: unknown) {
-    modelJsonError.value = `JSON 无效: ${errorMessage(error)}`
+    modelJsonError.value = `JSON 鏃犳晥: ${errorMessage(error)}`
     if (options.silent !== true) ElMessage.warning(modelJsonError.value)
     return false
   }
 
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    modelJsonError.value = '节点配置 JSON 必须是对象'
+    modelJsonError.value = 'Node config JSON must be an object.'
     if (options.silent !== true) ElMessage.warning(modelJsonError.value)
     return false
   }
@@ -1876,7 +1982,7 @@ function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
   editorDirty.value = false
   modelJsonError.value = ''
-  if (options.silent !== true) ElMessage.success('已应用到节点')
+  if (options.silent !== true) ElMessage.success('宸插簲鐢ㄥ埌鑺傜偣')
   return true
 }
 
@@ -1885,32 +1991,24 @@ function applyBusinessModelEditorToSelected(options: { silent?: boolean } = {}):
   const document = currentDocument.value
   if (view === null || document === null || !view.isBusinessNode) return true
   view.node.data ??= {}
-  view.node.data.model = {
-    rootClassName: modelRootClassText.value.trim(),
-    className: modelClassText.value.trim(),
-    contextPath: readTextField(view.node.data.model, 'contextPath') || '$',
-  }
-  view.node.data.validation = normalizeBusinessNodeValidationEditorValue(view.node.data.validation)
-  const validation = view.node.data.validation
-  const action = isJsonRecord(validation['action']) ? validation['action'] : {}
-  validation['action'] = {
-    ...action,
-    className: validationActionClassText.value.trim() || modelClassText.value.trim(),
-    actionName: validationActionNameText.value.trim(),
-    inputProjection: isJsonRecord(action['inputProjection']) ? action['inputProjection'] : {},
-    expectedResult: isJsonRecord(action['expectedResult']) ? action['expectedResult'] : {},
-  }
-  view.node.data.llm = normalizeBusinessNodeLlmEditorValue(view.node.data.llm)
-  const llm = view.node.data.llm
-  llm['knowledge'] = {
-    ...(isJsonRecord(llm['knowledge']) ? llm['knowledge'] : {}),
-    rootClassName: modelRootClassText.value.trim(),
-    className: modelClassText.value.trim(),
+  const primaryModel = ensurePrimaryBusinessNodeModel(view.node.data, view.id)
+  primaryModel['rootClassName'] = modelRootClassText.value.trim()
+  primaryModel['className'] = modelClassText.value.trim()
+  const completionMemberName = validationActionNameText.value.trim()
+  if (completionMemberName.length > 0) {
+    const completion = isJsonRecord(primaryModel['completion']) ? primaryModel['completion'] : {}
+    primaryModel['completion'] = {
+      ...completion,
+      memberName: completionMemberName,
+      returnContract: 'boolean-or-reason',
+    }
+  } else {
+    delete primaryModel['completion']
   }
   modelJsonText.value = formatJson(view.node.data)
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('模型绑定已应用')
+  if (options.silent !== true) ElMessage.success('Model binding applied')
   return true
 }
 
@@ -1924,7 +2022,7 @@ function handleModelClassSelectionChange(): void {
 async function refreshClassModelOptions(): Promise<void> {
   const rootClassName = modelRootClassText.value.trim()
   if (rootClassName.length === 0) {
-    classModelError.value = 'Root Class 不能为空'
+    classModelError.value = 'Root Class 涓嶈兘涓虹┖'
     return
   }
   classModelLoading.value = true
@@ -1939,7 +2037,7 @@ async function refreshClassModelOptions(): Promise<void> {
       validationActionClassText.value = modelClassText.value
     }
   } catch (error: unknown) {
-    classModelError.value = `ClassModel 读取失败: ${errorMessage(error)}`
+    classModelError.value = `ClassModel 璇诲彇澶辫触: ${errorMessage(error)}`
   } finally {
     classModelLoading.value = false
   }
@@ -1950,7 +2048,7 @@ async function loadValidationActionGuide(): Promise<void> {
   const className = validationActionClassText.value.trim() || modelClassText.value.trim()
   const methodName = validationActionNameText.value.trim()
   if (rootClassName.length === 0 || className.length === 0 || methodName.length === 0) {
-    classModelError.value = 'Root Class、Validation Class、Validation Action 都不能为空'
+    classModelError.value = 'Root Class, completion class and completion member are required.'
     return
   }
   classModelLoading.value = true
@@ -1962,7 +2060,7 @@ async function loadValidationActionGuide(): Promise<void> {
       methodName,
     })
   } catch (error: unknown) {
-    classModelError.value = `Action Guide 读取失败: ${errorMessage(error)}`
+    classModelError.value = `Action Guide 璇诲彇澶辫触: ${errorMessage(error)}`
   } finally {
     classModelLoading.value = false
   }
@@ -1982,12 +2080,12 @@ function applyLoopEditorToSelected(options: { silent?: boolean } = {}): boolean 
   view.node.data.loop.exitNodeId = loopExitNodeText.value.trim() || 'loop.exit'
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data.loop`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('循环配置已应用')
+  if (options.silent !== true) ElMessage.success('Loop config applied')
   return true
 }
 
 function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
-  if (selectedEdge.value !== null) return applyEdgeEditorToSelected(options)
+  if (selectedLine.value !== null) return applyLineEditorToSelected(options)
   const view = selectedNode.value
   if (view === null) {
     editorDirty.value = false
@@ -2000,7 +2098,7 @@ function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
   if (view.nodeType === 'loop') return applyLoopEditorToSelected(options)
   applyNodeBasicEditorToSelected()
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('节点已更新')
+  if (options.silent !== true) ElMessage.success('Node updated')
   return true
 }
 
@@ -2016,10 +2114,10 @@ async function saveCurrentDesign(): Promise<boolean> {
     currentTimestamp.value = result.timestamp
     editorDirty.value = false
     await loadDesigns()
-    ElMessage.success('设计稿已保存')
+    ElMessage.success('璁捐绋垮凡淇濆瓨')
     return true
   } catch (error: unknown) {
-    ElMessage.error(`保存失败: ${errorMessage(error)}`)
+    ElMessage.error(`淇濆瓨澶辫触: ${errorMessage(error)}`)
     return false
   } finally {
     saving.value = false
@@ -2039,12 +2137,12 @@ async function openDefinitionEditor(): Promise<void> {
       definitionJsonText.value = formatJson(result.definition)
       definitionDirty.value = false
     } else {
-      ElMessage.info('definition.json 未变化')
+      ElMessage.info('definition.json not changed')
     }
     definitionDialogVisible.value = true
   } catch (error: unknown) {
     if (!isWorkflowDefinitionNotFoundError(error) || currentDocument.value === null) {
-      ElMessage.error(`打开 Definition 失败: ${errorMessage(error)}`)
+      ElMessage.error(`鎵撳紑 Definition 澶辫触: ${errorMessage(error)}`)
       return
     }
     const sourceDocument = await readFreshDesignForDefinitionDraft(workflowId)
@@ -2053,7 +2151,7 @@ async function openDefinitionEditor(): Promise<void> {
     definitionJsonText.value = formatJson(definition)
     definitionDirty.value = true
     definitionDialogVisible.value = true
-    ElMessage.info('definition.json 不存在，已从当前设计稿生成本地草稿')
+    ElMessage.info('definition.json does not exist; generated a local draft from the current design')
   } finally {
     openingDefinition.value = false
   }
@@ -2066,7 +2164,7 @@ function markDefinitionDirty(): void {
 async function readFreshDesignForDefinitionDraft(workflowId: string): Promise<WorkflowDesignDocument> {
   const openedDocument = currentDocument.value
   if (openedDocument === null) {
-    throw new Error('当前设计稿未打开')
+    throw new Error('褰撳墠璁捐绋挎湭鎵撳紑')
   }
   if (hasUnsavedChanges.value) {
     return openedDocument
@@ -2092,7 +2190,7 @@ async function saveCurrentDefinition(): Promise<void> {
   try {
     definition = parseAgentWorkflowDefinitionJson(definitionJsonText.value)
   } catch (error: unknown) {
-    ElMessage.error(`Definition JSON 无效: ${errorMessage(error)}`)
+    ElMessage.error(`Definition JSON 鏃犳晥: ${errorMessage(error)}`)
     return
   }
 
@@ -2102,9 +2200,9 @@ async function saveCurrentDefinition(): Promise<void> {
     definitionTimestamp.value = result.timestamp
     definitionJsonText.value = formatJson(definition)
     definitionDirty.value = false
-    ElMessage.success('definition.json 已保存')
+    ElMessage.success('definition.json saved')
   } catch (error: unknown) {
-    ElMessage.error(`保存 Definition 失败: ${errorMessage(error)}`)
+    ElMessage.error(`淇濆瓨 Definition 澶辫触: ${errorMessage(error)}`)
   } finally {
     savingDefinition.value = false
   }
@@ -2120,7 +2218,7 @@ async function publishCurrentDefinition(): Promise<void> {
   const definition = createAgentWorkflowDefinitionFromDesign(document)
   if (definition.x_spark.validation.status === 'invalid') {
     const firstIssue = definition.x_spark.validation.issues.find(issue => issue.severity === 'error')
-    ElMessage.error(`发布失败: ${firstIssue?.message ?? 'definition 校验未通过'}`)
+    ElMessage.error(`鍙戝竷澶辫触: ${firstIssue?.message ?? 'definition 鏍￠獙鏈€氳繃'}`)
     return
   }
 
@@ -2131,9 +2229,9 @@ async function publishCurrentDefinition(): Promise<void> {
     definitionJsonText.value = formatJson(definition)
     definitionDirty.value = false
     definitionDialogVisible.value = true
-    ElMessage.success('definition.json 已发布')
+    ElMessage.success('definition.json published')
   } catch (error: unknown) {
-    ElMessage.error(`发布失败: ${errorMessage(error)}`)
+    ElMessage.error(`鍙戝竷澶辫触: ${errorMessage(error)}`)
   } finally {
     publishing.value = false
   }
@@ -2150,19 +2248,19 @@ async function copyJson(): Promise<void> {
   if (currentDocument.value === null) return
   try {
     await navigator.clipboard.writeText(formatJson(currentDocument.value))
-    ElMessage.success('JSON 已复制')
+    ElMessage.success('JSON copied')
   } catch (error: unknown) {
-    ElMessage.error(`复制失败: ${errorMessage(error)}`)
+    ElMessage.error(`澶嶅埗澶辫触: ${errorMessage(error)}`)
   }
 }
 
 async function confirmDiscardEditorDraft(): Promise<boolean> {
   if (!hasUnsavedChanges.value) return true
   try {
-    await ElMessageBox.confirm('当前设计稿有未保存内容，继续会丢弃这些内容。', '切换设计稿', {
+    await ElMessageBox.confirm('The current workflow design has unsaved changes. Continue and discard them?', 'Switch workflow design', {
       type: 'warning',
-      confirmButtonText: '继续',
-      cancelButtonText: '取消',
+      confirmButtonText: '缁х画',
+      cancelButtonText: '鍙栨秷',
     })
     editorDirty.value = false
     return true
@@ -2174,10 +2272,10 @@ async function confirmDiscardEditorDraft(): Promise<boolean> {
 async function confirmDiscardDefinitionDraft(): Promise<boolean> {
   if (!definitionDialogVisible.value || !definitionDirty.value) return true
   try {
-    await ElMessageBox.confirm('当前 definition.json 有未保存内容，继续会丢弃这些内容。', '切换设计稿', {
+    await ElMessageBox.confirm('The current definition.json has unsaved changes. Continue and discard them?', 'Switch workflow design', {
       type: 'warning',
-      confirmButtonText: '继续',
-      cancelButtonText: '取消',
+      confirmButtonText: '缁х画',
+      cancelButtonText: '鍙栨秷',
     })
     definitionDirty.value = false
     return true
@@ -2431,7 +2529,7 @@ function errorMessage(error: unknown): string {
 }
 
 .collapsible-section > summary::before {
-  content: "▸";
+  content: "鈻?;
   flex: 0 0 auto;
   color: #64748b;
   transition: transform 0.16s ease;

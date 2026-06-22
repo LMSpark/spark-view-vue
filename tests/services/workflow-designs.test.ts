@@ -21,8 +21,8 @@ vi.mock('@/services/auth', () => ({
 }))
 
 import {
-  addWorkflowDesignEdge,
-  collectWorkflowDesignEdges,
+  addWorkflowDesignLine,
+  collectWorkflowDesignLines,
   collectWorkflowDesignGraphs,
   collectWorkflowDesignNodes,
   createAgentWorkflowDefinitionFromDesign,
@@ -31,10 +31,10 @@ import {
   parseAgentWorkflowDefinitionJson,
   publishWorkflowDefinition,
   readWorkflowDefinition,
-  removeWorkflowDesignEdge,
+  removeWorkflowDesignLine,
   removeWorkflowDesignNode,
   saveWorkflowDefinition,
-  updateWorkflowDesignEdge,
+  updateWorkflowDesignLine,
   type WorkflowDesignDocument,
 } from '@/services/workflow-designs'
 
@@ -58,6 +58,52 @@ function createDesign(): WorkflowDesignDocument {
           constraints: [],
         },
       ],
+      runtimeBinding: {
+        registration: {
+          alias: 'demo',
+          moduleId: 'demo',
+          businessId: 'demo',
+        },
+        inputContract: {
+          identityField: 'requirement',
+          messageField: 'requirement',
+          paramsSchema: {
+            type: 'object',
+            properties: {
+              requirement: { type: 'string' },
+            },
+            required: ['requirement'],
+            additionalProperties: false,
+          },
+          readonlySteps: [],
+        },
+        systemPrompt: {
+          template: 'Demo prompt: {{ requirement }}',
+          conditionalHints: [],
+        },
+        modelProjectionRef: {
+          kind: 'dts-class-model',
+          rootClassName: 'DemoModel',
+          manifestUrlRef: 'dts-class-model',
+        },
+        executableRef: {
+          kind: 'js-module',
+          moduleSpecifier: './demo-model.js',
+          exportName: 'DemoModel',
+        },
+        resolveInstance: {
+          editorSource: 'demo',
+          identityField: 'requirement',
+        },
+        beforeFunctionCall: {
+          gateRules: [
+            { kind: 'demoGate' },
+          ],
+        },
+        executionToolNames: ['model_script'],
+        planWithoutToolMarkers: ['runDemo'],
+        agentCompleteMethodName: 'validateDemo',
+      },
       graph: {
         nodes: [
           {
@@ -71,11 +117,18 @@ function createDesign(): WorkflowDesignDocument {
             data: {
               type: 'node',
               title: 'Business Node',
-              model: {
-                rootClassName: 'DemoModel',
-                className: 'DemoModel',
-                contextPath: '$',
-              },
+              models: [
+                {
+                  id: 'node.model.model',
+                  rootClassName: 'DemoModel',
+                  className: 'DemoModel',
+                  sourceRef: '$',
+                  completion: {
+                    memberName: 'validateDemo',
+                    returnContract: 'boolean-or-reason',
+                  },
+                },
+              ],
               inputs: {
                 requirement: '{{ start.requirement }}',
               },
@@ -121,52 +174,6 @@ function createDesign(): WorkflowDesignDocument {
                 status: 'draft',
                 issues: [],
               },
-              runtimeBinding: {
-                registration: {
-                  alias: 'demo',
-                  moduleId: 'demo',
-                  businessId: 'demo',
-                },
-                inputContract: {
-                  identityField: 'requirement',
-                  messageField: 'requirement',
-                  paramsSchema: {
-                    type: 'object',
-                    properties: {
-                      requirement: { type: 'string' },
-                    },
-                    required: ['requirement'],
-                    additionalProperties: false,
-                  },
-                  readonlySteps: [],
-                },
-                systemPrompt: {
-                  template: 'Demo prompt: {{ requirement }}',
-                  conditionalHints: [],
-                },
-                modelProjectionRef: {
-                  kind: 'dts-class-model',
-                  rootClassName: 'DemoModel',
-                  manifestUrlRef: 'dts-class-model',
-                },
-                executableRef: {
-                  kind: 'js-module',
-                  moduleSpecifier: './demo-model.js',
-                  exportName: 'DemoModel',
-                },
-                resolveInstance: {
-                  editorSource: 'demo',
-                  identityField: 'requirement',
-                },
-                beforeFunctionCall: {
-                  gateRules: [
-                    { kind: 'demoGate' },
-                  ],
-                },
-                executionToolNames: ['model_script'],
-                planWithoutToolMarkers: ['runDemo'],
-                agentCompleteMethodName: 'validateDemo',
-              },
               capabilities: [
                 {
                   id: 'demo.execute',
@@ -197,9 +204,17 @@ function createDesign(): WorkflowDesignDocument {
             },
           },
         ],
-        edges: [
-          { id: 'edge.start.node', source: 'start', target: 'node.model' },
-          { id: 'edge.node.output', source: 'node.model', target: 'output' },
+        lines: [
+          {
+            id: 'line.start.node',
+            from: { nodeId: 'start', modelId: '$workflow', memberName: 'requirement' },
+            to: { nodeId: 'node.model', modelId: 'node.model.model', memberName: 'requirement' },
+          },
+          {
+            id: 'line.node.output',
+            from: { nodeId: 'node.model', modelId: 'node.model.model', memberName: 'result' },
+            to: { nodeId: 'output', modelId: '$workflow', memberName: 'result' },
+          },
         ],
         viewport: { x: 0, y: 0, zoom: 1 },
       },
@@ -237,26 +252,26 @@ describe('workflow design helpers', () => {
     expect(design.x_spark.draft?.['dirtyPaths']).toContain('workflow.graph.nodes')
   })
 
-  it('collects graph and edge views', () => {
+  it('collects graph and line views', () => {
     const design = createDesign()
     const graphs = collectWorkflowDesignGraphs(design)
-    const edges = collectWorkflowDesignEdges(design)
+    const lines = collectWorkflowDesignLines(design)
 
     expect(graphs.map(graph => graph.scopePath)).toEqual(['workflow.graph'])
     expect(graphs[0]?.carrier).toBe('root')
-    expect(edges.map(edge => edge.id)).toEqual(['edge.start.node', 'edge.node.output'])
+    expect(lines.map(line => line.id)).toEqual(['line.start.node', 'line.node.output'])
   })
 
-  it('adds and removes edges in a selected graph', () => {
+  it('adds and removes lines in a selected graph', () => {
     const design = createDesign()
     const graph = design.workflow.graph
 
-    const edge = addWorkflowDesignEdge(graph, 'start', 'output')
-    expect(edge.id).toBe('edge.start.output')
-    expect(graph.edges.some(item => item === edge)).toBe(true)
+    const line = addWorkflowDesignLine(graph, 'start', 'output')
+    expect(line.id).toBe('line.start.output')
+    expect(graph.lines.some(item => item === line)).toBe(true)
 
-    expect(removeWorkflowDesignEdge(graph, edge)).toBe(true)
-    expect(graph.edges.some(item => item === edge)).toBe(false)
+    expect(removeWorkflowDesignLine(graph, line)).toBe(true)
+    expect(graph.lines.some(item => item === line)).toBe(false)
   })
 
   it('creates business and boundary nodes in the selected graph', () => {
@@ -277,10 +292,12 @@ describe('workflow design helpers', () => {
     expect(node.type).toBe('node')
     expect(node.data).toMatchObject({
       type: 'node',
-      model: {
-        rootClassName: 'spark.placeholder.RootModel',
-        className: 'spark.placeholder.Model',
-      },
+      models: [
+        expect.objectContaining({
+          rootClassName: 'spark.placeholder.RootModel',
+          className: 'spark.placeholder.Model',
+        }),
+      ],
       inputs: {},
       outputs: {},
       llm: expect.objectContaining({
@@ -303,37 +320,33 @@ describe('workflow design helpers', () => {
     })
   })
 
-  it('removes a node and all related edges in the same graph', () => {
+  it('removes a node and all related lines in the same graph', () => {
     const design = createDesign()
     const rootGraph = design.workflow.graph
 
     const result = removeWorkflowDesignNode(rootGraph, 'node.model')
 
     expect(result.removed).toBe(true)
-    expect(result.removedEdges.map(edge => edge.id)).toEqual(['edge.start.node', 'edge.node.output'])
+    expect(result.removedLines.map(line => line.id)).toEqual(['line.start.node', 'line.node.output'])
     expect(rootGraph.nodes.map(node => node.id)).toEqual(['start', 'output'])
-    expect(rootGraph.edges).toEqual([])
+    expect(rootGraph.lines).toEqual([])
   })
 
-  it('updates edge endpoints and metadata', () => {
+  it('updates line endpoints and metadata', () => {
     const design = createDesign()
-    const edge = design.workflow.graph.edges[0]
-    if (edge === undefined) throw new Error('missing edge')
+    const line = design.workflow.graph.lines[0]
+    if (line === undefined) throw new Error('missing line')
 
-    updateWorkflowDesignEdge(edge, {
-      source: 'node.model',
-      target: 'output',
-      sourceHandle: 'next',
-      targetHandle: 'entry',
+    updateWorkflowDesignLine(line, {
+      from: { nodeId: 'node.model', modelId: 'node.model.model', memberName: 'result', dock: 1 },
+      to: { nodeId: 'output', modelId: '$workflow', memberName: 'result', dock: 2 },
       type: 'custom',
       relation: 'fallback',
     })
 
-    expect(edge).toEqual(expect.objectContaining({
-      source: 'node.model',
-      target: 'output',
-      sourceHandle: 'next',
-      targetHandle: 'entry',
+    expect(line).toEqual(expect.objectContaining({
+      from: { nodeId: 'node.model', modelId: 'node.model.model', memberName: 'result', dock: 1 },
+      to: { nodeId: 'output', modelId: '$workflow', memberName: 'result', dock: 2 },
       type: 'custom',
       data: { relation: 'fallback' },
     }))
@@ -354,6 +367,15 @@ describe('workflow design helpers', () => {
         designVersion: 1,
       },
       workflow: {
+        runtimeBinding: expect.objectContaining({
+          registration: expect.objectContaining({
+            alias: 'demo',
+            moduleId: 'demo',
+          }),
+          modelProjectionRef: expect.objectContaining({
+            rootClassName: 'DemoModel',
+          }),
+        }),
         variables: [
           { name: 'requirement', required: true },
         ],
@@ -370,11 +392,16 @@ describe('workflow design helpers', () => {
               id: 'node.model',
               type: 'node',
               data: expect.objectContaining({
-                model: {
-                  rootClassName: 'DemoModel',
-                  className: 'DemoModel',
-                  contextPath: '$',
-                },
+                models: [
+                  expect.objectContaining({
+                    rootClassName: 'DemoModel',
+                    className: 'DemoModel',
+                    completion: {
+                      memberName: 'validateDemo',
+                      returnContract: 'boolean-or-reason',
+                    },
+                  }),
+                ],
                 inputs: {
                   requirement: '{{ start.requirement }}',
                 },
@@ -396,9 +423,17 @@ describe('workflow design helpers', () => {
             }),
             expect.objectContaining({ id: 'output', type: 'output' }),
           ],
-          edges: [
-            { id: 'edge.start.node', source: 'start', target: 'node.model' },
-            { id: 'edge.node.output', source: 'node.model', target: 'output' },
+          lines: [
+            expect.objectContaining({
+              id: 'line.start.node',
+              from: { nodeId: 'start', modelId: '$workflow', memberName: 'requirement' },
+              to: { nodeId: 'node.model', modelId: 'node.model.model', memberName: 'requirement' },
+            }),
+            expect.objectContaining({
+              id: 'line.node.output',
+              from: { nodeId: 'node.model', modelId: 'node.model.model', memberName: 'result' },
+              to: { nodeId: 'output', modelId: '$workflow', memberName: 'result' },
+            }),
           ],
         },
       },
@@ -437,6 +472,24 @@ describe('workflow design helpers', () => {
         severity: 'error',
         code: 'AGENT_WORKFLOW_LEGACY_NODE',
         nodeId: 'node.model',
+      }),
+    ]))
+  })
+
+  it('marks business nodes without projected completion members as invalid during publish', () => {
+    const design = createDesign()
+    const models = design.workflow.graph.nodes[1]!.data!.models as Array<Record<string, unknown>>
+    delete models[0]!['completion']
+
+    const definition = createAgentWorkflowDefinitionFromDesign(design)
+
+    expect(definition.x_spark.validation.status).toBe('invalid')
+    expect(definition.x_spark.validation.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        severity: 'error',
+        code: 'AGENT_WORKFLOW_MODEL_COMPLETION_MISSING',
+        nodeId: 'node.model',
+        path: 'workflow.graph.node.model.data.models[0].completion.memberName',
       }),
     ]))
   })
