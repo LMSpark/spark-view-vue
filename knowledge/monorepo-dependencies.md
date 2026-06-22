@@ -78,3 +78,10 @@
 - **规则**：`await import()` 返回 `Promise<any>`，用显式类型注解（如 `const x: Record<string, unknown> = await import(...)`）会触发 `no-unsafe-assignment`。必须用类型守卫函数接收 `unknown` 参数窄化（如 `isModuleExports(value: unknown): value is Record<string, unknown>`），或局部 `eslint-disable-next-line`（项目有先例 `state.ts:65`、`zero-code.ts:15`）
 - **违反后果**：typecheck 或 lint 失败；用 `as` 断言虽能消 `no-unsafe-assignment` 但会触发 `verify:ai-codegen` 的 type assertion 禁令
 - **发现来源**：2026-06 修复 verify:ai-codegen 违规时
+
+### 工作目录清理时的进程句柄锁定
+
+- **场景**：深度清理项目工作目录中被 `.gitignore` 忽略的本地产物（`.vs/`、`*.log`、`.eslintcache`、`dist/`、`target/`、`node_modules/` 等）
+- **规则**：删除 `dev-setup.*.log` 等开发进程日志前，必须先确认没有运行中的 dev/setup 长驻进程持有文件句柄。用 `Get-Process node`（PowerShell）排查活跃 node 进程，先停进程再删日志。`Remove-Item -Force` 无法绕过操作系统级文件锁，重试无效。另外：`%SystemDrive%` 在 PowerShell 中是字面量目录名（不会展开环境变量），可直接 `Remove-Item '%SystemDrive%' -Recurse -Force` 删除该误生成目录
+- **违反后果**：`Remove-Item` 报 "文件被另一进程使用"，删除失败；强行 kill 进程可能中断用户正在进行的开发会话
+- **发现来源**：2026-06 深度清理项目垃圾文件时（dev-setup.err.log、dev-setup.out.log 被 node PID 20668/21028/23292 锁定）
