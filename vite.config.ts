@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
@@ -14,6 +14,58 @@ import {
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 const viteCacheDir = process.env['VITE_CACHE_DIR'] ?? path.resolve(root, 'node_modules', '.vite')
+const utf8TextMediaTypes = new Set([
+  'application/javascript',
+  'application/json',
+  'application/x-javascript',
+  'text/css',
+  'text/html',
+  'text/javascript',
+])
+
+function appendUtf8Charset(contentType: string): string {
+  const mediaType = contentType.split(';', 1)[0]?.trim().toLowerCase()
+  if (!mediaType || !utf8TextMediaTypes.has(mediaType) || /;\s*charset=/iu.test(contentType)) {
+    return contentType
+  }
+  return `${contentType}; charset=utf-8`
+}
+
+function withUtf8Charset(value: number | string | readonly string[]): number | string | readonly string[] {
+  if (typeof value === 'string') return appendUtf8Charset(value)
+  if (Array.isArray(value)) return value.map(item => appendUtf8Charset(item))
+  return value
+}
+
+function utf8TextResponsePlugin(): Plugin {
+  return {
+    name: 'spark:utf8-text-response',
+    configureServer(server) {
+      server.middlewares.use((_req, res, next) => {
+        const setHeader = res.setHeader.bind(res)
+        res.setHeader = (name, value) => {
+          if (name.toLowerCase() === 'content-type') {
+            return setHeader(name, withUtf8Charset(value))
+          }
+          return setHeader(name, value)
+        }
+        next()
+      })
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((_req, res, next) => {
+        const setHeader = res.setHeader.bind(res)
+        res.setHeader = (name, value) => {
+          if (name.toLowerCase() === 'content-type') {
+            return setHeader(name, withUtf8Charset(value))
+          }
+          return setHeader(name, value)
+        }
+        next()
+      })
+    },
+  }
+}
 
 export default defineConfig({
   cacheDir: viteCacheDir,
@@ -72,6 +124,8 @@ export default defineConfig({
     }
   },
   plugins: [
+    utf8TextResponsePlugin(),
+
     // ==================== pages-config: 始终由 Java 后端提供 ====================
     // 页面配置（routes.json, rule.json, pagedata.json 等）全部由 Java 后端管理，
     // 种子数据打包在 JAR 内（classpath:seed-pages-config/），服务端完全自包含。
