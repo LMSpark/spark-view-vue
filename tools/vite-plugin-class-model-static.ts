@@ -2,6 +2,7 @@ import { createReadStream, cpSync, existsSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, normalize, resolve } from 'node:path'
 import { Writable } from 'node:stream'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 
 const requireModule = createRequire(import.meta.url)
@@ -51,11 +52,7 @@ function createClassModelStaticMiddleware(sourceDir: string, httpPrefix: string)
   const normalizedPrefix = httpPrefix.endsWith('/') ? httpPrefix.slice(0, -1) : httpPrefix
   const resolvedSourceDir = resolve(sourceDir)
 
-  return (req: { url?: string }, res: {
-    statusCode: number
-    setHeader: (name: string, value: string) => void
-    end: (chunk?: string) => void
-  }, next: () => void) => {
+  return (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => {
     const requestUrl = req.url?.split('?')[0] ?? ''
     if (!requestUrl.startsWith(normalizedPrefix)) {
       next()

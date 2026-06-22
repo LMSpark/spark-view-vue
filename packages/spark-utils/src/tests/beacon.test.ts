@@ -7,7 +7,7 @@ describe('sendBeacon', () => {
   })
 
   it('uses navigator.sendBeacon when available', async () => {
-    const nativeBeacon = vi.fn(() => true)
+    const nativeBeacon = vi.fn<(url: string, data: Blob) => boolean>(() => true)
     const fallbackFetch = vi.fn()
     vi.stubGlobal('navigator', { sendBeacon: nativeBeacon })
     vi.stubGlobal('fetch', fallbackFetch)

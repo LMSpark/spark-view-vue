@@ -91,7 +91,7 @@ describe('ProjectModel', () => {
         title: '订单详情',
         nodeKind: 'sub-page',
         description: '订单详情功能',
-      } as ProjectNodeData],
+      } as unknown as ProjectNodeData],
     }]))
     const page = p.findConfigPageByPageId('orders')
     const sub = p.findConfigPageByPageId('order-detail')
@@ -111,7 +111,7 @@ describe('ProjectModel', () => {
     const p = createWorkspace().project
     p.replaceNavigationRoot(createRoot([{
       id: 'orders-node', title: '订单页面', nodeKind: 'page', path: '/orders',
-      children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page' as NavNodeKind, description: '订单详情功能' }],
+      children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page' as unknown as NavNodeKind, description: '订单详情功能' }],
     }]))
     const sub = p.findConfigPageByPageId('order-detail')
     expect(sub?.nodeKind).toBe('page')
@@ -374,6 +374,7 @@ describe('ProjectModel', () => {
         nodeKind: 'page',
         dividerAfter: false,
         description: '',
+        planningAttachmentRef: '',
         path: '',
         linkTarget: 'iframe',
         childPlacement: '',

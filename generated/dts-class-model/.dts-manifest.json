@@ -79,7 +79,7 @@
     "packages/spark-ai/src/agent/index.ts": {
       "sourceFile": "packages/spark-ai/src/agent/index.ts",
       "shardFile": "files/packages/spark-ai/src/agent/index.ts.json",
-      "sourceModifiedAt": "2026-06-20T18:53:23.698Z"
+      "sourceModifiedAt": "2026-06-20T20:01:47.519Z"
     },
     "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts": {
       "sourceFile": "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts",
@@ -199,7 +199,7 @@
     "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts",
       "shardFile": "files/packages/spark-ai/src/agent/workflow/agent-workflow-runtime.ts.json",
-      "sourceModifiedAt": "2026-06-20T18:53:09.911Z"
+      "sourceModifiedAt": "2026-06-20T20:07:22.732Z"
     },
     "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/agent-workflow-validation.ts",
@@ -209,7 +209,7 @@
     "packages/spark-ai/src/agent/workflow/index.ts": {
       "sourceFile": "packages/spark-ai/src/agent/workflow/index.ts",
       "shardFile": "files/packages/spark-ai/src/agent/workflow/index.ts.json",
-      "sourceModifiedAt": "2026-06-20T18:53:17.603Z"
+      "sourceModifiedAt": "2026-06-20T20:00:49.842Z"
     },
     "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
@@ -3114,7 +3114,7 @@
     "src/services/ai/spark-ai-agent-bindings.ts": {
       "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
       "shardFile": "files/src/services/ai/spark-ai-agent-bindings.ts.json",
-      "sourceModifiedAt": "2026-06-20T14:08:06.432Z"
+      "sourceModifiedAt": "2026-06-20T20:02:52.500Z"
     },
     "src/services/api-paths.ts": {
       "sourceFile": "src/services/api-paths.ts",

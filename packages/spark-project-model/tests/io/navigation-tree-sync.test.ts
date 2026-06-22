@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { NavigationClient } from '../../src/io/navigation-client'
-import type { ProjectModelData } from '../../src/navigation/project-node'
+import type { ProjectModelData, ProjectNodeData } from '../../src/navigation/project-node'
 import { replaceNavigationChildrenRemote } from '../../src/io/navigation-tree-sync'
 
 const serverRoot: ProjectModelData = {
@@ -57,11 +57,11 @@ function createMockClient(): NavigationClient {
   } as unknown as NavigationClient
 }
 
-function findNode(nodes: ProjectModelData['children'], id: string) {
+function findNode(nodes: ProjectModelData['children'], id: string): ProjectNodeData | undefined {
   if (!Array.isArray(nodes)) return undefined
   for (const node of nodes) {
     if (node.id === id) return node
-    const nested = findNode(node.children, id)
+    const nested = findNode(node.children ?? [], id)
     if (nested !== undefined) return nested
   }
   return undefined
@@ -75,7 +75,7 @@ function removeNode(nodes: ProjectModelData['children'], id: string): boolean {
     return true
   }
   for (const node of nodes) {
-    if (removeNode(node.children, id)) return true
+    if (removeNode(node.children ?? [], id)) return true
   }
   return false
 }

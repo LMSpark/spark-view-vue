@@ -212,7 +212,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-20T18:53:09.911Z",
+  "generatedAt": "2026-06-20T20:07:22.732Z",
   "models": {
     "AgentWorkflowModuleConstructor": {
       "name": "AgentWorkflowModuleConstructor",
