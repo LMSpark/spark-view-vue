@@ -6,59 +6,69 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 -->
 <template>
   <div class="workflow-design-page">
-    <el-page-header content="Workflow Designs" @back="$router.go(-1)">
-      <template #icon>
-        <el-icon><Share /></el-icon>
-      </template>
-    </el-page-header>
-
     <div class="workflow-design-shell" :style="workflowShellStyle">
-      <aside class="workflow-design-sidebar">
-        <div class="panel-heading">
-          <span>Workflow designs</span>
-          <el-tag size="small" type="info">{{ designs.length }}</el-tag>
-        </div>
-        <el-skeleton v-if="loadingList && designs.length === 0" :rows="6" animated />
-        <el-empty v-else-if="designs.length === 0" description="No workflow designs" />
-        <div v-else class="workflow-list">
-          <div
-            v-for="item in designs"
-            :key="item.workflowId"
-            class="workflow-list-item"
-            :class="{
-              'is-active': item.workflowId === currentWorkflowId,
-              'is-unreadable': isUnreadableDesign(item),
-            }"
-            :title="workflowDesignListItemTitle(item)"
-            role="button"
-            tabindex="0"
-            @click="openDesign(item.workflowId)"
-            @keydown.enter.prevent="openDesign(item.workflowId)"
-          >
-            <div class="workflow-list-main">
-              <strong>{{ item.title || item.workflowId }}</strong>
-              <span>{{ item.workflowId }}</span>
-            </div>
-            <div class="workflow-list-meta">
-              <el-tag size="small" :type="isUnreadableDesign(item) ? 'danger' : 'success'">
-                {{ item.status || 'draft' }}
-              </el-tag>
-              <span>{{ item.version ? `v${item.version}` : 'v1' }}</span>
-            </div>
-            <div class="workflow-list-actions">
-              <el-button link size="small" :icon="FolderOpened" @click.stop="openDesign(item.workflowId)">
-                打开
-              </el-button>
-              <el-button link size="small" type="danger" :icon="Delete" @click.stop="deleteDesign(item.workflowId)">
-                删除
-              </el-button>
+      <aside class="workflow-design-sidebar" :class="{ 'is-collapsed': leftPanelCollapsed }">
+        <button
+          v-if="leftPanelCollapsed"
+          type="button"
+          class="workflow-sidebar-collapsed-button"
+          title="展开设计列表"
+          @click="leftPanelCollapsed = false"
+        >
+          <span>设计</span>
+          <strong>{{ designs.length }}</strong>
+        </button>
+        <template v-else>
+          <div class="panel-heading workflow-list-heading">
+            <span>工作流设计</span>
+            <span class="workflow-list-heading-actions">
+              <el-tag size="small" type="info">{{ designs.length }}</el-tag>
+              <el-button link size="small" @click="leftPanelCollapsed = true">收起</el-button>
+            </span>
+          </div>
+          <el-skeleton v-if="loadingList && designs.length === 0" :rows="6" animated />
+          <el-empty v-else-if="designs.length === 0" description="暂无工作流设计" />
+          <div v-else class="workflow-list">
+            <div
+              v-for="item in designs"
+              :key="item.workflowId"
+              class="workflow-list-item"
+              :class="{
+                'is-active': item.workflowId === currentWorkflowId,
+                'is-unreadable': isUnreadableDesign(item),
+              }"
+              :title="workflowDesignListItemTitle(item)"
+              role="button"
+              tabindex="0"
+              @click="openDesign(item.workflowId)"
+              @keydown.enter.prevent="openDesign(item.workflowId)"
+            >
+              <div class="workflow-list-main">
+                <strong>{{ item.title || item.workflowId }}</strong>
+                <span>{{ item.workflowId }}</span>
+              </div>
+              <div class="workflow-list-meta">
+                <el-tag size="small" :type="isUnreadableDesign(item) ? 'danger' : 'success'">
+                  {{ item.status || 'draft' }}
+                </el-tag>
+                <span>{{ item.version ? `v${item.version}` : 'v1' }}</span>
+              </div>
+              <div class="workflow-list-actions">
+                <el-button link size="small" :icon="FolderOpened" @click.stop="openDesign(item.workflowId)">
+                  打开
+                </el-button>
+                <el-button link size="small" type="danger" :icon="Delete" @click.stop="deleteDesign(item.workflowId)">
+                  删除
+                </el-button>
+              </div>
             </div>
           </div>
-        </div>
+        </template>
       </aside>
 
       <div
         class="layout-resize-handle"
+        :class="{ 'is-disabled': leftPanelCollapsed }"
         title="Resize workflow list"
         role="separator"
         aria-orientation="vertical"
@@ -68,7 +78,8 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
       <main class="workflow-design-canvas">
         <div v-if="currentDocument" class="canvas-toolbar">
           <div class="document-title">
-            <span>{{ currentDocument.workflow.id }}</span>
+            <span class="document-title-label">工作流设计</span>
+            <span class="document-title-id">{{ currentDocument.workflow.id }}</span>
             <el-tag size="small">{{ currentDocument.kind }}</el-tag>
             <el-tag size="small" :type="hasUnsavedChanges ? 'warning' : 'success'">
               {{ hasUnsavedChanges ? 'unsaved' : 'saved' }}
@@ -163,78 +174,26 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
 
                     <div
                       v-if="selectedNodeInGraph(panel.graphView) && selectedNode?.isBusinessNode === true && selectedClassModelOption"
-                      class="graph-class-model-context"
+                      class="graph-class-model-strip"
                     >
-                      <div class="graph-class-model-context-header">
-                        <strong>ClassModel</strong>
-                        <span>{{ selectedClassModelOption.kind }}</span>
-                        <span>attributes {{ selectedClassModelOption.attributes.length }}</span>
-                        <span>actions {{ selectedClassModelOption.methods.length }}</span>
-                        <el-button
-                          link
-                          size="small"
-                          :loading="classModelLoading"
-                          :icon="Refresh"
-                          @click="refreshClassModelOptions"
-                        >
-                          刷新知识
-                        </el-button>
-                      </div>
-                      <div class="class-model-doc-panel graph-class-model-doc-panel">
-                        <section class="class-model-doc-item">
-                          <div class="class-model-doc-title">
-                            <span class="class-model-pin" aria-hidden="true"></span>
-                            <strong>{{ selectedClassModelOption.kind }}</strong>
-                          </div>
-                          <pre>{{ classModelDocText(selectedClassModelOption) }}</pre>
-                        </section>
-                        <section v-if="selectedClassModelOption.constructorSignature" class="class-model-doc-item">
-                          <div class="class-model-doc-title">
-                            <span class="class-model-pin" aria-hidden="true"></span>
-                            <strong>constructor</strong>
-                          </div>
-                          <code>{{ selectedClassModelOption.constructorSignature.signature }}</code>
-                          <pre>{{ classModelDocText(selectedClassModelOption.constructorSignature) }}</pre>
-                        </section>
-                        <section v-if="selectedValidationActionOption" class="class-model-doc-item">
-                          <div class="class-model-doc-title">
-                            <span class="class-model-pin" aria-hidden="true"></span>
-                            <strong>{{ selectedValidationActionOption.name }}</strong>
-                          </div>
-                          <code>{{ selectedValidationActionOption.signature }}</code>
-                          <pre>{{ classModelDocText(selectedValidationActionOption) }}</pre>
-                        </section>
-                        <details class="class-model-doc-group" open>
-                          <summary>Attributes {{ selectedClassModelOption.attributes.length }}</summary>
-                          <section
-                            v-for="attribute in selectedClassModelOption.attributes"
-                            :key="attribute.name"
-                            class="class-model-doc-item"
-                          >
-                            <div class="class-model-doc-title">
-                              <span class="class-model-pin" aria-hidden="true"></span>
-                              <strong>{{ attribute.name }}</strong>
-                              <code>{{ attribute.typeText }}</code>
-                            </div>
-                            <pre>{{ classModelDocText(attribute) }}</pre>
-                          </section>
-                        </details>
-                        <details class="class-model-doc-group" open>
-                          <summary>Actions {{ selectedClassModelOption.methods.length }}</summary>
-                          <section
-                            v-for="method in selectedClassModelOption.methods"
-                            :key="method.name"
-                            class="class-model-doc-item"
-                          >
-                            <div class="class-model-doc-title">
-                              <span class="class-model-pin" aria-hidden="true"></span>
-                              <strong>{{ method.name }}</strong>
-                            </div>
-                            <code>{{ method.signature }}</code>
-                            <pre>{{ classModelDocText(method) }}</pre>
-                          </section>
-                        </details>
-                      </div>
+                      <span class="class-model-pin" aria-hidden="true"></span>
+                      <strong>ClassModel</strong>
+                      <span class="graph-class-model-strip-badge">{{ selectedClassModelOption.kind }}</span>
+                      <span class="graph-class-model-strip-badge">attributes {{ selectedClassModelOption.attributes.length }}</span>
+                      <span class="graph-class-model-strip-badge">actions {{ selectedClassModelOption.methods.length }}</span>
+                      <span class="graph-class-model-strip-spacer" />
+                      <el-button link size="small" :icon="DocumentCopy" @click="openClassModelDrawer">
+                        知识抽屉
+                      </el-button>
+                      <el-button
+                        link
+                        size="small"
+                        :loading="classModelLoading"
+                        :icon="Refresh"
+                        @click="refreshClassModelOptions"
+                      >
+                        刷新
+                      </el-button>
                     </div>
 
                     <div class="workflow-flow-shell graph-panel-flow">
@@ -358,28 +317,30 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           </el-tag>
         </div>
 
-        <section class="workflow-tool-group">
+        <section class="workflow-tool-group workflow-tool-group--actions">
           <h3>流程级</h3>
-          <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
-          <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
-          <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
-          <el-button
-            :icon="RefreshLeft"
-            :loading="autoLayoutSaving"
-            :disabled="!canAutoLayout"
-            @click="autoLayoutCurrentDesign"
-          >
-            自动排版
-          </el-button>
-          <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
-            Definition
-          </el-button>
-          <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
-            保存
-          </el-button>
-          <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
-            发布
-          </el-button>
+          <div class="workflow-tool-button-grid">
+            <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
+            <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
+            <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
+            <el-button
+              :icon="RefreshLeft"
+              :loading="autoLayoutSaving"
+              :disabled="!canAutoLayout"
+              @click="autoLayoutCurrentDesign"
+            >
+              自动排版
+            </el-button>
+            <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
+              Definition
+            </el-button>
+            <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
+              保存
+            </el-button>
+            <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
+              发布
+            </el-button>
+          </div>
         </section>
 
         <section class="workflow-tool-group">
@@ -389,7 +350,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             <span>{{ selectedNode.id }}</span>
             <span>{{ selectedNode.scopePath }}</span>
           </div>
-          <el-empty v-else description="未选择节点" />
+          <div v-else class="workflow-tool-empty">未选择节点</div>
           <el-button
             :icon="DocumentAdd"
             :disabled="currentMainGraphView === null"
@@ -412,7 +373,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             <span>{{ selectedLine.fromNodeId }} -> {{ selectedLine.toNodeId }}</span>
             <span>{{ selectedLine.scopePath }}</span>
           </div>
-          <el-empty v-else description="未选择连线" />
+          <div v-else class="workflow-tool-empty">未选择连线</div>
           <el-button :icon="DocumentCopy" :disabled="selectedLine === null" @click="openPropertiesDrawer">
             打开属性
           </el-button>
@@ -652,7 +613,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
       v-model="propertiesDrawerVisible"
       class="properties-drawer"
       direction="rtl"
-      :size="'80vw'"
+      :size="'33vw'"
       :title="propertiesDrawerTitle"
     >
       <template v-if="selectedLine">
@@ -1162,6 +1123,73 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
       </template>
     </el-drawer>
 
+    <el-drawer
+      v-model="classModelDrawerVisible"
+      class="class-model-drawer"
+      direction="rtl"
+      :size="'33vw'"
+      title="ClassModel 知识"
+    >
+      <template v-if="selectedClassModelOption">
+        <div class="class-model-doc-panel class-model-drawer-doc-panel">
+          <section class="class-model-doc-item">
+            <div class="class-model-doc-title">
+              <span class="class-model-pin" aria-hidden="true"></span>
+              <strong>{{ selectedClassModelOption.kind }}</strong>
+            </div>
+            <pre>{{ classModelDocText(selectedClassModelOption) }}</pre>
+          </section>
+          <section v-if="selectedClassModelOption.constructorSignature" class="class-model-doc-item">
+            <div class="class-model-doc-title">
+              <span class="class-model-pin" aria-hidden="true"></span>
+              <strong>constructor</strong>
+            </div>
+            <code>{{ selectedClassModelOption.constructorSignature.signature }}</code>
+            <pre>{{ classModelDocText(selectedClassModelOption.constructorSignature) }}</pre>
+          </section>
+          <section v-if="selectedValidationActionOption" class="class-model-doc-item">
+            <div class="class-model-doc-title">
+              <span class="class-model-pin" aria-hidden="true"></span>
+              <strong>{{ selectedValidationActionOption.name }}</strong>
+            </div>
+            <code>{{ selectedValidationActionOption.signature }}</code>
+            <pre>{{ classModelDocText(selectedValidationActionOption) }}</pre>
+          </section>
+          <details class="class-model-doc-group" open>
+            <summary>Attributes {{ selectedClassModelOption.attributes.length }}</summary>
+            <section
+              v-for="attribute in selectedClassModelOption.attributes"
+              :key="attribute.name"
+              class="class-model-doc-item"
+            >
+              <div class="class-model-doc-title">
+                <span class="class-model-pin" aria-hidden="true"></span>
+                <strong>{{ attribute.name }}</strong>
+                <code>{{ attribute.typeText }}</code>
+              </div>
+              <pre>{{ classModelDocText(attribute) }}</pre>
+            </section>
+          </details>
+          <details class="class-model-doc-group" open>
+            <summary>Actions {{ selectedClassModelOption.methods.length }}</summary>
+            <section
+              v-for="method in selectedClassModelOption.methods"
+              :key="method.name"
+              class="class-model-doc-item"
+            >
+              <div class="class-model-doc-title">
+                <span class="class-model-pin" aria-hidden="true"></span>
+                <strong>{{ method.name }}</strong>
+              </div>
+              <code>{{ method.signature }}</code>
+              <pre>{{ classModelDocText(method) }}</pre>
+            </section>
+          </details>
+        </div>
+      </template>
+      <el-empty v-else description="未加载 ClassModel" />
+    </el-drawer>
+
     <el-dialog v-model="createDialogVisible" title="新建工作流设计稿" width="460px">
       <el-form label-position="top">
         <el-form-item label="Workflow ID">
@@ -1287,7 +1315,6 @@ import {
   FolderOpened,
   Refresh,
   RefreshLeft,
-  Share,
   Upload,
 } from '@element-plus/icons-vue'
 import {
@@ -1444,8 +1471,9 @@ type ApplyStructuredEditorOptions = {
 
 const MIN_LEFT_PANEL_WIDTH = 220
 const MAX_LEFT_PANEL_WIDTH = 480
-const MIN_RIGHT_PANEL_WIDTH = 300
-const MAX_RIGHT_PANEL_WIDTH = 560
+const COLLAPSED_LEFT_PANEL_WIDTH = 48
+const MIN_RIGHT_PANEL_WIDTH = 200
+const MAX_RIGHT_PANEL_WIDTH = 320
 const GRAPH_SPLIT_MIN_RATIO = 22
 const GRAPH_SPLIT_MAX_RATIO = 78
 const GRAPH_SPLIT_SNAP_RATIO = 12
@@ -1461,10 +1489,12 @@ const currentDocument = ref<WorkflowDesignDocument | null>(null)
 const selectedNodeKey = ref('')
 const selectedLineKey = ref('')
 const propertiesDrawerVisible = ref(false)
+const classModelDrawerVisible = ref(false)
+const leftPanelCollapsed = ref(false)
 const layoutResizeState = ref<LayoutResizeState | null>(null)
 const graphSplitResizeState = ref<GraphSplitResizeState | null>(null)
 const leftPanelWidth = ref(280)
-const rightPanelWidth = ref(360)
+const rightPanelWidth = ref(240)
 const currentMainGraphKey = ref('workflow.graph')
 const currentChildGraphKey = ref('')
 const graphSplitRatio = ref(48)
@@ -1628,9 +1658,13 @@ const structuredReferenceOptions = computed(() => {
     ...allStructuredRows().map(row => row.valueText),
   ])
 })
-const workflowShellStyle = computed<CSSProperties>(() => ({
-  gridTemplateColumns: `${leftPanelWidth.value}px 12px minmax(520px, 1fr) 12px ${rightPanelWidth.value}px`,
-}))
+const workflowShellStyle = computed<CSSProperties>(() => {
+  const leftWidth = leftPanelCollapsed.value ? COLLAPSED_LEFT_PANEL_WIDTH : leftPanelWidth.value
+  const leftHandleWidth = leftPanelCollapsed.value ? 0 : 12
+  return {
+    gridTemplateColumns: `${leftWidth}px ${leftHandleWidth}px minmax(520px, 1fr) 8px ${rightPanelWidth.value}px`,
+  }
+})
 const rootGraphView = computed(() => graphViews.value[0] ?? null)
 const currentMainGraphView = computed(() => {
   return graphViews.value.find(view => view.key === currentMainGraphKey.value)
@@ -1964,6 +1998,7 @@ async function deleteSelectedNode(): Promise<void> {
 }
 
 function startLayoutResize(event: PointerEvent, side: 'left' | 'right'): void {
+  if (side === 'left' && leftPanelCollapsed.value) return
   layoutResizeState.value = {
     side,
     startClientX: event.clientX,
@@ -2498,6 +2533,11 @@ function openPropertiesDrawer(): void {
   if (selectedNode.value?.isBusinessNode === true && classModelOptions.value.length === 0) {
     void refreshClassModelOptions()
   }
+}
+
+function openClassModelDrawer(): void {
+  if (selectedClassModelOption.value === null) return
+  classModelDrawerVisible.value = true
 }
 
 function handleLineEditorChange(): void {
@@ -3510,14 +3550,13 @@ function errorMessage(error: unknown): string {
 <style scoped>
 .workflow-design-page {
   min-height: 100%;
-  padding: 16px;
+  padding: 12px;
   background: #f6f8fb;
 }
 
 .workflow-design-shell {
   display: grid;
-  margin-top: 16px;
-  min-height: calc(100vh - 132px);
+  min-height: calc(100vh - 88px);
 }
 
 .workflow-design-sidebar,
@@ -3535,16 +3574,52 @@ function errorMessage(error: unknown): string {
   overflow: auto;
 }
 
+.workflow-design-sidebar.is-collapsed {
+  display: grid;
+  place-items: start center;
+  padding: 8px 4px;
+  overflow: hidden;
+}
+
+.workflow-sidebar-collapsed-button {
+  display: grid;
+  width: 36px;
+  min-height: 92px;
+  place-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  color: #334155;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.workflow-sidebar-collapsed-button span {
+  writing-mode: vertical-rl;
+  letter-spacing: 0;
+}
+
+.workflow-sidebar-collapsed-button strong {
+  color: #0f766e;
+  font-size: 12px;
+}
+
 .workflow-tool-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  padding: 10px;
+}
+
+.workflow-tool-sidebar .panel-heading {
+  margin-bottom: 2px;
 }
 
 .workflow-tool-group {
   display: grid;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #f8fafc;
@@ -3559,14 +3634,33 @@ function errorMessage(error: unknown): string {
 
 .workflow-tool-group :deep(.el-button) {
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
   margin-left: 0;
+  min-height: 28px;
+  padding: 5px 6px;
+  font-size: 12px;
+}
+
+.workflow-tool-button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.workflow-tool-empty {
+  padding: 7px 8px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+  background: #ffffff;
 }
 
 .workflow-tool-selection {
   display: grid;
   gap: 3px;
-  padding: 8px;
+  padding: 6px;
   border: 1px solid #dbe3ee;
   border-radius: 6px;
   background: #ffffff;
@@ -3600,6 +3694,11 @@ function errorMessage(error: unknown): string {
   background: linear-gradient(90deg, transparent 4px, #cbd5e1 4px, #cbd5e1 8px, transparent 8px);
 }
 
+.layout-resize-handle.is-disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
 .workflow-design-canvas {
   padding: 14px;
   overflow: auto;
@@ -3627,6 +3726,12 @@ function errorMessage(error: unknown): string {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.workflow-list-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .workflow-list-item {
@@ -3697,7 +3802,11 @@ function errorMessage(error: unknown): string {
   font-weight: 700;
 }
 
-.document-title > span:first-child {
+.document-title-label {
+  flex: 0 0 auto;
+}
+
+.document-title-id {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3862,31 +3971,34 @@ function errorMessage(error: unknown): string {
   background: #fff7ed;
 }
 
-.graph-class-model-context {
-  display: grid;
-  gap: 8px;
-  margin: -2px 0 10px;
-}
-
-.graph-class-model-context-header {
+.graph-class-model-strip {
   display: flex;
+  min-height: 32px;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  margin: -2px 0 10px;
+  padding: 6px 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
   color: #334155;
   font-size: 12px;
 }
 
-.graph-class-model-context-header span {
+.graph-class-model-strip strong {
+  color: #111827;
+}
+
+.graph-class-model-strip-badge {
   padding: 3px 8px;
   border: 1px solid #dbe3ee;
   border-radius: 999px;
   background: #ffffff;
 }
 
-.graph-class-model-doc-panel {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  max-height: 180px;
+.graph-class-model-strip-spacer {
+  flex: 1 1 auto;
 }
 
 .workflow-flow-shell {
@@ -4040,7 +4152,8 @@ function errorMessage(error: unknown): string {
   gap: 10px;
 }
 
-.properties-drawer :deep(.el-drawer__body) {
+.properties-drawer :deep(.el-drawer__body),
+.class-model-drawer :deep(.el-drawer__body) {
   overflow: auto;
   padding-top: 8px;
 }
@@ -4096,6 +4209,14 @@ function errorMessage(error: unknown): string {
   border: 1px solid #dbe3ee;
   border-radius: 6px;
   background: #f8fafc;
+}
+
+.class-model-drawer-doc-panel {
+  grid-template-columns: 1fr;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .class-model-doc-group {
