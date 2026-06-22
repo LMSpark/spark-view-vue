@@ -130,6 +130,7 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
         .map(model => ({
           kind: model.name,
           name: model.name,
+          jsdoc: model.jsdoc,
           summary: summarizeJsDoc(model.jsdoc),
           ...declarationRelationsProperty(model),
           ...componentProfileProperty(model),
@@ -138,11 +139,13 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
                 ...constructorQueryProperty(model),
                 attributes: knowledgeAttributes(model).map(attribute => ({
                   name: attribute.name,
+                  jsdoc: attribute.jsdoc,
                   summary: summarizeJsDoc(attribute.jsdoc),
                   typeText: jsonSchemaToTypeText(attribute.schema ?? true),
                 })),
                 methods: knowledgeMethods(model).map(method => ({
                   name: method.name,
+                  jsdoc: method.jsdoc,
                   summary: summarizeJsDoc(method.jsdoc),
                   signature: renderMethodSignatureFromMeta(method),
                 })),
@@ -164,6 +167,7 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
       .map(model => ({
         kind: model.name,
         name: model.name,
+        jsdoc: model.jsdoc,
         summary: summarizeJsDoc(model.jsdoc),
         ...componentProfileProperty(model),
         ...(input.includeMembers
@@ -171,13 +175,15 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
               ...constructorQueryProperty(model),
               attributes: knowledgeAttributes(model).map(attribute => ({
                 name: attribute.name,
+                jsdoc: attribute.jsdoc,
                 summary: summarizeJsDoc(attribute.jsdoc),
                   typeText: renderAttributeTypeText(document, model.name, attribute),
               })),
               methods: knowledgeMethods(model).map(method => ({
                 name: method.name,
+                jsdoc: method.jsdoc,
                 summary: summarizeJsDoc(method.jsdoc),
-                  signature: renderMethodSignature(document, model.name, method),
+                signature: renderMethodSignature(document, model.name, method),
               })),
             }
           : {}),
@@ -476,13 +482,14 @@ function renderComponentProfile(model: Pick<DtsTypeDeclarationModel, 'component'
 
 function constructorQueryProperty(
   model: DtsTypeDeclarationModel,
-): { constructorSignature?: { summary: string; signature: string } } {
+): { constructorSignature?: { summary: string; jsdoc: string; signature: string } } {
   const constructorMeta = knowledgeConstructor(model)
   return constructorMeta === undefined
     ? {}
     : {
         constructorSignature: {
           summary: summarizeJsDoc(constructorMeta.jsdoc),
+          jsdoc: constructorMeta.jsdoc,
           signature: renderConstructorSignature(constructorMeta),
         },
       }

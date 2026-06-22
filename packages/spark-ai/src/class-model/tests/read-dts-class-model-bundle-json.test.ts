@@ -767,11 +767,12 @@ describe('readDtsClassModelBundleJson', () => {
       const payload = query as {
         models?: Array<{
           kind?: string
-          constructorSignature?: { signature?: string }
+          constructorSignature?: { jsdoc?: string; signature?: string }
         }>
       }
       const queryWidget = payload.models?.find(item => item.kind === 'Widget')
       expect(queryWidget?.constructorSignature?.signature).toContain('constructor(options: WidgetOptions, label?: string)')
+      expect(queryWidget?.constructorSignature?.jsdoc).toContain('Creates a widget')
       expect(payload.models?.map(model => model.kind)).toContain('WidgetOptions')
       await expect(provider.modelGuide({ kind: 'Widget' })).resolves.toContain(
         'constructor(options: WidgetOptions, label?: string)',
@@ -956,15 +957,19 @@ describe('readDtsClassModelBundleJson', () => {
         rootKind?: string
         models?: Array<{
           kind?: string
-          attributes?: Array<{ name?: string }>
-          methods?: Array<{ name?: string }>
+          jsdoc?: string
+          attributes?: Array<{ name?: string; jsdoc?: string }>
+          methods?: Array<{ name?: string; jsdoc?: string }>
         }>
       }
       const model = payload.models?.find(item => item.kind === 'AiAgentRegistry')
 
       expect(payload.rootKind).toBe('AiAgentRegistry')
+      expect(model?.jsdoc).toContain('Host registry for AI business registrations.')
       expect(model?.attributes?.map(attribute => attribute.name)).toContain('status')
+      expect(model?.attributes?.find(attribute => attribute.name === 'status')?.jsdoc).toContain('Stable registry status.')
       expect(model?.methods?.map(method => method.name)).toContain('register')
+      expect(model?.methods?.find(method => method.name === 'register')?.jsdoc).toContain('Stores a registration')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }

@@ -24,6 +24,11 @@ const mocks = vi.hoisted(() => ({
   messageBox: {
     confirm: vi.fn(),
   },
+  classModelProvider: {
+    query: vi.fn(),
+    methodGuide: vi.fn(),
+  },
+  createWorkerDtsClassModelKnowledgeProvider: vi.fn(),
 }))
 
 vi.mock('element-plus', () => ({
@@ -45,6 +50,14 @@ vi.mock('@/services/workflow-designs', async (importOriginal) => {
     saveWorkflowDefinition: mocks.saveWorkflowDefinition,
     createWorkflowDesign: mocks.createWorkflowDesign,
     deleteWorkflowDesign: mocks.deleteWorkflowDesign,
+  }
+})
+
+vi.mock('@spark-appworks/spark-ai/class-model', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-appworks/spark-ai/class-model')>()
+  return {
+    ...actual,
+    createWorkerDtsClassModelKnowledgeProvider: mocks.createWorkerDtsClassModelKnowledgeProvider,
   }
 })
 
@@ -155,7 +168,7 @@ const VueFlowStub = defineComponent({
       default: () => [],
     },
   },
-  emits: ['nodesChange', 'nodeDragStop', 'edgesChange', 'edgeUpdate', 'connect', 'viewportChangeEnd'],
+  emits: ['nodesChange', 'nodeDragStop', 'edgesChange', 'edgeDoubleClick', 'edgeUpdate', 'connect', 'viewportChangeEnd'],
   setup(props, { emit, slots }) {
     const nodeTitle = (node: any) => String(node.data?.title ?? node.id)
 
@@ -192,6 +205,7 @@ const VueFlowStub = defineComponent({
         class: 'vue-flow__edge',
         title: `选择连线 ${edge.source} -> ${edge.target}`,
         onClick: () => emit('edgesChange', [{ type: 'select', id: edge.id, selected: true }]),
+        onDblclick: () => emit('edgeDoubleClick', { edge }),
       }, `${edge.source}->${edge.target}`))
 
       const edgeUpdateButtons = props.edges.map((edge: any) => h('button', {
@@ -477,6 +491,46 @@ describe('WorkflowDesigns visual editor', () => {
     vi.clearAllMocks()
     window.localStorage.clear()
     mocks.messageBox.confirm.mockResolvedValue(undefined)
+    mocks.classModelProvider.query.mockResolvedValue({
+      rootKind: 'ProjectModel',
+      models: [
+        {
+          kind: 'ProjectModel',
+          name: 'ProjectModel',
+          jsdoc: 'ProjectModel full JSDoc.',
+          summary: 'ProjectModel summary.',
+          constructorSignature: {
+            jsdoc: 'ProjectModel constructor JSDoc.',
+            summary: 'ProjectModel constructor.',
+            signature: 'constructor(options: ProjectModelInitOptions)',
+          },
+          attributes: [
+            {
+              name: 'activePage',
+              jsdoc: 'Active page JSDoc.',
+              summary: 'Active page.',
+              typeText: 'ConfigPageNode',
+            },
+          ],
+          methods: [
+            {
+              name: 'agent_complete',
+              jsdoc: 'Agent completion JSDoc.',
+              summary: 'Complete the agent run.',
+              signature: 'agent_complete(summary: string): boolean',
+            },
+            {
+              name: 'completePageDesign',
+              jsdoc: 'Complete page design JSDoc.',
+              summary: 'Complete page design.',
+              signature: 'completePageDesign(): boolean',
+            },
+          ],
+        },
+      ],
+    })
+    mocks.classModelProvider.methodGuide.mockResolvedValue('Action guide text')
+    mocks.createWorkerDtsClassModelKnowledgeProvider.mockReturnValue(mocks.classModelProvider)
     mocks.listWorkflowDesigns.mockResolvedValue([
       {
         workflowId: 'agent.workflow.demo',
@@ -635,6 +689,19 @@ describe('WorkflowDesigns visual editor', () => {
     expect(savedDocument.x_spark.draft?.['status']).toBe('saved')
   })
 
+  it('shows ClassModel pins and JSDoc at each extracted level', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+    await flushPromises()
+
+    expect(mocks.createWorkerDtsClassModelKnowledgeProvider).toHaveBeenCalled()
+    expect(wrapper.findAll('.class-model-pin').length).toBeGreaterThan(0)
+    expect(wrapper.text()).toContain('ProjectModel full JSDoc.')
+    expect(wrapper.text()).toContain('ProjectModel constructor JSDoc.')
+    expect(wrapper.text()).toContain('Active page JSDoc.')
+    expect(wrapper.text()).toContain('Agent completion JSDoc.')
+  })
+
   it('drags a graph node and saves its new position', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
@@ -715,7 +782,7 @@ describe('WorkflowDesigns visual editor', () => {
 
     const firstEdge = wrapper.find('.vue-flow__edge')
     expect(firstEdge.exists()).toBe(true)
-    await firstEdge.trigger('click')
+    await firstEdge.trigger('dblclick')
 
     const toNodeSelect = wrapper.find('select.line-to-node-select')
     expect(toNodeSelect.exists()).toBe(true)

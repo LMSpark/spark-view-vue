@@ -10,28 +10,6 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
       <template #icon>
         <el-icon><Share /></el-icon>
       </template>
-      <template #extra>
-        <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
-        <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
-        <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
-        <el-button
-          :icon="RefreshLeft"
-          :loading="autoLayoutSaving"
-          :disabled="!canAutoLayout"
-          @click="autoLayoutCurrentDesign"
-        >
-          自动排版
-        </el-button>
-        <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
-          Definition
-        </el-button>
-        <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
-          保存
-        </el-button>
-        <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
-          发布
-        </el-button>
-      </template>
     </el-page-header>
 
     <div class="workflow-design-shell" :style="workflowShellStyle">
@@ -167,14 +145,6 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                       >
                         提升为 main
                       </el-button>
-                      <el-button
-                        link
-                        size="small"
-                        :icon="DocumentAdd"
-                        @click.stop.prevent="openNodeCreateDialog(panel.graphView, 'node')"
-                      >
-                        Add business node
-                      </el-button>
                     </span>
                   </div>
 
@@ -189,6 +159,82 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                       <span>mode {{ panel.graphView.ownerNode?.data?.loop?.mode || 'progressive' }}</span>
                       <span>max {{ panel.graphView.ownerNode?.data?.loop?.maxLoopCount ?? 1 }}</span>
                       <span>exit {{ panel.graphView.ownerNode?.data?.loop?.exitNodeId || '-' }}</span>
+                    </div>
+
+                    <div
+                      v-if="selectedNodeInGraph(panel.graphView) && selectedNode?.isBusinessNode === true && selectedClassModelOption"
+                      class="graph-class-model-context"
+                    >
+                      <div class="graph-class-model-context-header">
+                        <strong>ClassModel</strong>
+                        <span>{{ selectedClassModelOption.kind }}</span>
+                        <span>attributes {{ selectedClassModelOption.attributes.length }}</span>
+                        <span>actions {{ selectedClassModelOption.methods.length }}</span>
+                        <el-button
+                          link
+                          size="small"
+                          :loading="classModelLoading"
+                          :icon="Refresh"
+                          @click="refreshClassModelOptions"
+                        >
+                          刷新知识
+                        </el-button>
+                      </div>
+                      <div class="class-model-doc-panel graph-class-model-doc-panel">
+                        <section class="class-model-doc-item">
+                          <div class="class-model-doc-title">
+                            <span class="class-model-pin" aria-hidden="true"></span>
+                            <strong>{{ selectedClassModelOption.kind }}</strong>
+                          </div>
+                          <pre>{{ classModelDocText(selectedClassModelOption) }}</pre>
+                        </section>
+                        <section v-if="selectedClassModelOption.constructorSignature" class="class-model-doc-item">
+                          <div class="class-model-doc-title">
+                            <span class="class-model-pin" aria-hidden="true"></span>
+                            <strong>constructor</strong>
+                          </div>
+                          <code>{{ selectedClassModelOption.constructorSignature.signature }}</code>
+                          <pre>{{ classModelDocText(selectedClassModelOption.constructorSignature) }}</pre>
+                        </section>
+                        <section v-if="selectedValidationActionOption" class="class-model-doc-item">
+                          <div class="class-model-doc-title">
+                            <span class="class-model-pin" aria-hidden="true"></span>
+                            <strong>{{ selectedValidationActionOption.name }}</strong>
+                          </div>
+                          <code>{{ selectedValidationActionOption.signature }}</code>
+                          <pre>{{ classModelDocText(selectedValidationActionOption) }}</pre>
+                        </section>
+                        <details class="class-model-doc-group" open>
+                          <summary>Attributes {{ selectedClassModelOption.attributes.length }}</summary>
+                          <section
+                            v-for="attribute in selectedClassModelOption.attributes"
+                            :key="attribute.name"
+                            class="class-model-doc-item"
+                          >
+                            <div class="class-model-doc-title">
+                              <span class="class-model-pin" aria-hidden="true"></span>
+                              <strong>{{ attribute.name }}</strong>
+                              <code>{{ attribute.typeText }}</code>
+                            </div>
+                            <pre>{{ classModelDocText(attribute) }}</pre>
+                          </section>
+                        </details>
+                        <details class="class-model-doc-group" open>
+                          <summary>Actions {{ selectedClassModelOption.methods.length }}</summary>
+                          <section
+                            v-for="method in selectedClassModelOption.methods"
+                            :key="method.name"
+                            class="class-model-doc-item"
+                          >
+                            <div class="class-model-doc-title">
+                              <span class="class-model-pin" aria-hidden="true"></span>
+                              <strong>{{ method.name }}</strong>
+                            </div>
+                            <code>{{ method.signature }}</code>
+                            <pre>{{ classModelDocText(method) }}</pre>
+                          </section>
+                        </details>
+                      </div>
                     </div>
 
                     <div class="workflow-flow-shell graph-panel-flow">
@@ -209,6 +255,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                         @nodes-change="changes => handlePanelFlowNodesChange(changes, panel.graphView)"
                         @node-drag-stop="handleFlowNodeDragStop"
                         @edges-change="changes => handlePanelFlowEdgesChange(changes, panel.graphView)"
+                        @edge-double-click="event => handlePanelFlowEdgeDoubleClick(event, panel.graphView)"
                         @edge-update="event => handlePanelFlowEdgeUpdate(event, panel.graphView)"
                         @connect="connection => handlePanelFlowConnect(connection, panel.graphView)"
                         @viewport-change-end="viewport => handlePanelFlowViewportChangeEnd(viewport, panel.graphView)"
@@ -223,7 +270,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                             'is-business': data.isBusinessNode,
                             'is-boundary': data.isBoundaryNode,
                             'is-loop': data.nodeType === 'loop',
-                          }">
+                          }" @dblclick.stop="openNodeEditor(data.viewKey)">
                             <Handle
                               id="target"
                               type="target"
@@ -239,8 +286,16 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                             <span class="node-kind">{{ data.nodeType }}</span>
                             <strong>{{ data.title }}</strong>
                             <small>{{ data.scopePath }} / {{ id }}</small>
-                            <span v-if="data.isBusinessNode" class="tool-name">{{ data.modelClassName }}</span>
-                            <span v-if="data.validationActionName" class="tool-name">{{ data.validationActionName }}</span>
+                            <span v-if="data.isBusinessNode" class="tool-name tool-name--pinned">
+                              <span class="class-model-pin" aria-hidden="true"></span>
+                              <span>{{ data.modelClassName }}</span>
+                            </span>
+                            <small v-if="data.modelDocText" class="node-jsdoc">{{ data.modelDocText }}</small>
+                            <span v-if="data.validationActionName" class="tool-name tool-name--pinned">
+                              <span class="class-model-pin" aria-hidden="true"></span>
+                              <span>{{ data.validationActionName }}</span>
+                            </span>
+                            <small v-if="data.validationActionDocText" class="node-jsdoc">{{ data.validationActionDocText }}</small>
                           </div>
                         </template>
                       </VueFlow>
@@ -290,9 +345,9 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         @pointerdown.prevent="startLayoutResize($event, 'right')"
       />
 
-      <aside class="workflow-design-editor">
+      <aside class="workflow-design-editor workflow-tool-sidebar">
         <div class="panel-heading">
-          <span>Properties</span>
+          <span>工具栏</span>
           <el-tag v-if="selectedLine" size="small" type="warning">连线</el-tag>
           <el-tag
             v-else-if="selectedNode"
@@ -303,22 +358,68 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           </el-tag>
         </div>
 
-        <el-empty v-if="selectedNode === null && selectedLine === null" description="No node or line selected" />
-        <div v-else class="properties-summary">
-          <el-descriptions v-if="selectedLine" :column="1" size="small" border>
-            <el-descriptions-item label="ID">{{ selectedLine.id }}</el-descriptions-item>
-            <el-descriptions-item label="From">{{ selectedLine.fromNodeId }}</el-descriptions-item>
-            <el-descriptions-item label="To">{{ selectedLine.toNodeId }}</el-descriptions-item>
-          </el-descriptions>
-          <el-descriptions v-else-if="selectedNode" :column="1" size="small" border>
-            <el-descriptions-item label="ID">{{ selectedNode.id }}</el-descriptions-item>
-            <el-descriptions-item label="Type">{{ selectedNode.nodeType }}</el-descriptions-item>
-            <el-descriptions-item label="Scope">{{ selectedNode.scopePath }}</el-descriptions-item>
-          </el-descriptions>
-          <el-button type="primary" :icon="DocumentCopy" @click="openPropertiesDrawer">
+        <section class="workflow-tool-group">
+          <h3>流程级</h3>
+          <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
+          <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
+          <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
+          <el-button
+            :icon="RefreshLeft"
+            :loading="autoLayoutSaving"
+            :disabled="!canAutoLayout"
+            @click="autoLayoutCurrentDesign"
+          >
+            自动排版
+          </el-button>
+          <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
+            Definition
+          </el-button>
+          <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
+            保存
+          </el-button>
+          <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
+            发布
+          </el-button>
+        </section>
+
+        <section class="workflow-tool-group">
+          <h3>节点级</h3>
+          <div v-if="selectedNode" class="workflow-tool-selection">
+            <strong>{{ selectedNode.title }}</strong>
+            <span>{{ selectedNode.id }}</span>
+            <span>{{ selectedNode.scopePath }}</span>
+          </div>
+          <el-empty v-else description="未选择节点" />
+          <el-button
+            :icon="DocumentAdd"
+            :disabled="currentMainGraphView === null"
+            @click="openNodeCreateDialogForCurrentGraph"
+          >
+            Add business node
+          </el-button>
+          <el-button :icon="DocumentCopy" :disabled="selectedNode === null" @click="openPropertiesDrawer">
             打开属性
           </el-button>
-        </div>
+          <el-button type="danger" :icon="Delete" :disabled="selectedNode === null" @click="deleteSelectedNode">
+            删除节点
+          </el-button>
+        </section>
+
+        <section class="workflow-tool-group">
+          <h3>连线级</h3>
+          <div v-if="selectedLine" class="workflow-tool-selection">
+            <strong>{{ selectedLine.id }}</strong>
+            <span>{{ selectedLine.fromNodeId }} -> {{ selectedLine.toNodeId }}</span>
+            <span>{{ selectedLine.scopePath }}</span>
+          </div>
+          <el-empty v-else description="未选择连线" />
+          <el-button :icon="DocumentCopy" :disabled="selectedLine === null" @click="openPropertiesDrawer">
+            打开属性
+          </el-button>
+          <el-button type="danger" :icon="Delete" :disabled="selectedLine === null" @click="deleteSelectedLine">
+            删除连线
+          </el-button>
+        </section>
 
         <template v-if="selectedLine !== null && false">
           <details class="editor-section collapsible-section" open>
@@ -543,12 +644,6 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             </div>
           </details>
 
-          <details class="editor-section collapsible-section">
-            <summary>危险操作</summary>
-            <div class="collapsible-body editor-actions">
-              <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">删除节点</el-button>
-            </div>
-          </details>
         </template>
       </aside>
     </div>
@@ -1064,12 +1159,6 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           </details>
         </template>
 
-        <details class="editor-section collapsible-section">
-          <summary>危险操作</summary>
-          <div class="collapsible-body editor-actions">
-            <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">删除节点</el-button>
-          </div>
-        </details>
       </template>
     </el-drawer>
 
@@ -1266,7 +1355,9 @@ type WorkflowFlowNodeData = {
   isBusinessNode: boolean
   isBoundaryNode: boolean
   modelClassName: string
+  modelDocText: string
   validationActionName: string
+  validationActionDocText: string
 }
 
 type WorkflowFlowEdgeData = {
@@ -1275,14 +1366,30 @@ type WorkflowFlowEdgeData = {
 
 type ClassModelMethodOption = {
   name: string
+  jsdoc: string
+  summary: string
+  signature: string
+}
+
+type ClassModelAttributeOption = {
+  name: string
+  jsdoc: string
+  summary: string
+  typeText: string
+}
+
+type ClassModelConstructorOption = {
+  jsdoc: string
   summary: string
   signature: string
 }
 
 type ClassModelOption = {
   kind: string
+  jsdoc: string
   summary: string
-  attributes: string[]
+  constructorSignature: ClassModelConstructorOption | null
+  attributes: ClassModelAttributeOption[]
   methods: ClassModelMethodOption[]
 }
 
@@ -1391,6 +1498,7 @@ const classModelLoading = ref(false)
 const classModelError = ref('')
 const classModelGuideText = ref('')
 const classModelOptions = ref<ClassModelOption[]>([])
+const classModelLoadedRootText = ref('')
 const nodeX = computed({
   get: () => selectedNode.value?.node.position?.x ?? 0,
   set: (value: number) => { applyNodePosition(value, nodeY.value) },
@@ -1454,6 +1562,15 @@ const selectedClassModelOption = computed(() => {
   return classModelOptions.value.find(item => item.kind === modelClassText.value.trim()) ?? null
 })
 const selectedClassModelMethods = computed(() => selectedClassModelOption.value?.methods ?? [])
+const selectedValidationClassModelOption = computed(() => {
+  return classModelOptions.value.find(item => item.kind === validationActionClassText.value.trim())
+    ?? selectedClassModelOption.value
+})
+const selectedValidationActionOption = computed(() => {
+  const methodName = validationActionNameText.value.trim()
+  if (methodName.length === 0) return null
+  return selectedValidationClassModelOption.value?.methods.find(method => method.name === methodName) ?? null
+})
 const propertiesDrawerTitle = computed(() => {
   if (selectedLine.value !== null) return `连线属性 / ${selectedLine.value.id}`
   if (selectedNode.value !== null) return `节点属性 / ${selectedNode.value.title}`
@@ -1481,11 +1598,11 @@ const modelClassOptions = computed(() => {
 const completionMemberOptions = computed(() => {
   return uniqueTexts([
     validationActionNameText.value,
-    ...selectedClassModelMethods.value.map(method => method.name),
+    ...(selectedValidationClassModelOption.value?.methods ?? selectedClassModelMethods.value).map(method => method.name),
   ])
 })
 const modelAttributeOptions = computed(() => {
-  return uniqueTexts(selectedClassModelOption.value?.attributes ?? [])
+  return uniqueTexts(selectedClassModelOption.value?.attributes.map(attribute => attribute.name) ?? [])
 })
 const workflowVariableOptions = computed(() => {
   return uniqueTexts(currentDocument.value?.workflow.variables?.map(variable => variable.name) ?? [])
@@ -1592,6 +1709,7 @@ watch(
   () => {
     syncEditorFromSelected()
     syncChildGraphFromSelectedMainNode()
+    ensureSelectedNodeClassModelKnowledge()
   },
   { immediate: true },
 )
@@ -1765,6 +1883,12 @@ function openNodeCreateDialog(graphView: WorkflowDesignGraphView, nodeKind: Work
     desc: '',
   }
   nodeCreateDialogVisible.value = true
+}
+
+function openNodeCreateDialogForCurrentGraph(): void {
+  const graphView = currentMainGraphView.value
+  if (graphView === null) return
+  openNodeCreateDialog(graphView, 'node')
 }
 
 function syncNodeCreateKindDefaults(): void {
@@ -2031,11 +2155,29 @@ function isWorkflowFlowNodeData(value: unknown): value is WorkflowFlowNodeData {
     && typeof value['isBusinessNode'] === 'boolean'
     && typeof value['isBoundaryNode'] === 'boolean'
     && typeof value['modelClassName'] === 'string'
+    && typeof value['modelDocText'] === 'string'
     && typeof value['validationActionName'] === 'string'
+    && typeof value['validationActionDocText'] === 'string'
 }
 
 function isWorkflowFlowEdgeData(value: unknown): value is WorkflowFlowEdgeData {
   return isJsonRecord(value) && typeof value['edgeKey'] === 'string'
+}
+
+function readFlowEdgeFromEvent(value: unknown): WorkflowFlowEdge | null {
+  if (!isJsonRecord(value)) return null
+  const edge = value['edge']
+  if (!isJsonRecord(edge) || typeof edge['id'] !== 'string' || typeof edge['source'] !== 'string' || typeof edge['target'] !== 'string') {
+    return null
+  }
+  const data = edge['data']
+  if (!isWorkflowFlowEdgeData(data)) return null
+  return {
+    id: edge['id'],
+    source: edge['source'],
+    target: edge['target'],
+    data,
+  }
 }
 
 function isJsonRecord(value: unknown): value is Record<string, unknown> {
@@ -2327,14 +2469,27 @@ function selectNode(key: string): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
   selectedLineKey.value = ''
   selectedNodeKey.value = key
-  openPropertiesDrawer()
 }
 
 function selectLine(key: string): void {
   if (editorDirty.value && !applySelectedDraft({ silent: false })) return
   selectedNodeKey.value = ''
   selectedLineKey.value = key
-  openPropertiesDrawer()
+}
+
+function openNodeEditor(key: string): void {
+  selectNode(key)
+  if (selectedNodeKey.value === key) openPropertiesDrawer()
+}
+
+function openLineEditor(key: string): void {
+  selectLine(key)
+  if (selectedLineKey.value === key) openPropertiesDrawer()
+}
+
+function selectedNodeInGraph(graphView: WorkflowDesignGraphView | null): boolean {
+  const node = selectedNode.value
+  return graphView !== null && node !== null && node.graph === graphView.graph
 }
 
 function openPropertiesDrawer(): void {
@@ -2377,7 +2532,9 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
         isBusinessNode: view.isBusinessNode,
         isBoundaryNode: view.isBoundaryNode,
         modelClassName: readBusinessNodeModelClassName(view),
+        modelDocText: readBusinessNodeModelDocText(view),
         validationActionName: readBusinessNodeValidationActionName(view),
+        validationActionDocText: readBusinessNodeValidationActionDocText(view),
       },
     }
   })
@@ -2415,6 +2572,15 @@ function handlePanelFlowNodesChange(changes: NodeChange[], graphView: WorkflowDe
 function handlePanelFlowEdgesChange(changes: EdgeChange[], graphView: WorkflowDesignGraphView | null): void {
   if (graphView === null) return
   handleFlowEdgesChange(changes, graphView)
+}
+
+function handlePanelFlowEdgeDoubleClick(event: unknown, graphView: WorkflowDesignGraphView | null): void {
+  if (graphView === null) return
+  const edge = readFlowEdgeFromEvent(event)
+  const edgeData = edge?.data
+  if (!isWorkflowFlowEdgeData(edgeData)) return
+  const line = lineViews.value.find(item => item.key === edgeData.edgeKey)
+  if (line !== undefined && line.graph === graphView.graph) openLineEditor(line.key)
 }
 
 function handlePanelFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView | null): void {
@@ -2789,6 +2955,20 @@ function readBusinessNodeValidationActionName(view: WorkflowDesignNodeView): str
   return typeof memberName === 'string' && memberName.trim().length > 0 ? memberName.trim() : ''
 }
 
+function readBusinessNodeModelDocText(view: WorkflowDesignNodeView): string {
+  const className = readBusinessNodeModelClassName(view)
+  const option = classModelOptions.value.find(item => item.kind === className)
+  return option === undefined ? '' : shortClassModelDocText(option)
+}
+
+function readBusinessNodeValidationActionDocText(view: WorkflowDesignNodeView): string {
+  const className = readBusinessNodeModelClassName(view)
+  const actionName = readBusinessNodeValidationActionName(view)
+  const option = classModelOptions.value.find(item => item.kind === className)
+  const method = option?.methods.find(item => item.name === actionName)
+  return method === undefined ? '' : shortClassModelDocText(method)
+}
+
 function createClassModelKnowledgeProvider(rootClassName: string): ClassModelKnowledgeProvider {
   return createWorkerDtsClassModelKnowledgeProvider({
     workerUrl: new URL('../../services/class-model-knowledge.worker.ts', import.meta.url),
@@ -2806,20 +2986,42 @@ function readClassModelOptions(value: unknown): ClassModelOption[] {
       if (kind.length === 0) return null
       return {
         kind,
+        jsdoc: readTextField(model, 'jsdoc'),
         summary: readTextField(model, 'summary'),
-        attributes: readNamedItems(model['attributes']),
+        constructorSignature: readConstructorOption(model['constructorSignature']),
+        attributes: readAttributeOptions(model['attributes']),
         methods: readMethodOptions(model['methods']),
       }
     })
     .filter((item): item is ClassModelOption => item !== null)
 }
 
-function readNamedItems(value: unknown): string[] {
+function readConstructorOption(value: unknown): ClassModelConstructorOption | null {
+  if (!isJsonRecord(value)) return null
+  const signature = readTextField(value, 'signature')
+  if (signature.length === 0) return null
+  return {
+    jsdoc: readTextField(value, 'jsdoc'),
+    summary: readTextField(value, 'summary'),
+    signature,
+  }
+}
+
+function readAttributeOptions(value: unknown): ClassModelAttributeOption[] {
   if (!Array.isArray(value)) return []
   return value
     .filter(isJsonRecord)
-    .map(item => readTextField(item, 'name'))
-    .filter(item => item.length > 0)
+    .map((attribute): ClassModelAttributeOption | null => {
+      const name = readTextField(attribute, 'name')
+      if (name.length === 0) return null
+      return {
+        name,
+        jsdoc: readTextField(attribute, 'jsdoc'),
+        summary: readTextField(attribute, 'summary'),
+        typeText: readTextField(attribute, 'typeText'),
+      }
+    })
+    .filter((item): item is ClassModelAttributeOption => item !== null)
 }
 
 function readMethodOptions(value: unknown): ClassModelMethodOption[] {
@@ -2831,6 +3033,7 @@ function readMethodOptions(value: unknown): ClassModelMethodOption[] {
       if (name.length === 0) return null
       return {
         name,
+        jsdoc: readTextField(method, 'jsdoc'),
         summary: readTextField(method, 'summary'),
         signature: readTextField(method, 'signature'),
       }
@@ -2842,6 +3045,18 @@ function readTextField(value: unknown, field: string): string {
   if (!isJsonRecord(value)) return ''
   const text = value[field]
   return typeof text === 'string' ? text.trim() : ''
+}
+
+function classModelDocText(item: Readonly<{ jsdoc?: string; summary?: string }>): string {
+  const jsdoc = typeof item.jsdoc === 'string' ? item.jsdoc.trim() : ''
+  if (jsdoc.length > 0) return jsdoc
+  const summary = typeof item.summary === 'string' ? item.summary.trim() : ''
+  return summary.length > 0 ? summary : 'No JSDoc.'
+}
+
+function shortClassModelDocText(item: Readonly<{ jsdoc?: string; summary?: string }>): string {
+  const line = classModelDocText(item).split('\n').map(part => part.trim()).find(part => part.length > 0) ?? ''
+  return line.length > 96 ? `${line.slice(0, 95)}...` : line
 }
 
 function readPrimaryBusinessNodeModel(data: unknown): Record<string, unknown> | null {
@@ -3003,6 +3218,7 @@ async function refreshClassModelOptions(): Promise<void> {
     const provider = createClassModelKnowledgeProvider(rootClassName)
     const result = await provider.query({ includeMembers: true })
     classModelOptions.value = readClassModelOptions(result)
+    classModelLoadedRootText.value = rootClassName
     if (modelClassText.value.trim().length === 0 && classModelOptions.value[0] !== undefined) {
       modelClassText.value = classModelOptions.value[0].kind
       validationActionClassText.value = modelClassText.value
@@ -3012,6 +3228,13 @@ async function refreshClassModelOptions(): Promise<void> {
   } finally {
     classModelLoading.value = false
   }
+}
+
+function ensureSelectedNodeClassModelKnowledge(): void {
+  if (selectedNode.value?.isBusinessNode !== true || classModelLoading.value) return
+  const rootClassName = modelRootClassText.value.trim()
+  if (rootClassName.length === 0 || rootClassName === classModelLoadedRootText.value) return
+  void refreshClassModelOptions()
 }
 
 async function loadValidationActionGuide(): Promise<void> {
@@ -3312,6 +3535,61 @@ function errorMessage(error: unknown): string {
   overflow: auto;
 }
 
+.workflow-tool-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflow-tool-group {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.workflow-tool-group h3 {
+  margin: 0 0 2px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.workflow-tool-group :deep(.el-button) {
+  width: 100%;
+  justify-content: flex-start;
+  margin-left: 0;
+}
+
+.workflow-tool-selection {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.workflow-tool-selection strong,
+.workflow-tool-selection span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-tool-selection strong {
+  color: #111827;
+  font-size: 13px;
+}
+
+.workflow-tool-selection span {
+  color: #64748b;
+  font-size: 12px;
+}
+
 .layout-resize-handle {
   align-self: stretch;
   cursor: col-resize;
@@ -3562,6 +3840,12 @@ function errorMessage(error: unknown): string {
   margin-left: auto;
 }
 
+.graph-node-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .loop-group-meta {
   display: flex;
   flex-wrap: wrap;
@@ -3576,6 +3860,33 @@ function errorMessage(error: unknown): string {
   border: 1px solid #fed7aa;
   border-radius: 999px;
   background: #fff7ed;
+}
+
+.graph-class-model-context {
+  display: grid;
+  gap: 8px;
+  margin: -2px 0 10px;
+}
+
+.graph-class-model-context-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #334155;
+  font-size: 12px;
+}
+
+.graph-class-model-context-header span {
+  padding: 3px 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.graph-class-model-doc-panel {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  max-height: 180px;
 }
 
 .workflow-flow-shell {
@@ -3669,6 +3980,26 @@ function errorMessage(error: unknown): string {
   color: #166534;
 }
 
+.tool-name--pinned {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tool-name--pinned .class-model-pin {
+  width: 7px;
+  height: 7px;
+  border-width: 1px;
+  box-shadow: none;
+}
+
+.node-jsdoc {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .workflow-node strong {
   overflow-wrap: anywhere;
   color: #111827;
@@ -3745,6 +4076,69 @@ function errorMessage(error: unknown): string {
   align-items: center;
   color: #334155;
   font-size: 12px;
+}
+
+.class-model-pin {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #0f766e;
+  border-radius: 50%;
+  background: #ccfbf1;
+  box-shadow: 0 0 0 2px #f0fdfa;
+}
+
+.class-model-doc-panel {
+  display: grid;
+  max-height: 420px;
+  overflow: auto;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.class-model-doc-group {
+  display: grid;
+  gap: 8px;
+}
+
+.class-model-doc-group > summary,
+.class-model-doc-title {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.class-model-doc-item {
+  display: grid;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.class-model-doc-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.class-model-doc-item code {
+  color: #0f766e;
+  font-size: 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.class-model-doc-item pre {
+  margin: 0;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .class-model-guide {
