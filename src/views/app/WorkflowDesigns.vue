@@ -1,6 +1,9 @@
 ﻿<!--
 @module app:views/app/WorkflowDesigns
-鑱岃矗锛氭彁渚涘伐浣滄祦璁捐绋跨殑鍙鍖栫紪杈戝叆鍙ｏ紝杩炴帴 Dify-like JSON graph銆佹枃浠朵繚瀛?API 涓?workflow definition 鍙戝竷銆?杈圭晫锛氬彧澶勭悊璁捐鎬?JSON锛屼笉鎵ц Agent workflow 杩愯鏃躲€?AI鐢ㄩ€旓細闇€瑕侀獙璇?workflow 缂栬緫鍣ㄥ浣曢厤缃笟鍔¤妭鐐广€丆lassModel model context 鎴栨楠ょ嚎鎶曞奖鏃讹紝鐢ㄦ湰椤甸潰瀹氫綅銆?-->
+职责：提供工作流设计稿的可视化编辑入口，连接 Dify-like JSON graph、文件保存 API 与 workflow definition 发布。
+边界：只处理设计态 JSON，不执行 Agent workflow 运行时。
+AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel model context 或步骤线投影时，用本页面定位。
+-->
 <template>
   <div class="workflow-design-page">
     <el-page-header content="Workflow Designs" @back="$router.go(-1)">
@@ -8,17 +11,17 @@
         <el-icon><Share /></el-icon>
       </template>
       <template #extra>
-        <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">鍒锋柊</el-button>
-        <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">鏂板缓</el-button>
-        <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">澶嶅埗 JSON</el-button>
+        <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
+        <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
+        <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
         <el-button :icon="DocumentCopy" :loading="openingDefinition" :disabled="!canOpenDefinition" @click="openDefinitionEditor">
           Definition
         </el-button>
         <el-button type="success" :icon="Upload" :loading="saving" :disabled="!canSave" @click="saveCurrentDesign">
-          淇濆瓨
+          保存
         </el-button>
         <el-button type="primary" :icon="Upload" :loading="publishing" :disabled="!canPublish" @click="publishCurrentDefinition">
-          鍙戝竷
+          发布
         </el-button>
       </template>
     </el-page-header>
@@ -58,10 +61,10 @@
             </div>
             <div class="workflow-list-actions">
               <el-button link size="small" :icon="FolderOpened" @click.stop="openDesign(item.workflowId)">
-                鎵撳紑
+                打开
               </el-button>
               <el-button link size="small" type="danger" :icon="Delete" @click.stop="deleteDesign(item.workflowId)">
-                鍒犻櫎
+                删除
               </el-button>
             </div>
           </div>
@@ -86,13 +89,13 @@
             </el-tag>
           </div>
           <div class="document-stats">
-            <span>鑺傜偣 {{ allNodes.length }}</span>
-            <span>涓氬姟鑺傜偣 {{ businessNodes.length }}</span>
+            <span>节点 {{ allNodes.length }}</span>
+            <span>业务节点 {{ businessNodes.length }}</span>
             <span v-if="currentTimestamp">ts {{ currentTimestamp }}</span>
           </div>
         </div>
 
-        <el-empty v-if="currentDocument === null && !opening" description="閫夋嫨鎴栨柊寤哄伐浣滄祦" />
+        <el-empty v-if="currentDocument === null && !opening" description="选择或新建工作流" />
         <el-skeleton v-else-if="opening" :rows="12" animated />
 
         <template v-else-if="currentDocument">
@@ -129,15 +132,15 @@
                         v-if="panel.role === 'child' && mainChildGraphOptions.length > 1"
                         v-model="currentChildGraphKey"
                         class="native-select graph-child-select"
-                        title="閫夋嫨涓嬮儴瀛愬浘"
+                        title="选择下部子图"
                       >
                         <option v-for="child in mainChildGraphOptions" :key="child.key" :value="child.key">
                           {{ child.title }}
                         </option>
                       </select>
-                      <el-tag v-if="panel.graphView.carrier === 'loop'" size="small" type="warning">寰幆鍒嗙粍</el-tag>
-                      <el-tag size="small" type="info">鑺傜偣 {{ nodesForGraph(panel.graphView).length }}</el-tag>
-                      <el-tag size="small" type="info">杩炵嚎 {{ linesForGraph(panel.graphView).length }}</el-tag>
+                      <el-tag v-if="panel.graphView.carrier === 'loop'" size="small" type="warning">循环分组</el-tag>
+                      <el-tag size="small" type="info">节点 {{ nodesForGraph(panel.graphView).length }}</el-tag>
+                      <el-tag size="small" type="info">连线 {{ linesForGraph(panel.graphView).length }}</el-tag>
                       <el-button
                         v-if="panel.role === 'main' && currentMainParentGraphView"
                         link
@@ -145,7 +148,8 @@
                         :icon="ArrowUp"
                         @click.stop.prevent="returnMainGraphToParent"
                       >
-                        鍥炵埗绾?                      </el-button>
+                        回父级
+                      </el-button>
                       <el-button
                         v-if="panel.role === 'child'"
                         link
@@ -153,7 +157,7 @@
                         :icon="ArrowDown"
                         @click.stop.prevent="promoteChildGraphToMain"
                       >
-                        鎻愬崌涓?main
+                        提升为 main
                       </el-button>
                       <el-button
                         link
@@ -171,7 +175,7 @@
                       v-if="panel.graphView.carrier === 'loop'"
                       class="loop-group-meta"
                       role="group"
-                      aria-label="寰幆鍒嗙粍閰嶇疆鎽樿"
+                      aria-label="循环分组配置摘要"
                     >
                       <span>owner {{ panel.graphView.ownerNodeId }}</span>
                       <span>mode {{ panel.graphView.ownerNode?.data?.loop?.mode || 'progressive' }}</span>
@@ -216,13 +220,13 @@
                               id="target"
                               type="target"
                               :position="Position.Left"
-                              :title="`杩炲埌 ${data.title}`"
+                              :title="`连到 ${data.title}`"
                             />
                             <Handle
                               id="source"
                               type="source"
                               :position="Position.Right"
-                              :title="`浠?${data.title} 杩炵嚎`"
+                              :title="`从 ${data.title} 连线`"
                             />
                             <span class="node-kind">{{ data.nodeType }}</span>
                             <strong>{{ data.title }}</strong>
@@ -254,13 +258,13 @@
                     :disabled="currentChildGraphView === null"
                     @click.stop.prevent="collapseGraphSplit('top')"
                   >
-                    涓婃姌
+                    上折
                   </el-button>
                   <el-button link size="small" :icon="RefreshLeft" @click.stop.prevent="resetGraphSplit">
-                    澶嶄綅
+                    复位
                   </el-button>
                   <el-button link size="small" :icon="ArrowDown" @click.stop.prevent="collapseGraphSplit('bottom')">
-                    涓嬫姌
+                    下折
                   </el-button>
                 </span>
                 <span class="graph-splitter-line" />
@@ -281,7 +285,7 @@
       <aside class="workflow-design-editor">
         <div class="panel-heading">
           <span>Properties</span>
-          <el-tag v-if="selectedLine" size="small" type="warning">杩炵嚎</el-tag>
+          <el-tag v-if="selectedLine" size="small" type="warning">连线</el-tag>
           <el-tag
             v-else-if="selectedNode"
             size="small"
@@ -295,7 +299,7 @@
 
         <template v-else-if="selectedLine">
           <details class="editor-section collapsible-section" open>
-            <summary>杩炵嚎淇℃伅</summary>
+            <summary>连线信息</summary>
             <div class="collapsible-body">
               <el-descriptions :column="1" size="small" border>
                 <el-descriptions-item label="ID">{{ selectedLine.id }}</el-descriptions-item>
@@ -307,7 +311,7 @@
           </details>
 
           <details class="editor-section collapsible-section" open>
-            <summary>杩炵嚎缂栬緫</summary>
+            <summary>连线编辑</summary>
             <div class="collapsible-body">
               <el-form label-position="top">
                 <el-form-item label="From Node">
@@ -374,8 +378,8 @@
                 </el-row>
               </el-form>
               <div class="editor-actions" style="justify-content: space-between">
-                <el-button :icon="CircleCheck" @click="applyLineEditorToSelected">搴旂敤杩炵嚎</el-button>
-                <el-button type="danger" :icon="Delete" @click="deleteSelectedLine">鍒犻櫎杩炵嚎</el-button>
+                <el-button :icon="CircleCheck" @click="applyLineEditorToSelected">应用连线</el-button>
+                <el-button type="danger" :icon="Delete" @click="deleteSelectedLine">删除连线</el-button>
               </div>
             </div>
           </details>
@@ -383,7 +387,7 @@
 
         <template v-else-if="selectedNode">
           <details class="editor-section collapsible-section" open>
-            <summary>鑺傜偣淇℃伅</summary>
+            <summary>节点信息</summary>
             <div class="collapsible-body">
                 <el-descriptions :column="1" size="small" border>
                   <el-descriptions-item label="ID">{{ selectedNode?.id }}</el-descriptions-item>
@@ -393,27 +397,27 @@
           </details>
 
           <details class="editor-section collapsible-section" open>
-            <summary>鍩虹缂栬緫</summary>
+            <summary>基础编辑</summary>
             <div class="collapsible-body">
               <el-form label-position="top">
                 <el-form-item label="Type">
                   <el-input v-model="nodeTypeText" @input="markEditorDirty" />
                 </el-form-item>
-                <el-form-item label="鏍囬">
+                <el-form-item label="标题">
                   <el-input v-model="nodeTitleText" @input="markEditorDirty" />
                 </el-form-item>
-                <el-form-item label="鎻忚堪">
+                <el-form-item label="描述">
                   <el-input v-model="nodeDescText" type="textarea" :rows="2" @input="markEditorDirty" />
                 </el-form-item>
               </el-form>
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applySelectedDraft">搴旂敤鑺傜偣</el-button>
+                <el-button :icon="CircleCheck" @click="applySelectedDraft">应用节点</el-button>
               </div>
             </div>
           </details>
 
           <details class="editor-section collapsible-section" open>
-            <summary>浣嶇疆</summary>
+            <summary>位置</summary>
             <div class="collapsible-body position-editor">
               <el-form label-position="top">
                 <el-row :gutter="8">
@@ -433,7 +437,7 @@
           </details>
 
           <details v-if="selectedNode?.nodeType === 'loop'" class="editor-section collapsible-section" open>
-            <summary>寰幆鍒嗙粍</summary>
+            <summary>循环分组</summary>
             <div class="collapsible-body loop-editor-form">
               <el-form label-position="top">
                 <el-form-item label="Mode">
@@ -459,7 +463,7 @@
                 </el-row>
               </el-form>
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applyLoopEditorToSelected">搴旂敤寰幆閰嶇疆</el-button>
+                <el-button :icon="CircleCheck" @click="applyLoopEditorToSelected">应用循环配置</el-button>
               </div>
             </div>
           </details>
@@ -504,13 +508,13 @@
               <pre v-if="classModelGuideText" class="class-model-guide">{{ classModelGuideText }}</pre>
               <div class="editor-actions">
                 <el-button :loading="classModelLoading" :icon="Refresh" @click="refreshClassModelOptions">
-                  鍒锋柊鐭ヨ瘑
+                  刷新知识
                 </el-button>
                 <el-button :loading="classModelLoading" :icon="DocumentCopy" @click="loadValidationActionGuide">
                   Action Guide
                 </el-button>
                 <el-button :icon="CircleCheck" @click="applyBusinessModelEditorToSelected">
-                  搴旂敤妯″瀷缁戝畾
+                  应用模型绑定
                 </el-button>
               </div>
             </div>
@@ -521,7 +525,7 @@
             class="editor-section collapsible-section"
             open
           >
-            <summary>鑺傜偣閰嶇疆 JSON</summary>
+            <summary>节点配置 JSON</summary>
             <div class="collapsible-body node-editor-form">
               <el-form label-position="top">
                 <el-form-item label="data JSON">
@@ -537,61 +541,61 @@
               </el-form>
               <el-alert v-if="modelJsonError" :title="modelJsonError" type="error" :closable="false" />
               <div class="editor-actions">
-                <el-button :icon="CircleCheck" @click="applyEditorToSelected">搴旂敤鑺傜偣閰嶇疆</el-button>
+                <el-button :icon="CircleCheck" @click="applyEditorToSelected">应用节点配置</el-button>
               </div>
             </div>
           </details>
 
           <details class="editor-section collapsible-section">
-            <summary>鍗遍櫓鎿嶄綔</summary>
+            <summary>危险操作</summary>
             <div class="collapsible-body editor-actions">
-              <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">鍒犻櫎鑺傜偣</el-button>
+              <el-button type="danger" :icon="Delete" @click="deleteSelectedNode">删除节点</el-button>
             </div>
           </details>
         </template>
       </aside>
     </div>
 
-    <el-dialog v-model="createDialogVisible" title="鏂板缓宸ヤ綔娴佽璁＄" width="460px">
+    <el-dialog v-model="createDialogVisible" title="新建工作流设计稿" width="460px">
       <el-form label-position="top">
         <el-form-item label="Workflow ID">
           <el-input v-model="createForm.workflowId" />
         </el-form-item>
-        <el-form-item label="鍚嶇О">
+        <el-form-item label="名称">
           <el-input v-model="createForm.title" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="createDialogVisible = false">鍙栨秷</el-button>
-        <el-button type="primary" :loading="creating" @click="createDesign">鍒涘缓</el-button>
+        <el-button @click="createDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="creating" @click="createDesign">创建</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="nodeCreateDialogVisible" title="鏂板鑺傜偣" width="520px">
+    <el-dialog v-model="nodeCreateDialogVisible" title="新增节点" width="520px">
       <el-form label-position="top">
-        <el-form-item label="鐩爣鍒嗗尯">
+        <el-form-item label="目标分区">
           <el-input v-model="nodeCreateForm.graphKey" disabled />
         </el-form-item>
-        <el-form-item label="鑺傜偣绫诲瀷">
+        <el-form-item label="节点类型">
           <select v-model="nodeCreateForm.nodeKind" class="native-select" @change="syncNodeCreateKindDefaults">
             <option value="node">Business Node</option>
             <option value="start">Start</option>
             <option value="output">Output</option>
           </select>
         </el-form-item>
-        <el-form-item label="鑺傜偣 ID">
+        <el-form-item label="节点 ID">
           <el-input v-model="nodeCreateForm.id" />
         </el-form-item>
-        <el-form-item label="鏍囬">
+        <el-form-item label="标题">
           <el-input v-model="nodeCreateForm.title" />
         </el-form-item>
-        <el-form-item label="鎻忚堪">
+        <el-form-item label="描述">
           <el-input v-model="nodeCreateForm.desc" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="nodeCreateDialogVisible = false">鍙栨秷</el-button>
-        <el-button type="primary" :icon="DocumentAdd" @click="createNodeInSelectedGraph">鍒涘缓鑺傜偣</el-button>
+        <el-button @click="nodeCreateDialogVisible = false">取消</el-button>
+        <el-button type="primary" :icon="DocumentAdd" @click="createNodeInSelectedGraph">创建节点</el-button>
       </template>
     </el-dialog>
 
@@ -618,7 +622,7 @@
         />
       </div>
       <template #footer>
-        <el-button @click="definitionDialogVisible = false">鍏抽棴</el-button>
+        <el-button @click="definitionDialogVisible = false">关闭</el-button>
         <el-button
           type="primary"
           :icon="Upload"
@@ -626,7 +630,7 @@
           :disabled="!canSaveDefinition"
           @click="saveCurrentDefinition"
         >
-          淇濆瓨 Definition
+          保存 Definition
         </el-button>
       </template>
     </el-dialog>
@@ -635,7 +639,8 @@
 
 <script setup lang="ts">
 /**
- * @description 宸ヤ綔娴佽璁＄鍙鍖栫紪杈戦〉銆傜紪杈?Dify-like graph 涓殑涓氬姟鑺傜偣鍜屾楠ょ嚎锛屽苟閫氳繃鍚庣鏂囦欢 API 淇濆瓨 design.json銆? */
+ * @description 工作流设计稿可视化编辑页。编辑 Dify-like graph 中的业务节点和步骤线，并通过后端文件 API 保存 design.json。
+ */
 import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Background } from '@vue-flow/background'
@@ -791,7 +796,7 @@ const GRAPH_SPLIT_MAX_RATIO = 78
 const GRAPH_SPLIT_SNAP_RATIO = 12
 const GRAPH_SPLIT_STORAGE_PREFIX = 'spark.workflow-design.graph-split.'
 const UNREADABLE_WORKFLOW_DESIGN_STATUS = 'unreadable'
-const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '璁捐绋挎牸寮忎笉鍏煎鎴栨枃浠朵笉鍙'
+const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '设计稿格式不兼容或文件不可读'
 
 const designs = ref<WorkflowDesignSummary[]>([])
 const currentWorkflowId = ref('')
@@ -1002,7 +1007,7 @@ async function loadDesigns(): Promise<void> {
   try {
     designs.value = await listWorkflowDesigns()
   } catch (error: unknown) {
-    ElMessage.error(`鍔犺浇宸ヤ綔娴佽璁＄澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`加载工作流设计稿失败: ${errorMessage(error)}`)
   } finally {
     loadingList.value = false
   }
@@ -1015,7 +1020,7 @@ async function openInitialDesign(): Promise<void> {
     await openDesign(firstReadableDesign.workflowId)
     return
   }
-  ElMessage.warning('褰撳墠璁捐绋垮潎涓嶅彲鎵撳紑锛岃鏂板缓宸ヤ綔娴佹垨鍒犻櫎鏃ц璁＄')
+  ElMessage.warning('当前设计稿均不可打开，请新建工作流或删除旧设计稿')
 }
 
 async function openDesign(workflowId: string): Promise<void> {
@@ -1023,7 +1028,7 @@ async function openDesign(workflowId: string): Promise<void> {
   if (normalizedWorkflowId.length === 0) return
   const summary = findWorkflowDesignSummary(normalizedWorkflowId)
   if (isUnreadableDesign(summary)) {
-    ElMessage.error(`璁捐绋夸笉鍙墦寮€: ${workflowDesignErrorMessage(summary)}`)
+    ElMessage.error(`设计稿不可打开: ${workflowDesignErrorMessage(summary)}`)
     return
   }
   if (normalizedWorkflowId !== currentWorkflowId.value) {
@@ -1035,7 +1040,7 @@ async function openDesign(workflowId: string): Promise<void> {
   try {
     const result = await readWorkflowDesign(normalizedWorkflowId)
     if (result.document === undefined) {
-      ElMessage.info('璁捐绋挎湭鍙樺寲')
+      ElMessage.info('设计稿未变化')
       return
     }
     currentWorkflowId.value = normalizedWorkflowId
@@ -1051,7 +1056,7 @@ async function openDesign(workflowId: string): Promise<void> {
       ?? nodes[0]?.key
       ?? ''
   } catch (error: unknown) {
-    ElMessage.error(`鎵撳紑澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`打开失败: ${errorMessage(error)}`)
   } finally {
     opening.value = false
   }
@@ -1087,7 +1092,7 @@ async function createDesign(): Promise<void> {
   const workflowId = createForm.value.workflowId.trim()
   const title = createForm.value.title.trim()
   if (workflowId.length === 0) {
-    ElMessage.warning('璇疯緭鍏?Workflow ID')
+    ElMessage.warning('请输入 Workflow ID')
     return
   }
   creating.value = true
@@ -1096,9 +1101,9 @@ async function createDesign(): Promise<void> {
     createDialogVisible.value = false
     await loadDesigns()
     await openDesign(workflowId)
-    ElMessage.success('璁捐绋垮凡鍒涘缓')
+    ElMessage.success('设计稿已创建')
   } catch (error: unknown) {
-    ElMessage.error(`鍒涘缓澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`创建失败: ${errorMessage(error)}`)
   } finally {
     creating.value = false
   }
@@ -1108,10 +1113,10 @@ async function deleteDesign(workflowId: string): Promise<void> {
   const normalizedWorkflowId = workflowId.trim()
   if (normalizedWorkflowId.length === 0) return
   try {
-    await ElMessageBox.confirm(`Delete workflow design ${normalizedWorkflowId}?`, 'Delete workflow design', {
+    await ElMessageBox.confirm(`确定删除工作流设计稿 ${normalizedWorkflowId}？`, '删除设计稿', {
       type: 'warning',
-      confirmButtonText: '鍒犻櫎',
-      cancelButtonText: '鍙栨秷',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
     })
     await deleteWorkflowDesign(normalizedWorkflowId)
     if (currentWorkflowId.value === normalizedWorkflowId) {
@@ -1123,9 +1128,9 @@ async function deleteDesign(workflowId: string): Promise<void> {
       resetDefinitionEditor()
     }
     await loadDesigns()
-    ElMessage.success('璁捐绋垮凡鍒犻櫎')
+    ElMessage.success('设计稿已删除')
   } catch (error: unknown) {
-    if (error !== 'cancel') ElMessage.error(`鍒犻櫎澶辫触: ${errorMessage(error)}`)
+    if (error !== 'cancel') ElMessage.error(`删除失败: ${errorMessage(error)}`)
   }
 }
 
@@ -1167,7 +1172,7 @@ function createNodeInSelectedGraph(): void {
   const form = nodeCreateForm.value
   const graphView = graphViews.value.find(view => view.key === form.graphKey)
   if (graphView === undefined) {
-    ElMessage.warning('璇烽€夋嫨鏈夋晥鐨?graph/subGraph')
+    ElMessage.warning('请选择有效的 graph/subGraph')
     return
   }
 
@@ -1181,7 +1186,7 @@ function createNodeInSelectedGraph(): void {
   nodeCreateDialogVisible.value = false
   selectedLineKey.value = ''
   selectedNodeKey.value = `${graphView.scopePath}:${node.id}`
-  ElMessage.success('Node created')
+  ElMessage.success('节点已创建')
 }
 
 async function deleteSelectedNode(): Promise<void> {
@@ -1189,15 +1194,15 @@ async function deleteSelectedNode(): Promise<void> {
   const document = currentDocument.value
   if (view === null || document === null) return
   if ((view.nodeType === 'start' || view.nodeType === 'output') && allNodes.value.filter(node => node.nodeType === view.nodeType).length <= 1) {
-    ElMessage.warning('鑷冲皯淇濈暀涓€涓?start 鍜?output 鑺傜偣')
+    ElMessage.warning('至少保留一个 start 和 output 节点')
     return
   }
 
   try {
-    await ElMessageBox.confirm(`Delete node ${view.title}? Related lines will also be removed.`, 'Delete node', {
+    await ElMessageBox.confirm(`确定删除节点 ${view.title}？相关连线也会被删除。`, '删除节点', {
       type: 'warning',
-      confirmButtonText: '鍒犻櫎',
-      cancelButtonText: '鍙栨秷',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
     })
   } catch {
     return
@@ -1210,7 +1215,7 @@ async function deleteSelectedNode(): Promise<void> {
   selectedNodeKey.value = ''
   selectedLineKey.value = ''
   editorDirty.value = false
-  ElMessage.success('Node deleted')
+  ElMessage.success('节点已删除')
 }
 
 function startLayoutResize(event: PointerEvent, side: 'left' | 'right'): void {
@@ -1637,11 +1642,11 @@ function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGrap
   const fromNodeId = connection.source.trim()
   const toNodeId = connection.target.trim()
   if (fromNodeId.length === 0 || toNodeId.length === 0) {
-    ElMessage.warning('杩炵嚎蹇呴』鍖呭惈 From 鍜?To')
+    ElMessage.warning('连线必须包含 From 和 To')
     return
   }
   if (fromNodeId === toNodeId) {
-    ElMessage.warning('涓嶈兘杩炴帴鑺傜偣鑷韩')
+    ElMessage.warning('不能连接节点自身')
     return
   }
 
@@ -1652,7 +1657,7 @@ function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGrap
   })
   markWorkflowDesignDirty(document, `${graphView.scopePath}.lines`)
   selectLine(lineViewKey(graphView, line))
-  ElMessage.success('Line created')
+  ElMessage.success('连线已创建')
 }
 
 function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView): void {
@@ -1675,7 +1680,7 @@ function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignG
   })
   markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
   editorDirty.value = false
-  ElMessage.success('Line endpoints updated')
+  ElMessage.success('连线端点已更新')
   syncLineEditorFromSelected()
 }
 
@@ -1686,7 +1691,7 @@ function deleteSelectedLine(): void {
   if (!removeWorkflowDesignLine(line.graph, line.line)) return
   markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
   selectedLineKey.value = ''
-  ElMessage.success('Line deleted')
+  ElMessage.success('连线已删除')
 }
 
 function validateLineEndpointPatch(command: LineEndpointPatchValidationCommand): boolean {
@@ -1700,20 +1705,20 @@ function validateLineEndpointPatch(command: LineEndpointPatchValidationCommand):
     || to.modelId.length === 0
     || to.memberName.length === 0
   ) {
-    if (options.silent !== true) ElMessage.warning('杩炵嚎蹇呴』濉啓 From/To 鐨?Node銆丮odel 鍜?Member')
+    if (options.silent !== true) ElMessage.warning('连线必须填写 From/To 的 Node、Model 和 Member')
     return false
   }
   if (!nodeIds.has(from.nodeId) || !nodeIds.has(to.nodeId)) {
-    if (options.silent !== true) ElMessage.warning('From/To Node 蹇呴』鏄綋鍓?graph/subGraph 鍐呯殑鑺傜偣')
+    if (options.silent !== true) ElMessage.warning('From/To Node 必须是当前 graph/subGraph 内的节点')
     return false
   }
   if (from.nodeId === to.nodeId) {
-    if (options.silent !== true) ElMessage.warning('杩炵嚎涓嶈兘鎸囧悜鑺傜偣鑷韩')
+    if (options.silent !== true) ElMessage.warning('连线不能指向节点自身')
     return false
   }
   const duplicated = line.graph.lines.some(item => item !== line.line && isSameLineEndpoint(item.from, from) && isSameLineEndpoint(item.to, to))
   if (duplicated) {
-    if (options.silent !== true) ElMessage.warning('鍚屼竴 graph/subGraph 鍐呭凡瀛樺湪鐩稿悓 From -> To 成员连线')
+    if (options.silent !== true) ElMessage.warning('同一 graph/subGraph 内已存在相同 From -> To 成员连线')
     return false
   }
   return true
@@ -1746,7 +1751,7 @@ function applyLineEditorToSelected(options: { silent?: boolean } = {}): boolean 
   })
   markWorkflowDesignDirty(document, `${line.scopePath}.lines`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('Line updated')
+  if (options.silent !== true) ElMessage.success('连线已更新')
   return true
 }
 
@@ -1982,7 +1987,7 @@ function applyEditorToSelected(options: { silent?: boolean } = {}): boolean {
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
   editorDirty.value = false
   modelJsonError.value = ''
-  if (options.silent !== true) ElMessage.success('宸插簲鐢ㄥ埌鑺傜偣')
+  if (options.silent !== true) ElMessage.success('已应用到节点')
   return true
 }
 
@@ -2008,7 +2013,7 @@ function applyBusinessModelEditorToSelected(options: { silent?: boolean } = {}):
   modelJsonText.value = formatJson(view.node.data)
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('Model binding applied')
+  if (options.silent !== true) ElMessage.success('模型绑定已应用')
   return true
 }
 
@@ -2022,7 +2027,7 @@ function handleModelClassSelectionChange(): void {
 async function refreshClassModelOptions(): Promise<void> {
   const rootClassName = modelRootClassText.value.trim()
   if (rootClassName.length === 0) {
-    classModelError.value = 'Root Class 涓嶈兘涓虹┖'
+    classModelError.value = 'Root Class 不能为空'
     return
   }
   classModelLoading.value = true
@@ -2037,7 +2042,7 @@ async function refreshClassModelOptions(): Promise<void> {
       validationActionClassText.value = modelClassText.value
     }
   } catch (error: unknown) {
-    classModelError.value = `ClassModel 璇诲彇澶辫触: ${errorMessage(error)}`
+    classModelError.value = `ClassModel 读取失败: ${errorMessage(error)}`
   } finally {
     classModelLoading.value = false
   }
@@ -2060,7 +2065,7 @@ async function loadValidationActionGuide(): Promise<void> {
       methodName,
     })
   } catch (error: unknown) {
-    classModelError.value = `Action Guide 璇诲彇澶辫触: ${errorMessage(error)}`
+    classModelError.value = `Action Guide 读取失败: ${errorMessage(error)}`
   } finally {
     classModelLoading.value = false
   }
@@ -2080,7 +2085,7 @@ function applyLoopEditorToSelected(options: { silent?: boolean } = {}): boolean 
   view.node.data.loop.exitNodeId = loopExitNodeText.value.trim() || 'loop.exit'
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.data.loop`)
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('Loop config applied')
+  if (options.silent !== true) ElMessage.success('循环配置已应用')
   return true
 }
 
@@ -2098,7 +2103,7 @@ function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
   if (view.nodeType === 'loop') return applyLoopEditorToSelected(options)
   applyNodeBasicEditorToSelected()
   editorDirty.value = false
-  if (options.silent !== true) ElMessage.success('Node updated')
+  if (options.silent !== true) ElMessage.success('节点已更新')
   return true
 }
 
@@ -2114,10 +2119,10 @@ async function saveCurrentDesign(): Promise<boolean> {
     currentTimestamp.value = result.timestamp
     editorDirty.value = false
     await loadDesigns()
-    ElMessage.success('璁捐绋垮凡淇濆瓨')
+    ElMessage.success('设计稿已保存')
     return true
   } catch (error: unknown) {
-    ElMessage.error(`淇濆瓨澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`保存失败: ${errorMessage(error)}`)
     return false
   } finally {
     saving.value = false
@@ -2137,12 +2142,12 @@ async function openDefinitionEditor(): Promise<void> {
       definitionJsonText.value = formatJson(result.definition)
       definitionDirty.value = false
     } else {
-      ElMessage.info('definition.json not changed')
+      ElMessage.info('definition.json 未变化')
     }
     definitionDialogVisible.value = true
   } catch (error: unknown) {
     if (!isWorkflowDefinitionNotFoundError(error) || currentDocument.value === null) {
-      ElMessage.error(`鎵撳紑 Definition 澶辫触: ${errorMessage(error)}`)
+      ElMessage.error(`打开 Definition 失败: ${errorMessage(error)}`)
       return
     }
     const sourceDocument = await readFreshDesignForDefinitionDraft(workflowId)
@@ -2151,7 +2156,7 @@ async function openDefinitionEditor(): Promise<void> {
     definitionJsonText.value = formatJson(definition)
     definitionDirty.value = true
     definitionDialogVisible.value = true
-    ElMessage.info('definition.json does not exist; generated a local draft from the current design')
+    ElMessage.info('definition.json 不存在，已根据当前设计生成本地草稿')
   } finally {
     openingDefinition.value = false
   }
@@ -2164,7 +2169,7 @@ function markDefinitionDirty(): void {
 async function readFreshDesignForDefinitionDraft(workflowId: string): Promise<WorkflowDesignDocument> {
   const openedDocument = currentDocument.value
   if (openedDocument === null) {
-    throw new Error('褰撳墠璁捐绋挎湭鎵撳紑')
+    throw new Error('当前设计稿未打开')
   }
   if (hasUnsavedChanges.value) {
     return openedDocument
@@ -2190,7 +2195,7 @@ async function saveCurrentDefinition(): Promise<void> {
   try {
     definition = parseAgentWorkflowDefinitionJson(definitionJsonText.value)
   } catch (error: unknown) {
-    ElMessage.error(`Definition JSON 鏃犳晥: ${errorMessage(error)}`)
+    ElMessage.error(`Definition JSON 无效: ${errorMessage(error)}`)
     return
   }
 
@@ -2200,9 +2205,9 @@ async function saveCurrentDefinition(): Promise<void> {
     definitionTimestamp.value = result.timestamp
     definitionJsonText.value = formatJson(definition)
     definitionDirty.value = false
-    ElMessage.success('definition.json saved')
+    ElMessage.success('definition.json 已保存')
   } catch (error: unknown) {
-    ElMessage.error(`淇濆瓨 Definition 澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`保存 Definition 失败: ${errorMessage(error)}`)
   } finally {
     savingDefinition.value = false
   }
@@ -2218,7 +2223,7 @@ async function publishCurrentDefinition(): Promise<void> {
   const definition = createAgentWorkflowDefinitionFromDesign(document)
   if (definition.x_spark.validation.status === 'invalid') {
     const firstIssue = definition.x_spark.validation.issues.find(issue => issue.severity === 'error')
-    ElMessage.error(`鍙戝竷澶辫触: ${firstIssue?.message ?? 'definition 鏍￠獙鏈€氳繃'}`)
+    ElMessage.error(`发布失败: ${firstIssue?.message ?? 'definition 校验未通过'}`)
     return
   }
 
@@ -2229,9 +2234,9 @@ async function publishCurrentDefinition(): Promise<void> {
     definitionJsonText.value = formatJson(definition)
     definitionDirty.value = false
     definitionDialogVisible.value = true
-    ElMessage.success('definition.json published')
+    ElMessage.success('definition.json 已发布')
   } catch (error: unknown) {
-    ElMessage.error(`鍙戝竷澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`发布失败: ${errorMessage(error)}`)
   } finally {
     publishing.value = false
   }
@@ -2248,19 +2253,19 @@ async function copyJson(): Promise<void> {
   if (currentDocument.value === null) return
   try {
     await navigator.clipboard.writeText(formatJson(currentDocument.value))
-    ElMessage.success('JSON copied')
+    ElMessage.success('JSON 已复制')
   } catch (error: unknown) {
-    ElMessage.error(`澶嶅埗澶辫触: ${errorMessage(error)}`)
+    ElMessage.error(`复制失败: ${errorMessage(error)}`)
   }
 }
 
 async function confirmDiscardEditorDraft(): Promise<boolean> {
   if (!hasUnsavedChanges.value) return true
   try {
-    await ElMessageBox.confirm('The current workflow design has unsaved changes. Continue and discard them?', 'Switch workflow design', {
+    await ElMessageBox.confirm('当前工作流设计有未保存更改，是否继续并丢弃这些更改？', '切换工作流设计', {
       type: 'warning',
-      confirmButtonText: '缁х画',
-      cancelButtonText: '鍙栨秷',
+      confirmButtonText: '继续',
+      cancelButtonText: '取消',
     })
     editorDirty.value = false
     return true
@@ -2272,10 +2277,10 @@ async function confirmDiscardEditorDraft(): Promise<boolean> {
 async function confirmDiscardDefinitionDraft(): Promise<boolean> {
   if (!definitionDialogVisible.value || !definitionDirty.value) return true
   try {
-    await ElMessageBox.confirm('The current definition.json has unsaved changes. Continue and discard them?', 'Switch workflow design', {
+    await ElMessageBox.confirm('当前 definition.json 有未保存更改，是否继续并丢弃这些更改？', '切换工作流设计', {
       type: 'warning',
-      confirmButtonText: '缁х画',
-      cancelButtonText: '鍙栨秷',
+      confirmButtonText: '继续',
+      cancelButtonText: '取消',
     })
     definitionDirty.value = false
     return true
