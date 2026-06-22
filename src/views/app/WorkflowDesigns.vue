@@ -322,6 +322,9 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
           <div class="workflow-tool-button-grid">
             <el-button :icon="Refresh" :loading="loadingList" @click="loadDesigns">刷新</el-button>
             <el-button type="primary" :icon="DocumentAdd" @click="openCreateDialog">新建</el-button>
+            <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="openWorkflowPropertiesDrawer">
+              流程属性
+            </el-button>
             <el-button :icon="DocumentCopy" :disabled="currentDocument === null" @click="copyJson">复制 JSON</el-button>
             <el-button
               :icon="RefreshLeft"
@@ -616,7 +619,278 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
       :size="'33vw'"
       :title="propertiesDrawerTitle"
     >
-      <template v-if="selectedLine">
+      <template v-if="propertiesDrawerTarget === 'workflow' && currentDocument">
+        <details class="editor-section collapsible-section" open>
+          <summary>流程信息</summary>
+          <div class="collapsible-body">
+            <el-descriptions :column="1" size="small" border>
+              <el-descriptions-item label="Design ID">{{ currentDocument.id }}</el-descriptions-item>
+              <el-descriptions-item label="Workflow ID">{{ currentDocument.workflow.id }}</el-descriptions-item>
+              <el-descriptions-item label="Kind">{{ currentDocument.kind }}</el-descriptions-item>
+              <el-descriptions-item label="Design Version">{{ currentDocument.version }}</el-descriptions-item>
+              <el-descriptions-item label="Workflow Version">{{ currentDocument.workflow.version }}</el-descriptions-item>
+              <el-descriptions-item v-for="row in workflowPrimaryMetadataRows" :key="row.label" :label="row.label">
+                {{ row.value }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>基础编辑</summary>
+          <div class="collapsible-body">
+            <el-form label-position="top">
+              <el-form-item label="中文标题">
+                <el-input v-model="workflowDesignerTitleText" class="workflow-title-input" @input="handleWorkflowEditorChange" />
+              </el-form-item>
+              <el-form-item label="Workflow Version">
+                <el-input-number v-model="workflowVersionValue" :min="1" :step="1" controls-position="right" @change="handleWorkflowEditorChange" />
+              </el-form-item>
+            </el-form>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>变量</summary>
+          <div class="collapsible-body workflow-variable-editor">
+            <div v-for="row in workflowVariableRows" :key="row.id" class="workflow-variable-row">
+              <el-input v-model="row.name" placeholder="name" @input="handleWorkflowEditorChange" />
+              <el-input v-model="row.title" placeholder="title" @input="handleWorkflowEditorChange" />
+              <select v-model="row.schemaType" class="native-select" @change="handleWorkflowEditorChange">
+                <option value="string">string</option>
+                <option value="number">number</option>
+                <option value="integer">integer</option>
+                <option value="boolean">boolean</option>
+                <option value="object">object</option>
+                <option value="array">array</option>
+              </select>
+              <label class="workflow-checkbox-label">
+                <input v-model="row.required" type="checkbox" @change="handleWorkflowEditorChange">
+                必填
+              </label>
+              <el-input
+                v-if="row.defaultValueEditable"
+                v-model="row.defaultValueText"
+                placeholder="default"
+                @input="handleWorkflowEditorChange"
+              />
+              <span v-else class="workflow-readonly-value">{{ metadataValueText(row.defaultValue) }}</span>
+              <el-button link type="danger" :icon="Delete" @click="removeWorkflowVariableRow(row)">删除</el-button>
+            </div>
+            <el-button :icon="DocumentAdd" @click="addWorkflowVariableRow">添加变量</el-button>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>运行绑定</summary>
+          <div class="collapsible-body workflow-runtime-editor">
+            <strong>Registration</strong>
+            <el-row :gutter="8">
+              <el-col :span="8">
+                <el-form-item label="Alias">
+                  <el-input v-model="workflowRuntimeAliasText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="Module ID">
+                  <el-input v-model="workflowRuntimeModuleIdText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="Business ID">
+                  <el-input v-model="workflowRuntimeBusinessIdText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <strong>Input Contract</strong>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-form-item label="Identity Field">
+                  <select v-model="workflowIdentityFieldText" class="native-select" @change="handleWorkflowEditorChange">
+                    <option v-for="option in workflowVariableEditorNames" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="Message Field">
+                  <select v-model="workflowMessageFieldText" class="native-select" @change="handleWorkflowEditorChange">
+                    <option v-for="option in workflowVariableEditorNames" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <div class="workflow-string-list">
+              <span>Readonly Steps</span>
+              <div v-for="card in workflowReadonlyStepCards" :key="card.id" class="workflow-string-row">
+                <el-input v-model="card.value" @input="handleWorkflowEditorChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeWorkflowStringCard(workflowReadonlyStepCards, card)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addWorkflowStringCard(workflowReadonlyStepCards, 'workflow.readonlyStep')">添加只读步骤</el-button>
+            </div>
+
+            <strong>Model Projection</strong>
+            <el-row :gutter="8">
+              <el-col :span="8">
+                <el-form-item label="Kind">
+                  <select v-model="workflowModelProjectionKindText" class="native-select" @change="handleWorkflowEditorChange">
+                    <option value="dts-class-model">dts-class-model</option>
+                  </select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="Root Class">
+                  <el-input v-model="workflowRootClassText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="Manifest Ref">
+                  <el-input v-model="workflowManifestUrlRefText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <strong>Executable</strong>
+            <el-row :gutter="8">
+              <el-col :span="8">
+                <el-form-item label="Kind">
+                  <select v-model="workflowExecutableKindText" class="native-select" @change="handleWorkflowEditorChange">
+                    <option value="js-module">js-module</option>
+                  </select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="Module Specifier">
+                  <el-input v-model="workflowExecutableModuleSpecifierText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="Export Name">
+                  <el-input v-model="workflowExecutableExportNameText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <strong>Resolve Instance</strong>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-form-item label="Editor Source">
+                  <el-input v-model="workflowResolveEditorSourceText" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="Identity Field">
+                  <select v-model="workflowResolveIdentityFieldText" class="native-select" @change="handleWorkflowEditorChange">
+                    <option v-for="option in workflowVariableEditorNames" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <strong>Prompt and Tools</strong>
+            <el-form label-position="top">
+              <el-form-item label="System Prompt Template">
+                <el-input v-model="workflowSystemPromptTemplateText" type="textarea" :rows="3" @input="handleWorkflowEditorChange" />
+              </el-form-item>
+              <el-form-item label="Agent Complete Method">
+                <el-input v-model="workflowAgentCompleteMethodText" @input="handleWorkflowEditorChange" />
+              </el-form-item>
+            </el-form>
+            <div class="workflow-string-list">
+              <span>Execution Tools</span>
+              <div v-for="card in workflowExecutionToolCards" :key="card.id" class="workflow-string-row">
+                <el-input v-model="card.value" @input="handleWorkflowEditorChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeWorkflowStringCard(workflowExecutionToolCards, card)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addWorkflowStringCard(workflowExecutionToolCards, 'workflow.executionTool')">添加工具</el-button>
+            </div>
+            <div class="workflow-string-list">
+              <span>Plan Without Tool Markers</span>
+              <div v-for="card in workflowPlanMarkerCards" :key="card.id" class="workflow-string-row">
+                <el-input v-model="card.value" @input="handleWorkflowEditorChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeWorkflowStringCard(workflowPlanMarkerCards, card)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addWorkflowStringCard(workflowPlanMarkerCards, 'workflow.planMarker')">添加标记</el-button>
+            </div>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section" open>
+          <summary>流程能力</summary>
+          <div class="collapsible-body workflow-capability-editor">
+            <details v-for="card in workflowCapabilityCards" :key="card.id" class="structured-card" open>
+              <summary>{{ card.title || card.id }}</summary>
+              <el-form label-position="top">
+                <el-form-item label="ID">
+                  <el-input v-model="card.id" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+                <el-form-item label="Title">
+                  <el-input v-model="card.title" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+                <el-form-item label="Scope">
+                  <select v-model="card.scope" class="native-select" @change="handleWorkflowEditorChange">
+                    <option value="workflow">workflow</option>
+                    <option value="node">node</option>
+                  </select>
+                </el-form-item>
+                <el-form-item label="Description">
+                  <el-input v-model="card.description" type="textarea" :rows="2" @input="handleWorkflowEditorChange" />
+                </el-form-item>
+              </el-form>
+              <strong>Inputs</strong>
+              <div v-for="row in card.inputRows" :key="row.id" class="structured-field-row structured-field-row--compact">
+                <el-input v-model="row.path" placeholder="path" @input="handleWorkflowEditorChange" />
+                <select v-model="row.valueKind" class="native-select" @change="handleWorkflowEditorChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <el-input v-model="row.valueText" placeholder="value" @input="handleWorkflowEditorChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeWorkflowStructuredFieldRow(card.inputRows, row)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addWorkflowStructuredFieldRow(card.inputRows, 'workflow.capability.input')">添加输入</el-button>
+              <strong>Outputs</strong>
+              <div v-for="row in card.outputRows" :key="row.id" class="structured-field-row structured-field-row--compact">
+                <el-input v-model="row.path" placeholder="path" @input="handleWorkflowEditorChange" />
+                <select v-model="row.valueKind" class="native-select" @change="handleWorkflowEditorChange">
+                  <option value="reference">引用</option>
+                  <option value="text">文本</option>
+                  <option value="number">数字</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                <el-input v-model="row.valueText" placeholder="value" @input="handleWorkflowEditorChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeWorkflowStructuredFieldRow(card.outputRows, row)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addWorkflowStructuredFieldRow(card.outputRows, 'workflow.capability.output')">添加输出</el-button>
+              <strong>Constraints</strong>
+              <div v-for="constraint in card.constraintCards" :key="constraint.id" class="workflow-string-row">
+                <el-input v-model="constraint.value" @input="handleWorkflowEditorChange" />
+                <el-button link type="danger" :icon="Delete" @click="removeWorkflowStringCard(card.constraintCards, constraint)">删除</el-button>
+              </div>
+              <el-button :icon="DocumentAdd" @click="addWorkflowStringCard(card.constraintCards, 'workflow.capability.constraint')">添加约束</el-button>
+              <el-button link type="danger" :icon="Delete" @click="removeWorkflowCapabilityCard(card)">删除能力</el-button>
+            </details>
+            <el-button :icon="DocumentAdd" @click="addWorkflowCapabilityCard">添加流程能力</el-button>
+          </div>
+        </details>
+
+        <details class="editor-section collapsible-section">
+          <summary>全量元信息只读</summary>
+          <div class="collapsible-body workflow-metadata-table">
+            <div v-for="row in workflowFullMetadataRows" :key="row.label" class="workflow-metadata-row">
+              <span>{{ row.label }}</span>
+              <strong>{{ row.value }}</strong>
+            </div>
+          </div>
+        </details>
+
+        <div class="editor-actions">
+          <el-button :icon="CircleCheck" @click="applyWorkflowEditorToCurrent">应用流程</el-button>
+        </div>
+      </template>
+
+      <template v-else-if="propertiesDrawerTarget === 'line' && selectedLine">
         <details class="editor-section collapsible-section" open>
           <summary>连线信息</summary>
           <div class="collapsible-body">
@@ -723,7 +997,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         </details>
       </template>
 
-      <template v-else-if="selectedNode">
+      <template v-else-if="propertiesDrawerTarget === 'node' && selectedNode">
         <details class="editor-section collapsible-section" open>
           <summary>节点信息</summary>
           <div class="collapsible-body">
@@ -1349,8 +1623,11 @@ import {
   type WorkflowDesignNodeView,
   type WorkflowDesignNodeCreateKind,
   type WorkflowDesignSummary,
+  type WorkflowDesignVariable,
 } from '@/services/workflow-designs'
 import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
+
+type PropertyDrawerTarget = 'workflow' | 'node' | 'line'
 
 type LayoutResizeState = {
   side: 'left' | 'right'
@@ -1469,6 +1746,26 @@ type ApplyStructuredEditorOptions = {
   silent?: boolean
 }
 
+type WorkflowVariableEditorRow = {
+  id: string
+  source: Record<string, unknown>
+  schema: Record<string, unknown>
+  name: string
+  title: string
+  required: boolean
+  schemaType: string
+  defaultValue: unknown
+  defaultValueText: string
+  defaultValueEditable: boolean
+}
+
+type WorkflowMetadataRow = {
+  label: string
+  value: string
+}
+
+type WorkflowRuntimeBinding = NonNullable<WorkflowDesignDocument['workflow']['runtimeBinding']>
+
 const MIN_LEFT_PANEL_WIDTH = 220
 const MAX_LEFT_PANEL_WIDTH = 480
 const COLLAPSED_LEFT_PANEL_WIDTH = 48
@@ -1485,10 +1782,12 @@ let structuredEditorId = 0
 const designs = ref<WorkflowDesignSummary[]>([])
 const currentWorkflowId = ref('')
 const currentTimestamp = ref('')
+const currentFilename = ref('')
 const currentDocument = ref<WorkflowDesignDocument | null>(null)
 const selectedNodeKey = ref('')
 const selectedLineKey = ref('')
 const propertiesDrawerVisible = ref(false)
+const propertiesDrawerTarget = ref<PropertyDrawerTarget>('node')
 const classModelDrawerVisible = ref(false)
 const leftPanelCollapsed = ref(false)
 const layoutResizeState = ref<LayoutResizeState | null>(null)
@@ -1529,6 +1828,28 @@ const classModelError = ref('')
 const classModelGuideText = ref('')
 const classModelOptions = ref<ClassModelOption[]>([])
 const classModelLoadedRootText = ref('')
+const workflowDesignerTitleText = ref('')
+const workflowVersionValue = ref(1)
+const workflowVariableRows = ref<WorkflowVariableEditorRow[]>([])
+const workflowCapabilityCards = ref<StructuredCapabilityCard[]>([])
+const workflowRuntimeAliasText = ref('')
+const workflowRuntimeModuleIdText = ref('')
+const workflowRuntimeBusinessIdText = ref('')
+const workflowIdentityFieldText = ref('')
+const workflowMessageFieldText = ref('')
+const workflowSystemPromptTemplateText = ref('')
+const workflowModelProjectionKindText = ref('dts-class-model')
+const workflowRootClassText = ref('')
+const workflowManifestUrlRefText = ref('')
+const workflowExecutableKindText = ref('js-module')
+const workflowExecutableModuleSpecifierText = ref('')
+const workflowExecutableExportNameText = ref('')
+const workflowResolveEditorSourceText = ref('')
+const workflowResolveIdentityFieldText = ref('')
+const workflowAgentCompleteMethodText = ref('')
+const workflowReadonlyStepCards = ref<StructuredSelectCard[]>([])
+const workflowExecutionToolCards = ref<StructuredSelectCard[]>([])
+const workflowPlanMarkerCards = ref<StructuredSelectCard[]>([])
 const nodeX = computed({
   get: () => selectedNode.value?.node.position?.x ?? 0,
   set: (value: number) => { applyNodePosition(value, nodeY.value) },
@@ -1601,10 +1922,50 @@ const selectedValidationActionOption = computed(() => {
   if (methodName.length === 0) return null
   return selectedValidationClassModelOption.value?.methods.find(method => method.name === methodName) ?? null
 })
+const currentDesignSummary = computed(() => findWorkflowDesignSummary(currentWorkflowId.value))
 const propertiesDrawerTitle = computed(() => {
+  if (propertiesDrawerTarget.value === 'workflow') return `流程属性 / ${currentDocument.value?.workflow.id ?? 'Workflow'}`
   if (selectedLine.value !== null) return `连线属性 / ${selectedLine.value.id}`
   if (selectedNode.value !== null) return `节点属性 / ${selectedNode.value.title}`
   return 'Properties'
+})
+const workflowPrimaryMetadataRows = computed<WorkflowMetadataRow[]>(() => {
+  const document = currentDocument.value
+  if (document === null) return []
+  return [
+    { label: '文件名', value: currentFilename.value || currentDesignSummary.value?.filename || 'design.json' },
+    { label: '时间戳', value: currentTimestamp.value || '-' },
+    { label: '创建人', value: readWorkflowMetadataText(['createdBy', 'creator', 'author', 'owner', 'createdUser']) || '-' },
+    { label: '创建时间', value: readWorkflowMetadataText(['createdAt', 'createdTime', 'createTime']) || '-' },
+    { label: '更新人', value: readWorkflowMetadataText(['updatedBy', 'modifier', 'modifiedBy', 'updatedUser']) || '-' },
+    { label: '更新时间', value: readWorkflowMetadataText(['updatedAt', 'modifiedAt', 'updatedTime', 'modifyTime']) || '-' },
+    { label: '状态', value: readTextField(document.x_spark.draft, 'status') || currentDesignSummary.value?.status || 'draft' },
+    { label: 'Schema', value: readTextField(document.x_spark, 'schema') || '-' },
+  ]
+})
+const workflowFullMetadataRows = computed<WorkflowMetadataRow[]>(() => {
+  const document = currentDocument.value
+  if (document === null) return []
+  const rows: WorkflowMetadataRow[] = []
+  collectWorkflowMetadataRows({
+    filename: currentFilename.value || currentDesignSummary.value?.filename || 'design.json',
+    timestamp: currentTimestamp.value,
+    summaryStatus: currentDesignSummary.value?.status ?? '',
+    document: {
+      kind: document.kind,
+      version: document.version,
+      id: document.id,
+    },
+    workflow: {
+      id: document.workflow.id,
+      version: document.workflow.version,
+      variables: document.workflow.variables ?? [],
+      capabilities: document.workflow.capabilities ?? [],
+      runtimeBinding: document.workflow.runtimeBinding ?? {},
+    },
+    x_spark: document.x_spark,
+  }, '', rows)
+  return rows
 })
 const selectedLineGraphNodes = computed(() => {
   const line = selectedLine.value
@@ -1636,6 +1997,14 @@ const modelAttributeOptions = computed(() => {
 })
 const workflowVariableOptions = computed(() => {
   return uniqueTexts(currentDocument.value?.workflow.variables?.map(variable => variable.name) ?? [])
+})
+const workflowVariableEditorNames = computed(() => {
+  return uniqueTexts([
+    workflowIdentityFieldText.value,
+    workflowMessageFieldText.value,
+    workflowResolveIdentityFieldText.value,
+    ...workflowVariableRows.value.map(row => row.name),
+  ])
 })
 const structuredBasePathOptions = computed(() => {
   return uniqueTexts([
@@ -1741,7 +2110,7 @@ const hasUnsavedChanges = computed(() => {
 watch(
   () => selectedNode.value?.key ?? '',
   () => {
-    syncEditorFromSelected()
+    if (propertiesDrawerTarget.value !== 'workflow') syncEditorFromSelected()
     syncChildGraphFromSelectedMainNode()
     ensureSelectedNodeClassModelKnowledge()
   },
@@ -1750,7 +2119,9 @@ watch(
 
 watch(
   () => selectedLine.value?.key ?? '',
-  () => syncLineEditorFromSelected(),
+  () => {
+    if (propertiesDrawerTarget.value !== 'workflow') syncLineEditorFromSelected()
+  },
   { immediate: true },
 )
 
@@ -1817,8 +2188,10 @@ async function openDesign(workflowId: string): Promise<void> {
       return
     }
     currentWorkflowId.value = normalizedWorkflowId
+    currentFilename.value = result.filename
     currentTimestamp.value = result.timestamp
     currentDocument.value = result.document
+    syncWorkflowEditorFromDocument()
     resetDefinitionEditor()
     selectedLineKey.value = ''
     currentMainGraphKey.value = 'workflow.graph'
@@ -1894,6 +2267,7 @@ async function deleteDesign(workflowId: string): Promise<void> {
     await deleteWorkflowDesign(normalizedWorkflowId)
     if (currentWorkflowId.value === normalizedWorkflowId) {
       currentWorkflowId.value = ''
+      currentFilename.value = ''
       currentTimestamp.value = ''
       currentDocument.value = null
       selectedNodeKey.value = ''
@@ -2219,6 +2593,10 @@ function isJsonRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function recordOrEmpty(value: unknown): Record<string, unknown> {
+  return isJsonRecord(value) ? value : {}
+}
+
 function uniqueTexts(values: readonly unknown[]): string[] {
   const result: string[] = []
   for (const value of values) {
@@ -2257,6 +2635,126 @@ function structuredPathOptions(rows: readonly StructuredFieldRow[]): string[] {
 
 function structuredValueOptions(row: StructuredFieldRow): string[] {
   return uniqueTexts([row.valueText, ...structuredReferenceOptions.value])
+}
+
+function metadataValueText(value: unknown): string {
+  if (value === undefined || value === null) return '-'
+  if (typeof value === 'string') return value.length > 0 ? value : '-'
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (Array.isArray(value)) return value.length === 0 ? '[]' : value.map(metadataValueText).join(', ')
+  if (isJsonRecord(value)) return Object.entries(value).map(([key, child]) => `${key}: ${metadataValueText(child)}`).join('; ')
+  return String(value)
+}
+
+function collectWorkflowMetadataRows(value: unknown, path: string, rows: WorkflowMetadataRow[]): void {
+  if (isJsonRecord(value)) {
+    const entries = Object.entries(value)
+    if (entries.length === 0 && path.length > 0) rows.push({ label: path, value: '{}' })
+    for (const [key, child] of entries) {
+      collectWorkflowMetadataRows(child, path.length === 0 ? key : `${path}.${key}`, rows)
+    }
+    return
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0 && path.length > 0) rows.push({ label: path, value: '[]' })
+    for (const [index, child] of value.entries()) {
+      collectWorkflowMetadataRows(child, `${path}.${index}`, rows)
+    }
+    return
+  }
+  if (path.length > 0) rows.push({ label: path, value: metadataValueText(value) })
+}
+
+function readWorkflowMetadataText(keys: readonly string[]): string {
+  const document = currentDocument.value
+  if (document === null) return ''
+  const candidates: unknown[] = [
+    document,
+    document.x_spark,
+    document.x_spark.designer,
+    document.x_spark.draft,
+    document.x_spark.history,
+    document.x_spark.validation,
+    currentDesignSummary.value,
+  ]
+  for (const candidate of candidates) {
+    if (!isJsonRecord(candidate)) continue
+    for (const key of keys) {
+      const value = candidate[key]
+      if (typeof value === 'string' && value.trim().length > 0) return value.trim()
+      if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+    }
+  }
+  return ''
+}
+
+function workflowVariableRowsFromData(value: unknown): WorkflowVariableEditorRow[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(isJsonRecord)
+    .map((variable): WorkflowVariableEditorRow => {
+      const schema = isJsonRecord(variable['schema']) ? { ...variable['schema'] } : {}
+      const defaultValue = variable['defaultValue']
+      return {
+        id: readTextField(variable, 'name') || nextStructuredEditorId('workflow.variable'),
+        source: { ...variable },
+        schema,
+        name: readTextField(variable, 'name'),
+        title: readTextField(variable, 'title'),
+        required: variable['required'] === true,
+        schemaType: readTextField(schema, 'type') || 'string',
+        defaultValue,
+        defaultValueText: primitiveValueText(defaultValue),
+        defaultValueEditable: isPrimitiveEditableValue(defaultValue),
+      }
+    })
+}
+
+function workflowVariableRowsToData(rows: readonly WorkflowVariableEditorRow[]): WorkflowDesignVariable[] {
+  return rows
+    .map((row): WorkflowDesignVariable | null => {
+      const name = row.name.trim()
+      if (name.length === 0) return null
+      const variable: WorkflowDesignVariable = {
+        ...row.source,
+        name,
+        title: row.title.trim(),
+        required: row.required,
+        schema: {
+          ...row.schema,
+          type: row.schemaType.trim() || 'string',
+        },
+      }
+      if (row.defaultValueEditable) {
+        const defaultText = row.defaultValueText.trim()
+        if (defaultText.length > 0) variable.defaultValue = parseWorkflowVariableDefaultValue(defaultText, row.schemaType)
+        else delete variable.defaultValue
+      } else if (Object.prototype.hasOwnProperty.call(row.source, 'defaultValue')) {
+        variable.defaultValue = row.defaultValue
+      }
+      return variable
+    })
+    .filter((variable): variable is WorkflowDesignVariable => variable !== null)
+}
+
+function primitiveValueText(value: unknown): string {
+  if (value === undefined || value === null) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return ''
+}
+
+function isPrimitiveEditableValue(value: unknown): boolean {
+  return value === undefined || value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+}
+
+function parseWorkflowVariableDefaultValue(value: string, schemaType: string): unknown {
+  if (schemaType === 'boolean') return value === 'true'
+  if (schemaType === 'number' || schemaType === 'integer') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return value
 }
 
 function lineModelOptions(nodeId: string, currentValue: string): string[] {
@@ -2527,8 +3025,18 @@ function selectedNodeInGraph(graphView: WorkflowDesignGraphView | null): boolean
   return graphView !== null && node !== null && node.graph === graphView.graph
 }
 
+function openWorkflowPropertiesDrawer(): void {
+  if (currentDocument.value === null) return
+  propertiesDrawerTarget.value = 'workflow'
+  syncWorkflowEditorFromDocument()
+  propertiesDrawerVisible.value = true
+}
+
 function openPropertiesDrawer(): void {
   if (selectedNode.value === null && selectedLine.value === null) return
+  propertiesDrawerTarget.value = selectedLine.value !== null ? 'line' : 'node'
+  if (propertiesDrawerTarget.value === 'line') syncLineEditorFromSelected()
+  else syncEditorFromSelected()
   propertiesDrawerVisible.value = true
   if (selectedNode.value?.isBusinessNode === true && classModelOptions.value.length === 0) {
     void refreshClassModelOptions()
@@ -2896,6 +3404,73 @@ function syncLineEditorFromSelected(): void {
   lineRelationText.value = typeof relation === 'string' ? relation : 'sequence'
 }
 
+function syncWorkflowEditorFromDocument(): void {
+  const document = currentDocument.value
+  editorDirty.value = false
+  if (document === null) {
+    workflowDesignerTitleText.value = ''
+    workflowVersionValue.value = 1
+    workflowVariableRows.value = []
+    workflowCapabilityCards.value = []
+    workflowRuntimeAliasText.value = ''
+    workflowRuntimeModuleIdText.value = ''
+    workflowRuntimeBusinessIdText.value = ''
+    workflowIdentityFieldText.value = ''
+    workflowMessageFieldText.value = ''
+    workflowSystemPromptTemplateText.value = ''
+    workflowModelProjectionKindText.value = 'dts-class-model'
+    workflowRootClassText.value = ''
+    workflowManifestUrlRefText.value = ''
+    workflowExecutableKindText.value = 'js-module'
+    workflowExecutableModuleSpecifierText.value = ''
+    workflowExecutableExportNameText.value = ''
+    workflowResolveEditorSourceText.value = ''
+    workflowResolveIdentityFieldText.value = ''
+    workflowAgentCompleteMethodText.value = ''
+    workflowReadonlyStepCards.value = []
+    workflowExecutionToolCards.value = []
+    workflowPlanMarkerCards.value = []
+    return
+  }
+
+  const workflow = document.workflow
+  const binding = recordOrEmpty(workflow.runtimeBinding)
+  const registration = recordOrEmpty(binding['registration'])
+  const inputContract = recordOrEmpty(binding['inputContract'])
+  const systemPrompt = recordOrEmpty(binding['systemPrompt'])
+  const modelProjectionRef = recordOrEmpty(binding['modelProjectionRef'])
+  const executableRef = recordOrEmpty(binding['executableRef'])
+  const resolveInstance = recordOrEmpty(binding['resolveInstance'])
+
+  workflowDesignerTitleText.value = readTextField(document.x_spark.designer, 'title')
+    || currentDesignSummary.value?.title
+    || workflow.id
+  workflowVersionValue.value = typeof workflow.version === 'number' && Number.isFinite(workflow.version) ? workflow.version : 1
+  workflowVariableRows.value = workflowVariableRowsFromData(workflow.variables)
+  workflowCapabilityCards.value = capabilityCardsFromData(workflow.capabilities).map(card => ({
+    ...card,
+    scope: card.scope || 'workflow',
+  }))
+  workflowRuntimeAliasText.value = readTextField(registration, 'alias')
+  workflowRuntimeModuleIdText.value = readTextField(registration, 'moduleId')
+  workflowRuntimeBusinessIdText.value = readTextField(registration, 'businessId')
+  workflowIdentityFieldText.value = readTextField(inputContract, 'identityField')
+  workflowMessageFieldText.value = readTextField(inputContract, 'messageField')
+  workflowReadonlyStepCards.value = structuredCardsFromStrings(inputContract['readonlySteps'], 'workflow.readonlyStep')
+  workflowSystemPromptTemplateText.value = readTextField(systemPrompt, 'template')
+  workflowModelProjectionKindText.value = readTextField(modelProjectionRef, 'kind') || 'dts-class-model'
+  workflowRootClassText.value = readTextField(modelProjectionRef, 'rootClassName')
+  workflowManifestUrlRefText.value = readTextField(modelProjectionRef, 'manifestUrlRef')
+  workflowExecutableKindText.value = readTextField(executableRef, 'kind') || 'js-module'
+  workflowExecutableModuleSpecifierText.value = readTextField(executableRef, 'moduleSpecifier')
+  workflowExecutableExportNameText.value = readTextField(executableRef, 'exportName')
+  workflowResolveEditorSourceText.value = readTextField(resolveInstance, 'editorSource')
+  workflowResolveIdentityFieldText.value = readTextField(resolveInstance, 'identityField')
+  workflowAgentCompleteMethodText.value = readTextField(binding, 'agentCompleteMethodName')
+  workflowExecutionToolCards.value = structuredCardsFromStrings(binding['executionToolNames'], 'workflow.executionTool')
+  workflowPlanMarkerCards.value = structuredCardsFromStrings(binding['planWithoutToolMarkers'], 'workflow.planMarker')
+}
+
 function syncBusinessModelEditorFromSelected(view: WorkflowDesignNodeView): void {
   if (!view.isBusinessNode) {
     modelRootClassText.value = ''
@@ -3173,6 +3748,221 @@ function removeCapabilityCard(card: StructuredCapabilityCard): void {
   handleBusinessNodeStructuredChange()
 }
 
+function handleWorkflowEditorChange(): void {
+  editorDirty.value = true
+}
+
+function addWorkflowVariableRow(): void {
+  workflowVariableRows.value.push({
+    id: nextStructuredEditorId('workflow.variable'),
+    source: {},
+    schema: { type: 'string' },
+    name: '',
+    title: '',
+    required: false,
+    schemaType: 'string',
+    defaultValue: undefined,
+    defaultValueText: '',
+    defaultValueEditable: true,
+  })
+  handleWorkflowEditorChange()
+}
+
+function removeWorkflowVariableRow(row: WorkflowVariableEditorRow): void {
+  const index = workflowVariableRows.value.indexOf(row)
+  if (index >= 0) workflowVariableRows.value.splice(index, 1)
+  handleWorkflowEditorChange()
+}
+
+function addWorkflowCapabilityCard(): void {
+  workflowCapabilityCards.value.push({
+    id: nextStructuredEditorId('workflow.capability'),
+    title: 'Workflow Capability',
+    scope: 'workflow',
+    description: '',
+    inputRows: [],
+    outputRows: [],
+    constraintCards: [],
+  })
+  handleWorkflowEditorChange()
+}
+
+function removeWorkflowCapabilityCard(card: StructuredCapabilityCard): void {
+  const index = workflowCapabilityCards.value.indexOf(card)
+  if (index >= 0) workflowCapabilityCards.value.splice(index, 1)
+  handleWorkflowEditorChange()
+}
+
+function addWorkflowStringCard(cards: StructuredSelectCard[], prefix: string): void {
+  cards.push({
+    id: nextStructuredEditorId(prefix),
+    value: '',
+  })
+  handleWorkflowEditorChange()
+}
+
+function removeWorkflowStringCard(cards: StructuredSelectCard[], card: StructuredSelectCard): void {
+  const index = cards.indexOf(card)
+  if (index >= 0) cards.splice(index, 1)
+  handleWorkflowEditorChange()
+}
+
+function addWorkflowStructuredFieldRow(rows: StructuredFieldRow[], prefix: string): void {
+  rows.push({
+    id: nextStructuredEditorId(prefix),
+    path: '',
+    valueKind: 'text',
+    valueText: '',
+    valueBoolean: false,
+  })
+  handleWorkflowEditorChange()
+}
+
+function removeWorkflowStructuredFieldRow(rows: StructuredFieldRow[], row: StructuredFieldRow): void {
+  const index = rows.indexOf(row)
+  if (index >= 0) rows.splice(index, 1)
+  handleWorkflowEditorChange()
+}
+
+function validateWorkflowEditor(): boolean {
+  if (!Number.isFinite(workflowVersionValue.value) || workflowVersionValue.value < 1) {
+    ElMessage.warning('Workflow Version 必须大于 0')
+    return false
+  }
+  const variableNames = workflowVariableRows.value.map(row => row.name.trim()).filter(name => name.length > 0)
+  if (variableNames.length !== workflowVariableRows.value.length) {
+    ElMessage.warning('流程变量 name 不能为空')
+    return false
+  }
+  if (new Set(variableNames).size !== variableNames.length) {
+    ElMessage.warning('流程变量 name 不能重复')
+    return false
+  }
+  const requiredTexts = [
+    ['Registration Alias', workflowRuntimeAliasText.value],
+    ['Registration Module ID', workflowRuntimeModuleIdText.value],
+    ['Registration Business ID', workflowRuntimeBusinessIdText.value],
+    ['Identity Field', workflowIdentityFieldText.value],
+    ['Message Field', workflowMessageFieldText.value],
+    ['System Prompt Template', workflowSystemPromptTemplateText.value],
+    ['Root Class', workflowRootClassText.value],
+    ['Manifest Ref', workflowManifestUrlRefText.value],
+    ['Executable Module Specifier', workflowExecutableModuleSpecifierText.value],
+    ['Executable Export Name', workflowExecutableExportNameText.value],
+    ['Resolve Editor Source', workflowResolveEditorSourceText.value],
+    ['Resolve Identity Field', workflowResolveIdentityFieldText.value],
+  ] as const
+  for (const [label, value] of requiredTexts) {
+    if (value.trim().length === 0) {
+      ElMessage.warning(`${label} 不能为空`)
+      return false
+    }
+  }
+  for (const field of [workflowIdentityFieldText.value, workflowMessageFieldText.value, workflowResolveIdentityFieldText.value]) {
+    if (!variableNames.includes(field.trim())) {
+      ElMessage.warning(`字段 ${field.trim()} 必须来自流程变量`)
+      return false
+    }
+  }
+  return true
+}
+
+function applyWorkflowEditorToCurrent(options: ApplyStructuredEditorOptions = {}): boolean {
+  const document = currentDocument.value
+  if (document === null) return true
+  if (!validateWorkflowEditor()) return false
+
+  document.workflow.version = Math.max(1, Math.trunc(workflowVersionValue.value))
+  document.workflow.variables = workflowVariableRowsToData(workflowVariableRows.value)
+  document.workflow.capabilities = capabilityCardsToData(workflowCapabilityCards.value)
+  document.workflow.runtimeBinding = createWorkflowRuntimeBindingFromEditor(document.workflow.runtimeBinding, document.workflow.variables)
+  document.x_spark.designer = {
+    ...(isJsonRecord(document.x_spark.designer) ? document.x_spark.designer : {}),
+    title: workflowDesignerTitleText.value.trim() || document.workflow.id,
+  }
+  markWorkflowDesignDirty(document, 'workflow')
+  editorDirty.value = false
+  if (options.silent !== true) ElMessage.success('流程属性已更新')
+  return true
+}
+
+function createWorkflowRuntimeBindingFromEditor(
+  existing: WorkflowDesignDocument['workflow']['runtimeBinding'],
+  variables: readonly WorkflowDesignVariable[],
+): WorkflowRuntimeBinding {
+  const current = recordOrEmpty(existing)
+  const registration = recordOrEmpty(current['registration'])
+  const inputContract = recordOrEmpty(current['inputContract'])
+  const systemPrompt = recordOrEmpty(current['systemPrompt'])
+  const modelProjectionRef = recordOrEmpty(current['modelProjectionRef'])
+  const executableRef = recordOrEmpty(current['executableRef'])
+  const resolveInstance = recordOrEmpty(current['resolveInstance'])
+  const binding: Record<string, unknown> = {
+    ...current,
+    registration: {
+      ...registration,
+      alias: workflowRuntimeAliasText.value.trim(),
+      moduleId: workflowRuntimeModuleIdText.value.trim(),
+      businessId: workflowRuntimeBusinessIdText.value.trim(),
+    },
+    inputContract: {
+      ...inputContract,
+      identityField: workflowIdentityFieldText.value.trim(),
+      messageField: workflowMessageFieldText.value.trim(),
+      paramsSchema: createWorkflowParamsSchema(inputContract['paramsSchema'], variables),
+      readonlySteps: structuredCardsToStrings(workflowReadonlyStepCards.value),
+    },
+    systemPrompt: {
+      ...systemPrompt,
+      template: workflowSystemPromptTemplateText.value.trim(),
+    },
+    modelProjectionRef: {
+      ...modelProjectionRef,
+      kind: 'dts-class-model',
+      rootClassName: workflowRootClassText.value.trim(),
+      manifestUrlRef: workflowManifestUrlRefText.value.trim(),
+    },
+    executableRef: {
+      ...executableRef,
+      kind: 'js-module',
+      moduleSpecifier: workflowExecutableModuleSpecifierText.value.trim(),
+      exportName: workflowExecutableExportNameText.value.trim(),
+    },
+    resolveInstance: {
+      ...resolveInstance,
+      editorSource: workflowResolveEditorSourceText.value.trim(),
+      identityField: workflowResolveIdentityFieldText.value.trim(),
+    },
+  }
+  const agentCompleteMethodName = workflowAgentCompleteMethodText.value.trim()
+  if (agentCompleteMethodName.length > 0) binding['agentCompleteMethodName'] = agentCompleteMethodName
+  else delete binding['agentCompleteMethodName']
+  const executionToolNames = structuredCardsToStrings(workflowExecutionToolCards.value)
+  if (executionToolNames.length > 0) binding['executionToolNames'] = executionToolNames
+  else delete binding['executionToolNames']
+  const planWithoutToolMarkers = structuredCardsToStrings(workflowPlanMarkerCards.value)
+  if (planWithoutToolMarkers.length > 0) binding['planWithoutToolMarkers'] = planWithoutToolMarkers
+  else delete binding['planWithoutToolMarkers']
+  return binding as WorkflowRuntimeBinding
+}
+
+function createWorkflowParamsSchema(existing: unknown, variables: readonly WorkflowDesignVariable[]): Record<string, unknown> {
+  const current = isJsonRecord(existing) ? existing : {}
+  const properties: Record<string, unknown> = {}
+  const required: string[] = []
+  for (const variable of variables) {
+    properties[variable.name] = isJsonRecord(variable.schema) ? variable.schema : { type: 'string' }
+    if (variable.required === true) required.push(variable.name)
+  }
+  return {
+    ...current,
+    type: 'object',
+    properties,
+    required,
+    additionalProperties: false,
+  }
+}
+
 function applyBusinessNodeStructuredEditorToSelected(options: ApplyStructuredEditorOptions = {}): boolean {
   const view = selectedNode.value
   const document = currentDocument.value
@@ -3319,6 +4109,9 @@ function applyLoopEditorToSelected(options: { silent?: boolean } = {}): boolean 
 }
 
 function applySelectedDraft(options: { silent?: boolean } = {}): boolean {
+  if (propertiesDrawerTarget.value === 'workflow') {
+    return editorDirty.value ? applyWorkflowEditorToCurrent(options) : true
+  }
   if (selectedLine.value !== null) return applyLineEditorToSelected(options)
   const view = selectedNode.value
   if (view === null) {
@@ -3345,6 +4138,7 @@ async function saveCurrentDesign(): Promise<boolean> {
   try {
     markWorkflowDesignSaved(document)
     const result = await saveWorkflowDesign(currentWorkflowId.value, document)
+    currentFilename.value = result.filename
     currentTimestamp.value = result.timestamp
     editorDirty.value = false
     await loadDesigns()
@@ -4170,6 +4964,10 @@ function errorMessage(error: unknown): string {
   align-items: center;
 }
 
+.structured-field-row--compact {
+  grid-template-columns: minmax(110px, 1fr) 96px minmax(120px, 1.5fr) auto;
+}
+
 .structured-card {
   padding: 10px;
   border: 1px solid #dbe3ee;
@@ -4189,6 +4987,90 @@ function errorMessage(error: unknown): string {
   align-items: center;
   color: #334155;
   font-size: 12px;
+}
+
+.workflow-variable-editor,
+.workflow-runtime-editor,
+.workflow-capability-editor,
+.workflow-string-list {
+  display: grid;
+  gap: 8px;
+}
+
+.workflow-runtime-editor strong,
+.workflow-capability-editor strong,
+.workflow-string-list > span {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.workflow-variable-row {
+  display: grid;
+  grid-template-columns: minmax(92px, 1fr) minmax(92px, 1fr) 82px 58px minmax(92px, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.workflow-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #334155;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.workflow-readonly-value {
+  overflow: hidden;
+  padding: 6px 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  color: #64748b;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #f8fafc;
+}
+
+.workflow-string-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.workflow-metadata-table {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #e2e8f0;
+}
+
+.workflow-metadata-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.4fr);
+  background: #ffffff;
+}
+
+.workflow-metadata-row span,
+.workflow-metadata-row strong {
+  min-width: 0;
+  padding: 6px 8px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.workflow-metadata-row span {
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.workflow-metadata-row strong {
+  color: #334155;
+  font-weight: 500;
 }
 
 .class-model-pin {

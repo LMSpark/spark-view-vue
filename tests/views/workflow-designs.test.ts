@@ -417,7 +417,7 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
     },
     x_spark: {
       schema: 'spark.agent.workflow.design.v1',
-      designer: { title: 'Demo Workflow' },
+      designer: { title: 'Demo Workflow', createdBy: 'tester', createdAt: '2026-01-01T00:00:00.000Z' },
       draft: { status: 'draft', dirtyPaths: [] },
       validation: { status: 'unknown', issues: [] },
     },
@@ -687,6 +687,26 @@ describe('WorkflowDesigns visual editor', () => {
     expect(workflowId).toBe('agent.workflow.demo')
     expect(savedDocument.workflow.graph.nodes[1]?.data?.inputs?.['prompt']).toBe('edited')
     expect(savedDocument.x_spark.draft?.['status']).toBe('saved')
+  })
+
+  it('opens, edits, and saves workflow-level properties', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, '流程属性').trigger('click')
+    expect(wrapper.text()).toContain('创建人')
+    expect(wrapper.text()).toContain('tester')
+
+    const titleInput = wrapper.find('.workflow-title-input')
+    expect(titleInput.exists()).toBe(true)
+    await titleInput.setValue('Edited Workflow')
+    await findButton(wrapper, '保存').trigger('click')
+    await flushPromises()
+
+    const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
+    expect(savedDocument.x_spark.designer?.['title']).toBe('Edited Workflow')
+    expect(savedDocument.workflow.runtimeBinding?.registration.alias).toBe('demo')
+    expect(savedDocument.workflow.runtimeBinding?.inputContract.paramsSchema.properties).toHaveProperty('prompt')
   })
 
   it('shows ClassModel pins and JSDoc at each extracted level', async () => {
