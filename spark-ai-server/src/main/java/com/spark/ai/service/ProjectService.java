@@ -698,30 +698,10 @@ public class ProjectService {
         return List.of();
     }
 
-    @SuppressWarnings("unchecked")
     private boolean containsNodeByPath(List<Map<String, Object>> nodes, String path) {
         String normalizedPath = normalizePath(path);
         for (Map<String, Object> node : nodes) {
             if (normalizedPath.equals(normalizePath(asString(node.get("path"))))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @SuppressWarnings("unchecked")
-    private boolean containsNode(List<Map<String, Object>> nodes, String id, String path) {
-        String normalizedPath = normalizePath(path);
-        for (Map<String, Object> node : nodes) {
-            String nodeId = asString(node.get("id"));
-            if (!id.isBlank() && (id.equals(nodeId) || nodeId.endsWith("-" + id))) {
-                return true;
-            }
-            if (!normalizedPath.isBlank() && normalizedPath.equals(normalizePath(asString(node.get("path"))))) {
-                return true;
-            }
-            Object children = node.get("children");
-            if (children instanceof List<?> childList && containsNode((List<Map<String, Object>>) childList, id, path)) {
                 return true;
             }
         }
@@ -738,22 +718,6 @@ public class ProjectService {
             Object children = node.get("children");
             if (children instanceof List<?> childList) {
                 Map<String, Object> found = findNodeByIdSuffix((List<Map<String, Object>>) childList, idSuffix);
-                if (found != null) return found;
-            }
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> findNodeByPath(List<Map<String, Object>> nodes, String path) {
-        String normalizedPath = normalizePath(path);
-        for (Map<String, Object> node : nodes) {
-            if (normalizedPath.equals(normalizePath(asString(node.get("path"))))) {
-                return node;
-            }
-            Object children = node.get("children");
-            if (children instanceof List<?> childList) {
-                Map<String, Object> found = findNodeByPath((List<Map<String, Object>>) childList, path);
                 if (found != null) return found;
             }
         }

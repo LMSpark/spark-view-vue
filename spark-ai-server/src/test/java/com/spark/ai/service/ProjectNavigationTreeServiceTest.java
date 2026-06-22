@@ -219,6 +219,7 @@ class ProjectNavigationTreeServiceTest {
         assertFalse(detail.containsKey("path"));
     }
 
+        @SafeVarargs
         private Map<String, Object> createNavRoot(Map<String, Object>... children) {
                 Map<String, Object> root = new LinkedHashMap<>();
                 root.put("childPlacement", "header");

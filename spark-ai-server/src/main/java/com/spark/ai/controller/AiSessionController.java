@@ -4,8 +4,6 @@ import com.spark.ai.api.ApiResponseFactory;
 import com.spark.ai.service.AiSessionService;
 import com.spark.ai.service.AiSessionService.AppendMessageResult;
 import com.spark.ai.service.AiSessionService.TurnResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +29,6 @@ import java.util.Map;
 @RequestMapping("/api/ai/sessions")
 public class AiSessionController {
 
-    private static final Logger log = LoggerFactory.getLogger(AiSessionController.class);
     private static final int PROTOCOL_VERSION_V3 = 3;
     private static final int PROTOCOL_VERSION_V4 = ApiResponseFactory.PROTOCOL_VERSION;
 

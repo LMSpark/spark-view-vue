@@ -281,6 +281,7 @@ class ProjectServiceNavigationSeedTest {
         return project;
     }
 
+    @SafeVarargs
     private static Map<String, Object> navRoot(Map<String, Object>... children) {
         Map<String, Object> root = new java.util.LinkedHashMap<>();
         root.put("childPlacement", "header");
@@ -297,6 +298,7 @@ class ProjectServiceNavigationSeedTest {
         return node;
     }
 
+    @SafeVarargs
     private static Map<String, Object> module(String id, String title, Map<String, Object>... children) {
         Map<String, Object> node = new java.util.LinkedHashMap<>();
         node.put("id", id);
@@ -366,18 +368,6 @@ class ProjectServiceNavigationSeedTest {
             paths.add(String.valueOf(child.get("path")));
         }
         return paths;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static boolean childHidden(Map<String, Object> node, String path) {
-        Object children = node.get("children");
-        if (!(children instanceof List<?> childList)) return false;
-        for (Map<String, Object> child : (List<Map<String, Object>>) childList) {
-            if (path.equals(child.get("path"))) {
-                return Boolean.TRUE.equals(child.get("hidden"));
-            }
-        }
-        return false;
     }
 
     @SuppressWarnings("unchecked")

@@ -819,10 +819,6 @@ public class WorkflowDesignService {
         return value;
     }
 
-    private void requireObject(JsonNode node, String field) {
-        requiredObject(node, field);
-    }
-
     private JsonNode requireArray(JsonNode node, String field) {
         JsonNode value = node.get(field);
         if (value == null || !value.isArray()) {

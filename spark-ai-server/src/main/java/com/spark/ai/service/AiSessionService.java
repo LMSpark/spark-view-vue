@@ -205,8 +205,6 @@ public class AiSessionService {
             if (existingSession != null && matchesScope(existingSession, scope)) {
                 existingSession.moduleId = normalizedScope.moduleId;
                 existingSession.moduleInstanceId = normalizedScope.moduleInstanceId;
-                existingSession.instanceId = normalizedScope.instanceId;
-                existingSession.runtimeInstanceId = normalizedScope.runtimeInstanceId;
                 existingSession.scopeKey = normalizedScope.scopeKey;
                 existingSession.scope = normalizedScope.toMap();
                 existingSession.systemPrompt = systemPrompt;
@@ -258,8 +256,6 @@ public class AiSessionService {
         Session session = new Session();
         session.moduleId = normalizedScope.moduleId;
         session.moduleInstanceId = normalizedScope.moduleInstanceId;
-        session.instanceId = normalizedScope.instanceId;
-        session.runtimeInstanceId = normalizedScope.runtimeInstanceId;
         session.scopeKey = normalizedScope.scopeKey;
         session.scope = normalizedScope.toMap();
         session.systemPrompt = systemPrompt;
@@ -268,7 +264,6 @@ public class AiSessionService {
         session.tools = tools;
         session.mode = mode != null ? mode : "function";
         session.state = SessionState.READY;
-        session.consecutiveFailures = 0;
         applyRequestIdentity(session, scope, requestContext);
 
         for (Map<String, Object> message : safeMessages) {
@@ -339,7 +334,6 @@ public class AiSessionService {
             LlmResult llmResult = callLlm(messages, session.tools);
             if (llmResult == null) {
                 transition(session, SessionState.FAILED);
-                session.consecutiveFailures++;
                 return TurnResult.error(
                         session.state.name(),
                         "CALL->FAILED",
@@ -365,7 +359,6 @@ public class AiSessionService {
             transition(session, SessionState.APPLY);
             transition(session, SessionState.VERIFY);
             transition(session, SessionState.DONE);
-            session.consecutiveFailures = 0;
             String stateTransition = "VERIFY->DONE";
             transition(session, SessionState.READY);
             persistSession(sessionId, session);
@@ -571,9 +564,7 @@ public class AiSessionService {
         streamExecutor.submit(() -> {
             try {
                 callLlmNeutralStream(streamMessages, streamSession, streamMeta);
-                record.markCompleted();
             } catch (Exception error) {
-                record.markFailed();
                 log.error("[SESSION] posted turn error sessionId={} turnId={}: {}",
                         sessionId, turnId, error.getMessage());
                 sendLlmFrame(
@@ -707,8 +698,6 @@ public class AiSessionService {
         SessionScope normalizedScope = normalizeScope(session.scope);
         session.moduleId = normalizedScope.moduleId;
         session.moduleInstanceId = normalizedScope.moduleInstanceId;
-        session.instanceId = normalizedScope.instanceId;
-        session.runtimeInstanceId = normalizedScope.runtimeInstanceId;
         session.scopeKey = normalizedScope.scopeKey;
         for (Map<String, Object> message : loadConversationFromPersistence(sessionId)) {
             session.conversation.add(messageFromMap(message));
@@ -1017,8 +1006,6 @@ public class AiSessionService {
         SessionScope normalizedScope = normalizeScope(scope);
         session.moduleId = normalizedScope.moduleId;
         session.moduleInstanceId = normalizedScope.moduleInstanceId;
-        session.instanceId = normalizedScope.instanceId;
-        session.runtimeInstanceId = normalizedScope.runtimeInstanceId;
         session.scopeKey = normalizedScope.scopeKey;
         session.scope = normalizedScope.toMap();
         String prompt = stringValue(systemPrompt);
@@ -1035,10 +1022,6 @@ public class AiSessionService {
         if (normalizedMode != null) {
             session.mode = normalizedMode;
         }
-    }
-
-    private List<Map<String, Object>> buildWindowedMessages(Session session) {
-        return buildWindowedMessages(session, session.conversation);
     }
 
     private List<Map<String, Object>> buildWindowedMessages(Session session, List<Message> conversation) {
@@ -1881,8 +1864,6 @@ public class AiSessionService {
         String username;
         String moduleId;
         String moduleInstanceId;
-        String instanceId;
-        String runtimeInstanceId;
         String scopeKey;
         String planningAttachmentPromptRef;
         String planningAttachmentPromptText;
@@ -1891,7 +1872,6 @@ public class AiSessionService {
         long lastActiveTime;
         String mode;
         SessionState state;
-        int consecutiveFailures;
         int roundCounter;
         List<Map<String, Object>> tools;
         final List<Message> conversation = new ArrayList<>();
@@ -1918,18 +1898,9 @@ public class AiSessionService {
 
     private static final class PostedTurnRecord {
         private final String inputHash;
-        private volatile String status = "started";
 
         private PostedTurnRecord(String inputHash) {
             this.inputHash = inputHash;
-        }
-
-        private void markCompleted() {
-            status = "completed";
-        }
-
-        private void markFailed() {
-            status = "failed";
         }
     }
 

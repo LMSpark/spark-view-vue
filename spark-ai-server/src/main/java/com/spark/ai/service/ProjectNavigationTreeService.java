@@ -474,28 +474,6 @@ public class ProjectNavigationTreeService {
         }
     }
 
-    private Map<String, Object> loadOrInit(String tenantId, String projectId) throws IOException {
-        Map<String, Object> root = getNavConfig(tenantId, projectId);
-        if (root == null) {
-            root = new LinkedHashMap<>();
-            root.put("childPlacement", "header");
-            root.put("children", new ArrayList<>());
-        }
-        return root;
-    }
-
-    /** 获取或创建 root.children 列表。 */
-    @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> getChildren(Map<String, Object> root) {
-        Object children = root.get("children");
-        if (children instanceof List) {
-            return (List<Map<String, Object>>) children;
-        }
-        List<Map<String, Object>> list = new ArrayList<>();
-        root.put("children", list);
-        return list;
-    }
-
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> readChildren(Map<String, Object> node) {
         Object children = node.get("children");
@@ -960,10 +938,6 @@ public class ProjectNavigationTreeService {
         String type = asTrimmedString(raw.get("type"));
         if ("group".equals(type)) return "module";
         return "page";
-    }
-
-    private boolean isGroupKind(String kind) {
-        return "system-directory".equals(kind) || "module".equals(kind);
     }
 
     private String asTrimmedString(Object value) {

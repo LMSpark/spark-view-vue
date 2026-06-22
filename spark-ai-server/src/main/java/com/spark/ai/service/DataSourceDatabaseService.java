@@ -28,14 +28,12 @@ public class DataSourceDatabaseService {
     private final JdbcTemplate jdbc;
     private final CryptoUtil cryptoUtil;
     private final DynamicDataSourceManager dsManager;
-    private final DataSource primaryDataSource;
 
     public DataSourceDatabaseService(JdbcTemplate jdbc, CryptoUtil cryptoUtil,
                                      DynamicDataSourceManager dsManager, DataSource primaryDataSource) {
         this.jdbc = jdbc;
         this.cryptoUtil = cryptoUtil;
         this.dsManager = dsManager;
-        this.primaryDataSource = primaryDataSource;
     }
 
     public List<Map<String, Object>> listDatabases(String tenantId, String projectId, Long serverId) {
