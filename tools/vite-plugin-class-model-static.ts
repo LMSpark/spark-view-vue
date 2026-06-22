@@ -1,8 +1,6 @@
-import { createReadStream, cpSync, existsSync, statSync } from 'node:fs'
+import { cpSync, existsSync, readFile, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, normalize, resolve } from 'node:path'
-import { Writable } from 'node:stream'
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 
 const requireModule = createRequire(import.meta.url)
@@ -19,6 +17,18 @@ export type ClassModelStaticPluginOptions = Readonly<{
   generatedDir?: string
   httpPrefix?: string
 }>
+
+type ClassModelStaticRequest = Readonly<{
+  url?: string | undefined
+}>
+
+type ClassModelStaticResponse = {
+  destroyed: boolean
+  statusCode: number
+  writableEnded: boolean
+  setHeader(name: string, value: number | string | readonly string[]): unknown
+  end(chunk?: string | Uint8Array): unknown
+}
 
 /** Dev 静态映射 + 生产 build 拷贝 generated → dist/dts-class-model。 */
 export function classModelStaticPlugin(options: ClassModelStaticPluginOptions = {}): Plugin {
@@ -48,11 +58,11 @@ export function classModelStaticPlugin(options: ClassModelStaticPluginOptions = 
   }
 }
 
-function createClassModelStaticMiddleware(sourceDir: string, httpPrefix: string) {
+export function createClassModelStaticMiddleware(sourceDir: string, httpPrefix: string) {
   const normalizedPrefix = httpPrefix.endsWith('/') ? httpPrefix.slice(0, -1) : httpPrefix
   const resolvedSourceDir = resolve(sourceDir)
 
-  return (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => {
+  return (req: ClassModelStaticRequest, res: ClassModelStaticResponse, next: (err?: unknown) => void) => {
     const requestUrl = req.url?.split('?')[0] ?? ''
     if (!requestUrl.startsWith(normalizedPrefix)) {
       next()
@@ -78,12 +88,22 @@ function createClassModelStaticMiddleware(sourceDir: string, httpPrefix: string)
     }
 
     res.setHeader('Content-Type', contentTypeForPath(filePath))
-    if (!(res instanceof Writable)) {
-      next(new Error('ClassModel static middleware response is not writable.'))
+    if (!canWriteResponse(res)) {
+      next(new Error('ClassModel static middleware response is not writable or already ended.'))
       return
     }
-    createReadStream(filePath).on('error', next).pipe(res)
+    readFile(filePath, (error, content) => {
+      if (error !== null) {
+        next(error)
+        return
+      }
+      res.end(content)
+    })
   }
+}
+
+function canWriteResponse(res: ClassModelStaticResponse): boolean {
+  return !res.writableEnded && !res.destroyed && typeof res.end === 'function'
 }
 
 function contentTypeForPath(filePath: string): string {
