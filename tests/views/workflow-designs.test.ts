@@ -200,22 +200,22 @@ const VueFlowStub = defineComponent({
         }),
       ]))
 
-      const renderedEdges = props.edges.map((edge: any) => h('button', {
+      const renderedLines = props.edges.map((line: any) => h('button', {
         type: 'button',
-        class: 'vue-flow__edge',
-        title: `选择连线 ${edge.source} -> ${edge.target}`,
-        onClick: () => emit('edgesChange', [{ type: 'select', id: edge.id, selected: true }]),
-        onDblclick: () => emit('edgeDoubleClick', { edge }),
-      }, `${edge.source}->${edge.target}`))
+        class: 'vue-flow__line',
+        title: `选择连线 ${line.source} -> ${line.target}`,
+        onClick: () => emit('edgesChange', [{ type: 'select', id: line.id, selected: true }]),
+        onDblclick: () => emit('edgeDoubleClick', { edge: line }),
+      }, `${line.source}->${line.target}`))
 
-      const edgeUpdateButtons = props.edges.map((edge: any) => h('button', {
+      const lineUpdateButtons = props.edges.map((line: any) => h('button', {
         type: 'button',
-        class: 'workflow-flow-edge-update',
-        title: `改连线 ${edge.source} -> ${edge.target} 到 output`,
+        class: 'workflow-flow-line-update',
+        title: `改连线 ${line.source} -> ${line.target} 到 output`,
         onClick: () => emit('edgeUpdate', {
-          edge,
+          edge: line,
           connection: {
-            source: edge.source,
+            source: line.source,
             target: 'output',
             sourceHandle: 'source',
             targetHandle: 'target',
@@ -224,8 +224,8 @@ const VueFlowStub = defineComponent({
       }))
 
       return h('div', { class: 'vue-flow-stub' }, [
-        ...renderedEdges,
-        ...edgeUpdateButtons,
+        ...renderedLines,
+        ...lineUpdateButtons,
         ...renderedNodes,
       ])
     }
@@ -241,7 +241,7 @@ function createWorkflowDesignDocument(workflowId = 'agent.workflow.demo'): Workf
       id: workflowId,
       version: 1,
       variables: [
-        { name: 'prompt', title: 'Prompt', required: true },
+        { name: 'prompt', title: 'Prompt', jsdoc: 'Prompt variable JSDoc.', required: true, schema: { type: 'string', description: 'Prompt' } },
       ],
       capabilities: [
         {
@@ -696,6 +696,8 @@ describe('WorkflowDesigns visual editor', () => {
     await findButton(wrapper, '流程属性').trigger('click')
     expect(wrapper.text()).toContain('创建人')
     expect(wrapper.text()).toContain('tester')
+    expect(wrapper.text()).toContain('Prompt variable JSDoc.')
+    expect(wrapper.text()).toContain('ProjectModel full JSDoc.')
 
     const titleInput = wrapper.find('.workflow-title-input')
     expect(titleInput.exists()).toBe(true)
@@ -716,10 +718,12 @@ describe('WorkflowDesigns visual editor', () => {
 
     expect(mocks.createWorkerDtsClassModelKnowledgeProvider).toHaveBeenCalled()
     expect(wrapper.findAll('.class-model-pin').length).toBeGreaterThan(0)
+    expect(wrapper.findAll('.doc-hint').length).toBeGreaterThan(0)
     expect(wrapper.text()).toContain('ProjectModel full JSDoc.')
     expect(wrapper.text()).toContain('ProjectModel constructor JSDoc.')
     expect(wrapper.text()).toContain('Active page JSDoc.')
     expect(wrapper.text()).toContain('Agent completion JSDoc.')
+    expect(wrapper.text()).toContain('Complete page design JSDoc.')
   })
 
   it('drags a graph node and saves its new position', async () => {
@@ -736,6 +740,22 @@ describe('WorkflowDesigns visual editor', () => {
     expect(savedDocument.workflow.graph.nodes[1]?.position).toEqual({ x: 70, y: 30 })
   })
 
+  it('moves the selected graph node with arrow keys', async () => {
+    const wrapper = mountWorkflowDesigns()
+    await flushPromises()
+
+    await findButton(wrapper, '打开属性').trigger('click')
+    expect(wrapper.text()).not.toContain('位置')
+
+    window.document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+    window.document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true }))
+    await findButton(wrapper, '保存').trigger('click')
+    await flushPromises()
+
+    const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
+    expect(savedDocument.workflow.graph.nodes[1]?.position).toEqual({ x: 300, y: 260 })
+  })
+
   it('auto-layouts the workflow graph and saves immediately', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
@@ -747,8 +767,8 @@ describe('WorkflowDesigns visual editor', () => {
     const [, savedDocument] = mocks.saveWorkflowDesign.mock.calls[0] as [string, WorkflowDesignDocument]
     expect(savedDocument.workflow.graph.nodes.map(node => node.position)).toEqual([
       { x: 40, y: 40 },
-      { x: 380, y: 40 },
-      { x: 720, y: 40 },
+      { x: 40, y: 250 },
+      { x: 40, y: 460 },
     ])
     expect(savedDocument.workflow.graph.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
     expect(savedDocument.x_spark.draft?.['status']).toBe('saved')
@@ -796,13 +816,18 @@ describe('WorkflowDesigns visual editor', () => {
     expect(savedDocument.workflow.graph.lines).toHaveLength(0)
   })
 
-  it('updates an edge endpoint from the edge editor and saves it', async () => {
+  it('updates a line endpoint from the line editor and saves it', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const firstEdge = wrapper.find('.vue-flow__edge')
-    expect(firstEdge.exists()).toBe(true)
-    await firstEdge.trigger('dblclick')
+    const firstLine = wrapper.find('.vue-flow__line')
+    expect(firstLine.exists()).toBe(true)
+    await firstLine.trigger('dblclick')
+    await flushPromises()
+
+    expect(wrapper.findAll('.doc-hint').length).toBeGreaterThan(0)
+    expect(wrapper.text()).toContain('Prompt variable JSDoc.')
+    expect(wrapper.text()).toContain('ProjectModel full JSDoc.')
 
     const toNodeSelect = wrapper.find('select.line-to-node-select')
     expect(toNodeSelect.exists()).toBe(true)
@@ -817,13 +842,13 @@ describe('WorkflowDesigns visual editor', () => {
     }))
   })
 
-  it('rewires an edge target from Vue Flow edge update', async () => {
+  it('rewires a line target from Vue Flow line update', async () => {
     const wrapper = mountWorkflowDesigns()
     await flushPromises()
 
-    const edgeUpdateButton = wrapper.find('[title="改连线 start -> node.model 到 output"]')
-    expect(edgeUpdateButton.exists()).toBe(true)
-    await edgeUpdateButton.trigger('click')
+    const lineUpdateButton = wrapper.find('[title="改连线 start -> node.model 到 output"]')
+    expect(lineUpdateButton.exists()).toBe(true)
+    await lineUpdateButton.trigger('click')
     await findButton(wrapper, '保存').trigger('click')
     await flushPromises()
 

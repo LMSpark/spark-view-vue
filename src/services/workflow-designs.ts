@@ -254,11 +254,27 @@ export type CreateAgentWorkflowDefinitionFromDesignOptions = {
   publishedAt?: string
 }
 
+type WorkflowDesignAutoLayoutNodePosition = Readonly<{
+  node: WorkflowDesignGraphNode
+  x: number
+  y: number
+}>
+
 type WorkflowDesignAutoLayoutNode = {
   node: WorkflowDesignGraphNode
   originalIndex: number
   rank: number
+  lane: number
+  mainPath: boolean
+  preferredLane: number | null
 }
+
+type WorkflowDesignAutoLayoutLineCandidate = Readonly<{
+  line: WorkflowDesignGraphLine
+  originalIndex: number
+  fromIndex: number
+  toIndex: number
+}>
 
 type CollectWorkflowDesignNodeCommand = Readonly<{
   graph: WorkflowDesignGraph
@@ -293,7 +309,6 @@ const WORKFLOW_AUTO_LAYOUT_START_X = 40
 const WORKFLOW_AUTO_LAYOUT_START_Y = 40
 const WORKFLOW_AUTO_LAYOUT_STEP_X = 340
 const WORKFLOW_AUTO_LAYOUT_STEP_Y = 210
-const WORKFLOW_AUTO_LAYOUT_MAX_COLUMNS = 6
 
 export async function listWorkflowDesigns(): Promise<WorkflowDesignSummary[]> {
   return http.get<WorkflowDesignSummary[]>(`${getWorkflowDesignApi()}/__list`)
@@ -1266,24 +1281,21 @@ function collectGraphLines(view: WorkflowDesignGraphView): WorkflowDesignLineVie
 }
 
 function autoLayoutWorkflowDesignGraph(view: WorkflowDesignGraphView): WorkflowDesignAutoLayoutGraphResult {
-  const orderedNodes = orderWorkflowDesignGraphNodes(view.graph)
-  const columnCount = autoLayoutColumnCount(orderedNodes.length)
+  const layoutPositions = layoutWorkflowDesignGraphWithLayers(view.graph)
   let changedNodePositions = false
 
-  for (const [index, layoutNode] of orderedNodes.entries()) {
-    const x = WORKFLOW_AUTO_LAYOUT_START_X + (index % columnCount) * WORKFLOW_AUTO_LAYOUT_STEP_X
-    const y = WORKFLOW_AUTO_LAYOUT_START_Y + Math.floor(index / columnCount) * WORKFLOW_AUTO_LAYOUT_STEP_Y
-    const position = layoutNode.node.position
-    if (position?.x !== x || position.y !== y) {
+  for (const layoutPosition of layoutPositions) {
+    const position = layoutPosition.node.position
+    if (position?.x !== layoutPosition.x || position.y !== layoutPosition.y) {
       changedNodePositions = true
     }
-    layoutNode.node.position = { ...position, x, y }
+    layoutPosition.node.position = { ...position, x: layoutPosition.x, y: layoutPosition.y }
   }
 
   const viewport = view.graph.viewport
-  const changedViewport = orderedNodes.length > 0
+  const changedViewport = layoutPositions.length > 0
     && (viewport?.x !== 0 || viewport.y !== 0 || viewport.zoom !== 1)
-  if (orderedNodes.length > 0) {
+  if (layoutPositions.length > 0) {
     view.graph.viewport = { ...viewport, x: 0, y: 0, zoom: 1 }
   }
 
@@ -1294,75 +1306,387 @@ function autoLayoutWorkflowDesignGraph(view: WorkflowDesignGraphView): WorkflowD
   }
 }
 
-function orderWorkflowDesignGraphNodes(graph: WorkflowDesignGraph): WorkflowDesignAutoLayoutNode[] {
+function layoutWorkflowDesignGraphWithLayers(graph: WorkflowDesignGraph): WorkflowDesignAutoLayoutNodePosition[] {
   const layoutNodes = graph.nodes.map((node, originalIndex): WorkflowDesignAutoLayoutNode => ({
     node,
     originalIndex,
     rank: 0,
+    lane: 0,
+    mainPath: false,
+    preferredLane: null,
   }))
-  const nodesById = new Map(layoutNodes.map(item => [item.node.id, item]))
-  const outgoingNodeIds = new Map(layoutNodes.map(item => [item.node.id, [] as string[]]))
-  const incomingCounts = new Map(layoutNodes.map(item => [item.node.id, 0]))
+  if (layoutNodes.length === 0) return []
 
-  for (const line of graph.lines) {
+  const nodesById = new Map<string, WorkflowDesignAutoLayoutNode>()
+  const incomingNodesById = new Map<string, WorkflowDesignAutoLayoutNode[]>()
+  const outgoingNodesById = new Map<string, WorkflowDesignAutoLayoutNode[]>()
+  const incomingCountsById = new Map<string, number>()
+  for (const layoutNode of layoutNodes) {
+    nodesById.set(layoutNode.node.id, layoutNode)
+    incomingNodesById.set(layoutNode.node.id, [])
+    outgoingNodesById.set(layoutNode.node.id, [])
+    incomingCountsById.set(layoutNode.node.id, 0)
+  }
+
+  const acceptedNodePairKeys = new Set<string>()
+  for (const line of workflowLayoutForwardLines(graph)) {
     const fromNode = nodesById.get(line.from.nodeId)
     const toNode = nodesById.get(line.to.nodeId)
-    if (fromNode === undefined || toNode === undefined || fromNode.node.id === toNode.node.id) continue
-    outgoingNodeIds.get(fromNode.node.id)?.push(toNode.node.id)
-    incomingCounts.set(toNode.node.id, (incomingCounts.get(toNode.node.id) ?? 0) + 1)
+    if (fromNode === undefined || toNode === undefined) continue
+    const nodePairKey = workflowDesignLayoutNodePairKey(fromNode.node.id, toNode.node.id)
+    if (acceptedNodePairKeys.has(nodePairKey)) continue
+    acceptedNodePairKeys.add(nodePairKey)
+    outgoingNodesById.get(fromNode.node.id)?.push(toNode)
+    incomingNodesById.get(toNode.node.id)?.push(fromNode)
+    incomingCountsById.set(toNode.node.id, (incomingCountsById.get(toNode.node.id) ?? 0) + 1)
   }
 
-  const queue = layoutNodes.filter(item => incomingCounts.get(item.node.id) === 0)
+  rankWorkflowDesignLayoutNodes(layoutNodes, outgoingNodesById, incomingCountsById)
+  markWorkflowDesignMainPathNodes(layoutNodes, outgoingNodesById, incomingNodesById)
+  assignWorkflowDesignBranchRootLanes(layoutNodes, outgoingNodesById)
+  assignWorkflowDesignLayoutLanes(layoutNodes, incomingNodesById)
+
+  const minLane = layoutNodes.reduce((min, layoutNode) => Math.min(min, layoutNode.lane), Number.POSITIVE_INFINITY)
+  return layoutNodes.map(layoutNode => ({
+    node: layoutNode.node,
+    x: Math.round(WORKFLOW_AUTO_LAYOUT_START_X + (layoutNode.lane - minLane) * WORKFLOW_AUTO_LAYOUT_STEP_X),
+    y: WORKFLOW_AUTO_LAYOUT_START_Y + layoutNode.rank * WORKFLOW_AUTO_LAYOUT_STEP_Y,
+  }))
+}
+
+function rankWorkflowDesignLayoutNodes(
+  layoutNodes: WorkflowDesignAutoLayoutNode[],
+  outgoingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+  incomingCountsById: ReadonlyMap<string, number>,
+): void {
+  const remainingIncomingCountsById = new Map(incomingCountsById)
+  const queue = layoutNodes
+    .filter(layoutNode => (remainingIncomingCountsById.get(layoutNode.node.id) ?? 0) === 0)
+    .sort(compareWorkflowDesignLayoutNodes)
+  const rankedNodeIds = new Set<string>()
+
+  while (queue.length > 0) {
+    queue.sort(compareWorkflowDesignLayoutNodesByRank)
+    const currentNode = queue.shift()
+    if (currentNode === undefined || rankedNodeIds.has(currentNode.node.id)) continue
+    rankedNodeIds.add(currentNode.node.id)
+
+    const nextNodes = [...(outgoingNodesById.get(currentNode.node.id) ?? [])]
+      .sort(compareWorkflowDesignLayoutNodes)
+    for (const nextNode of nextNodes) {
+      nextNode.rank = Math.max(nextNode.rank, currentNode.rank + 1)
+      const nextIncomingCount = (remainingIncomingCountsById.get(nextNode.node.id) ?? 0) - 1
+      remainingIncomingCountsById.set(nextNode.node.id, nextIncomingCount)
+      if (nextIncomingCount <= 0) queue.push(nextNode)
+    }
+  }
+
+  let fallbackRank = layoutNodes.reduce((rank, layoutNode) => Math.max(rank, layoutNode.rank), 0) + 1
+  for (const layoutNode of [...layoutNodes].sort(compareWorkflowDesignLayoutNodes)) {
+    if (rankedNodeIds.has(layoutNode.node.id)) continue
+    layoutNode.rank = Math.max(layoutNode.rank, fallbackRank)
+    fallbackRank = layoutNode.rank + 1
+  }
+}
+
+function markWorkflowDesignMainPathNodes(
+  layoutNodes: readonly WorkflowDesignAutoLayoutNode[],
+  outgoingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+  incomingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): void {
+  const mainPathNodeIds = workflowDesignShortestPathNodeIds(layoutNodes, outgoingNodesById)
+  refineWorkflowDesignMainPathNodeIds(mainPathNodeIds, outgoingNodesById, incomingNodesById)
+  for (const layoutNode of layoutNodes) {
+    layoutNode.mainPath = mainPathNodeIds.has(layoutNode.node.id)
+    layoutNode.preferredLane = layoutNode.mainPath ? 0 : null
+  }
+}
+
+function workflowDesignShortestPathNodeIds(
+  layoutNodes: readonly WorkflowDesignAutoLayoutNode[],
+  outgoingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): Set<string> {
+  const startNode = layoutNodes.find(layoutNode => workflowDesignNodeType(layoutNode.node) === 'start')
+    ?? [...layoutNodes].sort(compareWorkflowDesignLayoutNodes)[0]
+  const outputNodeIds = new Set(
+    layoutNodes
+      .filter(layoutNode => workflowDesignNodeType(layoutNode.node) === 'output')
+      .map(layoutNode => layoutNode.node.id),
+  )
+  if (startNode === undefined || outputNodeIds.size === 0) {
+    return new Set(layoutNodes.map(layoutNode => layoutNode.node.id))
+  }
+
+  const queue: WorkflowDesignAutoLayoutNode[] = [startNode]
+  const previousNodeIdById = new Map<string, string | null>([[startNode.node.id, null]])
+  let foundOutputNodeId: string | null = null
+  while (queue.length > 0) {
+    const currentNode = queue.shift()
+    if (currentNode === undefined) continue
+    if (outputNodeIds.has(currentNode.node.id)) {
+      foundOutputNodeId = currentNode.node.id
+      break
+    }
+    for (const nextNode of uniqueWorkflowDesignLayoutNodes(outgoingNodesById.get(currentNode.node.id) ?? [])) {
+      if (previousNodeIdById.has(nextNode.node.id)) continue
+      previousNodeIdById.set(nextNode.node.id, currentNode.node.id)
+      queue.push(nextNode)
+    }
+  }
+
+  if (foundOutputNodeId === null) return new Set([startNode.node.id])
+  const pathNodeIds = new Set<string>()
+  let currentNodeId: string | null = foundOutputNodeId
+  while (currentNodeId !== null) {
+    pathNodeIds.add(currentNodeId)
+    currentNodeId = previousNodeIdById.get(currentNodeId) ?? null
+  }
+  return pathNodeIds
+}
+
+function refineWorkflowDesignMainPathNodeIds(
+  mainPathNodeIds: Set<string>,
+  outgoingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+  incomingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): void {
+  for (const mainPathNodeId of [...mainPathNodeIds]) {
+    const successors = uniqueWorkflowDesignLayoutNodes(outgoingNodesById.get(mainPathNodeId) ?? [])
+    if (successors.length < 2) continue
+    const mainSuccessors = successors.filter(successor => mainPathNodeIds.has(successor.node.id))
+    if (mainSuccessors.length !== 1) continue
+    const mainSuccessor = mainSuccessors[0]
+    if (mainSuccessor === undefined) continue
+    const successorIncomingCount = uniqueWorkflowDesignLayoutNodes(
+      incomingNodesById.get(mainSuccessor.node.id) ?? [],
+    ).length
+    if (successorIncomingCount > 1) continue
+    const branchSuccessors = successors.filter(successor => !mainPathNodeIds.has(successor.node.id))
+    if (branchSuccessors.some(successor => workflowDesignNodeReachesMainPath(successor, mainPathNodeIds, outgoingNodesById))) {
+      mainPathNodeIds.delete(mainSuccessor.node.id)
+    }
+  }
+}
+
+function workflowDesignNodeReachesMainPath(
+  startNode: WorkflowDesignAutoLayoutNode,
+  mainPathNodeIds: ReadonlySet<string>,
+  outgoingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): boolean {
+  const stack = [...uniqueWorkflowDesignLayoutNodes(outgoingNodesById.get(startNode.node.id) ?? [])]
+  const visitedNodeIds = new Set<string>([startNode.node.id])
+  while (stack.length > 0) {
+    const currentNode = stack.pop()
+    if (currentNode === undefined || visitedNodeIds.has(currentNode.node.id)) continue
+    if (mainPathNodeIds.has(currentNode.node.id)) return true
+    visitedNodeIds.add(currentNode.node.id)
+    stack.push(...uniqueWorkflowDesignLayoutNodes(outgoingNodesById.get(currentNode.node.id) ?? []))
+  }
+  return false
+}
+
+function assignWorkflowDesignBranchRootLanes(
+  layoutNodes: readonly WorkflowDesignAutoLayoutNode[],
+  outgoingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): void {
+  for (const layoutNode of [...layoutNodes].sort(compareWorkflowDesignLayoutNodesByRank)) {
+    if (!layoutNode.mainPath) continue
+    const branchNodes = uniqueWorkflowDesignLayoutNodes(outgoingNodesById.get(layoutNode.node.id) ?? [])
+      .filter(nextNode => !nextNode.mainPath)
+      .sort(compareWorkflowDesignLayoutNodes)
+    for (let index = 0; index < branchNodes.length; index += 1) {
+      const branchNode = branchNodes[index]
+      if (branchNode?.preferredLane !== null) continue
+      branchNode.preferredLane = workflowDesignBranchLaneOffset(index, branchNodes.length)
+    }
+  }
+}
+
+function assignWorkflowDesignLayoutLanes(
+  layoutNodes: readonly WorkflowDesignAutoLayoutNode[],
+  incomingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): void {
+  const rankGroups = new Map<number, WorkflowDesignAutoLayoutNode[]>()
+  for (const layoutNode of layoutNodes) {
+    const group = rankGroups.get(layoutNode.rank)
+    if (group === undefined) {
+      rankGroups.set(layoutNode.rank, [layoutNode])
+    } else {
+      group.push(layoutNode)
+    }
+  }
+
+  const sortedRanks = [...rankGroups.keys()].sort((left, right) => left - right)
+  for (const rank of sortedRanks) {
+    const rankNodes = rankGroups.get(rank)
+    if (rankNodes === undefined) continue
+    assignWorkflowDesignRankLanes(rankNodes, incomingNodesById)
+  }
+}
+
+function assignWorkflowDesignRankLanes(
+  rankNodes: readonly WorkflowDesignAutoLayoutNode[],
+  incomingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): void {
+  const nodesByPreferredLane = new Map<string, WorkflowDesignAutoLayoutNode[]>()
+  for (const layoutNode of [...rankNodes].sort(compareWorkflowDesignLayoutNodes)) {
+    const preferredLane = workflowDesignPreferredLayoutLane(layoutNode, incomingNodesById)
+    const laneKey = workflowDesignLayoutLaneKey(preferredLane)
+    const laneNodes = nodesByPreferredLane.get(laneKey)
+    if (laneNodes === undefined) {
+      nodesByPreferredLane.set(laneKey, [layoutNode])
+    } else {
+      laneNodes.push(layoutNode)
+    }
+  }
+
+  const usedLaneKeys = new Set<string>()
+  const laneGroups = [...nodesByPreferredLane.entries()]
+    .sort((left, right) => Number(left[0]) - Number(right[0]))
+  for (const [preferredLaneKey, laneNodes] of laneGroups) {
+    const preferredLane = Number(preferredLaneKey)
+    const sortedLaneNodes = [...laneNodes].sort(compareWorkflowDesignLayoutNodes)
+    for (let index = 0; index < sortedLaneNodes.length; index += 1) {
+      const layoutNode = sortedLaneNodes[index]
+      if (layoutNode === undefined) continue
+      const targetLane = preferredLane + workflowDesignCenteredLayoutOffset(index, sortedLaneNodes.length)
+      layoutNode.lane = reserveWorkflowDesignLayoutLane(targetLane, usedLaneKeys)
+    }
+  }
+}
+
+function workflowDesignPreferredLayoutLane(
+  layoutNode: WorkflowDesignAutoLayoutNode,
+  incomingNodesById: ReadonlyMap<string, readonly WorkflowDesignAutoLayoutNode[]>,
+): number {
+  if (layoutNode.preferredLane !== null) return layoutNode.preferredLane
+  const previousNodes = (incomingNodesById.get(layoutNode.node.id) ?? [])
+    .filter(incomingNode => incomingNode.rank < layoutNode.rank)
+  if (previousNodes.length === 0) return 0
+  return previousNodes.reduce((total, incomingNode) => total + incomingNode.lane, 0) / previousNodes.length
+}
+
+function workflowDesignBranchLaneOffset(index: number, count: number): number {
+  if (count === 2) return index === 0 ? -0.5 : 0.5
+  const lane = Math.floor(index / 2) + 1
+  return index % 2 === 0 ? -lane : lane
+}
+
+function workflowDesignCenteredLayoutOffset(index: number, count: number): number {
+  return index - (count - 1) / 2
+}
+
+function uniqueWorkflowDesignLayoutNodes(
+  layoutNodes: readonly WorkflowDesignAutoLayoutNode[],
+): WorkflowDesignAutoLayoutNode[] {
+  const seenNodeIds = new Set<string>()
+  const uniqueNodes: WorkflowDesignAutoLayoutNode[] = []
+  for (const layoutNode of layoutNodes) {
+    if (seenNodeIds.has(layoutNode.node.id)) continue
+    seenNodeIds.add(layoutNode.node.id)
+    uniqueNodes.push(layoutNode)
+  }
+  return uniqueNodes.sort(compareWorkflowDesignLayoutNodes)
+}
+
+function workflowDesignNodeType(node: WorkflowDesignGraphNode): SparkAgent.AgentWorkflowGraphNodeType {
+  return resolveDefinitionNodeType(node)
+}
+
+function reserveWorkflowDesignLayoutLane(preferredLane: number, usedLaneKeys: Set<string>): number {
+  const step = 0.5
+  for (let offset = 0; offset <= usedLaneKeys.size + 2; offset += step) {
+    const leftLane = preferredLane - offset
+    if (reserveWorkflowDesignLayoutLaneKey(leftLane, usedLaneKeys)) return leftLane
+    if (offset === 0) continue
+    const rightLane = preferredLane + offset
+    if (reserveWorkflowDesignLayoutLaneKey(rightLane, usedLaneKeys)) return rightLane
+  }
+  return preferredLane
+}
+
+function reserveWorkflowDesignLayoutLaneKey(lane: number, usedLaneKeys: Set<string>): boolean {
+  const laneKey = workflowDesignLayoutLaneKey(lane)
+  if (usedLaneKeys.has(laneKey)) return false
+  usedLaneKeys.add(laneKey)
+  return true
+}
+
+function workflowDesignLayoutLaneKey(lane: number): string {
+  return lane.toFixed(3)
+}
+
+function workflowDesignLayoutNodePairKey(fromNodeId: string, toNodeId: string): string {
+  return `${fromNodeId}\u0000${toNodeId}`
+}
+
+function compareWorkflowDesignLayoutNodes(
+  left: WorkflowDesignAutoLayoutNode,
+  right: WorkflowDesignAutoLayoutNode,
+): number {
+  return left.originalIndex - right.originalIndex
+}
+
+function compareWorkflowDesignLayoutNodesByRank(
+  left: WorkflowDesignAutoLayoutNode,
+  right: WorkflowDesignAutoLayoutNode,
+): number {
+  return left.rank - right.rank || compareWorkflowDesignLayoutNodes(left, right)
+}
+
+function workflowLayoutForwardLines(graph: WorkflowDesignGraph): WorkflowDesignGraphLine[] {
+  const acceptedLines: WorkflowDesignGraphLine[] = []
+  const nodeIndexById = new Map<string, number>()
+  for (const [index, node] of graph.nodes.entries()) {
+    nodeIndexById.set(node.id, index)
+  }
+  const lineCandidates = graph.lines
+    .map((line, originalIndex): WorkflowDesignAutoLayoutLineCandidate => ({
+      line,
+      originalIndex,
+      fromIndex: nodeIndexById.get(line.from.nodeId) ?? Number.MAX_SAFE_INTEGER,
+      toIndex: nodeIndexById.get(line.to.nodeId) ?? Number.MAX_SAFE_INTEGER,
+    }))
+    .sort(compareWorkflowDesignLayoutLineCandidates)
+
+  for (const { line } of lineCandidates) {
+    if (line.from.nodeId === line.to.nodeId) continue
+    if (workflowLayoutCreatesCycle(acceptedLines, line.from.nodeId, line.to.nodeId)) continue
+    acceptedLines.push(line)
+  }
+  return acceptedLines
+}
+
+function compareWorkflowDesignLayoutLineCandidates(
+  left: WorkflowDesignAutoLayoutLineCandidate,
+  right: WorkflowDesignAutoLayoutLineCandidate,
+): number {
+  return workflowDesignLayoutLineDirection(left) - workflowDesignLayoutLineDirection(right)
+    || left.fromIndex - right.fromIndex
+    || left.toIndex - right.toIndex
+    || left.originalIndex - right.originalIndex
+}
+
+function workflowDesignLayoutLineDirection(candidate: WorkflowDesignAutoLayoutLineCandidate): number {
+  return candidate.fromIndex <= candidate.toIndex ? 0 : 1
+}
+
+function workflowLayoutCreatesCycle(
+  acceptedLines: readonly WorkflowDesignGraphLine[],
+  fromNodeId: string,
+  toNodeId: string,
+): boolean {
+  const stack = [toNodeId]
   const visitedNodeIds = new Set<string>()
-  let queueIndex = 0
-  while (queueIndex < queue.length) {
-    const current = queue[queueIndex]
-    queueIndex += 1
-    if (current === undefined || visitedNodeIds.has(current.node.id)) continue
-    visitedNodeIds.add(current.node.id)
-
-    for (const toNodeId of outgoingNodeIds.get(current.node.id) ?? []) {
-      const toNode = nodesById.get(toNodeId)
-      if (toNode === undefined) continue
-      toNode.rank = Math.max(toNode.rank, current.rank + 1)
-      const nextIncomingCount = (incomingCounts.get(toNodeId) ?? 0) - 1
-      incomingCounts.set(toNodeId, nextIncomingCount)
-      if (nextIncomingCount === 0) queue.push(toNode)
+  while (stack.length > 0) {
+    const nodeId = stack.pop()
+    if (nodeId === undefined || visitedNodeIds.has(nodeId)) continue
+    if (nodeId === fromNodeId) return true
+    visitedNodeIds.add(nodeId)
+    for (const line of acceptedLines) {
+      if (line.from.nodeId === nodeId) stack.push(line.to.nodeId)
     }
   }
-
-  const maxVisitedRank = layoutNodes.reduce((maxRank, item) => (
-    visitedNodeIds.has(item.node.id) ? Math.max(maxRank, item.rank) : maxRank
-  ), 0)
-  for (const item of layoutNodes) {
-    if (!visitedNodeIds.has(item.node.id)) {
-      item.rank = Math.max(item.rank, maxVisitedRank + 1)
-    }
-  }
-
-  moveOutputNodesAfterBusinessFlow(layoutNodes)
-  return layoutNodes.sort((left, right) => left.rank - right.rank || left.originalIndex - right.originalIndex)
-}
-
-function moveOutputNodesAfterBusinessFlow(layoutNodes: WorkflowDesignAutoLayoutNode[]): void {
-  const maxNonOutputRank = layoutNodes.reduce((maxRank, item) => (
-    isWorkflowOutputDesignNode(item.node) ? maxRank : Math.max(maxRank, item.rank)
-  ), 0)
-  for (const item of layoutNodes) {
-    if (isWorkflowOutputDesignNode(item.node) && item.rank <= maxNonOutputRank) {
-      item.rank = maxNonOutputRank + 1
-    }
-  }
-}
-
-function isWorkflowOutputDesignNode(node: WorkflowDesignGraphNode): boolean {
-  return node.type === 'output' || node.data?.type === 'output'
-}
-
-function autoLayoutColumnCount(nodeCount: number): number {
-  if (nodeCount <= WORKFLOW_AUTO_LAYOUT_MAX_COLUMNS) return Math.max(1, nodeCount)
-  const rowCount = Math.ceil(nodeCount / WORKFLOW_AUTO_LAYOUT_MAX_COLUMNS)
-  return Math.ceil(nodeCount / rowCount)
+  return false
 }
 
 function ensureDocumentSpark(document: WorkflowDesignDocument): JsonRecord {

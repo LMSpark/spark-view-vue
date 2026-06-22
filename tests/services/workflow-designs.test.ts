@@ -269,7 +269,7 @@ describe('workflow design helpers', () => {
     expect(lines.map(line => line.id)).toEqual(['line.start.node', 'line.node.output'])
   })
 
-  it('auto-layouts all graphs from upper-left by workflow order', () => {
+  it('auto-layouts all graphs vertically from upper-left by workflow order', () => {
     const design = createDesign()
     design.workflow.graph.nodes = [
       { id: 'start', type: 'start', position: { x: 999, y: 999 }, data: { type: 'start', title: 'Start' } },
@@ -354,19 +354,157 @@ describe('workflow design helpers', () => {
       'workflow.graph.node.a.loop.subGraph',
     ])
     expect(findRootGraphNode(design, 'start').position).toEqual({ x: 40, y: 40 })
-    expect(findRootGraphNode(design, 'node.a').position).toEqual({ x: 380, y: 40 })
-    expect(findRootGraphNode(design, 'node.b').position).toEqual({ x: 720, y: 40 })
-    expect(findRootGraphNode(design, 'node.c').position).toEqual({ x: 1060, y: 40 })
-    expect(findRootGraphNode(design, 'node.d').position).toEqual({ x: 40, y: 250 })
-    expect(findRootGraphNode(design, 'node.e').position).toEqual({ x: 380, y: 250 })
-    expect(findRootGraphNode(design, 'output').position).toEqual({ x: 720, y: 250 })
+    expect(findRootGraphNode(design, 'node.a').position).toEqual({ x: 40, y: 250 })
+    expect(findRootGraphNode(design, 'node.b').position).toEqual({ x: 40, y: 460 })
+    expect(findRootGraphNode(design, 'node.c').position).toEqual({ x: 40, y: 670 })
+    expect(findRootGraphNode(design, 'node.d').position).toEqual({ x: 40, y: 880 })
+    expect(findRootGraphNode(design, 'node.e').position).toEqual({ x: 40, y: 1090 })
+    expect(findRootGraphNode(design, 'output').position).toEqual({ x: 40, y: 1300 })
     expect(design.workflow.graph.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
     expect(nestedGraph.nodes.map(node => node.position)).toEqual([
       { x: 40, y: 40 },
-      { x: 380, y: 40 },
-      { x: 720, y: 40 },
+      { x: 40, y: 250 },
+      { x: 40, y: 460 },
     ])
     expect(nestedGraph.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
+  })
+
+  it('auto-layouts workflow branches on both sides until the output node', () => {
+    const design = createDesign()
+    design.workflow.graph.nodes = [
+      { id: 'start', type: 'start', position: { x: 999, y: 999 }, data: { type: 'start', title: 'Start' } },
+      { id: 'node.entry', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'Entry' } },
+      { id: 'node.left', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'Left' } },
+      { id: 'node.right', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node', title: 'Right' } },
+      { id: 'output', type: 'output', position: { x: 999, y: 999 }, data: { type: 'output', title: 'Output' } },
+    ]
+    design.workflow.graph.lines = [
+      {
+        id: 'line.start.entry',
+        from: { nodeId: 'start', modelId: '$workflow', memberName: 'out' },
+        to: { nodeId: 'node.entry', modelId: 'node.entry', memberName: 'in' },
+      },
+      {
+        id: 'line.entry.left',
+        from: { nodeId: 'node.entry', modelId: 'node.entry', memberName: 'out' },
+        to: { nodeId: 'node.left', modelId: 'node.left', memberName: 'in' },
+      },
+      {
+        id: 'line.entry.right',
+        from: { nodeId: 'node.entry', modelId: 'node.entry', memberName: 'out' },
+        to: { nodeId: 'node.right', modelId: 'node.right', memberName: 'in' },
+      },
+      {
+        id: 'line.left.output',
+        from: { nodeId: 'node.left', modelId: 'node.left', memberName: 'out' },
+        to: { nodeId: 'output', modelId: '$workflow', memberName: 'in' },
+      },
+      {
+        id: 'line.right.output',
+        from: { nodeId: 'node.right', modelId: 'node.right', memberName: 'out' },
+        to: { nodeId: 'output', modelId: '$workflow', memberName: 'in' },
+      },
+    ]
+
+    autoLayoutWorkflowDesignGraphs(design)
+
+    expect(findRootGraphNode(design, 'start').position).toEqual({ x: 210, y: 40 })
+    expect(findRootGraphNode(design, 'node.entry').position).toEqual({ x: 210, y: 250 })
+    expect(findRootGraphNode(design, 'node.left').position?.y).toBe(460)
+    expect(findRootGraphNode(design, 'node.right').position?.y).toBe(460)
+    expect(new Set([
+      findRootGraphNode(design, 'node.left').position?.x,
+      findRootGraphNode(design, 'node.right').position?.x,
+    ])).toEqual(new Set([40, 380]))
+    expect(findRootGraphNode(design, 'output').position).toEqual({ x: 210, y: 670 })
+  })
+
+  it('keeps the main branch before loop-back lines when auto-layouting', () => {
+    const design = createDesign()
+    design.workflow.graph.nodes = [
+      { id: 'start', type: 'start', position: { x: 999, y: 999 }, data: { type: 'start' } },
+      { id: 'node.a', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node' } },
+      { id: 'node.b', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node' } },
+      { id: 'output', type: 'output', position: { x: 999, y: 999 }, data: { type: 'output' } },
+    ]
+    design.workflow.graph.lines = [
+      {
+        id: 'line.start.a',
+        from: { nodeId: 'start', modelId: '$workflow', memberName: 'out' },
+        to: { nodeId: 'node.a', modelId: 'node.a', memberName: 'in' },
+      },
+      {
+        id: 'line.b.a.retry',
+        from: { nodeId: 'node.b', modelId: 'node.b', memberName: 'retry' },
+        to: { nodeId: 'node.a', modelId: 'node.a', memberName: 'in' },
+      },
+      {
+        id: 'line.a.b',
+        from: { nodeId: 'node.a', modelId: 'node.a', memberName: 'out' },
+        to: { nodeId: 'node.b', modelId: 'node.b', memberName: 'in' },
+      },
+      {
+        id: 'line.b.output',
+        from: { nodeId: 'node.b', modelId: 'node.b', memberName: 'out' },
+        to: { nodeId: 'output', modelId: '$workflow', memberName: 'in' },
+      },
+    ]
+
+    autoLayoutWorkflowDesignGraphs(design)
+
+    expect(findRootGraphNode(design, 'start').position).toEqual({ x: 40, y: 40 })
+    expect(findRootGraphNode(design, 'node.a').position).toEqual({ x: 40, y: 250 })
+    expect(findRootGraphNode(design, 'node.b').position).toEqual({ x: 40, y: 460 })
+    expect(findRootGraphNode(design, 'output').position).toEqual({ x: 40, y: 670 })
+  })
+
+  it('places the join after the longest parallel branch when auto-layouting', () => {
+    const design = createDesign()
+    design.workflow.graph.nodes = [
+      { id: 'start', type: 'start', position: { x: 999, y: 999 }, data: { type: 'start' } },
+      { id: 'node.a', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node' } },
+      { id: 'node.b', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node' } },
+      { id: 'node.c', type: 'node', position: { x: 999, y: 999 }, data: { type: 'node' } },
+      { id: 'output', type: 'output', position: { x: 999, y: 999 }, data: { type: 'output' } },
+    ]
+    design.workflow.graph.lines = [
+      {
+        id: 'line.start.a',
+        from: { nodeId: 'start', modelId: '$workflow', memberName: 'out' },
+        to: { nodeId: 'node.a', modelId: 'node.a', memberName: 'in' },
+      },
+      {
+        id: 'line.a.b',
+        from: { nodeId: 'node.a', modelId: 'node.a', memberName: 'out' },
+        to: { nodeId: 'node.b', modelId: 'node.b', memberName: 'in' },
+      },
+      {
+        id: 'line.b.output',
+        from: { nodeId: 'node.b', modelId: 'node.b', memberName: 'out' },
+        to: { nodeId: 'output', modelId: '$workflow', memberName: 'in' },
+      },
+      {
+        id: 'line.start.c',
+        from: { nodeId: 'start', modelId: '$workflow', memberName: 'out' },
+        to: { nodeId: 'node.c', modelId: 'node.c', memberName: 'in' },
+      },
+      {
+        id: 'line.c.output',
+        from: { nodeId: 'node.c', modelId: 'node.c', memberName: 'out' },
+        to: { nodeId: 'output', modelId: '$workflow', memberName: 'in' },
+      },
+    ]
+
+    autoLayoutWorkflowDesignGraphs(design)
+
+    expect(findRootGraphNode(design, 'start').position).toEqual({ x: 210, y: 40 })
+    expect(findRootGraphNode(design, 'node.a').position).toEqual({ x: 40, y: 250 })
+    expect(findRootGraphNode(design, 'node.b').position).toEqual({ x: 40, y: 460 })
+    expect(findRootGraphNode(design, 'node.c').position).toEqual({ x: 380, y: 250 })
+    expect(findRootGraphNode(design, 'output').position).toEqual({ x: 210, y: 670 })
+    expect(findRootGraphNode(design, 'node.a').position?.y).toBeLessThan(findRootGraphNode(design, 'output').position?.y ?? 0)
+    expect(findRootGraphNode(design, 'node.b').position?.y).toBeLessThan(findRootGraphNode(design, 'output').position?.y ?? 0)
+    expect(findRootGraphNode(design, 'node.c').position?.y).toBeLessThan(findRootGraphNode(design, 'output').position?.y ?? 0)
   })
 
   it('adds and removes lines in a selected graph', () => {

@@ -116,7 +116,7 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 <button
                   v-if="panel.collapsed"
                   type="button"
-                  class="graph-collapse-edge"
+                  class="graph-collapse-rail"
                   :title="panel.role === 'main' ? 'Main graph collapsed' : 'Child graph collapsed'"
                   @click="resetGraphSplit"
                 />
@@ -202,20 +202,20 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                         class="workflow-flow"
                         :class="{ 'workflow-flow--subgraph': panel.graphView.carrier !== 'root' }"
                         :nodes="flowNodesForGraph(panel.graphView)"
-                        :edges="flowEdgesForGraph(panel.graphView)"
+                        :edges="flowConnectionsForGraph(panel.graphView)"
                         :default-viewport="flowDefaultViewport(panel.graphView)"
                         :connection-mode="ConnectionMode.Strict"
                         :connection-line-type="ConnectionLineType.SmoothStep"
-                        :default-edge-options="flowDefaultEdgeOptions"
+                        :default-edge-options="flowDefaultLineOptions"
                         :edges-updatable="true"
                         :delete-key-code="null"
                         :min-zoom="0.3"
                         :max-zoom="1.6"
                         @nodes-change="changes => handlePanelFlowNodesChange(changes, panel.graphView)"
                         @node-drag-stop="handleFlowNodeDragStop"
-                        @edges-change="changes => handlePanelFlowEdgesChange(changes, panel.graphView)"
-                        @edge-double-click="event => handlePanelFlowEdgeDoubleClick(event, panel.graphView)"
-                        @edge-update="event => handlePanelFlowEdgeUpdate(event, panel.graphView)"
+                        @edges-change="changes => handlePanelFlowLineChanges(changes, panel.graphView)"
+                        @edge-double-click="event => handlePanelFlowLineDoubleClick(event, panel.graphView)"
+                        @edge-update="event => handlePanelFlowLineUpdate(event, panel.graphView)"
                         @connect="connection => handlePanelFlowConnect(connection, panel.graphView)"
                         @viewport-change-end="viewport => handlePanelFlowViewportChangeEnd(viewport, panel.graphView)"
                       >
@@ -233,13 +233,13 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                             <Handle
                               id="target"
                               type="target"
-                              :position="Position.Left"
+                              :position="Position.Top"
                               :title="`连到 ${data.title}`"
                             />
                             <Handle
                               id="source"
                               type="source"
-                              :position="Position.Right"
+                              :position="Position.Bottom"
                               :title="`从 ${data.title} 连线`"
                             />
                             <span class="node-kind">{{ data.nodeType }}</span>
@@ -504,26 +504,6 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             </div>
           </details>
 
-          <details class="editor-section collapsible-section" open>
-            <summary>位置</summary>
-            <div class="collapsible-body position-editor">
-              <el-form label-position="top">
-                <el-row :gutter="8">
-                  <el-col :span="12">
-                    <el-form-item label="X">
-                      <el-input-number v-model="nodeX" :step="20" controls-position="right" />
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="12">
-                    <el-form-item label="Y">
-                      <el-input-number v-model="nodeY" :step="20" controls-position="right" />
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-              </el-form>
-            </div>
-          </details>
-
           <details v-if="selectedNode?.nodeType === 'loop'" class="editor-section collapsible-section" open>
             <summary>循环分组</summary>
             <div class="collapsible-body loop-editor-form">
@@ -653,6 +633,14 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
         <details class="editor-section collapsible-section" open>
           <summary>变量</summary>
           <div class="collapsible-body workflow-variable-editor">
+            <div class="workflow-variable-header">
+              <span>变量名</span>
+              <span>短标题</span>
+              <span>类型</span>
+              <span>必填</span>
+              <span>默认值</span>
+              <span>操作</span>
+            </div>
             <div v-for="row in workflowVariableRows" :key="row.id" class="workflow-variable-row">
               <el-input v-model="row.name" placeholder="name" @input="handleWorkflowEditorChange" />
               <el-input v-model="row.title" placeholder="title" @input="handleWorkflowEditorChange" />
@@ -676,6 +664,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               />
               <span v-else class="workflow-readonly-value">{{ metadataValueText(row.defaultValue) }}</span>
               <el-button link type="danger" :icon="Delete" @click="removeWorkflowVariableRow(row)">删除</el-button>
+              <div v-if="workflowVariableDocText(row)" class="workflow-doc-reference">
+                <span class="class-model-pin" aria-hidden="true"></span>
+                <strong>用途</strong>
+                <span>{{ workflowVariableDocText(row) }}</span>
+              </div>
             </div>
             <el-button :icon="DocumentAdd" @click="addWorkflowVariableRow">添加变量</el-button>
           </div>
@@ -711,6 +704,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                     <option v-for="option in workflowVariableEditorNames" :key="option" :value="option">{{ option }}</option>
                   </select>
                 </el-form-item>
+                <div v-if="workflowVariableDocTextByName(workflowIdentityFieldText)" class="workflow-doc-reference">
+                  <span class="class-model-pin" aria-hidden="true"></span>
+                  <strong>用途</strong>
+                  <span>{{ workflowVariableDocTextByName(workflowIdentityFieldText) }}</span>
+                </div>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="Message Field">
@@ -718,6 +716,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                     <option v-for="option in workflowVariableEditorNames" :key="option" :value="option">{{ option }}</option>
                   </select>
                 </el-form-item>
+                <div v-if="workflowVariableDocTextByName(workflowMessageFieldText)" class="workflow-doc-reference">
+                  <span class="class-model-pin" aria-hidden="true"></span>
+                  <strong>用途</strong>
+                  <span>{{ workflowVariableDocTextByName(workflowMessageFieldText) }}</span>
+                </div>
               </el-col>
             </el-row>
             <div class="workflow-string-list">
@@ -740,7 +743,9 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               </el-col>
               <el-col :span="8">
                 <el-form-item label="Root Class">
-                  <el-input v-model="workflowRootClassText" @input="handleWorkflowEditorChange" />
+                  <select v-model="workflowRootClassText" class="native-select" @change="handleWorkflowRootClassChange">
+                    <option v-for="option in rootClassOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
@@ -749,6 +754,19 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 </el-form-item>
               </el-col>
             </el-row>
+            <div v-if="workflowRootClassDocText" class="workflow-doc-reference">
+              <span class="class-model-pin" aria-hidden="true"></span>
+              <strong>用途</strong>
+              <span>{{ workflowRootClassDocText }}</span>
+            </div>
+            <div class="workflow-inline-actions">
+              <el-button :loading="classModelLoading" :icon="Refresh" @click="refreshWorkflowClassModelOptions">
+                刷新知识
+              </el-button>
+              <el-button :icon="DocumentCopy" :disabled="workflowRootClassModelOption === null" @click="openClassModelDrawer">
+                知识抽屉
+              </el-button>
+            </div>
 
             <strong>Executable</strong>
             <el-row :gutter="8">
@@ -784,6 +802,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                     <option v-for="option in workflowVariableEditorNames" :key="option" :value="option">{{ option }}</option>
                   </select>
                 </el-form-item>
+                <div v-if="workflowVariableDocTextByName(workflowResolveIdentityFieldText)" class="workflow-doc-reference">
+                  <span class="class-model-pin" aria-hidden="true"></span>
+                  <strong>用途</strong>
+                  <span>{{ workflowVariableDocTextByName(workflowResolveIdentityFieldText) }}</span>
+                </div>
               </el-col>
             </el-row>
 
@@ -793,9 +816,16 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 <el-input v-model="workflowSystemPromptTemplateText" type="textarea" :rows="3" @input="handleWorkflowEditorChange" />
               </el-form-item>
               <el-form-item label="Agent Complete Method">
-                <el-input v-model="workflowAgentCompleteMethodText" @input="handleWorkflowEditorChange" />
+                <select v-model="workflowAgentCompleteMethodText" class="native-select" @change="handleWorkflowEditorChange">
+                  <option v-for="option in workflowMethodOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
               </el-form-item>
             </el-form>
+            <div v-if="workflowAgentCompleteMethodDocText" class="workflow-doc-reference">
+              <span class="class-model-pin" aria-hidden="true"></span>
+              <strong>用途</strong>
+              <span>{{ workflowAgentCompleteMethodDocText }}</span>
+            </div>
             <div class="workflow-string-list">
               <span>Execution Tools</span>
               <div v-for="card in workflowExecutionToolCards" :key="card.id" class="workflow-string-row">
@@ -848,6 +878,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 </select>
                 <el-input v-model="row.valueText" placeholder="value" @input="handleWorkflowEditorChange" />
                 <el-button link type="danger" :icon="Delete" @click="removeWorkflowStructuredFieldRow(card.inputRows, row)">删除</el-button>
+                <div v-if="workflowStructuredRowDocText(row)" class="workflow-doc-reference structured-field-doc-reference">
+                  <span class="class-model-pin" aria-hidden="true"></span>
+                  <strong>用途</strong>
+                  <span>{{ workflowStructuredRowDocText(row) }}</span>
+                </div>
               </div>
               <el-button :icon="DocumentAdd" @click="addWorkflowStructuredFieldRow(card.inputRows, 'workflow.capability.input')">添加输入</el-button>
               <strong>Outputs</strong>
@@ -861,6 +896,11 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 </select>
                 <el-input v-model="row.valueText" placeholder="value" @input="handleWorkflowEditorChange" />
                 <el-button link type="danger" :icon="Delete" @click="removeWorkflowStructuredFieldRow(card.outputRows, row)">删除</el-button>
+                <div v-if="workflowStructuredRowDocText(row)" class="workflow-doc-reference structured-field-doc-reference">
+                  <span class="class-model-pin" aria-hidden="true"></span>
+                  <strong>用途</strong>
+                  <span>{{ workflowStructuredRowDocText(row) }}</span>
+                </div>
               </div>
               <el-button :icon="DocumentAdd" @click="addWorkflowStructuredFieldRow(card.outputRows, 'workflow.capability.output')">添加输出</el-button>
               <strong>Constraints</strong>
@@ -917,28 +957,40 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               <el-row :gutter="8">
                 <el-col :span="12">
                   <el-form-item label="From Model">
-                    <select v-model="lineFromModelText" class="native-select" @change="handleLineEditorChange">
-                      <option
-                        v-for="option in lineModelOptions(lineFromNodeText, lineFromModelText)"
-                        :key="option"
-                        :value="option"
-                      >
-                        {{ option }}
-                      </option>
-                    </select>
+                    <span class="field-with-doc">
+                      <select v-model="lineFromModelText" class="native-select" @change="handleLineEditorChange">
+                        <option
+                          v-for="option in lineModelOptions(lineFromNodeText, lineFromModelText)"
+                          :key="option"
+                          :value="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                      <button v-if="lineFromModelDocText" type="button" class="doc-hint" :title="lineFromModelDocText" :aria-label="lineFromModelDocText">
+                        <el-icon><QuestionFilled /></el-icon>
+                        <span class="doc-hint-popover" role="tooltip">{{ lineFromModelDocText }}</span>
+                      </button>
+                    </span>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="From Member">
-                    <select v-model="lineFromMemberText" class="native-select" @change="handleLineEditorChange">
-                      <option
-                        v-for="option in lineMemberOptions(lineFromNodeText, lineFromMemberText)"
-                        :key="option"
-                        :value="option"
-                      >
-                        {{ option }}
-                      </option>
-                    </select>
+                    <span class="field-with-doc">
+                      <select v-model="lineFromMemberText" class="native-select" @change="handleLineEditorChange">
+                        <option
+                          v-for="option in lineMemberOptions(lineFromNodeText, lineFromMemberText)"
+                          :key="option"
+                          :value="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                      <button v-if="lineFromMemberDocText" type="button" class="doc-hint" :title="lineFromMemberDocText" :aria-label="lineFromMemberDocText">
+                        <el-icon><QuestionFilled /></el-icon>
+                        <span class="doc-hint-popover" role="tooltip">{{ lineFromMemberDocText }}</span>
+                      </button>
+                    </span>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -952,28 +1004,40 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               <el-row :gutter="8">
                 <el-col :span="12">
                   <el-form-item label="To Model">
-                    <select v-model="lineToModelText" class="native-select" @change="handleLineEditorChange">
-                      <option
-                        v-for="option in lineModelOptions(lineToNodeText, lineToModelText)"
-                        :key="option"
-                        :value="option"
-                      >
-                        {{ option }}
-                      </option>
-                    </select>
+                    <span class="field-with-doc">
+                      <select v-model="lineToModelText" class="native-select" @change="handleLineEditorChange">
+                        <option
+                          v-for="option in lineModelOptions(lineToNodeText, lineToModelText)"
+                          :key="option"
+                          :value="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                      <button v-if="lineToModelDocText" type="button" class="doc-hint" :title="lineToModelDocText" :aria-label="lineToModelDocText">
+                        <el-icon><QuestionFilled /></el-icon>
+                        <span class="doc-hint-popover" role="tooltip">{{ lineToModelDocText }}</span>
+                      </button>
+                    </span>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="To Member">
-                    <select v-model="lineToMemberText" class="native-select" @change="handleLineEditorChange">
-                      <option
-                        v-for="option in lineMemberOptions(lineToNodeText, lineToMemberText)"
-                        :key="option"
-                        :value="option"
-                      >
-                        {{ option }}
-                      </option>
-                    </select>
+                    <span class="field-with-doc">
+                      <select v-model="lineToMemberText" class="native-select" @change="handleLineEditorChange">
+                        <option
+                          v-for="option in lineMemberOptions(lineToNodeText, lineToMemberText)"
+                          :key="option"
+                          :value="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                      <button v-if="lineToMemberDocText" type="button" class="doc-hint" :title="lineToMemberDocText" :aria-label="lineToMemberDocText">
+                        <el-icon><QuestionFilled /></el-icon>
+                        <span class="doc-hint-popover" role="tooltip">{{ lineToMemberDocText }}</span>
+                      </button>
+                    </span>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -1025,28 +1089,8 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             <div class="editor-actions">
               <el-button :icon="CircleCheck" @click="applySelectedDraft">应用节点</el-button>
             </div>
-          </div>
-        </details>
-
-        <details class="editor-section collapsible-section" open>
-          <summary>位置</summary>
-          <div class="collapsible-body position-editor">
-            <el-form label-position="top">
-              <el-row :gutter="8">
-                <el-col :span="12">
-                  <el-form-item label="X">
-                    <el-input-number v-model="nodeX" :step="20" controls-position="right" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="Y">
-                    <el-input-number v-model="nodeY" :step="20" controls-position="right" />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </el-form>
-          </div>
-        </details>
+            </div>
+          </details>
 
         <details v-if="selectedNode.nodeType === 'loop'" class="editor-section collapsible-section" open>
           <summary>循环分组</summary>
@@ -1072,32 +1116,56 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             <div class="collapsible-body class-model-editor">
               <el-form label-position="top">
                 <el-form-item label="Root Class">
-                  <select v-model="modelRootClassText" class="native-select" @change="handleBusinessNodeStructuredChange">
-                    <option v-for="option in rootClassOptions" :key="option" :value="option">{{ option }}</option>
-                  </select>
+                  <span class="field-with-doc">
+                    <select v-model="modelRootClassText" class="native-select" @change="handleBusinessNodeStructuredChange">
+                      <option v-for="option in rootClassOptions" :key="option" :value="option">{{ option }}</option>
+                    </select>
+                    <button v-if="modelRootClassDocText" type="button" class="doc-hint" :title="modelRootClassDocText" :aria-label="modelRootClassDocText">
+                      <el-icon><QuestionFilled /></el-icon>
+                      <span class="doc-hint-popover" role="tooltip">{{ modelRootClassDocText }}</span>
+                    </button>
+                  </span>
                 </el-form-item>
                 <el-form-item label="Model Class">
-                  <select v-model="modelClassText" class="native-select" @change="handleModelClassSelectionChange">
-                    <option v-for="option in modelClassOptions" :key="option" :value="option">{{ option }}</option>
-                  </select>
+                  <span class="field-with-doc">
+                    <select v-model="modelClassText" class="native-select" @change="handleModelClassSelectionChange">
+                      <option v-for="option in modelClassOptions" :key="option" :value="option">{{ option }}</option>
+                    </select>
+                    <button v-if="modelClassDocText" type="button" class="doc-hint" :title="modelClassDocText" :aria-label="modelClassDocText">
+                      <el-icon><QuestionFilled /></el-icon>
+                      <span class="doc-hint-popover" role="tooltip">{{ modelClassDocText }}</span>
+                    </button>
+                  </span>
                 </el-form-item>
                 <el-form-item label="Completion Class">
-                  <select
-                    v-model="validationActionClassText"
-                    class="native-select"
-                    @change="handleBusinessNodeStructuredChange"
-                  >
-                    <option v-for="option in modelClassOptions" :key="option" :value="option">{{ option }}</option>
-                  </select>
+                  <span class="field-with-doc">
+                    <select
+                      v-model="validationActionClassText"
+                      class="native-select"
+                      @change="handleBusinessNodeStructuredChange"
+                    >
+                      <option v-for="option in modelClassOptions" :key="option" :value="option">{{ option }}</option>
+                    </select>
+                    <button v-if="validationActionClassDocText" type="button" class="doc-hint" :title="validationActionClassDocText" :aria-label="validationActionClassDocText">
+                      <el-icon><QuestionFilled /></el-icon>
+                      <span class="doc-hint-popover" role="tooltip">{{ validationActionClassDocText }}</span>
+                    </button>
+                  </span>
                 </el-form-item>
                 <el-form-item label="Completion Member">
-                  <select
-                    v-model="validationActionNameText"
-                    class="native-select"
-                    @change="handleBusinessNodeStructuredChange"
-                  >
-                    <option v-for="option in completionMemberOptions" :key="option" :value="option">{{ option }}</option>
-                  </select>
+                  <span class="field-with-doc">
+                    <select
+                      v-model="validationActionNameText"
+                      class="native-select"
+                      @change="handleBusinessNodeStructuredChange"
+                    >
+                      <option v-for="option in completionMemberOptions" :key="option" :value="option">{{ option }}</option>
+                    </select>
+                    <button v-if="validationActionMemberDocText" type="button" class="doc-hint" :title="validationActionMemberDocText" :aria-label="validationActionMemberDocText">
+                      <el-icon><QuestionFilled /></el-icon>
+                      <span class="doc-hint-popover" role="tooltip">{{ validationActionMemberDocText }}</span>
+                    </button>
+                  </span>
                 </el-form-item>
               </el-form>
               <el-alert v-if="classModelError" :title="classModelError" type="error" :closable="false" />
@@ -1126,25 +1194,36 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 :key="row.id"
                 class="structured-field-row structured-field-row--inputs"
               >
-                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in structuredPathOptions(businessInputRows)" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
+                <span class="field-with-doc structured-field-path">
+                  <select v-model="row.path" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in structuredPathOptions(businessInputRows)" :key="option" :value="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <button v-if="nodeStructuredRowPathDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowPathDocText(row)" :aria-label="nodeStructuredRowPathDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowPathDocText(row) }}</span>
+                  </button>
+                </span>
                 <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
                   <option value="reference">引用</option>
                   <option value="text">文本</option>
                   <option value="number">数字</option>
                   <option value="boolean">布尔</option>
                 </select>
-                <select
-                  v-if="row.valueKind === 'reference'"
-                  v-model="row.valueText"
-                  class="native-select structured-field-value"
-                  @change="handleBusinessNodeStructuredChange"
-                >
-                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span v-if="row.valueKind === 'reference'" class="field-with-doc structured-field-value">
+                  <select
+                    v-model="row.valueText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeStructuredRowValueDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowValueDocText(row)" :aria-label="nodeStructuredRowValueDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowValueDocText(row) }}</span>
+                  </button>
+                </span>
                 <input
                   v-else-if="row.valueKind === 'boolean'"
                   v-model="row.valueBoolean"
@@ -1169,25 +1248,36 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
                 :key="row.id"
                 class="structured-field-row structured-field-row--outputs"
               >
-                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in structuredPathOptions(businessOutputRows)" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
+                <span class="field-with-doc structured-field-path">
+                  <select v-model="row.path" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in structuredPathOptions(businessOutputRows)" :key="option" :value="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <button v-if="nodeStructuredRowPathDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowPathDocText(row)" :aria-label="nodeStructuredRowPathDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowPathDocText(row) }}</span>
+                  </button>
+                </span>
                 <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
                   <option value="reference">引用</option>
                   <option value="text">文本</option>
                   <option value="number">数字</option>
                   <option value="boolean">布尔</option>
                 </select>
-                <select
-                  v-if="row.valueKind === 'reference'"
-                  v-model="row.valueText"
-                  class="native-select structured-field-value"
-                  @change="handleBusinessNodeStructuredChange"
-                >
-                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span v-if="row.valueKind === 'reference'" class="field-with-doc structured-field-value">
+                  <select
+                    v-model="row.valueText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeStructuredRowValueDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowValueDocText(row)" :aria-label="nodeStructuredRowValueDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowValueDocText(row) }}</span>
+                  </button>
+                </span>
                 <input
                   v-else-if="row.valueKind === 'boolean'"
                   v-model="row.valueBoolean"
@@ -1214,50 +1304,72 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               </el-form>
               <strong>Requirements</strong>
               <div v-for="row in taskRequirementRows" :key="row.id" class="structured-field-row">
-                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in structuredPathOptions(taskRequirementRows)" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
+                <span class="field-with-doc structured-field-path">
+                  <select v-model="row.path" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in structuredPathOptions(taskRequirementRows)" :key="option" :value="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <button v-if="nodeStructuredRowPathDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowPathDocText(row)" :aria-label="nodeStructuredRowPathDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowPathDocText(row) }}</span>
+                  </button>
+                </span>
                 <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
                   <option value="reference">引用</option>
                   <option value="text">文本</option>
                   <option value="number">数字</option>
                   <option value="boolean">布尔</option>
                 </select>
-                <select
-                  v-if="row.valueKind === 'reference'"
-                  v-model="row.valueText"
-                  class="native-select structured-field-value"
-                  @change="handleBusinessNodeStructuredChange"
-                >
-                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span v-if="row.valueKind === 'reference'" class="field-with-doc structured-field-value">
+                  <select
+                    v-model="row.valueText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeStructuredRowValueDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowValueDocText(row)" :aria-label="nodeStructuredRowValueDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowValueDocText(row) }}</span>
+                  </button>
+                </span>
                 <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
                 <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(taskRequirementRows, row)">删除</el-button>
               </div>
               <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(taskRequirementRows, 'task.requirement')">添加需求</el-button>
               <strong>Context Inputs</strong>
               <div v-for="row in taskContextInputRows" :key="row.id" class="structured-field-row">
-                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in structuredPathOptions(taskContextInputRows)" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
+                <span class="field-with-doc structured-field-path">
+                  <select v-model="row.path" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in structuredPathOptions(taskContextInputRows)" :key="option" :value="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <button v-if="nodeStructuredRowPathDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowPathDocText(row)" :aria-label="nodeStructuredRowPathDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowPathDocText(row) }}</span>
+                  </button>
+                </span>
                 <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
                   <option value="reference">引用</option>
                   <option value="text">文本</option>
                   <option value="number">数字</option>
                   <option value="boolean">布尔</option>
                 </select>
-                <select
-                  v-if="row.valueKind === 'reference'"
-                  v-model="row.valueText"
-                  class="native-select structured-field-value"
-                  @change="handleBusinessNodeStructuredChange"
-                >
-                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span v-if="row.valueKind === 'reference'" class="field-with-doc structured-field-value">
+                  <select
+                    v-model="row.valueText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeStructuredRowValueDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowValueDocText(row)" :aria-label="nodeStructuredRowValueDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowValueDocText(row) }}</span>
+                  </button>
+                </span>
                 <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
                 <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(taskContextInputRows, row)">删除</el-button>
               </div>
@@ -1270,9 +1382,15 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             <div class="collapsible-body structured-editor">
               <strong>Allowed Actions</strong>
               <div v-for="card in allowedActionCards" :key="card.id" class="structured-card">
-                <select v-model="card.value" class="native-select" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in completionMemberOptions" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span class="field-with-doc">
+                  <select v-model="card.value" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in completionMemberOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeActionCardDocText(card)" type="button" class="doc-hint" :title="nodeActionCardDocText(card)" :aria-label="nodeActionCardDocText(card)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeActionCardDocText(card) }}</span>
+                  </button>
+                </span>
                 <el-button link type="danger" :icon="Delete" @click="removeSelectCard(allowedActionCards, card)">删除</el-button>
               </div>
               <el-button :icon="DocumentAdd" @click="addSelectCard(allowedActionCards, completionMemberOptions, 'knowledge.action')">
@@ -1280,9 +1398,15 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               </el-button>
               <strong>Readable Attributes</strong>
               <div v-for="card in readableAttributeCards" :key="card.id" class="structured-card">
-                <select v-model="card.value" class="native-select" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in modelAttributeOptions" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span class="field-with-doc">
+                  <select v-model="card.value" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in modelAttributeOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeAttributeCardDocText(card)" type="button" class="doc-hint" :title="nodeAttributeCardDocText(card)" :aria-label="nodeAttributeCardDocText(card)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeAttributeCardDocText(card) }}</span>
+                  </button>
+                </span>
                 <el-button link type="danger" :icon="Delete" @click="removeSelectCard(readableAttributeCards, card)">删除</el-button>
               </div>
               <el-button :icon="DocumentAdd" @click="addSelectCard(readableAttributeCards, modelAttributeOptions, 'knowledge.attribute')">
@@ -1308,36 +1432,53 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
               </el-descriptions>
               <strong>Input Projection</strong>
               <div v-for="row in validationInputProjectionRows" :key="row.id" class="structured-field-row">
-                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in structuredPathOptions(validationInputProjectionRows)" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
+                <span class="field-with-doc structured-field-path">
+                  <select v-model="row.path" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in structuredPathOptions(validationInputProjectionRows)" :key="option" :value="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <button v-if="nodeStructuredRowPathDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowPathDocText(row)" :aria-label="nodeStructuredRowPathDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowPathDocText(row) }}</span>
+                  </button>
+                </span>
                 <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
                   <option value="reference">引用</option>
                   <option value="text">文本</option>
                   <option value="number">数字</option>
                   <option value="boolean">布尔</option>
                 </select>
-                <select
-                  v-if="row.valueKind === 'reference'"
-                  v-model="row.valueText"
-                  class="native-select structured-field-value"
-                  @change="handleBusinessNodeStructuredChange"
-                >
-                  <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
-                </select>
+                <span v-if="row.valueKind === 'reference'" class="field-with-doc structured-field-value">
+                  <select
+                    v-model="row.valueText"
+                    class="native-select"
+                    @change="handleBusinessNodeStructuredChange"
+                  >
+                    <option v-for="option in structuredValueOptions(row)" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                  <button v-if="nodeStructuredRowValueDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowValueDocText(row)" :aria-label="nodeStructuredRowValueDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowValueDocText(row) }}</span>
+                  </button>
+                </span>
                 <el-input v-else v-model="row.valueText" class="structured-field-value" @input="handleBusinessNodeStructuredChange" />
                 <el-button link type="danger" :icon="Delete" @click="removeStructuredFieldRow(validationInputProjectionRows, row)">删除</el-button>
               </div>
               <el-button :icon="DocumentAdd" @click="addStructuredFieldRow(validationInputProjectionRows, 'validation.input')">添加输入投影</el-button>
               <strong>Expected Result</strong>
               <div v-for="row in validationExpectedResultRows" :key="row.id" class="structured-field-row">
-                <select v-model="row.path" class="native-select structured-field-path" @change="handleBusinessNodeStructuredChange">
-                  <option v-for="option in structuredPathOptions(validationExpectedResultRows)" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
+                <span class="field-with-doc structured-field-path">
+                  <select v-model="row.path" class="native-select" @change="handleBusinessNodeStructuredChange">
+                    <option v-for="option in structuredPathOptions(validationExpectedResultRows)" :key="option" :value="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <button v-if="nodeStructuredRowPathDocText(row)" type="button" class="doc-hint" :title="nodeStructuredRowPathDocText(row)" :aria-label="nodeStructuredRowPathDocText(row)">
+                    <el-icon><QuestionFilled /></el-icon>
+                    <span class="doc-hint-popover" role="tooltip">{{ nodeStructuredRowPathDocText(row) }}</span>
+                  </button>
+                </span>
                 <select v-model="row.valueKind" class="native-select structured-field-kind" @change="handleBusinessNodeStructuredChange">
                   <option value="reference">引用</option>
                   <option value="text">文本</option>
@@ -1404,35 +1545,35 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
       :size="'33vw'"
       title="ClassModel 知识"
     >
-      <template v-if="selectedClassModelOption">
+      <template v-if="activeClassModelDrawerOption">
         <div class="class-model-doc-panel class-model-drawer-doc-panel">
           <section class="class-model-doc-item">
             <div class="class-model-doc-title">
               <span class="class-model-pin" aria-hidden="true"></span>
-              <strong>{{ selectedClassModelOption.kind }}</strong>
+              <strong>{{ activeClassModelDrawerOption.kind }}</strong>
             </div>
-            <pre>{{ classModelDocText(selectedClassModelOption) }}</pre>
+            <pre>{{ classModelDocText(activeClassModelDrawerOption) }}</pre>
           </section>
-          <section v-if="selectedClassModelOption.constructorSignature" class="class-model-doc-item">
+          <section v-if="activeClassModelDrawerOption.constructorSignature" class="class-model-doc-item">
             <div class="class-model-doc-title">
               <span class="class-model-pin" aria-hidden="true"></span>
               <strong>constructor</strong>
             </div>
-            <code>{{ selectedClassModelOption.constructorSignature.signature }}</code>
-            <pre>{{ classModelDocText(selectedClassModelOption.constructorSignature) }}</pre>
+            <code>{{ activeClassModelDrawerOption.constructorSignature.signature }}</code>
+            <pre>{{ classModelDocText(activeClassModelDrawerOption.constructorSignature) }}</pre>
           </section>
-          <section v-if="selectedValidationActionOption" class="class-model-doc-item">
+          <section v-if="activeClassModelDrawerActionOption" class="class-model-doc-item">
             <div class="class-model-doc-title">
               <span class="class-model-pin" aria-hidden="true"></span>
-              <strong>{{ selectedValidationActionOption.name }}</strong>
+              <strong>{{ activeClassModelDrawerActionOption.name }}</strong>
             </div>
-            <code>{{ selectedValidationActionOption.signature }}</code>
-            <pre>{{ classModelDocText(selectedValidationActionOption) }}</pre>
+            <code>{{ activeClassModelDrawerActionOption.signature }}</code>
+            <pre>{{ classModelDocText(activeClassModelDrawerActionOption) }}</pre>
           </section>
           <details class="class-model-doc-group" open>
-            <summary>Attributes {{ selectedClassModelOption.attributes.length }}</summary>
+            <summary>Attributes {{ activeClassModelDrawerOption.attributes.length }}</summary>
             <section
-              v-for="attribute in selectedClassModelOption.attributes"
+              v-for="attribute in activeClassModelDrawerOption.attributes"
               :key="attribute.name"
               class="class-model-doc-item"
             >
@@ -1445,9 +1586,9 @@ AI用途：需要验证 workflow 编辑器如何配置业务节点、ClassModel 
             </section>
           </details>
           <details class="class-model-doc-group" open>
-            <summary>Actions {{ selectedClassModelOption.methods.length }}</summary>
+            <summary>Actions {{ activeClassModelDrawerOption.methods.length }}</summary>
             <section
-              v-for="method in selectedClassModelOption.methods"
+              v-for="method in activeClassModelDrawerOption.methods"
               :key="method.name"
               class="class-model-doc-item"
             >
@@ -1561,10 +1702,6 @@ import {
   Position,
   VueFlow,
   type Connection,
-  type DefaultEdgeOptions,
-  type Edge,
-  type EdgeChange,
-  type EdgeUpdateEvent,
   type Node,
   type NodeChange,
   type NodeDragEvent,
@@ -1587,6 +1724,7 @@ import {
   DocumentAdd,
   DocumentCopy,
   FolderOpened,
+  QuestionFilled,
   Refresh,
   RefreshLeft,
   Upload,
@@ -1664,9 +1802,23 @@ type WorkflowFlowNodeData = {
   validationActionDocText: string
 }
 
-type WorkflowFlowEdgeData = {
-  edgeKey: string
+type WorkflowFlowLineData = {
+  lineKey: string
+  lineCount: number
 }
+
+type VueFlowLineChange = Readonly<{
+  id?: string
+  type: string
+  selected?: boolean
+}>
+
+type VueFlowLineUpdateEvent = Readonly<{
+  edge: {
+    data?: unknown
+  }
+  connection: Connection
+}>
 
 type ClassModelMethodOption = {
   name: string
@@ -1698,7 +1850,14 @@ type ClassModelOption = {
 }
 
 type WorkflowFlowNode = Node<WorkflowFlowNodeData, Record<string, never>, 'workflow'>
-type WorkflowFlowEdge = Edge<WorkflowFlowEdgeData>
+type WorkflowFlowConnection = {
+  id: string
+  source: string
+  target: string
+  sourceHandle?: string
+  targetHandle?: string
+  data: WorkflowFlowLineData
+}
 
 type LineEndpointPatchValidationCommand = Readonly<{
   line: WorkflowDesignLineView
@@ -1752,6 +1911,7 @@ type WorkflowVariableEditorRow = {
   schema: Record<string, unknown>
   name: string
   title: string
+  docText: string
   required: boolean
   schemaType: string
   defaultValue: unknown
@@ -1775,6 +1935,8 @@ const GRAPH_SPLIT_MIN_RATIO = 22
 const GRAPH_SPLIT_MAX_RATIO = 78
 const GRAPH_SPLIT_SNAP_RATIO = 12
 const GRAPH_SPLIT_STORAGE_PREFIX = 'spark.workflow-design.graph-split.'
+const NODE_KEYBOARD_MOVE_STEP = 20
+const NODE_KEYBOARD_FAST_MOVE_STEP = 100
 const UNREADABLE_WORKFLOW_DESIGN_STATUS = 'unreadable'
 const UNREADABLE_WORKFLOW_DESIGN_FALLBACK_ERROR = '设计稿格式不兼容或文件不可读'
 let structuredEditorId = 0
@@ -1850,14 +2012,6 @@ const workflowAgentCompleteMethodText = ref('')
 const workflowReadonlyStepCards = ref<StructuredSelectCard[]>([])
 const workflowExecutionToolCards = ref<StructuredSelectCard[]>([])
 const workflowPlanMarkerCards = ref<StructuredSelectCard[]>([])
-const nodeX = computed({
-  get: () => selectedNode.value?.node.position?.x ?? 0,
-  set: (value: number) => { applyNodePosition(value, nodeY.value) },
-})
-const nodeY = computed({
-  get: () => selectedNode.value?.node.position?.y ?? 0,
-  set: (value: number) => { applyNodePosition(nodeX.value, value) },
-})
 const loopModeText = ref('')
 const loopMaxCountValue = ref(10)
 const loopExitNodeText = ref('')
@@ -1922,6 +2076,46 @@ const selectedValidationActionOption = computed(() => {
   if (methodName.length === 0) return null
   return selectedValidationClassModelOption.value?.methods.find(method => method.name === methodName) ?? null
 })
+const workflowRootClassModelOption = computed(() => {
+  return classModelOptions.value.find(item => item.kind === workflowRootClassText.value.trim()) ?? null
+})
+const workflowMethodOptions = computed(() => {
+  return uniqueTexts([
+    workflowAgentCompleteMethodText.value,
+    ...(workflowRootClassModelOption.value?.methods ?? []).map(method => method.name),
+  ])
+})
+const workflowAgentCompleteMethodOption = computed(() => {
+  const methodName = workflowAgentCompleteMethodText.value.trim()
+  if (methodName.length === 0) return null
+  return workflowRootClassModelOption.value?.methods.find(method => method.name === methodName) ?? null
+})
+const workflowRootClassDocText = computed(() => {
+  const option = workflowRootClassModelOption.value
+  return option === null ? '' : classModelDocText(option)
+})
+const workflowAgentCompleteMethodDocText = computed(() => {
+  const option = workflowAgentCompleteMethodOption.value
+  return option === null ? '' : classModelDocText(option)
+})
+const lineFromModelDocText = computed(() => lineEndpointModelDocText(lineFromNodeText.value, lineFromModelText.value))
+const lineToModelDocText = computed(() => lineEndpointModelDocText(lineToNodeText.value, lineToModelText.value))
+const lineFromMemberDocText = computed(() => lineEndpointMemberDocText(lineFromNodeText.value, lineFromModelText.value, lineFromMemberText.value))
+const lineToMemberDocText = computed(() => lineEndpointMemberDocText(lineToNodeText.value, lineToModelText.value, lineToMemberText.value))
+const modelRootClassDocText = computed(() => classModelDocTextByKind(modelRootClassText.value))
+const modelClassDocText = computed(() => classModelDocTextByKind(modelClassText.value))
+const validationActionClassDocText = computed(() => classModelDocTextByKind(validationActionClassText.value))
+const validationActionMemberDocText = computed(() => classModelMemberDocText(validationActionClassText.value || modelClassText.value, validationActionNameText.value))
+const activeClassModelDrawerOption = computed(() => {
+  return propertiesDrawerTarget.value === 'workflow'
+    ? workflowRootClassModelOption.value
+    : selectedClassModelOption.value
+})
+const activeClassModelDrawerActionOption = computed(() => {
+  return propertiesDrawerTarget.value === 'workflow'
+    ? workflowAgentCompleteMethodOption.value
+    : selectedValidationActionOption.value
+})
 const currentDesignSummary = computed(() => findWorkflowDesignSummary(currentWorkflowId.value))
 const propertiesDrawerTitle = computed(() => {
   if (propertiesDrawerTarget.value === 'workflow') return `流程属性 / ${currentDocument.value?.workflow.id ?? 'Workflow'}`
@@ -1976,6 +2170,7 @@ const rootClassOptions = computed(() => {
   const runtimeRoot = currentDocument.value?.workflow.runtimeBinding?.modelProjectionRef?.rootClassName
   return uniqueTexts([
     typeof runtimeRoot === 'string' ? runtimeRoot : '',
+    workflowRootClassText.value,
     modelRootClassText.value,
   ])
 })
@@ -2088,7 +2283,7 @@ const graphSplitStyle = computed<CSSProperties>(() => {
     gridTemplateRows: `minmax(220px, ${graphSplitRatio.value}fr) 18px minmax(220px, ${100 - graphSplitRatio.value}fr)`,
   }
 })
-const flowDefaultEdgeOptions: DefaultEdgeOptions = {
+const flowDefaultLineOptions = {
   type: 'smoothstep',
   markerEnd: MarkerType.ArrowClosed,
   interactionWidth: 18,
@@ -2137,11 +2332,13 @@ watch(
 )
 
 onMounted(async () => {
+  window.document.addEventListener('keydown', handleNodeKeyboardMove)
   await loadDesigns()
   await openInitialDesign()
 })
 
 onBeforeUnmount(() => {
+  window.document.removeEventListener('keydown', handleNodeKeyboardMove)
   stopLayoutResize()
   stopGraphSplitResize()
 })
@@ -2569,22 +2766,27 @@ function isWorkflowFlowNodeData(value: unknown): value is WorkflowFlowNodeData {
     && typeof value['validationActionDocText'] === 'string'
 }
 
-function isWorkflowFlowEdgeData(value: unknown): value is WorkflowFlowEdgeData {
-  return isJsonRecord(value) && typeof value['edgeKey'] === 'string'
+function isWorkflowFlowLineData(value: unknown): value is WorkflowFlowLineData {
+  return isJsonRecord(value) && typeof value['lineKey'] === 'string'
 }
 
-function readFlowEdgeFromEvent(value: unknown): WorkflowFlowEdge | null {
+function readFlowConnectionLineFromEvent(value: unknown): WorkflowFlowConnection | null {
   if (!isJsonRecord(value)) return null
-  const edge = value['edge']
-  if (!isJsonRecord(edge) || typeof edge['id'] !== 'string' || typeof edge['source'] !== 'string' || typeof edge['target'] !== 'string') {
+  const linePayload = value['edge']
+  if (
+    !isJsonRecord(linePayload)
+    || typeof linePayload['id'] !== 'string'
+    || typeof linePayload['source'] !== 'string'
+    || typeof linePayload['target'] !== 'string'
+  ) {
     return null
   }
-  const data = edge['data']
-  if (!isWorkflowFlowEdgeData(data)) return null
+  const data = linePayload['data']
+  if (!isWorkflowFlowLineData(data)) return null
   return {
-    id: edge['id'],
-    source: edge['source'],
-    target: edge['target'],
+    id: linePayload['id'],
+    source: linePayload['source'],
+    target: linePayload['target'],
     data,
   }
 }
@@ -2695,12 +2897,15 @@ function workflowVariableRowsFromData(value: unknown): WorkflowVariableEditorRow
     .map((variable): WorkflowVariableEditorRow => {
       const schema = isJsonRecord(variable['schema']) ? { ...variable['schema'] } : {}
       const defaultValue = variable['defaultValue']
+      const name = readTextField(variable, 'name')
+      const title = readTextField(variable, 'title')
       return {
-        id: readTextField(variable, 'name') || nextStructuredEditorId('workflow.variable'),
+        id: name || nextStructuredEditorId('workflow.variable'),
         source: { ...variable },
         schema,
-        name: readTextField(variable, 'name'),
-        title: readTextField(variable, 'title'),
+        name,
+        title,
+        docText: readWorkflowVariableSourceDocText(variable, schema),
         required: variable['required'] === true,
         schemaType: readTextField(schema, 'type') || 'string',
         defaultValue,
@@ -2755,6 +2960,184 @@ function parseWorkflowVariableDefaultValue(value: string, schemaType: string): u
     return Number.isFinite(parsed) ? parsed : 0
   }
   return value
+}
+
+function workflowVariableDocText(row: WorkflowVariableEditorRow): string {
+  return firstMeaningfulText([
+    row.docText,
+    workflowAttributeDocText(row.name),
+  ], [row.name, row.title])
+}
+
+function workflowVariableDocTextByName(name: string): string {
+  const variable = workflowVariableRows.value.find(row => row.name.trim() === name.trim())
+  return variable === undefined ? '' : workflowVariableDocText(variable)
+}
+
+function workflowAttributeDocText(name: string): string {
+  const attribute = workflowRootClassModelOption.value?.attributes.find(item => item.name === name.trim())
+  return attribute === undefined ? '' : classModelDocText(attribute)
+}
+
+function workflowStructuredRowDocText(row: StructuredFieldRow): string {
+  return firstMeaningfulText([
+    workflowVariableDocTextByName(row.path),
+    workflowAttributeDocText(row.path),
+    workflowReferenceDocText(row.valueText),
+  ], [row.path, row.valueText])
+}
+
+function workflowReferenceDocText(value: string): string {
+  const trimmed = value.trim()
+  const startMatch = /^\{\{\s*start\.([^.\s}]+)\s*\}\}$/u.exec(trimmed)
+  if (startMatch !== null) return workflowVariableDocTextByName(startMatch[1] ?? '')
+  const modelMatch = /^\$model\.([^.\s}]+)$/u.exec(trimmed)
+  if (modelMatch !== null) return workflowAttributeDocText(modelMatch[1] ?? '')
+  return ''
+}
+
+function readWorkflowVariableSourceDocText(variable: Record<string, unknown>, schema: Record<string, unknown>): string {
+  return firstMeaningfulText([
+    readTextField(variable, 'jsdoc'),
+    readTextField(variable, 'description'),
+    readTextField(variable, 'desc'),
+    readTextField(schema, 'jsdoc'),
+    readTextField(schema, 'description'),
+    readTextField(schema, 'summary'),
+  ], [
+    readTextField(variable, 'name'),
+    readTextField(variable, 'title'),
+  ])
+}
+
+function firstMeaningfulText(values: readonly string[], duplicates: readonly string[]): string {
+  const duplicateSet = new Set(duplicates.map(normalizeMeaningfulText).filter(value => value.length > 0))
+  return values
+    .map(value => value.trim())
+    .find((value) => {
+      if (value.length === 0) return false
+      return !duplicateSet.has(normalizeMeaningfulText(value))
+    }) ?? ''
+}
+
+function normalizeMeaningfulText(value: string): string {
+  return value.trim().replace(/\s+/gu, ' ').toLocaleLowerCase()
+}
+
+function lineEndpointModelDocText(nodeId: string, modelId: string): string {
+  const model = findLineEndpointClassModelOption(nodeId, modelId)
+  if (model !== null) return classModelDocText(model)
+  if (modelId.trim() === '$workflow') return workflowRootClassDocText.value
+  return ''
+}
+
+function lineEndpointMemberDocText(nodeId: string, modelId: string, memberName: string): string {
+  const trimmedMember = memberName.trim()
+  if (trimmedMember.length === 0) return ''
+  const node = selectedLineGraphNodes.value.find(item => item.id === nodeId)
+  if (node?.isBoundaryNode === true || modelId.trim() === '$workflow') {
+    return workflowVariableDocTextByName(trimmedMember)
+  }
+  const model = findLineEndpointClassModelOption(nodeId, modelId)
+  if (model !== null) {
+    const attribute = model.attributes.find(item => item.name === trimmedMember)
+    if (attribute !== undefined) return classModelDocText(attribute)
+    const method = model.methods.find(item => item.name === trimmedMember)
+    if (method !== undefined) return classModelDocText(method)
+  }
+  return workflowReferenceDocText(`$model.${trimmedMember}`)
+}
+
+function findLineEndpointClassModelOption(nodeId: string, modelId: string): ClassModelOption | null {
+  const node = selectedLineGraphNodes.value.find(item => item.id === nodeId)
+  if (node === undefined) return null
+  const models = Array.isArray(node.node.data?.models) ? node.node.data.models.filter(isJsonRecord) : []
+  const selectedModel = models.find(model => readTextField(model, 'id') === modelId.trim())
+  const className = selectedModel === undefined ? '' : readTextField(selectedModel, 'className') || readTextField(selectedModel, 'rootClassName')
+  if (className.length === 0) return null
+  return classModelOptions.value.find(item => item.kind === className) ?? null
+}
+
+function classModelDocTextByKind(className: string): string {
+  const option = classModelOptions.value.find(item => item.kind === className.trim())
+  return option === undefined ? '' : classModelDocText(option)
+}
+
+function classModelMemberDocText(className: string, memberName: string): string {
+  const option = classModelOptions.value.find(item => item.kind === className.trim())
+  if (option === undefined) return ''
+  return classModelOptionMemberDocText(option, memberName)
+}
+
+function classModelOptionMemberDocText(option: ClassModelOption, memberName: string): string {
+  const trimmedMember = memberName.trim()
+  const attribute = option.attributes.find(item => item.name === trimmedMember)
+  if (attribute !== undefined) return classModelDocText(attribute)
+  const method = option.methods.find(item => item.name === trimmedMember)
+  if (method !== undefined) return classModelDocText(method)
+  return ''
+}
+
+function selectedModelAttributeDocText(name: string): string {
+  const attribute = selectedClassModelOption.value?.attributes.find(item => item.name === name.trim())
+  return attribute === undefined ? '' : classModelDocText(attribute)
+}
+
+function nodeStructuredRowPathDocText(row: StructuredFieldRow): string {
+  return firstMeaningfulText([
+    workflowVariableDocTextByName(row.path),
+    selectedModelAttributeDocText(row.path),
+  ], [row.path])
+}
+
+function nodeStructuredRowValueDocText(row: StructuredFieldRow): string {
+  return firstMeaningfulText([
+    nodeReferenceDocText(row.valueText),
+  ], [row.valueText])
+}
+
+function nodeActionCardDocText(card: StructuredSelectCard): string {
+  return firstMeaningfulText([
+    classModelMemberDocText(validationActionClassText.value || modelClassText.value, card.value),
+  ], [card.value])
+}
+
+function nodeAttributeCardDocText(card: StructuredSelectCard): string {
+  return firstMeaningfulText([
+    selectedModelAttributeDocText(card.value),
+  ], [card.value])
+}
+
+function nodeReferenceDocText(value: string): string {
+  const trimmed = value.trim()
+  const modelMatch = /^\$model\.([^.\s}]+)$/u.exec(trimmed)
+  if (modelMatch !== null) return selectedModelAttributeDocText(modelMatch[1] ?? '')
+  const referenceMatch = /^\{\{\s*([^}]+?)\s*\}\}$/u.exec(trimmed)
+  if (referenceMatch === null) return ''
+  const body = (referenceMatch[1] ?? '').trim()
+  const separatorIndex = body.lastIndexOf('.')
+  if (separatorIndex <= 0 || separatorIndex >= body.length - 1) return ''
+  const nodeId = body.slice(0, separatorIndex)
+  const memberName = body.slice(separatorIndex + 1)
+  const graph = selectedNode.value?.graph ?? selectedLine.value?.graph
+  const node = graph?.nodes.find(item => item.id === nodeId)
+  if (node === undefined) return ''
+  return nodeMemberDocText(node, memberName)
+}
+
+function nodeMemberDocText(node: WorkflowDesignNodeView['node'], memberName: string): string {
+  const nodeType = typeof node.data?.type === 'string' ? node.data.type : node.type
+  if (nodeType === 'start') return workflowVariableDocTextByName(memberName)
+  const option = classModelOptionForGraphNode(node)
+  return option === null ? '' : classModelOptionMemberDocText(option, memberName)
+}
+
+function classModelOptionForGraphNode(node: WorkflowDesignNodeView['node']): ClassModelOption | null {
+  const models = Array.isArray(node.data?.models) ? node.data.models.filter(isJsonRecord) : []
+  const primaryModel = models[0]
+  const className = primaryModel === undefined ? '' : readTextField(primaryModel, 'className') || readTextField(primaryModel, 'rootClassName')
+  if (className.length === 0) return null
+  return classModelOptions.value.find(item => item.kind === className) ?? null
 }
 
 function lineModelOptions(nodeId: string, currentValue: string): string[] {
@@ -3030,6 +3413,7 @@ function openWorkflowPropertiesDrawer(): void {
   propertiesDrawerTarget.value = 'workflow'
   syncWorkflowEditorFromDocument()
   propertiesDrawerVisible.value = true
+  ensureWorkflowClassModelKnowledge()
 }
 
 function openPropertiesDrawer(): void {
@@ -3044,7 +3428,7 @@ function openPropertiesDrawer(): void {
 }
 
 function openClassModelDrawer(): void {
-  if (selectedClassModelOption.value === null) return
+  if (activeClassModelDrawerOption.value === null) return
   classModelDrawerVisible.value = true
 }
 
@@ -3070,8 +3454,8 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
       id: view.id,
       type: 'workflow',
       position: { x: view.node.position?.x ?? 0, y: view.node.position?.y ?? 0 },
-      targetPosition: Position.Left,
-      sourcePosition: Position.Right,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
       data: {
         viewKey: view.key,
         title: view.title,
@@ -3088,19 +3472,28 @@ function flowNodesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowNode
   })
 }
 
-function flowEdgesForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowEdge[] {
-  return linesForGraph(graphView).map((line) => {
-    return {
-      id: line.id,
+function flowConnectionsForGraph(graphView: WorkflowDesignGraphView): WorkflowFlowConnection[] {
+  const connectionsByNodePair = new Map<string, WorkflowFlowConnection>()
+  for (const line of linesForGraph(graphView)) {
+    const nodePairKey = `${line.from.nodeId}\u0000${line.to.nodeId}`
+    const existingConnection = connectionsByNodePair.get(nodePairKey)
+    if (existingConnection?.data !== undefined) {
+      existingConnection.data.lineCount += 1
+      continue
+    }
+    connectionsByNodePair.set(nodePairKey, {
+      id: workflowFlowConnectionId(line),
       source: line.from.nodeId,
       target: line.to.nodeId,
       sourceHandle: dockHandle(line.from.dock, 'source'),
       targetHandle: dockHandle(line.to.dock, 'target'),
       data: {
-        edgeKey: line.key,
+        lineKey: line.key,
+        lineCount: 1,
       },
-    }
-  })
+    })
+  }
+  return [...connectionsByNodePair.values()]
 }
 
 function flowDefaultViewport(graphView: WorkflowDesignGraphView): ViewportTransform {
@@ -3117,23 +3510,23 @@ function handlePanelFlowNodesChange(changes: NodeChange[], graphView: WorkflowDe
   handleFlowNodesChange(changes, graphView)
 }
 
-function handlePanelFlowEdgesChange(changes: EdgeChange[], graphView: WorkflowDesignGraphView | null): void {
+function handlePanelFlowLineChanges(changes: VueFlowLineChange[], graphView: WorkflowDesignGraphView | null): void {
   if (graphView === null) return
-  handleFlowEdgesChange(changes, graphView)
+  handleFlowLineChanges(changes, graphView)
 }
 
-function handlePanelFlowEdgeDoubleClick(event: unknown, graphView: WorkflowDesignGraphView | null): void {
+function handlePanelFlowLineDoubleClick(event: unknown, graphView: WorkflowDesignGraphView | null): void {
   if (graphView === null) return
-  const edge = readFlowEdgeFromEvent(event)
-  const edgeData = edge?.data
-  if (!isWorkflowFlowEdgeData(edgeData)) return
-  const line = lineViews.value.find(item => item.key === edgeData.edgeKey)
+  const connection = readFlowConnectionLineFromEvent(event)
+  const lineData = connection?.data
+  if (!isWorkflowFlowLineData(lineData)) return
+  const line = lineViews.value.find(item => item.key === lineData.lineKey)
   if (line !== undefined && line.graph === graphView.graph) openLineEditor(line.key)
 }
 
-function handlePanelFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView | null): void {
+function handlePanelFlowLineUpdate(event: VueFlowLineUpdateEvent, graphView: WorkflowDesignGraphView | null): void {
   if (graphView === null) return
-  handleFlowEdgeUpdate(event, graphView)
+  handleFlowLineUpdate(event, graphView)
 }
 
 function handlePanelFlowConnect(connection: Connection, graphView: WorkflowDesignGraphView | null): void {
@@ -3161,18 +3554,30 @@ function handleFlowNodesChange(changes: NodeChange[], graphView: WorkflowDesignG
   }
 }
 
-function handleFlowEdgesChange(changes: EdgeChange[], graphView: WorkflowDesignGraphView): void {
+function handleFlowLineChanges(changes: VueFlowLineChange[], graphView: WorkflowDesignGraphView): void {
   for (const change of changes) {
-    if (change.type === 'select') {
+    if (change.type === 'select' && typeof change.id === 'string') {
       if (change.selected) {
-        const edgeView = lineViews.value.find(e => e.graph === graphView.graph && e.id === change.id)
-        if (edgeView) selectLine(edgeView.key)
+        const lineView = workflowLineViewForFlowConnectionId(graphView, change.id)
+        if (lineView) selectLine(lineView.key)
       } else {
-        const edgeView = selectedLine.value
-        if (edgeView?.id === change.id && edgeView.graph === graphView.graph) selectedLineKey.value = ''
+        const lineView = selectedLine.value
+        const selectedFlowConnectionId = lineView === null ? '' : workflowFlowConnectionId(lineView)
+        if (selectedFlowConnectionId === change.id && lineView?.graph === graphView.graph) selectedLineKey.value = ''
       }
     }
   }
+}
+
+function workflowLineViewForFlowConnectionId(
+  graphView: WorkflowDesignGraphView,
+  connectionId: string,
+): WorkflowDesignLineView | undefined {
+  return lineViews.value.find(line => line.graph === graphView.graph && workflowFlowConnectionId(line) === connectionId)
+}
+
+function workflowFlowConnectionId(line: WorkflowDesignLineView): string {
+  return `${line.from.nodeId}->${line.to.nodeId}`
 }
 
 function handleFlowViewportChangeEnd(viewport: ViewportTransform, graphView: WorkflowDesignGraphView): void {
@@ -3196,6 +3601,35 @@ function handleFlowNodeDragStop(event: NodeDragEvent): void {
   view.node.position.x = Math.max(0, Math.round(event.node.position.x / 10) * 10)
   view.node.position.y = Math.max(0, Math.round(event.node.position.y / 10) * 10)
   markWorkflowDesignDirty(document, `${view.scopePath}.${view.id}.position`)
+}
+
+function handleNodeKeyboardMove(event: KeyboardEvent): void {
+  const delta = nodeKeyboardMoveDelta(event)
+  if (delta === null || isEditableKeyboardTarget(event.target)) return
+  const view = selectedNode.value
+  if (view === null || currentDocument.value === null) return
+  if (editorDirty.value && !applySelectedDraft({ silent: true })) return
+  event.preventDefault()
+  const currentX = view.node.position?.x ?? 0
+  const currentY = view.node.position?.y ?? 0
+  applyNodePosition(
+    Math.max(0, currentX + delta.x),
+    Math.max(0, currentY + delta.y),
+  )
+}
+
+function nodeKeyboardMoveDelta(event: KeyboardEvent): { x: number; y: number } | null {
+  const step = event.shiftKey ? NODE_KEYBOARD_FAST_MOVE_STEP : NODE_KEYBOARD_MOVE_STEP
+  if (event.key === 'ArrowLeft') return { x: -step, y: 0 }
+  if (event.key === 'ArrowRight') return { x: step, y: 0 }
+  if (event.key === 'ArrowUp') return { x: 0, y: -step }
+  if (event.key === 'ArrowDown') return { x: 0, y: step }
+  return null
+}
+
+function isEditableKeyboardTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return target.closest('input, textarea, select, button, [contenteditable="true"]') !== null
 }
 
 function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGraphView): void {
@@ -3222,12 +3656,13 @@ function handleFlowConnect(connection: Connection, graphView: WorkflowDesignGrap
   ElMessage.success('连线已创建')
 }
 
-function handleFlowEdgeUpdate(event: EdgeUpdateEvent, graphView: WorkflowDesignGraphView): void {
+function handleFlowLineUpdate(event: VueFlowLineUpdateEvent, graphView: WorkflowDesignGraphView): void {
   const document = currentDocument.value
   if (document === null) return
-  const data = event.edge.data
-  if (!isWorkflowFlowEdgeData(data)) return
-  const line = lineViews.value.find(item => item.key === data.edgeKey)
+  const linePayload = event.edge
+  const data = linePayload.data
+  if (!isWorkflowFlowLineData(data)) return
+  const line = lineViews.value.find(item => item.key === data.lineKey)
   if (line === undefined || line.graph !== graphView.graph) return
 
   const fromNodeId = event.connection.source.trim()
@@ -3759,6 +4194,7 @@ function addWorkflowVariableRow(): void {
     schema: { type: 'string' },
     name: '',
     title: '',
+    docText: '',
     required: false,
     schemaType: 'string',
     defaultValue: undefined,
@@ -4037,6 +4473,15 @@ function handleModelClassSelectionChange(): void {
 
 async function refreshClassModelOptions(): Promise<void> {
   const rootClassName = modelRootClassText.value.trim()
+  await refreshClassModelOptionsForRoot(rootClassName, 'node')
+}
+
+async function refreshWorkflowClassModelOptions(): Promise<void> {
+  const rootClassName = workflowRootClassText.value.trim()
+  await refreshClassModelOptionsForRoot(rootClassName, 'workflow')
+}
+
+async function refreshClassModelOptionsForRoot(rootClassName: string, source: 'node' | 'workflow'): Promise<void> {
   if (rootClassName.length === 0) {
     classModelError.value = 'Root Class 不能为空'
     return
@@ -4049,9 +4494,12 @@ async function refreshClassModelOptions(): Promise<void> {
     const result = await provider.query({ includeMembers: true })
     classModelOptions.value = readClassModelOptions(result)
     classModelLoadedRootText.value = rootClassName
-    if (modelClassText.value.trim().length === 0 && classModelOptions.value[0] !== undefined) {
+    if (source === 'node' && modelClassText.value.trim().length === 0 && classModelOptions.value[0] !== undefined) {
       modelClassText.value = classModelOptions.value[0].kind
       validationActionClassText.value = modelClassText.value
+    }
+    if (source === 'workflow' && workflowRootClassText.value.trim().length === 0 && classModelOptions.value[0] !== undefined) {
+      workflowRootClassText.value = classModelOptions.value[0].kind
     }
   } catch (error: unknown) {
     classModelError.value = `ClassModel 读取失败: ${errorMessage(error)}`
@@ -4065,6 +4513,18 @@ function ensureSelectedNodeClassModelKnowledge(): void {
   const rootClassName = modelRootClassText.value.trim()
   if (rootClassName.length === 0 || rootClassName === classModelLoadedRootText.value) return
   void refreshClassModelOptions()
+}
+
+function ensureWorkflowClassModelKnowledge(): void {
+  if (classModelLoading.value) return
+  const rootClassName = workflowRootClassText.value.trim()
+  if (rootClassName.length === 0 || rootClassName === classModelLoadedRootText.value) return
+  void refreshWorkflowClassModelOptions()
+}
+
+function handleWorkflowRootClassChange(): void {
+  handleWorkflowEditorChange()
+  ensureWorkflowClassModelKnowledge()
 }
 
 async function loadValidationActionGuide(): Promise<void> {
@@ -4634,7 +5094,7 @@ function errorMessage(error: unknown): string {
   min-height: 8px;
 }
 
-.graph-collapse-edge {
+.graph-collapse-rail {
   width: 100%;
   height: 8px;
   padding: 0;
@@ -4997,6 +5457,108 @@ function errorMessage(error: unknown): string {
   gap: 8px;
 }
 
+.workflow-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.workflow-doc-reference {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 6px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 17px;
+  background: #f8fafc;
+}
+
+.workflow-doc-reference > strong {
+  flex: 0 0 auto;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.workflow-doc-reference span:last-child {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.structured-field-doc-reference {
+  margin-top: -2px;
+}
+
+.field-with-doc {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+
+.field-with-doc .native-select {
+  min-width: 0;
+}
+
+.doc-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #0f766e;
+  cursor: help;
+  background: #f8fafc;
+  touch-action: manipulation;
+}
+
+.doc-hint:hover,
+.doc-hint:focus-visible,
+.doc-hint:focus {
+  border-color: #14b8a6;
+  color: #0f766e;
+  background: #ecfeff;
+}
+
+.doc-hint-popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 30;
+  display: none;
+  width: min(320px, 70vw);
+  padding: 8px 10px;
+  border: 1px solid #99f6e4;
+  border-radius: 6px;
+  box-shadow: 0 12px 24px rgb(15 23 42 / 14%);
+  color: #334155;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: left;
+  white-space: normal;
+  background: #ffffff;
+}
+
+.doc-hint:hover .doc-hint-popover,
+.doc-hint:focus-visible .doc-hint-popover,
+.doc-hint:focus .doc-hint-popover {
+  display: block;
+}
+
 .workflow-runtime-editor strong,
 .workflow-capability-editor strong,
 .workflow-string-list > span {
@@ -5010,6 +5572,15 @@ function errorMessage(error: unknown): string {
   grid-template-columns: minmax(92px, 1fr) minmax(92px, 1fr) 82px 58px minmax(92px, 1fr) auto;
   gap: 6px;
   align-items: center;
+}
+
+.workflow-variable-header {
+  display: grid;
+  grid-template-columns: minmax(92px, 1fr) minmax(92px, 1fr) 82px 58px minmax(92px, 1fr) auto;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .workflow-checkbox-label {
@@ -5155,10 +5726,6 @@ function errorMessage(error: unknown): string {
   font-size: 12px;
   line-height: 1.5;
   white-space: pre-wrap;
-}
-
-.position-editor :deep(.el-input-number) {
-  width: 100%;
 }
 
 .native-select {
